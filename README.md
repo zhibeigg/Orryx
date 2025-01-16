@@ -1,8 +1,10 @@
 # Orryx
 
+[![pEFt9N8.png](https://s21.ax1x.com/2025/01/16/pEFt9N8.png)](https://imgse.com/i/pEFt9N8)
+> 跨时代技能插件，支持实现复杂逻辑，为稳定高效而生。
 ## 构建发行版本
 
-发行版本用于正常使用, 不含 TabooLib 本体。
+Orryx是免费的, 发行版本用于正常使用, 不含 TabooLib 本体。
 
 ```
 ./gradlew build
