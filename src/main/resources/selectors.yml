@@ -1,0 +1,7 @@
+example:
+  Actions: |-
+    container they inline "@range {{ &v0 }} @their @!type ARMOR_STAND @!team @pvp"
+example1:
+  Actions: |-
+    set a to container
+    merge &a they inline "@range {{ &v0 }} @their @!type ARMOR_STAND @!team @pvp"

@@ -1,0 +1,13 @@
+Options:
+  Name: "战士"
+  Skills:
+    - "操翻诸神拳"
+  Attributes:
+    - "物理攻击: +{{ orryx level }}"
+  RegainManaActions: |-
+    profile level
+  MaxManaActions: |-
+    math add [ orryx level 5 ]
+  UpgradePointActions: |-
+    1
+  Experience: "战士专属"

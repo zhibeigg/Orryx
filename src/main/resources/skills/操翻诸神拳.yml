@@ -1,0 +1,46 @@
+Options:
+  # PASSIVE被动
+  # DIRECT AIM直接指向性释放
+  # DIRECT直接释放
+  # PRESSING AIM蓄力指向性释放
+  # PRESSING蓄力释放
+  Type: "DIRECT AIM"
+  Name: "操翻诸神拳"
+  Icon: "操翻诸神拳 {{ flag 操翻诸神拳 }} 段"
+  # * 代表此行不进行下一级预览
+  # 此外内联{{}}的语句都将进行二级预览
+  Description:
+    - "陨灭大荒"
+    - "*玩家等级{{ orryx level }}"
+    - "玩家等级{{ orryx level }}"
+    - "技能等级{{ params level }}"
+  # 是否需要解锁
+  IsLocked: true
+  # 初始等级
+  MinLevel: 1
+  # 最高等级
+  MaxLevel: 1
+  # 指示原点距离玩家半径
+  AimRangeAction: 5
+  # 指示范围缩放大小
+  AimScaleAction: 10
+  # 升级检查
+  UpLevelCheckAction: |-
+    tell inline "从{{ &from }}到{{ &to }}"
+    true
+  # 升级成功Action
+  UpLevelSuccessAction: |-
+    tell inline "从{{ &from }}到{{ &to }}"
+  # 尝试释放时检测，需要返回Boolean值
+  CastCheckAction: |-
+    tell "尝试释放时检测"
+    true
+  Variables:
+    #释放消耗法力值
+    Mana: 5
+    #释放冷却时间
+    Cooldown: 5
+    #升级消耗的技能点
+    UpgradePoint: math add [ &from 1 ]
+Actions: |-
+  tell "我不会"

@@ -1,0 +1,2 @@
+hook-true: "[Orryx] &e┣&7已检测到{0} 附属功能已注册 &a√"
+hook-false: "[Orryx] &e┣&7未检测到{0} 附属功能已关闭 &4×"

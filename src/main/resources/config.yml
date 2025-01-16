@@ -1,0 +1,23 @@
+# debug模式，后台看到插件运行状况
+Debug: false
+# 技能描述的二级预览中间分隔符
+DescriptionSplit: "&7→&r"
+# 注册技能组类型，只能切换以下技能组或其他插件注册的
+Group:
+  - "爆发"
+  - "持久"
+# 缓存管理器：redis/memory
+# redis需要安装RedisChannel插件
+CacheManager: "memory"
+# 多少Tick自然恢复法力值一次
+ManaReginTick: 20
+# 持久存储数据库
+Database:
+  # SQLLITE,MYSQL
+  use: SQLLITE
+  sql:
+    password: 123456
+    database: orryx
+    port: 3306
+    host: 127.0.0.1
+    user: root

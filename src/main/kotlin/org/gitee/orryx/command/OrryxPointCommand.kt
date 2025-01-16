@@ -1,0 +1,50 @@
+package org.gitee.orryx.command
+
+import org.gitee.orryx.core.profile.PlayerProfileManager.orryxProfile
+import org.gitee.orryx.utils.bukkitPlayer
+import taboolib.common.platform.ProxyCommandSender
+import taboolib.common.platform.command.CommandBody
+import taboolib.common.platform.command.int
+import taboolib.common.platform.command.player
+import taboolib.common.platform.command.subCommand
+import taboolib.common5.cint
+
+object OrryxPointCommand {
+
+    @CommandBody
+    val give = subCommand {
+        player {
+            int("point") {
+                exec<ProxyCommandSender> {
+                    val player = ctx.bukkitPlayer() ?: return@exec
+                    player.orryxProfile().givePoint(ctx["point"].cint)
+                }
+            }
+        }
+    }
+
+    @CommandBody
+    val take = subCommand {
+        player {
+            int("point") {
+                exec<ProxyCommandSender> {
+                    val player = ctx.bukkitPlayer() ?: return@exec
+                    player.orryxProfile().takePoint(ctx["point"].cint)
+                }
+            }
+        }
+    }
+
+    @CommandBody
+    val set = subCommand {
+        player {
+            int("point") {
+                exec<ProxyCommandSender> {
+                    val player = ctx.bukkitPlayer() ?: return@exec
+                    player.orryxProfile().setPoint(ctx["point"].cint)
+                }
+            }
+        }
+    }
+
+}
