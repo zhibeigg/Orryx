@@ -94,9 +94,7 @@ object StationLoaderManager: ClassVisitor(1) {
         events.forEach { event ->
             val trigger = triggers[event] ?: return@forEach
             val list = stationMap.filter { it.value.event == event }.values
-            list.groupingBy { it.priority }.fold(mutableSetOf<IStation>()) { acc, station ->
-                acc.apply { add(station) }
-            }.forEach { (priority, sub) ->
+            list.groupBy { it.priority }.forEach { (priority, sub) ->
                 trigger.register(priority, sub.sortedByDescending { it.weight })
             }
         }

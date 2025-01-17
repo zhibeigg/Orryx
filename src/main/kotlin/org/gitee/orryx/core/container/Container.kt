@@ -59,9 +59,24 @@ class Container(override val targets: MutableSet<ITarget<*>> = mutableSetOf()): 
         return this
     }
 
-
     override fun clone(): IContainer = Container().also {
         it.addAll(targets)
+    }
+
+    override fun first(): ITarget<*> {
+        return targets.first()
+    }
+
+    override fun firstOrNull(): ITarget<*>? {
+        return targets.firstOrNull()
+    }
+
+    override fun take(amount: Int): List<ITarget<*>> {
+        return targets.take(amount)
+    }
+
+    override fun drop(amount: Int): List<ITarget<*>> {
+        return targets.drop(amount)
     }
 
     override fun toString(): String {

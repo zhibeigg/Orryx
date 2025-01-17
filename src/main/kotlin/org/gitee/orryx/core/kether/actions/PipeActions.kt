@@ -28,8 +28,8 @@ object PipeActions {
      * */
     @KetherParser(["pipe"], shared = true)
     private fun pipe() = combinationParser(
-        Action.new("pipe", true)
-            .description("管式任务，阻塞kether语句直到执行完毕")
+        Action.new("Pipe管式任务", "管式任务", "pipe", true)
+            .description("阻塞kether语句直到执行完毕")
             .addEntry("UUID，唯一ID名", Type.STRING)
             .addEntry("多少Ticks后完成", Type.LONG)
             .addEntry("中断触发器使用 , 分割Key", Type.STRING, optional = true, head = "trigger")

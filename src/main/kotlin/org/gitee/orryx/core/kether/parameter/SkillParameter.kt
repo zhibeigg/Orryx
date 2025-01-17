@@ -55,4 +55,8 @@ class SkillParameter(val skill: String?, val player: Player, var level: Int = 1)
         return getVariable("COOLDOWN", lazy).clong * 50
     }
 
+    override fun toString(): String {
+        return "SkillParameter{skill=$skill, player=${player.name}, level=$level}"
+    }
+
 }

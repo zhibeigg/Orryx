@@ -5,8 +5,10 @@ import org.gitee.orryx.core.container.IContainer
 import org.gitee.orryx.core.kether.ScriptManager
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptCommandSender
+import taboolib.library.kether.ParsedAction
 import taboolib.library.kether.Parser
 import taboolib.library.kether.Parser.Action
+import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*
 import taboolib.module.kether.ParserHolder.command
 import taboolib.module.kether.ParserHolder.option
@@ -35,6 +37,42 @@ internal fun ScriptContext.bukkitPlayer(): Player {
 
 internal fun ScriptFrame.self(): IContainer {
     return bukkitPlayer().readContainer(script())!!
+}
+
+internal fun QuestReader.nextArgumentActionOrNull(array: Array<out String>): ParsedAction<*>? {
+    return try {
+        mark()
+        expects(*array)
+        this.nextParsedAction()
+    } catch (e: Exception) {
+        reset()
+        null
+    }
+}
+
+internal fun QuestReader.nextTheyContainer(): ParsedAction<*>? {
+    return this.nextArgumentActionOrNull(arrayOf("they"))
+}
+
+internal fun <T> ScriptFrame.container(container: ParsedAction<*>?, func: (ScriptFrame.(container: IContainer) -> T)): CompletableFuture<Any>? {
+    return if (container == null) {
+        null
+    } else {
+        run(container).thenApply {
+            func(it.readContainer(script()) ?: return@thenApply)
+        }
+    }
+}
+
+
+internal fun <T> ScriptFrame.containerOrSelf(container: ParsedAction<*>?, func: (ScriptFrame.(container: IContainer) -> T)): CompletableFuture<T> {
+    return if (container == null) {
+        CompletableFuture.completedFuture(func(self()))
+    } else {
+        run(container).thenApply {
+            func(it.readContainer(script()).orElse(self()))
+        }
+    }
 }
 
 internal fun theyContainer(optional: Boolean = false) = if (optional) {

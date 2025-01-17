@@ -2,11 +2,9 @@ package org.gitee.orryx.core.parser
 
 import org.gitee.orryx.core.container.Container
 import org.gitee.orryx.core.container.IContainer
-import org.gitee.orryx.core.selector.ISelectorFilter
 import org.gitee.orryx.core.selector.ISelectorGeometry
 import org.gitee.orryx.core.selector.ISelectorStream
 import org.gitee.orryx.core.selector.SelectorInit
-import org.gitee.orryx.utils.removeIf
 import taboolib.common.platform.function.info
 import taboolib.module.kether.ScriptContext
 
@@ -42,9 +40,6 @@ class StringParser(val value: String) {
             when(val selector = SelectorInit.getSelector(entry.head.uppercase())) {
                 is ISelectorStream -> {
                     selector.joinContainer(container, context, entry)
-                }
-                is ISelectorFilter -> {
-                    container.targets.removeIf(selector, context, entry)
                 }
                 is ISelectorGeometry -> {
                     container.targets += selector.getTargets(context, entry)

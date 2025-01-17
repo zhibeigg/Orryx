@@ -67,11 +67,36 @@ interface IContainer {
     fun foreach(func: (target: ITarget<*>) -> Unit)
 
     /**
+     * 获取第一个
+     * @throws NoSuchElementException 如果容器为空
+     * */
+    fun first(): ITarget<*>
+
+    /**
+     * 获取第一个或null
+     * */
+    fun firstOrNull(): ITarget<*>?
+
+    /**
      * 添加全部目标到容器
      * @param targets 添加的所有目标
      * @return 原容器
      * */
     fun addAll(targets: Iterable<ITarget<*>>): IContainer
+
+    /**
+     * 返回前几个目标
+     * @param amount 数量
+     * @return 目标集合
+     * */
+    fun take(amount: Int): List<ITarget<*>>
+
+    /**
+     * 返回跳过几个目标剩下的目标
+     * @param amount 数量
+     * @return 目标集合
+     * */
+    fun drop(amount: Int): List<ITarget<*>>
 
     /**
      * 克隆一个容器

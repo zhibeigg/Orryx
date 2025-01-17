@@ -75,13 +75,15 @@ object ScriptManager {
         )
     }
 
-    fun <T> scriptParser(action: org.gitee.orryx.core.wiki.Action, resolve: (QuestReader) -> QuestAction<T>): ScriptActionParser<T> {
-        wikiActions[action.key] = action
+    fun <T> scriptParser(actions: Array<org.gitee.orryx.core.wiki.Action>, resolve: (QuestReader) -> QuestAction<T>): ScriptActionParser<T> {
+        actions.forEach { action ->
+            wikiActions[action.name] = action
+        }
         return ScriptActionParser(resolve)
     }
 
     fun <T> combinationParser(action: org.gitee.orryx.core.wiki.Action, builder: ParserHolder.(Instance) -> App<Mu, Action<T>>): ScriptActionParser<T> {
-        wikiActions[action.key] = action
+        wikiActions[action.name] = action
         return combinationParser(builder)
     }
 

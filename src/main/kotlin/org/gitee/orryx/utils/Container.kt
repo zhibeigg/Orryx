@@ -13,18 +13,54 @@ import taboolib.common.platform.ProxyCommandSender
 import taboolib.module.kether.ScriptContext
 import java.util.*
 
-internal inline fun <reified T> IContainer.remove(): IContainer {
+/**
+ * 移除容器中的类型目标
+ * @param T [ITarget]类型
+ * @return 原容器
+ * */
+inline fun <reified T> IContainer.remove(): IContainer {
     targets.removeIf {
         it is T
     }
     return this
 }
 
-internal inline fun <reified T : ITarget<*>> IContainer.get(): MutableSet<T> {
+/**
+ * 获取容器中的类型目标
+ * @param T [ITarget]类型
+ * @return 满足的目标
+ * */
+inline fun <reified T : ITarget<*>> IContainer.get(): MutableSet<T> {
     return targets.filterIsInstance<T>().toMutableSet()
 }
 
-internal inline fun <reified T: ITarget<*>> IContainer.forEachInstance(func: (target: T) -> Unit): IContainer {
+/**
+ * 类型中全部满足true时返回true
+ * @param T [ITarget]类型
+ * @param func 对目标执行的匿名方法
+ * @return 是否全部满足
+ * */
+inline fun <reified T : ITarget<*>> IContainer.all(func: (target: T) -> Boolean): Boolean {
+    return get<T>().all { func(it) }
+}
+
+/**
+ * 类型中任一满足true时返回true
+ * @param T [ITarget]类型
+ * @param func 对目标执行的匿名方法
+ * @return 是否任一满足
+ * */
+inline fun <reified T : ITarget<*>> IContainer.any(func: (target: T) -> Boolean): Boolean {
+    return get<T>().any { func(it) }
+}
+
+/**
+ * 对某类型循环执行方法
+ * @param T [ITarget]类型
+ * @param func 对目标执行的匿名方法
+ * @return 原容器
+ * */
+inline fun <reified T: ITarget<*>> IContainer.forEachInstance(func: (target: T) -> Unit): IContainer {
     targets.forEach {
         if (it is T) {
             func(it)
@@ -33,7 +69,28 @@ internal inline fun <reified T: ITarget<*>> IContainer.forEachInstance(func: (ta
     return this
 }
 
-internal fun mergeAll(containers: List<IContainer>): IContainer {
+/**
+ * 获取第一个
+ * @throws NoSuchElementException 如果容器为空
+ * */
+inline fun <reified T: ITarget<*>> IContainer.firstInstance(): T {
+    return firstInstanceOrNull<T>() ?: throw NoSuchElementException()
+}
+
+/**
+ * 获取第一个或null
+ * */
+inline fun <reified T: ITarget<*>> IContainer.firstInstanceOrNull(): T? {
+    var target: T? = null
+    targets.forEach {
+        if (it is T) {
+            target = it
+        }
+    }
+    return target
+}
+
+fun mergeAll(containers: List<IContainer>): IContainer {
     return Container().apply {
         containers.forEach {
             merge(it)

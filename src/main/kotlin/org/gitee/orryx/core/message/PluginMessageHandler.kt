@@ -32,7 +32,7 @@ import java.util.concurrent.CompletableFuture
 
 object PluginMessageHandler {
 
-    private const val CHANNEL_NAME = "omega:main"
+    private const val CHANNEL_NAME = "OrryxMod:main"
 
     private val playerFutureMap by lazy { mutableMapOf<UUID, CompletableFuture<AimInfo>>() }
 

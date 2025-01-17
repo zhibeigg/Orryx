@@ -17,7 +17,7 @@ object ContainerActions {
 
     @KetherParser(["container"], namespace = NAMESPACE, shared = true)
     fun actionContainer() = combinationParser(
-        Action.new("container", true)
+        Action.new("Container容器", "目标容器", "container", true)
             .description("创建/复制 一个Container容器，用于储存各类Target")
             .addContainerEntry("被复制的容器", optional = true)
             .result("创建的容器", Type.CONTAINER)
@@ -31,7 +31,7 @@ object ContainerActions {
 
     @KetherParser(["merge"], namespace = NAMESPACE, shared = true)
     fun actionMerge() = combinationParser(
-        Action.new("merge", true)
+        Action.new("Container容器", "合并目标容器", "merge", true)
             .description("合并两个Container容器")
             .addEntry("合并到的Container容器", Type.CONTAINER)
             .addContainerEntry("被合并的Container容器")
@@ -47,10 +47,11 @@ object ContainerActions {
 
     @KetherParser(["mergeIf"], namespace = NAMESPACE, shared = true)
     fun actionMergeIf() = combinationParser(
-        Action.new("mergeIf", true)
+        Action.new("Container容器", "合并如果目标容器", "mergeIf", true)
             .description("合并两个Container容器，剔除被合并容器中返回false的目标，可读取@Target参数")
             .addEntry("合并到的Container容器", Type.CONTAINER)
             .addContainerEntry("被合并的Container容器")
+            .addEntry("方法体返回布尔类型", Type.BOOLEAN)
             .result("合并后的容器", Type.CONTAINER)
     ) {
         it.group(
@@ -71,7 +72,7 @@ object ContainerActions {
 
     @KetherParser(["removeIf"], namespace = NAMESPACE, shared = true)
     fun actionRemoveIf() = combinationParser(
-        Action.new("removeIf", true)
+        Action.new("Container容器", "删除如果目标容器", "removeIf", true)
             .description("检测Container容器，删除返回值为true的Target，可读取@Target参数")
             .addContainerEntry("被检测的Container容器")
             .result("被删除后的容器", Type.CONTAINER)

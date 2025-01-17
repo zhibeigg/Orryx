@@ -12,7 +12,7 @@ object SkillActions {
 
     @KetherParser(["ghost"], namespace = NAMESPACE, shared = true)
     fun actionGhost() = combinationParser(
-        Action.new("ghost", true)
+        Action.new("Orryx Mod额外功能", "设置鬼影状态", "ghost", true)
             .description("设置鬼影状态")
             .addEntry("时长", Type.LONG, false)
             .addContainerEntry(optional = true, default = "@self")

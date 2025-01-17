@@ -12,7 +12,7 @@ object VariableActions {
 
     @KetherParser(["lazy"], namespace = NAMESPACE)
     fun actionLazy() = combinationParser(
-        Action.new("lazy")
+        Action.new("Variable懒变量", "懒变量", "lazy")
             .description("以懒加载方式加载变量(第一次加载后保存数据，后续直接调用)")
             .addEntry("加载的变量名(大小写不敏感)", Type.STRING)
             .result("变量值", Type.ANY)
@@ -26,7 +26,7 @@ object VariableActions {
 
     @KetherParser(["reinit"], namespace = NAMESPACE)
     fun actionReinit() = combinationParser(
-        Action.new("reinit")
+        Action.new("Variable懒变量", "重置懒变量", "reinit")
             .description("重新初始化变量，返回实时值")
             .addEntry("加载的变量名(大小写不敏感)", Type.STRING)
             .result("变量值", Type.ANY)

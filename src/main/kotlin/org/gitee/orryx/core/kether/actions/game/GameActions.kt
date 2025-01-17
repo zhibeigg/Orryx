@@ -13,7 +13,7 @@ object GameActions {
 
     @KetherParser(["sprint"], namespace = NAMESPACE, shared = true)
     fun actionSprint() = combinationParser(
-        Action.new("sprint", true)
+        Action.new("Game原版游戏", "设置跑步状态", "sprint", true)
             .description("设置跑步状态")
             .addEntry("是否跑步", Type.BOOLEAN, false)
             .addContainerEntry(optional = true, default = "@self")
@@ -32,7 +32,7 @@ object GameActions {
 
     @KetherParser(["launch"], namespace = NAMESPACE, shared = true)
     fun actionLaunch() = combinationParser(
-        Action.new("launch", true)
+        Action.new("Game原版游戏", "设置冲量", "launch", true)
             .description("设置冲量")
             .addEntry("视角前方冲量大小", Type.DOUBLE, false)
             .addEntry("视角上方冲量大小", Type.DOUBLE, false)

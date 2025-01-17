@@ -43,4 +43,8 @@ class StationParameter(val stationLoader: String, val sender: ProxyCommandSender
         }
     }
 
+    override fun toString(): String {
+        return "StationParameter{station=$stationLoader, sender=${sender.name}}"
+    }
+
 }
