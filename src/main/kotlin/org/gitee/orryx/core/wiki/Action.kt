@@ -71,7 +71,13 @@ class Action(val group: String, val name: String, val key: String, val sharded: 
             .blockId("${name}_heading3")
             .children(arrayOf())
             .blockType(BlockBlockTypeEnum.HEADING3)
-            .heading3(Text.newBuilder().elements(text(name)).build())
+            .heading3(Text.newBuilder().elements(text(
+                if (sharded) {
+                    "$name(公有语句)"
+                } else {
+                    "$name(私有语句)"
+                }
+            )).build())
             .build()
         val line = "$key " + entries.joinToString(" ") { entry ->
             val start = if (entry.optional) {
@@ -84,14 +90,20 @@ class Action(val group: String, val name: String, val key: String, val sharded: 
             } else {
                 ">"
             }
-            var string = "${start}${entry.type.name}"
-            if (entry.head != null) {
-                string = entry.head + " " + string
+            var string = if (entry.type == Type.SYMBOL) {
+                "${start}${entry.type.name}"
+            } else {
+                entry.head!!
             }
-            if (entry.default != null) {
-                string += "(${entry.default})"
+            if (entry.type != Type.SYMBOL) {
+                if (entry.head != null) {
+                    string = entry.head + " " + string
+                }
+                if (entry.default != null) {
+                    string += "(${entry.default})"
+                }
+                string += end
             }
-            string += end
             string
         }
         id += "${name}_callout"

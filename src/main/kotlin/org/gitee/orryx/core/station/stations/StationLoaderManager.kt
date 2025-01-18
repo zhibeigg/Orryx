@@ -95,7 +95,9 @@ object StationLoaderManager: ClassVisitor(1) {
             val trigger = triggers[event] ?: return@forEach
             val list = stationMap.filter { it.value.event == event }.values
             list.groupBy { it.priority }.forEach { (priority, sub) ->
-                trigger.register(priority, sub.sortedByDescending { it.weight })
+                sub.sortedByDescending { it.weight }.also {
+                    trigger.register(priority, it)
+                }
             }
         }
     }
@@ -107,17 +109,18 @@ object StationLoaderManager: ClassVisitor(1) {
                 if (onCheck(station, event, map)) {
                     val sender = onJoin(event, map)
                     if (StationTimer.hasNext(sender, station.key)) {
-                        StationTimer.reset(sender, StationParameter(station.key, sender))
-                        startStation(sender, station, map, event)
+                        val parameter = StationParameter(station.key, sender, event)
+                        StationTimer.reset(sender, parameter)
+                        startStation(sender, station, map, event, parameter)
                     }
                 }
             }
         }
     }
 
-    private fun <E : Event> IStationTrigger<E>.startStation(sender: ProxyCommandSender, station: IStation, map: Map<String, Any?>, event: E) {
+    private fun <E : Event> IStationTrigger<E>.startStation(sender: ProxyCommandSender, station: IStation, map: Map<String, Any?>, event: E, parameter: StationParameter) {
         lateinit var context: ScriptContext
-        ScriptManager.runScript(sender, StationParameter(station.key, sender), station.script ?: error("请修复中转站${station.key}的脚本配置")) {
+        ScriptManager.runScript(sender, parameter, station.script ?: error("请修复中转站${station.key}的脚本配置")) {
             context = this
             onStart(this, event, map)
         }.thenRun {

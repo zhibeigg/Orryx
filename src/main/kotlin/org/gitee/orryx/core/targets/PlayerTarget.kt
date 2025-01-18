@@ -20,6 +20,9 @@ class PlayerTarget(val player: Player): ITargetEntity<Player> {
     override val world: World
         get() = entity.world
 
+    val uniqueId
+        get() = player.uniqueId
+
     override fun getSource(): Player {
         return player
     }

@@ -1,9 +1,6 @@
 package org.gitee.orryx.compat
 
-import org.gitee.orryx.utils.AdyeshachEnabled
-import org.gitee.orryx.utils.DragonCoreEnabled
-import org.gitee.orryx.utils.MythicMobsEnabled
-import org.gitee.orryx.utils.RedisChannelEnabled
+import org.gitee.orryx.utils.*
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.function.console
@@ -32,6 +29,16 @@ object HookManager {
             console().sendLang("hook-true", "RedisChannel")
         } else {
             console().sendLang("hook-false", "RedisChannel")
+        }
+        if (OriginAttributeEnabled) {
+            console().sendLang("hook-true", "OriginAttribute")
+        } else {
+            console().sendLang("hook-false", "OriginAttribute")
+        }
+        if (AttributePlusEnabled) {
+            console().sendLang("hook-true", "AttributePlus")
+        } else {
+            console().sendLang("hook-false", "AttributePlus")
         }
     }
 

@@ -12,7 +12,6 @@ plugins {
     id("io.izzel.taboolib") version "2.0.22"
     id("org.jetbrains.kotlin.jvm") version "1.9.0"
     id("org.jetbrains.dokka") version "2.0.0"
-    id("org.gitee.orryxwiki") version "1.0.0"
 }
 
 taboolib {
@@ -55,6 +54,8 @@ taboolib {
             name("GDDTitle").optional(true)
             name("DungeonPlus").optional(true)
             name("Adyeshach").optional(true)
+            name("OriginAttribute").optional(true)
+            name("AttributePlus").optional(true)
         }
     }
     relocate("com.google", "org.gitee.orryx.google")
@@ -77,14 +78,16 @@ dependencies {
     compileOnly("ink.ptms.core:v11200:11200")
     compileOnly("ink.ptms:nms-all:1.0.0")
 
-    compileOnly("com.gitee.redischannel:RedisChannel:1.1:api@jar")
+    compileOnly("com.gitee.redischannel:RedisChannel:1.1:api")
     compileOnly("ink.ptms.adyeshach:all:2.0.0-snapshot-36")
     compileOnly("com.gitee:DragonCore:2.6.2.9")
+    compileOnly("com.germ:germplugin:4.4.1-5")
     compileOnly("com.gitee:MythicMobs:4.11.0")
     compileOnly("com.gitee:DragonArmourers:6.72")
     compileOnly("com.gitee:GDDTitle:2.1")
     compileOnly("com.gitee:GlowAPI:1.4.6")
     compileOnly("com.gitee:DungeonPlus:1.3.9")
+    compileOnly("ac.github.oa:OriginAttribute:1.1.4")
 
     taboo("com.google.code.gson:gson:2.10.1")
     taboo("com.github.ben-manes.caffeine:caffeine:2.9.3")

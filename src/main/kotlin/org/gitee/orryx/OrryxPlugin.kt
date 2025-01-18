@@ -1,16 +1,24 @@
 package org.gitee.orryx
 
+import org.gitee.orryx.core.skill.SkillLoaderManager
 import taboolib.common.platform.Platform
 import taboolib.common.platform.Plugin
 import taboolib.common.platform.function.info
 import taboolib.module.chat.colored
 import taboolib.module.metrics.Metrics
+import taboolib.module.metrics.charts.SingleLineChart
 import taboolib.platform.BukkitPlugin
 
 object OrryxPlugin : Plugin() {
 
+    lateinit var metrics: Metrics
+        private set
+
     override fun onEnable() {
-        Metrics(24289, BukkitPlugin.getInstance().description.version, Platform.BUKKIT)
+        metrics = Metrics(24289, BukkitPlugin.getInstance().description.version, Platform.BUKKIT)
+        metrics.addCustomChart(SingleLineChart("skills") {
+            SkillLoaderManager.getSkills().size
+        })
         info("&e┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".colored())
         info("&e┃&a _____                                                  ".colored())
         info("&e┃&a/\\  __`\\                                              ".colored())

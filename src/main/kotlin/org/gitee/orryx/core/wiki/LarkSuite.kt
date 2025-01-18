@@ -10,6 +10,7 @@ import com.lark.oapi.service.docx.v1.enums.BlockBlockTypeEnum
 import com.lark.oapi.service.docx.v1.model.*
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.kether.ScriptManager
+import org.gitee.orryx.utils.debug
 import org.gitee.orryx.utils.gson
 import taboolib.common.platform.function.info
 import taboolib.common.platform.function.pluginId
@@ -36,6 +37,8 @@ object LarkSuite {
 
     fun createDocument() {
         submitChain {
+            info("&e┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━".colored())
+            info("&e┣&7新文档$pluginId-$pluginVersion-(自生成) 开始创建".colored())
             val documentId = async {
                 // 创建请求对象
                 val req = CreateDocumentReq.newBuilder()
@@ -69,15 +72,14 @@ object LarkSuite {
                     )
                     return@async null
                 }
-
+                info("&e┣&7空文档 创建成功 &a√".colored())
                 JsonParser().parse(String(resp.rawResponse.body, UTF_8)).asJsonObject["data"].asJsonObject["document"].asJsonObject["document_id"].asString
             }
             documentId?.let { createDocumentBlocks(it, this) }
 
-            info("&e┏━━━━━━━━━━━━━━".colored())
             info("&e┣&7新文档已创建成功 &a√".colored())
             info("&e┣&7访问地址 &fhttps://www.feishu.cn/docx/$documentId".colored())
-            info("&e┗━━━━━━━━━━━━━━".colored())
+            info("&e┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━".colored())
         }
     }
 
@@ -115,13 +117,13 @@ object LarkSuite {
 
     private suspend fun createDocumentBlocks(documentId: String, chain: Chain<*>) {
         val group = ScriptManager.wikiActions.values.groupBy { it.group }
-        info(group.mapValues { it.value.map { it.name } })
+        debug(group.mapValues { it.value.map { it.name } })
         group.forEach { (g, u) ->
             createGroup(g, u, documentId, chain)
         }
     }
 
-    suspend fun createGroup(group: String, list: List<Action>, documentId: String, chain: Chain<*>) {
+    private suspend fun createGroup(group: String, list: List<Action>, documentId: String, chain: Chain<*>) {
         val keyGroup = list.groupBy { it.key }
         chain.async {
             val req = CreateDocumentBlockChildrenReq.newBuilder()
@@ -174,14 +176,19 @@ object LarkSuite {
                 )
                 return@async
             }
-
+            info("&e┣┳&7Group: $group 创建成功 &a√".colored())
         }
-        keyGroup.forEach { (k, a) ->
-            createKey(k, a, documentId, chain)
+        val l = keyGroup.toList()
+        l.forEach {
+            if (l.last() == it) {
+                createKey(it.first, it.second, documentId, chain, l.size > 1, true)
+            } else {
+                createKey(it.first, it.second, documentId, chain, l.size > 1, false)
+            }
         }
     }
 
-    suspend fun createKey(key: String, list: List<Action>, documentId: String, chain: Chain<*>) {
+    private suspend fun createKey(key: String, list: List<Action>, documentId: String, chain: Chain<*>, change: Boolean, last: Boolean) {
         chain.async {
             val req = CreateDocumentBlockChildrenReq.newBuilder()
                 .documentId(documentId)
@@ -233,13 +240,31 @@ object LarkSuite {
                 )
                 return@async
             }
+            if (last) {
+                info("&e┃┗┳&7Key: $key 创建成功 &a√".colored())
+            } else {
+                info("&e┃┣┳&7Key: $key 创建成功 &a√".colored())
+            }
         }
         list.forEach {
             createAction(it, documentId, chain)
+            if (change && !last) {
+                if (list.last() == it) {
+                    info("&e┃┃┗&7Action: ${it.name} 创建成功 &a√".colored())
+                } else {
+                    info("&e┃┃┣&7Action: ${it.name} 创建成功 &a√".colored())
+                }
+            } else {
+                if (list.last() == it) {
+                    info("&e┃ ┗&7Action: ${it.name} 创建成功 &a√".colored())
+                } else {
+                    info("&e┃ ┣&7Action: ${it.name} 创建成功 &a√".colored())
+                }
+            }
         }
     }
 
-    suspend fun createAction(action: Action, documentId: String, chain: Chain<*>) {
+    private suspend fun createAction(action: Action, documentId: String, chain: Chain<*>) {
         chain.wait(1000, DurationType.MILLIS)
         chain.async {
             val blocks = action.createBlocks()

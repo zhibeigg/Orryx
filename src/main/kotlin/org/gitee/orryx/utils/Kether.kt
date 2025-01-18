@@ -39,7 +39,7 @@ internal fun ScriptFrame.self(): IContainer {
     return bukkitPlayer().readContainer(script())!!
 }
 
-internal fun QuestReader.nextArgumentActionOrNull(array: Array<out String>): ParsedAction<*>? {
+internal fun QuestReader.nextHeadActionOrNull(array: Array<out String>): ParsedAction<*>? {
     return try {
         mark()
         expects(*array)
@@ -50,8 +50,16 @@ internal fun QuestReader.nextArgumentActionOrNull(array: Array<out String>): Par
     }
 }
 
+internal fun QuestReader.nextHeadAction(id: String): ParsedAction<*>? {
+    return nextHeadActionOrNull(arrayOf(id))
+}
+
+internal fun QuestReader.nextHeadAction(id: String, def: Any): ParsedAction<*> {
+    return nextHeadActionOrNull(arrayOf(id)) ?: literalAction(def)
+}
+
 internal fun QuestReader.nextTheyContainer(): ParsedAction<*>? {
-    return this.nextArgumentActionOrNull(arrayOf("they"))
+    return this.nextHeadActionOrNull(arrayOf("they"))
 }
 
 internal fun <T> ScriptFrame.container(container: ParsedAction<*>?, func: (ScriptFrame.(container: IContainer) -> T)): CompletableFuture<Any>? {
@@ -109,10 +117,19 @@ internal fun ProxyCommandSender.eval(action: String, map: Map<String, Any>): Com
     return KetherShell.eval(action, ScriptOptions.builder().sender(this@eval).sandbox(true).namespace(namespaces).vars(map).build())
 }
 
+internal fun Player.parse(actions: List<String>, map: Map<String, Any>): List<String> {
+    return adaptCommandSender(this).parse(actions, map)
+}
+
 internal fun Player.parse(action: String, map: Map<String, Any>): String {
     return adaptCommandSender(this).parse(action, map)
+}
+
+internal fun ProxyCommandSender.parse(actions: List<String>, map: Map<String, Any>): List<String> {
+    return KetherFunction.parse(actions, ScriptOptions.builder().sender(this@parse).sandbox(true).namespace(namespaces).vars(map).build())
 }
 
 internal fun ProxyCommandSender.parse(action: String, map: Map<String, Any>): String {
     return KetherFunction.parse(action, ScriptOptions.builder().sender(this@parse).sandbox(true).namespace(namespaces).vars(map).build())
 }
+
