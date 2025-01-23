@@ -5,6 +5,7 @@ enum class DamageType {
     PHYSICS,
     MAGIC,
     FIRE,
+    REAL,
     SELF,
     CONSOLE;
 

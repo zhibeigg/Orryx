@@ -21,6 +21,8 @@ Database:
     port: 3306
     host: 127.0.0.1
     user: root
+# 生成飞书Wiki文档 不懂不用管
 LarkSuite:
   AppId: ""
   AppSecret: ""
+  FolderToken: ""

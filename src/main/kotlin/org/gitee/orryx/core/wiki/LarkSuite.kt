@@ -31,6 +31,9 @@ object LarkSuite {
     private val appSecret
         get() = OrryxAPI.config.getString("LarkSuite.AppSecret")
 
+    private val folderToken
+        get() = OrryxAPI.config.getString("LarkSuite.FolderToken")
+
     private val client: Client by lazy {
         Client.newBuilder(appId, appSecret).requestTimeout(30, TimeUnit.MINUTES).build()
     }
@@ -44,7 +47,7 @@ object LarkSuite {
                 val req = CreateDocumentReq.newBuilder()
                     .createDocumentReqBody(
                         CreateDocumentReqBody.newBuilder()
-                            .folderToken("EZ03fS1CClOAssdIVdUcEkfznDb")
+                            .folderToken(folderToken)
                             .title("$pluginId-$pluginVersion-(自生成)")
                             .build()
                     )

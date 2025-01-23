@@ -88,6 +88,7 @@ dependencies {
     compileOnly("com.gitee:GlowAPI:1.4.6")
     compileOnly("com.gitee:DungeonPlus:1.3.9")
     compileOnly("ac.github.oa:OriginAttribute:1.1.4")
+    compileOnly("org.serverct:ersha:3.3.3.0")
 
     taboo("com.google.code.gson:gson:2.10.1")
     taboo("com.github.ben-manes.caffeine:caffeine:2.9.3")
