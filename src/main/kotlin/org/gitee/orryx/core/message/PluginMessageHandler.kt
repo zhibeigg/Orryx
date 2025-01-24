@@ -1,9 +1,9 @@
 package org.gitee.orryx.core.message
 
+import com.google.common.io.ByteArrayDataInput
+import com.google.common.io.ByteArrayDataOutput
+import com.google.common.io.ByteStreams
 import eos.moe.dragoncore.api.event.KeyPressEvent
-import io.netty.buffer.Unpooled
-import net.minecraft.server.v1_12_R1.PacketDataSerializer
-import net.minecraft.server.v1_12_R1.PacketPlayOutCustomPayload
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.entity.Player
@@ -15,190 +15,213 @@ import org.bukkit.plugin.messaging.PluginMessageListener
 import org.gitee.orryx.compat.dragoncore.DragonCoreCustomPacketSender
 import org.gitee.orryx.core.profile.IPlayerKeySetting
 import org.gitee.orryx.utils.DragonCoreEnabled
-import org.gitee.orryx.utils.gson
-import org.gitee.orryx.utils.toLocation
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.Ghost
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
+import taboolib.common.platform.function.submit
 import taboolib.common.platform.function.warning
 import taboolib.module.nms.MinecraftVersion
-import taboolib.module.nms.PacketSender
 import taboolib.platform.BukkitPlugin
-import java.nio.charset.StandardCharsets
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentHashMap
 
 object PluginMessageHandler {
 
-    private const val CHANNEL_NAME = "OrryxMod:main"
+    private const val CHANNEL_NAME = "orryxmod:main"
+    private val pendingRequests = ConcurrentHashMap<UUID, CompletableFuture<AimInfo>>()
 
-    private val playerFutureMap by lazy { mutableMapOf<UUID, CompletableFuture<AimInfo>>() }
+    private val isLegacyVersion by lazy { MinecraftVersion.versionId == 11202 }
 
-    private val enable by lazy { MinecraftVersion.versionId == 11202 }
-
-    @Awake(LifeCycle.ENABLE)
-    private fun enable() {
-        Bukkit.getMessenger().registerIncomingPluginChannel(BukkitPlugin.getInstance(), CHANNEL_NAME, Listener())
+    // 协议类型定义
+    private sealed class PacketType(val header: String) {
+        data object Request : PacketType("REQ")
+        data object Confirm : PacketType("CFM")
+        data object Ghost : PacketType("GST")
+        data object Response : PacketType("RES")
     }
 
+    @Awake(LifeCycle.ENABLE)
+    private fun registerChannels() {
+        with(Bukkit.getMessenger()) {
+            registerIncomingPluginChannel(BukkitPlugin.getInstance(), CHANNEL_NAME, MessageReceiver())
+            registerOutgoingPluginChannel(BukkitPlugin.getInstance(), CHANNEL_NAME)
+        }
+    }
+
+    /* 事件处理 */
     @SubscribeEvent
-    private fun quit(e: PlayerQuitEvent) {
-        sendConfirm(e.player, true)
+    private fun onPlayerQuit(e: PlayerQuitEvent) {
+        cleanupRequest(e.player, isCancelled = true)
     }
 
     @Ghost
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    private fun keypress(e: KeyPressEvent) {
-        if (!playerFutureMap.containsKey(e.player.uniqueId)) return
-        if (IPlayerKeySetting.INSTANCE.aimConfirmKey(e.player) == e.key) {
-            sendConfirm(e.player, false)
-            e.isCancelled = true
-        }
-        if (IPlayerKeySetting.INSTANCE.aimCancelKey(e.player) == e.key) {
-            sendConfirm(e.player, true)
-            e.isCancelled = true
-        }
+    private fun onKeyPress(e: KeyPressEvent) {
+        when (e.key) {
+            IPlayerKeySetting.INSTANCE.aimConfirmKey(e.player) -> handleConfirmation(e.player, true)
+            IPlayerKeySetting.INSTANCE.aimCancelKey(e.player) -> handleConfirmation(e.player, false)
+            else -> return
+        }.also { e.isCancelled = true }
     }
 
-    @SubscribeEvent(ignoreCancelled = false)
-    private fun interact(e: PlayerInteractEvent) {
+    @SubscribeEvent
+    private fun onPlayerInteract(e: PlayerInteractEvent) {
         if (DragonCoreEnabled) return
-        if (!playerFutureMap.containsKey(e.player.uniqueId)) return
-        if (e.action == Action.LEFT_CLICK_AIR || e.action == Action.LEFT_CLICK_BLOCK) {
-            sendConfirm(e.player, false)
-            e.isCancelled = true
-        }
-        if (e.action == Action.RIGHT_CLICK_AIR || e.action == Action.RIGHT_CLICK_BLOCK) {
-            sendConfirm(e.player, true)
-            e.isCancelled = true
-        }
+        when (e.action) {
+            Action.LEFT_CLICK_AIR, Action.LEFT_CLICK_BLOCK -> handleConfirmation(e.player, false)
+            Action.RIGHT_CLICK_AIR, Action.RIGHT_CLICK_BLOCK -> handleConfirmation(e.player, true)
+            else -> return
+        }.also { e.isCancelled = true }
     }
 
     @SubscribeEvent(priority = EventPriority.HIGH)
-    private fun join(e: PlayerJoinEvent) {
+    private fun onPlayerJoin(e: PlayerJoinEvent) {
         try {
             DragonCoreCustomPacketSender.sendKeyRegister(e.player)
-        } catch (_: Throwable) {
+        } catch (ex: Throwable) {
+            warning("DragonCore按键注册失败: ${ex.message}")
         }
     }
 
-    class Listener: PluginMessageListener {
-        override fun onPluginMessageReceived(channel: String, player: Player, bytes: ByteArray) {
-            val packet: AimBackPacket = try {
-                gson.fromJson(String(bytes, StandardCharsets.UTF_8), AimBackPacket::class.java)
-            } catch (e: Exception) {
-                warning("玩家${player.name} 发送了不知名的包")
-                return
+    /* 公开API */
+    /**
+     * 发起瞄准请求
+     * @param player 目标玩家
+     * @param skillId 技能唯一标识
+     * @param scale 指示图缩放大小
+     * @param radius 瞄准半径（方块）
+     * @param callback 结果回调（在主线程执行）
+     */
+    fun requestAiming(
+        player: Player,
+        skillId: String,
+        scale: Double,
+        radius: Double,
+        callback: (Result<AimInfo>) -> Unit
+    ) {
+        if (!isLegacyVersion) {
+            callback(Result.failure(UnsupportedVersionException()))
+            return
+        }
+
+        CompletableFuture<AimInfo>().apply {
+            pendingRequests[player.uniqueId] = this
+            whenComplete { result, ex ->
+                submit { // 切换到主线程执行回调
+                    callback(ex?.let { Result.failure(it) } ?: Result.success(result))
+                }
             }
-            val location = "${player.world.name},${packet.location}".toLocation()
-            callAim(player, AimInfo(player, location, packet.skill, System.currentTimeMillis()))
+        }
+
+        sendDataPacket(player, PacketType.Request) {
+            writeUTF(skillId)
+            writeUTF("default")
+            writeDouble(scale)
+            writeDouble(radius)
         }
     }
 
-    fun callAim(player: Player, aimInfo: AimInfo) {
-        playerFutureMap.remove(player.uniqueId)?.apply {
-            complete(aimInfo)
+    /**
+     * 应用鬼影效果
+     * @param duration 持续时间（毫秒）
+     */
+    fun applyGhostEffect(player: Player, duration: Long) {
+        sendDataPacket(player, PacketType.Ghost) {
+            writeLong(duration)
         }
     }
 
-    fun sendAimAsk(player: Player, skill: String, scale: Double, range: Double, callback: (AimInfo) -> Unit) {
-        if (!enable) {
-            warning("指定性技能仅在1.12.2下可使用")
-            return
+    /* 内部实现 */
+    private fun handleConfirmation(player: Player, isConfirmed: Boolean) {
+        pendingRequests[player.uniqueId] ?: return
+        sendDataPacket(player, PacketType.Confirm) {
+            writeBoolean(isConfirmed)
         }
-        val buffer = Unpooled.wrappedBuffer(
-            ("call@" + gson.toJson(
-                AimPacket(
-                    skill,
-                    enable = true,
-                    max = range,
-                    scale = scale
-                )
-            )).toByteArray(StandardCharsets.UTF_8)
-        )
-        val future = CompletableFuture<AimInfo>()
-        playerFutureMap[player.uniqueId] = future
-        PacketSender.sendPacket(
-            player,
-            PacketPlayOutCustomPayload("omega:main", PacketDataSerializer(buffer))
-        )
-        future.thenApply {
-            callback(it)
+        if (!isConfirmed) cleanupRequest(player, true)
+    }
+
+    private fun cleanupRequest(player: Player, isCancelled: Boolean) {
+        pendingRequests.remove(player.uniqueId)?.apply {
+            if (isCancelled) completeExceptionally(PlayerCancelledException())
         }
     }
 
-    private fun sendConfirm(player: Player, cancel: Boolean) {
-        if (!enable) {
-            warning("指定性技能仅在1.12.2下可使用")
-            return
-        }
-        if (cancel) playerFutureMap.remove(player.uniqueId)
-        val buffer = Unpooled.wrappedBuffer(
-            ("confirm@" + gson.toJson(
-                AimConfirmPacket(cancel)
-            )).toByteArray(StandardCharsets.UTF_8)
-        )
-        PacketSender.sendPacket(
-            player,
-            PacketPlayOutCustomPayload("omega:main", PacketDataSerializer(buffer))
-        )
-    }
-
-    internal fun sendGhost(player: Player, timeout: Long) {
-        if (!enable) {
-            warning("鬼影仅在1.12.2下可使用")
-            return
-        }
-        val buffer = Unpooled.wrappedBuffer(
-            ("ghostTimeout@" + gson.toJson(
-                GhostPacket(timeout * 50)
-            )).toByteArray(StandardCharsets.UTF_8)
-        )
-        PacketSender.sendPacket(
-            player,
-            PacketPlayOutCustomPayload("omega:main", PacketDataSerializer(buffer))
-        )
-    }
-
-    class AimInfo(val player: Player, val location: Location, val skill: String?, val time: Long)
-
-    class AimPacket(
-        val skill: String,
-        val module: String = "default",
-        val enable: Boolean,
-        val max: Double,
-        val scale: Double
+    private inline fun sendDataPacket(
+        player: Player,
+        type: PacketType,
+        block: ByteArrayDataOutput.() -> Unit
     ) {
-        override fun toString(): String {
-            return "AimPacket(skill=$skill, module=$module, enable=$enable, max=$max, scale=$scale)"
+        try {
+            val output = ByteStreams.newDataOutput().apply {
+                writeUTF(type.header)
+                block()
+            }
+            player.sendPluginMessage(
+                BukkitPlugin.getInstance(),
+                CHANNEL_NAME,
+                output.toByteArray()
+            )
+        } catch (ex: Exception) {
+            warning("给玩家 ${player.name} 发送数据包失败: ${ex.message}")
         }
     }
 
-    class AimConfirmPacket(
-        val cancel: Boolean
-    ) {
-        override fun toString(): String {
-            return "AimConfirmPacket(cancel=$cancel)"
+    /* 消息接收处理器 */
+    private class MessageReceiver : PluginMessageListener {
+        override fun onPluginMessageReceived(channel: String, player: Player, message: ByteArray) {
+            if (channel != CHANNEL_NAME) return
+
+            val input = ByteStreams.newDataInput(message)
+            try {
+                when (val header = input.readUTF()) {
+                    PacketType.Response.header -> handleAimResponse(player, input)
+                    else -> warning("收到未知数据包类型: $header")
+                }
+            } catch (ex: Exception) {
+                warning("处理来自 ${player.name} 的数据包时出错: ${ex.message}")
+            }
+        }
+
+        private fun handleAimResponse(player: Player, input: ByteArrayDataInput) {
+            try {
+                val skillId = input.readUTF()
+                val location = readLocation(player, input)
+
+                pendingRequests.remove(player.uniqueId)?.complete(AimInfo(player, location, skillId))
+            } catch (ex: Exception) {
+                warning("解析瞄准数据包失败: ${ex.message}")
+            }
+        }
+
+        private fun readLocation(player: Player, input: ByteArrayDataInput): Location {
+            return Location(
+                player.world,
+                input.readDouble(), // X
+                input.readDouble(), // Y
+                input.readDouble()  // Z
+            )
         }
     }
 
-    class AimBackPacket(
-        val skill: String?,
-        val location: String
-    ) {
-        override fun toString(): String {
-            return "AimBackPacket(skill=$skill, location=$location)"
-        }
-    }
+    /* 数据类 */
+    data class AimInfo(
+        val player: Player,
+        val location: Location,
+        val skillId: String?,
+        val timestamp: Long = System.currentTimeMillis()
+    )
 
-    class GhostPacket(
-        val timeout: Long
-    ) {
-        override fun toString(): String {
-            return "GhostPacket(timeout=$timeout)"
-        }
-    }
+    /* 异常体系 */
+    class UnsupportedVersionException :
+        IllegalStateException("此功能仅支持 1.12.2 版本")
+
+    class PlayerCancelledException :
+        RuntimeException("玩家取消操作")
+
+    class TargetingFailedException :
+        RuntimeException("瞄准失败，请检查环境是否遮挡")
 
 }

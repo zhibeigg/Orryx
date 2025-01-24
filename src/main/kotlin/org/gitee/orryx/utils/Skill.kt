@@ -24,7 +24,6 @@ const val PRESSING = "Pressing"
 const val PRESSING_AIM = "Pressing Aim"
 const val PASSIVE = "Passive"
 
-
 internal fun SkillParameter.runSkillAction(map: Map<String, Any> = emptyMap()) {
     SkillLoaderManager.getSkillLoader(skill ?: return)?.let { skill ->
         if (skill is ICastSkill) {
@@ -83,15 +82,17 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter) {
         is DirectAimSkill -> {
             val aimRange = parameter.runCustomAction(skill.aimRangeAction).orNull().cdouble
             val aimScale = parameter.runCustomAction(skill.aimScaleAction).orNull().cdouble
-            PluginMessageHandler.sendAimAsk(player, key, aimScale, aimRange) { aimInfo ->
-                if (aimInfo.skill == skill.key) {
-                    parameter.origin = aimInfo.location.toTarget()
-                    parameter.runSkillAction(
-                        mapOf(
-                            "aimRange" to aimRange,
-                            "aimScale" to aimScale
+            PluginMessageHandler.requestAiming(player, key, aimScale, aimRange) { aimInfo ->
+                aimInfo.getOrNull()?.let {
+                    if (it.skillId == skill.key) {
+                        parameter.origin = it.location.toTarget()
+                        parameter.runSkillAction(
+                            mapOf(
+                                "aimRange" to aimRange,
+                                "aimScale" to aimScale
+                            )
                         )
-                    )
+                    }
                 }
             }
         }

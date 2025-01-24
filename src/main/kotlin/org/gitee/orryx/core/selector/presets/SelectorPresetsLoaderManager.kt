@@ -6,12 +6,12 @@ import taboolib.common.platform.Awake
 import taboolib.common.platform.function.info
 import taboolib.module.chat.colored
 import taboolib.module.configuration.Config
-import taboolib.module.configuration.Configuration
+import taboolib.module.configuration.ConfigFile
 
 object SelectorPresetsLoaderManager {
 
     @Config("selectors.yml")
-    lateinit var selectors: Configuration
+    lateinit var selectors: ConfigFile
 
     private val selectorPresets by lazy { mutableMapOf<String, PresetsLoader>() }
 

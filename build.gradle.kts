@@ -92,8 +92,9 @@ dependencies {
 
     taboo("com.google.code.gson:gson:2.10.1")
     taboo("com.github.ben-manes.caffeine:caffeine:2.9.3")
-
+    taboo("org.joml:joml:1.10.7")
     taboo("com.larksuite.oapi:oapi-sdk:2.4.7")
+
     compileOnly(kotlin("stdlib"))
     compileOnly(fileTree("libs"))
 }

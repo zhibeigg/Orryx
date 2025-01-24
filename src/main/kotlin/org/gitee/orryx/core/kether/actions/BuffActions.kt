@@ -17,7 +17,7 @@ import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.info
 import taboolib.module.chat.colored
 import taboolib.module.configuration.Config
-import taboolib.module.configuration.Configuration
+import taboolib.module.configuration.ConfigFile
 import taboolib.module.kether.*
 import java.util.*
 import kotlin.collections.set
@@ -52,8 +52,8 @@ object BuffActions {
         playerBuffMap.remove(e.player.uniqueId)
     }
 
-    @Config("buff.yml", migrate = true)
-    lateinit var config: Configuration
+    @Config("buffs.yml", migrate = true)
+    lateinit var config: ConfigFile
 
     @Reload(2)
     @Awake(LifeCycle.ENABLE)

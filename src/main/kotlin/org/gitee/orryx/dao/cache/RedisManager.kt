@@ -13,31 +13,40 @@ import java.util.*
 
 class RedisManager: ICacheManager {
 
-    val api by lazy { RedisChannelPlugin.api }
+    private val api by lazy { RedisChannelPlugin.api }
 
     override fun getPlayerData(player: UUID): PlayerData? {
+        val tag = playerDataTag(player)
         var playerData = api.get(playerDataTag(player))?.let { gson.fromJson(it, PlayerData::class.java) }
         if (playerData == null) {
             playerData = IStorageManager.INSTANCE.getPlayerData(player)
             playerData?.let { savePlayerData(player, it, true) }
+        } else {
+            api.refreshExpire(tag, 900, true)
         }
         return playerData
     }
 
     override fun getPlayerJob(player: UUID, job: String): PlayerJob? {
+        val tag = playerJobDataTag(player, job)
         var jobData = api.get(playerJobDataTag(player, job))?.let { gson.fromJson(it, PlayerJob::class.java) }
         if (jobData == null) {
             jobData = IStorageManager.INSTANCE.getPlayerJob(player, job)
             jobData?.let { savePlayerJob(player, it, true) }
+        } else {
+            api.refreshExpire(tag, 900, true)
         }
         return jobData
     }
 
     override fun getPlayerSkill(player: UUID, job: String, skill: String): PlayerSkill? {
-        var skillData = api.get(playerJobSkillDataTag(player, job, skill))?.let { gson.fromJson(it, PlayerSkill::class.java) }
+        val tag = playerJobSkillDataTag(player, job, skill)
+        var skillData = api.get(tag)?.let { gson.fromJson(it, PlayerSkill::class.java) }
         if (skillData == null) {
             skillData = IStorageManager.INSTANCE.getPlayerSkill(player, job, skill)
             skillData?.let { savePlayerSkill(player, it, true) }
+        } else {
+            api.refreshExpire(tag, 600, true)
         }
         return skillData
     }

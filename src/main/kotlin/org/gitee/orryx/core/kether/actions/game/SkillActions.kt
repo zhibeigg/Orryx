@@ -23,7 +23,7 @@ object SkillActions {
         ).apply(it) { timeout, container ->
             now {
                 container.orElse(self()).forEachInstance<PlayerTarget> { player ->
-                    PluginMessageHandler.sendGhost(player.player, timeout)
+                    PluginMessageHandler.applyGhostEffect(player.player, timeout*50)
                 }
             }
         }

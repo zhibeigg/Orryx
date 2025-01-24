@@ -2,10 +2,10 @@ package org.gitee.orryx.utils
 
 import io.lumine.xikage.mythicmobs.adapters.AbstractLocation
 import org.bukkit.Location
-import org.bukkit.entity.Entity
 import org.bukkit.entity.LivingEntity
 import org.bukkit.util.Vector
 import org.gitee.orryx.core.targets.ITarget
+import org.joml.Vector3d
 
 /**
  * AbstractLocation是否面相loc2
@@ -85,4 +85,12 @@ internal fun ITarget<*>.direction(x: Double, y: Double, z: Double): Vector {
     val xV = eyeLocation.direction.clone().setY(0).normalize()
     val zV = xV.clone().crossProduct(Vector(0, 1, 0)).normalize()
     return Vector(0, 0, 0).add(xV.multiply(x)).add(Vector(0.0, y, 0.0)).add(zV.multiply(z))
+}
+
+fun Vector.joml() = Vector3d(x, y, z)
+
+fun Vector3d.bukkit() = Vector(x, y, z)
+
+fun ro() {
+    Vector3d()
 }

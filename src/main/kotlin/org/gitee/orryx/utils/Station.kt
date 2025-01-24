@@ -8,7 +8,7 @@ import taboolib.common5.clong
 import taboolib.module.kether.orNull
 
 
-internal fun IStation.getBaffle(sender: ProxyCommandSender): Long {
+internal fun IStation.getBaffle(sender: ProxyCommandSender, stationParameter: StationParameter): Long {
     baffleAction ?: return 0
-    return ScriptManager.runScript(sender, StationParameter(key, sender), baffleAction!!).orNull().clong * 50
+    return ScriptManager.runScript(sender, stationParameter, baffleAction!!).orNull().clong * 50
 }

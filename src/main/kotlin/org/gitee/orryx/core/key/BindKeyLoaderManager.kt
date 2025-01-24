@@ -8,12 +8,12 @@ import taboolib.common.platform.Awake
 import taboolib.common.platform.function.info
 import taboolib.module.chat.colored
 import taboolib.module.configuration.Config
-import taboolib.module.configuration.Configuration
+import taboolib.module.configuration.ConfigFile
 
 object BindKeyLoaderManager {
 
     @Config("keys.yml")
-    lateinit var keys: Configuration
+    lateinit var keys: ConfigFile
 
     private lateinit var bindKeyLoaderMap: Map<String, IBindKey>
     private lateinit var groupMap: Map<String, IGroup>

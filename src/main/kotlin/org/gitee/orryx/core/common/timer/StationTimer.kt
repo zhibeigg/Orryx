@@ -16,7 +16,7 @@ object StationTimer: ITimer {
     override fun reset(sender: ProxyCommandSender, parameter: IParameter): Long {
         parameter as StationParameter
         StationLoaderManager.getStationLoader(parameter.stationLoader)?.let {
-            val timeout = it.getBaffle(sender)
+            val timeout = it.getBaffle(sender, parameter)
             if (timeout > 0) {
                 set(sender, parameter.stationLoader,  timeout)
             } else {

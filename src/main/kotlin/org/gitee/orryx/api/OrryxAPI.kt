@@ -5,13 +5,13 @@ import org.gitee.orryx.api.interfaces.IReloadAPI
 import org.gitee.orryx.api.interfaces.ITimerAPI
 import org.gitee.orryx.core.reload.ReloadAPI
 import taboolib.module.configuration.Config
-import taboolib.module.configuration.Configuration
+import taboolib.module.configuration.ConfigFile
 import taboolib.module.kether.KetherScriptLoader
 
 object OrryxAPI {
 
     @Config("config.yml")
-    lateinit var config: Configuration
+    lateinit var config: ConfigFile
 
     val ketherScriptLoader by lazy { KetherScriptLoader() }
 

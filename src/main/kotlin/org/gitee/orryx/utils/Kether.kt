@@ -1,6 +1,7 @@
 package org.gitee.orryx.utils
 
 import org.bukkit.entity.Player
+import org.bukkit.util.Vector
 import org.gitee.orryx.core.container.IContainer
 import org.gitee.orryx.core.kether.ScriptManager
 import taboolib.common.platform.ProxyCommandSender
@@ -79,6 +80,17 @@ internal fun <T> ScriptFrame.containerOrSelf(container: ParsedAction<*>?, func: 
     } else {
         run(container).thenApply {
             func(it.readContainer(script()).orElse(self()))
+        }
+    }
+}
+
+internal fun vector(): Parser<Vector?> {
+    return Parser.frame { r ->
+        val action = r.nextParsedAction()
+        Action {
+            it.run(action).thenApply { vector ->
+                vector as? Vector
+            }
         }
     }
 }
