@@ -36,11 +36,12 @@ object PluginMessageHandler {
     private val isLegacyVersion by lazy { MinecraftVersion.versionId == 11202 }
 
     // 协议类型定义
-    private sealed class PacketType(val header: String) {
-        data object Request : PacketType("REQ")
-        data object Confirm : PacketType("CFM")
-        data object Ghost : PacketType("GST")
-        data object Response : PacketType("RES")
+    private sealed class PacketType(val header: Int) {
+        data object AimRequest : PacketType(1)
+        data object AimConfirm : PacketType(2)
+        data object Ghost : PacketType(3)
+        data object AimResponse : PacketType(4)
+        data object Flicker : PacketType(5)
     }
 
     @Awake(LifeCycle.ENABLE)
@@ -79,10 +80,12 @@ object PluginMessageHandler {
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     private fun onPlayerJoin(e: PlayerJoinEvent) {
-        try {
-            DragonCoreCustomPacketSender.sendKeyRegister(e.player)
-        } catch (ex: Throwable) {
-            warning("DragonCore按键注册失败: ${ex.message}")
+        if (DragonCoreEnabled) {
+            try {
+                DragonCoreCustomPacketSender.sendKeyRegister(e.player)
+            } catch (ex: Throwable) {
+                warning("DragonCore按键注册失败: ${ex.message}")
+            }
         }
     }
 
@@ -116,7 +119,7 @@ object PluginMessageHandler {
             }
         }
 
-        sendDataPacket(player, PacketType.Request) {
+        sendDataPacket(player, PacketType.AimRequest) {
             writeUTF(skillId)
             writeUTF("default")
             writeDouble(scale)
@@ -125,19 +128,41 @@ object PluginMessageHandler {
     }
 
     /**
-     * 应用鬼影效果
+     * 应用鬼影效果，移动中产生跟随身体的魂影
+     * @param viewer 可视玩家
+     * @param player 效果玩家
      * @param duration 持续时间（毫秒）
+     * @param density 密度
+     * @param gap 间隔
      */
-    fun applyGhostEffect(player: Player, duration: Long) {
-        sendDataPacket(player, PacketType.Ghost) {
+    fun applyGhostEffect(viewer: Player, player: Player, duration: Long, density: Int, gap: Int) {
+        sendDataPacket(viewer, PacketType.Ghost) {
+            writeUTF(player.uniqueId.toString())
             writeLong(duration)
+            writeInt(density)
+            writeInt(gap)
+        }
+    }
+
+    /**
+     * 应用闪影效果，原地留下一道虚影
+     * @param viewer 可视玩家
+     * @param player 效果玩家
+     * @param duration 持续时间（毫秒）
+     * @param alpha 透明度（0.0-1.0）
+     */
+    fun applyFlickerEffect(viewer: Player, player: Player, duration: Long, alpha: Float) {
+        sendDataPacket(viewer, PacketType.Flicker) {
+            writeUTF(player.uniqueId.toString())
+            writeLong(duration)
+            writeFloat(alpha)
         }
     }
 
     /* 内部实现 */
     private fun handleConfirmation(player: Player, isConfirmed: Boolean) {
         pendingRequests[player.uniqueId] ?: return
-        sendDataPacket(player, PacketType.Confirm) {
+        sendDataPacket(player, PacketType.AimConfirm) {
             writeBoolean(isConfirmed)
         }
         if (!isConfirmed) cleanupRequest(player, true)
@@ -156,7 +181,7 @@ object PluginMessageHandler {
     ) {
         try {
             val output = ByteStreams.newDataOutput().apply {
-                writeUTF(type.header)
+                writeInt(type.header)
                 block()
             }
             player.sendPluginMessage(
@@ -176,8 +201,8 @@ object PluginMessageHandler {
 
             val input = ByteStreams.newDataInput(message)
             try {
-                when (val header = input.readUTF()) {
-                    PacketType.Response.header -> handleAimResponse(player, input)
+                when (val header = input.readInt()) {
+                    PacketType.AimResponse.header -> handleAimResponse(player, input)
                     else -> warning("收到未知数据包类型: $header")
                 }
             } catch (ex: Exception) {
