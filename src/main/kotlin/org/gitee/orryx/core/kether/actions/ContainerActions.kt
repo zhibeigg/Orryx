@@ -16,7 +16,7 @@ import taboolib.module.kether.run
 object ContainerActions {
 
     @KetherParser(["container"], namespace = NAMESPACE, shared = true)
-    fun actionContainer() = combinationParser(
+    private fun actionContainer() = combinationParser(
         Action.new("Container容器", "目标容器", "container", true)
             .description("创建/复制 一个Container容器，用于储存各类Target")
             .addContainerEntry("被复制的容器", optional = true)
@@ -30,7 +30,7 @@ object ContainerActions {
     }
 
     @KetherParser(["merge"], namespace = NAMESPACE, shared = true)
-    fun actionMerge() = combinationParser(
+    private fun actionMerge() = combinationParser(
         Action.new("Container容器", "合并目标容器", "merge", true)
             .description("合并两个Container容器")
             .addEntry("合并到的Container容器", Type.CONTAINER)
@@ -46,7 +46,7 @@ object ContainerActions {
     }
 
     @KetherParser(["mergeIf"], namespace = NAMESPACE, shared = true)
-    fun actionMergeIf() = combinationParser(
+    private fun actionMergeIf() = combinationParser(
         Action.new("Container容器", "合并如果目标容器", "mergeIf", true)
             .description("合并两个Container容器，剔除被合并容器中返回false的目标，可读取@Target参数")
             .addEntry("合并到的Container容器", Type.CONTAINER)
@@ -71,7 +71,7 @@ object ContainerActions {
     }
 
     @KetherParser(["removeIf"], namespace = NAMESPACE, shared = true)
-    fun actionRemoveIf() = combinationParser(
+    private fun actionRemoveIf() = combinationParser(
         Action.new("Container容器", "删除如果目标容器", "removeIf", true)
             .description("检测Container容器，删除返回值为true的Target，可读取@Target参数")
             .addContainerEntry("被检测的Container容器")

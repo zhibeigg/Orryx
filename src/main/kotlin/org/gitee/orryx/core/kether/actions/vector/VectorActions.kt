@@ -10,7 +10,7 @@ import taboolib.module.kether.KetherParser
 object VectorActions {
 
     @KetherParser(["launch"], namespace = NAMESPACE, shared = true)
-    fun actionLaunch() = combinationParser(
+    private fun actionLaunch() = combinationParser(
         Action.new("Game原版游戏", "给予视角冲量", "launch", true)
             .description("给予视角冲量")
             .addEntry("视角前方冲量大小", Type.DOUBLE, false)
@@ -43,7 +43,7 @@ object VectorActions {
     }
 
     @KetherParser(["velocity"], namespace = NAMESPACE, shared = true)
-    fun actionVelocity() = combinationParser(
+    private fun actionVelocity() = combinationParser(
         Action.new("Game原版游戏", "改变目标速度", "velocity", true)
             .description("改变目标速度")
             .addEntry("改变模式", Type.STRING, false)

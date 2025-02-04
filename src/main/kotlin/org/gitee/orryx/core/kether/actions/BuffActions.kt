@@ -120,7 +120,7 @@ object BuffActions {
     }
 
     @KetherParser(["buff"], namespace = NAMESPACE, shared = true)
-    fun buff() = scriptParser(
+    private fun buff() = scriptParser(
         arrayOf(
             Action.new("Orryx Profile玩家信息", "设置状态效果", "buff", true)
                 .description("设置玩家状态效果")

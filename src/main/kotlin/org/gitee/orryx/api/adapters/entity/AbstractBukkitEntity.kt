@@ -10,7 +10,7 @@ import org.gitee.orryx.api.adapters.AbstractEntity
 import org.gitee.orryx.core.targets.ITargetEntity
 import java.util.*
 
-class AbstractBukkitEntity(val instance: Entity) : AbstractEntity, ITargetEntity<Entity> {
+open class AbstractBukkitEntity(val instance: Entity) : AbstractEntity, ITargetEntity<Entity> {
 
     override fun getSource(): Entity {
         return instance

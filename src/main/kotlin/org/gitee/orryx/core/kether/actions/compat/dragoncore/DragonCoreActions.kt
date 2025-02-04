@@ -33,7 +33,7 @@ object DragonCoreActions {
     }
 
     @KetherParser(["dragoncore", "dragon"], namespace = NAMESPACE, shared = true)
-    fun dragonCore() = scriptParser(
+    private fun dragonCore() = scriptParser(
         arrayOf(
             Action.new("DragonCore附属语句", "设置临时时装", "dragoncore", true)
                 .description("设置临时时装")

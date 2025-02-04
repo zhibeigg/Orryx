@@ -12,7 +12,7 @@ import taboolib.module.kether.*
 object EventActions {
 
     @KetherParser(["event"], namespace = NAMESPACE)
-    fun event() = scriptParser(
+    private fun event() = scriptParser(
         arrayOf(
             Action.new("Station专属语句", "设置事件是否取消", "event")
                 .description("设置当前Station监听到的事件是否取消")

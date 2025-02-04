@@ -5,6 +5,9 @@ import taboolib.module.kether.ScriptContext
 
 const val PARAMETER = "Orryx@Parameter"
 
+/**
+ * @throws IllegalStateException Parameter not found
+ * */
 internal fun ScriptContext.getParameter() : IParameter {
     return this.get<IParameter>(PARAMETER) ?: error("Parameter not found")
 }

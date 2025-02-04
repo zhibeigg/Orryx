@@ -10,7 +10,7 @@ import taboolib.module.kether.KetherParser
 object GameActions {
 
     @KetherParser(["sprint"], namespace = NAMESPACE, shared = true)
-    fun actionSprint() = combinationParser(
+    private fun actionSprint() = combinationParser(
         Action.new("Game原版游戏", "设置跑步状态", "sprint", true)
             .description("设置跑步状态")
             .addEntry("是否跑步", Type.BOOLEAN, false)

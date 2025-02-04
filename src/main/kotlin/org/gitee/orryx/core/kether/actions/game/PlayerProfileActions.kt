@@ -11,7 +11,7 @@ import taboolib.module.kether.KetherParser
 object PlayerProfileActions {
 
     @KetherParser(["superBody"], namespace = NAMESPACE, shared = true)
-    fun superBody() = combinationParser(
+    private fun superBody() = combinationParser(
         Action.new("Orryx Profile玩家信息", "设置霸体状态", "superBody", true)
             .description("设置霸体状态")
             .addEntry("设置方法", Type.STRING, false)

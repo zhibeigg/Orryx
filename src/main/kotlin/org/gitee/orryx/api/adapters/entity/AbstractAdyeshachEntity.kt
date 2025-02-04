@@ -11,7 +11,7 @@ import org.gitee.orryx.api.adapters.AbstractEntity
 import org.gitee.orryx.core.targets.ITargetEntity
 import java.util.*
 
-class AbstractAdyeshachEntity(val instance: EntityInstance) : AbstractEntity, ITargetEntity<EntityInstance> {
+open class AbstractAdyeshachEntity(val instance: EntityInstance) : AbstractEntity, ITargetEntity<EntityInstance> {
 
     override fun getSource(): EntityInstance {
         return instance

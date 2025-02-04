@@ -11,7 +11,7 @@ import taboolib.module.kether.KetherParser
 object OrryxModActions {
 
     @KetherParser(["ghost"], namespace = NAMESPACE, shared = true)
-    fun actionGhost() = combinationParser(
+    private fun actionGhost() = combinationParser(
         Action.new("Orryx Mod额外功能", "设置鬼影状态", "ghost", true)
             .description("设置鬼影状态")
             .addEntry("时长", Type.LONG, false)
@@ -38,7 +38,7 @@ object OrryxModActions {
     }
 
     @KetherParser(["flicker"], namespace = NAMESPACE, shared = true)
-    fun actionFlicker() = combinationParser(
+    private fun actionFlicker() = combinationParser(
         Action.new("Orryx Mod额外功能", "滞留一道闪影", "flicker", true)
             .description("滞留一道闪影")
             .addEntry("时长", Type.LONG, false)

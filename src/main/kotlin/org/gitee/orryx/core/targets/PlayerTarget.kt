@@ -6,10 +6,10 @@ import org.bukkit.entity.Player
 import org.gitee.orryx.api.adapters.AbstractEntity
 import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
 
-class PlayerTarget(val player: Player): ITargetEntity<Player> {
+class PlayerTarget(val player: Player): ITargetEntity<Player>, AbstractEntity by AbstractBukkitEntity(player) {
 
     override val entity: AbstractEntity
-        get() = AbstractBukkitEntity(player)
+        get() = this
 
     override val location: Location
         get() = entity.location
@@ -20,7 +20,7 @@ class PlayerTarget(val player: Player): ITargetEntity<Player> {
     override val world: World
         get() = entity.world
 
-    val uniqueId
+    override val uniqueId
         get() = player.uniqueId
 
     override fun getSource(): Player {
