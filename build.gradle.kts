@@ -60,6 +60,8 @@ taboolib {
     }
     relocate("com.google", "org.gitee.orryx.google")
     relocate("com.github.benmanes", "org.gitee.orryx.benmanes")
+    relocate("org.joml", "org.gitee.orryx.joml")
+    relocate("com.lark.oapi", "org.gitee.orryx.lark.oapi")
     version { taboolib = "6.2.1-df22fb1" }
 }
 

@@ -26,3 +26,6 @@ LarkSuite:
   AppId: ""
   AppSecret: ""
   FolderToken: ""
+OpenAI:
+  ApiKey: ""
+  BaseUrl: ""
