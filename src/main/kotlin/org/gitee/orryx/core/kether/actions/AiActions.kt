@@ -7,6 +7,9 @@ import org.gitee.orryx.core.wiki.Action
 import org.gitee.orryx.core.wiki.Type
 import org.gitee.orryx.utils.NAMESPACE
 import org.gitee.orryx.utils.bukkitPlayer
+import taboolib.common.LifeCycle
+import taboolib.common.platform.Awake
+import taboolib.common.platform.function.info
 import taboolib.expansion.submitChain
 import taboolib.module.chat.colored
 import taboolib.module.configuration.Config
@@ -22,7 +25,8 @@ object AiActions {
 
     private val npcMap by lazy { mutableMapOf<String, Npc>() }
 
-    @Reload
+    @Awake(LifeCycle.ENABLE)
+    @Reload(1)
     private fun reload() {
         npcMap.clear()
         config.reload()
@@ -34,6 +38,7 @@ object AiActions {
             val temperature = config.getDouble("$key.temperature")
             npcMap[key] = Npc(key, name, system, model, maxTokens, temperature)
         }
+        info("&e┣&7Npc loaded &e${npcMap.size} &a√".colored())
     }
 
     @KetherParser(["aiChat"], namespace = NAMESPACE, shared = true)

@@ -7,17 +7,17 @@ import org.bukkit.Location
 import org.bukkit.World
 import org.bukkit.entity.EntityType
 import org.bukkit.util.Vector
-import org.gitee.orryx.api.adapters.AbstractEntity
+import org.gitee.orryx.api.adapters.IEntity
 import org.gitee.orryx.core.targets.ITargetEntity
 import java.util.*
 
-open class AbstractAdyeshachEntity(val instance: EntityInstance) : AbstractEntity, ITargetEntity<EntityInstance> {
+open class AbstractAdyeshachEntity(val instance: EntityInstance) : IEntity, ITargetEntity<EntityInstance> {
 
     override fun getSource(): EntityInstance {
         return instance
     }
 
-    override val entity: AbstractEntity
+    override val entity: IEntity
         get() = this
 
     override val entityId: Int
@@ -69,7 +69,7 @@ open class AbstractAdyeshachEntity(val instance: EntityInstance) : AbstractEntit
     override val width: Double
         get() = instance.entitySize.width
 
-    override val vehicle: AbstractEntity?
+    override val vehicle: IEntity?
         get() = instance.getVehicle()?.let { AbstractAdyeshachEntity(it) }
 
     override val location: Location

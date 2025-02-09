@@ -1,5 +1,7 @@
 package org.gitee.orryx.core.ai
 
+import com.github.benmanes.caffeine.cache.Caffeine
+import com.github.benmanes.caffeine.cache.Scheduler
 import com.google.gson.annotations.SerializedName
 import com.lark.oapi.okhttp.MediaType
 import com.lark.oapi.okhttp.OkHttpClient
@@ -7,11 +9,21 @@ import com.lark.oapi.okhttp.Request
 import com.lark.oapi.okhttp.RequestBody
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.utils.gson
+import java.util.concurrent.TimeUnit
 
 
 object OpenAI {
 
     private val client: OkHttpClient by lazy { OkHttpClient().newBuilder().build() }
+
+    private val npcChatCache = Caffeine.newBuilder()
+        .initialCapacity(20)
+        .maximumSize(100)
+        .expireAfterAccess(5, TimeUnit.MINUTES)
+        .scheduler(Scheduler.systemScheduler())
+        .build<String, MutableList<Message>> {
+            mutableListOf()
+        }
 
     // 请求参数模型
     data class OpenAIRequest(
@@ -41,18 +53,29 @@ object OpenAI {
     )
 
     private val API_KEY
-        get() = OrryxAPI.config.getString("OpenAI.ApiKey")
+        get() = OrryxAPI.config.getString("OpenAI.ApiKey") ?: error("未配置OpenAI ApiKey")
 
     private val BASE_URL
-        get() = OrryxAPI.config.getString("OpenAI.BaseUrl")
+        get() = OrryxAPI.config.getString("OpenAI.BaseUrl") ?: error("未配置OpenAI BaseUrl")
 
     fun npcChat(player: String, npc: String, npcDescription: String, message: String, model: String, maxTokens: Int, temperature: Double): String? {
         val mediaType = MediaType.parse("application/json")
 
+        val context = npcChatCache.get("$player@$npc")
+
+        val list = mutableListOf<Message>()
+
+        list += Message(role = "system", content = npcDescription, name = npc)
+        context?.forEach {
+            list += it
+        }
+        val userMessage = Message(role = "user", content = message, name = player)
+        list += userMessage
+
         val requestBody = OpenAIRequest(
             model = model,
             maxTokens = maxTokens,
-            messages = listOf(Message(role = "system", content = npcDescription, name = npc), Message(role = "user", content = message, name = player)),
+            messages = list,
             temperature = temperature
         )
 
@@ -73,8 +96,9 @@ object OpenAI {
                 val openAIResponse = gson.fromJson(responseBody, OpenAIResponse::class.java)
 
                 // 提取回复内容
-                val reply = openAIResponse.choices.first().message.content
-                return reply
+                val reply = openAIResponse.choices.first().message
+                npcChatCache.put("$player@$npc", (list + reply).toMutableList())
+                return reply.content
             } else {
                 println("请求失败: ${response.code()} - ${response.message()}")
             }

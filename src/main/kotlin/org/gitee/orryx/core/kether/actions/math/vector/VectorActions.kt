@@ -1,4 +1,4 @@
-package org.gitee.orryx.core.kether.actions.vector
+package org.gitee.orryx.core.kether.actions.math.vector
 
 import org.gitee.orryx.core.kether.ScriptManager.combinationParser
 import org.gitee.orryx.core.targets.ITargetEntity
@@ -6,6 +6,7 @@ import org.gitee.orryx.core.wiki.Action
 import org.gitee.orryx.core.wiki.Type
 import org.gitee.orryx.utils.*
 import taboolib.module.kether.KetherParser
+import taboolib.module.kether.script
 
 object VectorActions {
 
@@ -39,7 +40,7 @@ object VectorActions {
     }
 
     enum class VelocityMode {
-        ADD, CROSS_PRODUCT, DIVIDE, NORMALIZE
+        ADD, CROSS_PRODUCT, DIVIDE, NORMALIZE, SET
     }
 
     @KetherParser(["velocity"], namespace = NAMESPACE, shared = true)
@@ -56,7 +57,18 @@ object VectorActions {
             theyContainer(true)
         ).apply(it) { mode, vector, container ->
             now {
-
+                val bukkit = vector?.getBukkit() ?: return@now null
+                val velocityMode = VelocityMode.valueOf(mode.uppercase())
+                container.readContainer(script()).orElse(self()).forEachInstance<ITargetEntity<*>> { target ->
+                    val entity = target.entity
+                    when(velocityMode) {
+                        VelocityMode.ADD -> entity.velocity = entity.velocity.add(bukkit)
+                        VelocityMode.CROSS_PRODUCT -> entity.velocity = entity.velocity.crossProduct(bukkit)
+                        VelocityMode.DIVIDE -> entity.velocity = entity.velocity.divide(bukkit)
+                        VelocityMode.NORMALIZE -> entity.velocity = bukkit.normalize()
+                        VelocityMode.SET -> entity.velocity = bukkit
+                    }
+                }
             }
         }
     }

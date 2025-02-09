@@ -68,6 +68,8 @@ taboolib {
 repositories {
     mavenCentral()
     maven { url = uri("https://repo.tabooproject.org/repository/releases") }
+    maven { url = uri("https://repo.codemc.io/repository/maven-releases/") }
+    maven { url = uri("https://repo.codemc.io/repository/maven-snapshots/") }
     maven {
         url = uri("http://play.mcwar.cn:18888/repository/maven-public/")
         isAllowInsecureProtocol = true
@@ -91,6 +93,7 @@ dependencies {
     compileOnly("com.gitee:DungeonPlus:1.3.9")
     compileOnly("ac.github.oa:OriginAttribute:1.1.4")
     compileOnly("org.serverct:ersha:3.3.3.0")
+    compileOnly("com.github.retrooper:packetevents-spigot:2.7.0")
 
     taboo("com.google.code.gson:gson:2.10.1")
     taboo("com.github.ben-manes.caffeine:caffeine:2.9.3")

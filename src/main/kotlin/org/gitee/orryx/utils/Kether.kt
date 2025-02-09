@@ -2,8 +2,11 @@ package org.gitee.orryx.utils
 
 import org.bukkit.entity.Player
 import org.bukkit.util.Vector
+import org.gitee.orryx.api.adapters.vector.AbstractVector
 import org.gitee.orryx.core.container.IContainer
 import org.gitee.orryx.core.kether.ScriptManager
+import org.joml.Matrix4d
+import org.joml.Vector3d
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptCommandSender
 import taboolib.library.kether.ParsedAction
@@ -63,6 +66,36 @@ internal fun QuestReader.nextTheyContainer(): ParsedAction<*>? {
     return this.nextHeadActionOrNull(arrayOf("they"))
 }
 
+internal fun QuestReader.nextDest(): ParsedAction<*>? {
+    return this.nextHeadActionOrNull(arrayOf("dest"))
+}
+
+internal fun <T> ScriptFrame.destMatrix(dest: ParsedAction<*>?, func: (ScriptFrame.(dest: Matrix4d) -> T)): CompletableFuture<Any> {
+    return if (dest == null) {
+        CompletableFuture.completedFuture(func(Matrix4d()))
+    } else {
+        run(dest).str { key ->
+            val matrix = Matrix4d()
+            func(matrix)
+            script()[key] = matrix
+            matrix
+        }
+    }
+}
+
+internal fun <T> ScriptFrame.destVector(dest: ParsedAction<*>?, func: (ScriptFrame.(dest: AbstractVector) -> T)): CompletableFuture<Any> {
+    return if (dest == null) {
+        CompletableFuture.completedFuture(func(AbstractVector(Vector3d())))
+    } else {
+        run(dest).str { key ->
+            val vector = AbstractVector(Vector3d())
+            func(vector)
+            script()[key] = vector
+            vector
+        }
+    }
+}
+
 internal fun <T> ScriptFrame.container(container: ParsedAction<*>?, func: (ScriptFrame.(container: IContainer) -> T)): CompletableFuture<Any>? {
     return if (container == null) {
         null
@@ -84,15 +117,37 @@ internal fun <T> ScriptFrame.containerOrSelf(container: ParsedAction<*>?, func: 
     }
 }
 
-internal fun vector(): Parser<Vector?> {
+internal fun vector(): Parser<AbstractVector> {
     return Parser.frame { r ->
         val action = r.nextParsedAction()
         Action {
             it.run(action).thenApply { vector ->
-                vector as? Vector
+                when(vector) {
+                    is AbstractVector -> vector
+                    is Vector -> AbstractVector(Vector3d(vector.x, vector.y, vector.z))
+                    is Vector3d -> AbstractVector(vector)
+                    else -> AbstractVector(Vector3d())
+                }
             }
         }
     }
+}
+
+fun <T> CompletableFuture<Any?>.vector(then: (AbstractVector) -> T): CompletableFuture<T> {
+    return thenApply { vector ->
+        then(
+            when (vector) {
+                is AbstractVector -> vector
+                is Vector -> AbstractVector(Vector3d(vector.x, vector.y, vector.z))
+                is Vector3d -> AbstractVector(vector)
+                else -> AbstractVector(Vector3d())
+            }
+        )
+    }.except { then(AbstractVector(Vector3d())) }
+}
+
+fun <T> CompletableFuture<Any?>.matrix(then: (Matrix4d) -> T): CompletableFuture<T> {
+    return thenApply { matrix -> then(matrix as Matrix4d) }.except { then(Matrix4d()) }
 }
 
 internal fun theyContainer(optional: Boolean = false) = if (optional) {

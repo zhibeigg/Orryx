@@ -90,7 +90,3 @@ internal fun ITarget<*>.direction(x: Double, y: Double, z: Double): Vector {
 fun Vector.joml() = Vector3d(x, y, z)
 
 fun Vector3d.bukkit() = Vector(x, y, z)
-
-fun ro() {
-    Vector3d()
-}

@@ -6,7 +6,7 @@ import org.bukkit.entity.EntityType
 import org.bukkit.util.Vector
 import java.util.*
 
-interface AbstractEntity {
+interface IEntity {
 
     val uniqueId: UUID
 
@@ -24,7 +24,7 @@ interface AbstractEntity {
 
     val height: Double
 
-    val vehicle: AbstractEntity?
+    val vehicle: IEntity?
 
     val name: String
 

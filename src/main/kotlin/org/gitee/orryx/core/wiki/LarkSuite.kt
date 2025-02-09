@@ -121,8 +121,64 @@ object LarkSuite {
     private suspend fun createDocumentBlocks(documentId: String, chain: Chain<*>) {
         val group = ScriptManager.wikiActions.values.groupBy { it.group }
         debug(group.mapValues { it.value.map { it.name } })
+        createPs(documentId, chain)
         group.forEach { (g, u) ->
             createGroup(g, u, documentId, chain)
+        }
+    }
+
+    private suspend fun createPs(documentId: String, chain: Chain<*>) {
+        chain.async {
+            val req = CreateDocumentBlockChildrenReq.newBuilder()
+                .documentId(documentId)
+                .blockId(documentId)
+                .documentRevisionId(-1)
+                .createDocumentBlockChildrenReqBody(
+                    CreateDocumentBlockChildrenReqBody.newBuilder()
+                        .children(
+                            arrayOf(
+                                Block.newBuilder()
+                                    .blockId("ps_text")
+                                    .children(arrayOf())
+                                    .blockType(BlockBlockTypeEnum.TEXT)
+                                    .text(
+                                        Text.newBuilder().elements(
+                                            arrayOf(
+                                                TextElement.newBuilder()
+                                                    .textRun(
+                                                        TextRun.newBuilder().content("更多原生Kether语句请查看 https://kether.tabooproject.org/list.html").build()
+                                                    ).build()
+                                            )
+                                        ).build()
+                                    )
+                                    .build()
+                            )
+                        )
+                        .index(-1)
+                        .build()
+                )
+                .build()
+
+            // 发起请求
+            val resp = client.docx().v1().documentBlockChildren().create(
+                req, RequestOptions.newBuilder()
+                    .userAccessToken(getToken() ?: return@async)
+                    .build()
+            )
+
+            // 处理服务端错误
+            if (!resp.success()) {
+                println(
+                    String.format(
+                        "code:%s,msg:%s,reqId:%s, resp:%s",
+                        resp.code,
+                        resp.msg,
+                        resp.requestId,
+                        String(resp.rawResponse.body, UTF_8)
+                    )
+                )
+                return@async
+            }
         }
     }
 

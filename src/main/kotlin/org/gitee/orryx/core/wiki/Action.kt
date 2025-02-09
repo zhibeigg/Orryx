@@ -32,6 +32,11 @@ class Action(val group: String, val name: String, val key: String, val sharded: 
         return this
     }
 
+    fun addDest(type: Type, description: String = "结果存储Key", optional: Boolean = false, default: String? = null, head: String? = "dest"): Action {
+        entries += Entry(description, type, optional, default, head)
+        return this
+    }
+
     fun description(description: String): Action {
         this.description = description
         return this

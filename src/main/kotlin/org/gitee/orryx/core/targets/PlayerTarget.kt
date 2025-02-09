@@ -3,12 +3,12 @@ package org.gitee.orryx.core.targets
 import org.bukkit.Location
 import org.bukkit.World
 import org.bukkit.entity.Player
-import org.gitee.orryx.api.adapters.AbstractEntity
+import org.gitee.orryx.api.adapters.IEntity
 import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
 
-class PlayerTarget(val player: Player): ITargetEntity<Player>, AbstractEntity by AbstractBukkitEntity(player) {
+class PlayerTarget(val player: Player): ITargetEntity<Player>, IEntity by AbstractBukkitEntity(player) {
 
-    override val entity: AbstractEntity
+    override val entity: IEntity
         get() = this
 
     override val location: Location

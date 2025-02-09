@@ -6,17 +6,17 @@ import org.bukkit.entity.Entity
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.LivingEntity
 import org.bukkit.util.Vector
-import org.gitee.orryx.api.adapters.AbstractEntity
+import org.gitee.orryx.api.adapters.IEntity
 import org.gitee.orryx.core.targets.ITargetEntity
 import java.util.*
 
-open class AbstractBukkitEntity(val instance: Entity) : AbstractEntity, ITargetEntity<Entity> {
+open class AbstractBukkitEntity(val instance: Entity) : IEntity, ITargetEntity<Entity> {
 
     override fun getSource(): Entity {
         return instance
     }
 
-    override val entity: AbstractEntity
+    override val entity: IEntity
         get() = this
 
     override val entityId: Int
@@ -64,7 +64,7 @@ open class AbstractBukkitEntity(val instance: Entity) : AbstractEntity, ITargetE
     override val width: Double
         get() = instance.width
 
-    override val vehicle: AbstractEntity?
+    override val vehicle: IEntity?
         get() = instance.vehicle?.run { AbstractBukkitEntity(this) }
 
     val isLivingEntity = instance is LivingEntity
