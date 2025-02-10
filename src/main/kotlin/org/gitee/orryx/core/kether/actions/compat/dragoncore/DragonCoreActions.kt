@@ -61,13 +61,15 @@ object DragonCoreActions {
                         actionNow {
                             run(armourers).str { armourers ->
                                 run(timeout).long { timeout ->
-                                    container.readContainer(script()).orElse(self()).forEachInstance<PlayerTarget> { player ->
-                                        armourersMap.computeIfAbsent(player.uniqueId) { mutableListOf() }.add(armourers)
-                                        DragonAPI.updatePlayerSkin(player.player)
-                                        SimpleTimeoutTask.createSimpleTask(timeout) {
-                                            if (armourersMap.containsKey(player.uniqueId)) {
-                                                armourersMap[player.uniqueId]!!.remove(armourers)
-                                                DragonAPI.updatePlayerSkin(player.player)
+                                    containerOrSelf(container) { container ->
+                                        container.forEachInstance<PlayerTarget> { player ->
+                                            armourersMap.computeIfAbsent(player.uniqueId) { mutableListOf() }.add(armourers)
+                                            DragonAPI.updatePlayerSkin(player.player)
+                                            SimpleTimeoutTask.createSimpleTask(timeout) {
+                                                if (armourersMap.containsKey(player.uniqueId)) {
+                                                    armourersMap[player.uniqueId]!!.remove(armourers)
+                                                    DragonAPI.updatePlayerSkin(player.player)
+                                                }
                                             }
                                         }
                                     }
@@ -83,18 +85,22 @@ object DragonCoreActions {
                         actionNow {
                             if (container1 == null) {
                                 run(armourers).str { armourers ->
-                                    container2.readContainer(script()).orElse(self()).forEachInstance<PlayerTarget> { player ->
-                                        if (armourersMap.containsKey(player.uniqueId)) {
-                                            armourersMap[player.uniqueId]!!.remove(armourers)
-                                            DragonAPI.updatePlayerSkin(player.player)
+                                    containerOrSelf(container2) { container ->
+                                        container.forEachInstance<PlayerTarget> { player ->
+                                            if (armourersMap.containsKey(player.uniqueId)) {
+                                                armourersMap[player.uniqueId]!!.remove(armourers)
+                                                DragonAPI.updatePlayerSkin(player.player)
+                                            }
                                         }
                                     }
                                 }
                             } else {
-                                container1.readContainer(script()).orElse(self()).forEachInstance<PlayerTarget> { player ->
-                                    if (armourersMap.containsKey(player.uniqueId)) {
-                                        armourersMap[player.uniqueId]!!.clear()
-                                        DragonAPI.updatePlayerSkin(player.player)
+                                containerOrSelf(container1) { container ->
+                                    container.forEachInstance<PlayerTarget> { player ->
+                                        if (armourersMap.containsKey(player.uniqueId)) {
+                                            armourersMap[player.uniqueId]!!.clear()
+                                            DragonAPI.updatePlayerSkin(player.player)
+                                        }
                                     }
                                 }
                             }

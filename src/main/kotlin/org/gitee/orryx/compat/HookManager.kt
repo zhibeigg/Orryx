@@ -1,5 +1,6 @@
 package org.gitee.orryx.compat
 
+import org.bukkit.Bukkit
 import org.gitee.orryx.utils.*
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
@@ -10,36 +11,26 @@ object HookManager {
 
     @Awake(LifeCycle.ENABLE)
     private fun load() {
-        if (AdyeshachEnabled) {
-            console().sendLang("hook-true", "Adyeshach")
-        } else {
-            console().sendLang("hook-false", "Adyeshach")
+        AdyeshachPlugin.load()
+        DragonCorePlugin.load()
+        GermPluginPlugin.load()
+        MythicMobsPlugin.load()
+        RedisChannelPlugin.load()
+        OriginAttributePlugin.load()
+        AttributePlusPlugin.load()
+        PacketEventsPlugin.load()
+        ProtocolLibPlugin.load()
+    }
+
+    class Plugin(val name: String) {
+
+        val isEnabled
+            get() = Bukkit.getPluginManager().isPluginEnabled(name)
+
+        fun load() {
+            console().sendLang(if (isEnabled) "hook-true" else "hook-false", name)
         }
-        if (DragonCoreEnabled) {
-            console().sendLang("hook-true", "DragonCore")
-        } else {
-            console().sendLang("hook-false", "DragonCore")
-        }
-        if (MythicMobsEnabled) {
-            console().sendLang("hook-true", "MythicMobs")
-        } else {
-            console().sendLang("hook-false", "MythicMobs")
-        }
-        if (RedisChannelEnabled) {
-            console().sendLang("hook-true", "RedisChannel")
-        } else {
-            console().sendLang("hook-false", "RedisChannel")
-        }
-        if (OriginAttributeEnabled) {
-            console().sendLang("hook-true", "OriginAttribute")
-        } else {
-            console().sendLang("hook-false", "OriginAttribute")
-        }
-        if (AttributePlusEnabled) {
-            console().sendLang("hook-true", "AttributePlus")
-        } else {
-            console().sendLang("hook-false", "AttributePlus")
-        }
+
     }
 
 }

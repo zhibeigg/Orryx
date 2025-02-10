@@ -99,7 +99,7 @@ fun mergeAll(containers: List<IContainer>): IContainer {
 }
 
 internal fun Any?.readContainer(context: ScriptContext): IContainer? {
-    if (AdyeshachEnabled && this is EntityInstance) {
+    if (AdyeshachPlugin.isEnabled && this is EntityInstance) {
         debug("readEntityInstance")
         return toTarget().readContainer(context)
     }

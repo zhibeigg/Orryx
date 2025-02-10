@@ -74,14 +74,14 @@ object BuffActions {
             player.uniqueId,
             mutableMapOf(name to PlayerBuff(player, buff, timeout).register() as PlayerBuff)
         )
-        if (DragonCoreEnabled) {
+        if (DragonCorePlugin.isEnabled) {
             sendBuffDragonCore(player, buff, timeout)
         }
     }
 
     fun clearBuff(player: Player, name: String) {
         playerBuffMap[player.uniqueId]?.get(name)?.closed?.invoke()
-        if (DragonCoreEnabled) {
+        if (DragonCorePlugin.isEnabled) {
             clearBuffDragonCore(player, name)
         }
     }
@@ -90,7 +90,7 @@ object BuffActions {
         playerBuffMap[player.uniqueId]?.values?.toList()?.forEach {
             it.closed()
         }
-        if (DragonCoreEnabled) {
+        if (DragonCorePlugin.isEnabled) {
             clearBuffDragonCoreAll(player)
         }
     }
@@ -148,8 +148,10 @@ object BuffActions {
                 actionNow {
                     run(buff).str { buff ->
                         run(timeout).long { timeout ->
-                            container.readContainer(script()).orElse(self()).forEachInstance<PlayerTarget> { player ->
-                                sendBuff(player.player, buff, timeout)
+                            containerOrSelf(container) { container ->
+                                container.forEachInstance<PlayerTarget> { player ->
+                                    sendBuff(player.player, buff, timeout)
+                                }
                             }
                         }
                     }
@@ -162,13 +164,17 @@ object BuffActions {
                 actionNow {
                     if (container1 == null) {
                         run(buff).str { buff ->
-                            container2.readContainer(script()).orElse(self()).forEachInstance<PlayerTarget> { player ->
-                                clearBuff(player.player, buff)
+                            containerOrSelf(container2) { container ->
+                                container.forEachInstance<PlayerTarget> { player ->
+                                    clearBuff(player.player, buff)
+                                }
                             }
                         }
                     } else {
-                        container1.readContainer(script()).orElse(self()).forEachInstance<PlayerTarget> { player ->
-                            clearBuffAll(player.player)
+                        containerOrSelf(container1) { container ->
+                            container.forEachInstance<PlayerTarget> { player ->
+                                clearBuffAll(player.player)
+                            }
                         }
                     }
                 }
@@ -178,8 +184,10 @@ object BuffActions {
                 val container = it.nextTheyContainer()
                 actionFuture {
                     run(buff).str { buff ->
-                        container.readContainer(script()).orElse(self()).forEachInstance<PlayerTarget> { player ->
-                            it.complete(hasBuff(player.player, buff))
+                        containerOrSelf(container) { container ->
+                            it.complete(container.all<PlayerTarget> { player ->
+                                hasBuff(player.player, buff)
+                            })
                         }
                     }
                 }

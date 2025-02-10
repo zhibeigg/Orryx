@@ -2,6 +2,7 @@ package org.gitee.orryx.api.adapters.entity
 
 import org.bukkit.Location
 import org.bukkit.World
+import org.bukkit.attribute.Attribute
 import org.bukkit.entity.Entity
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.LivingEntity
@@ -74,6 +75,36 @@ open class AbstractBukkitEntity(val instance: Entity) : IEntity, ITargetEntity<E
         set(value) {
             instance.velocity = value
         }
+
+    override val moveSpeed: Double
+        get() = (instance as? LivingEntity)?.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED)?.value ?: 0.0
+
+    override val isOnGround: Boolean
+        get() = instance.isOnGround
+
+    override val isFrozen: Boolean
+        get() = instance.isFrozen
+
+    override val isFired: Boolean
+        get() = instance.isVisualFire
+
+    override val isSilent: Boolean
+        get() = instance.isSilent
+
+    override val isCustomNameVisible: Boolean
+        get() = instance.isCustomNameVisible
+
+    override val isGlowing: Boolean
+        get() = instance.isGlowing
+
+    override val isInWater: Boolean
+        get() = instance.isInWater
+
+    override val isInvulnerable: Boolean
+        get() = instance.isInvulnerable
+
+    override val isInsideVehicle: Boolean
+        get() = instance.isInsideVehicle
 
     override fun hashCode(): Int {
         return instance.hashCode()

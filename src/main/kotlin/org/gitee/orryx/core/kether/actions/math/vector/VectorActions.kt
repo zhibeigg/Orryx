@@ -39,35 +39,21 @@ object VectorActions {
         }
     }
 
-    enum class VelocityMode {
-        ADD, CROSS_PRODUCT, DIVIDE, NORMALIZE, SET
-    }
-
     @KetherParser(["velocity"], namespace = NAMESPACE, shared = true)
     private fun actionVelocity() = combinationParser(
         Action.new("Game原版游戏", "改变目标速度", "velocity", true)
             .description("改变目标速度")
-            .addEntry("改变模式", Type.STRING, false)
             .addEntry("矢量", Type.VECTOR, false)
             .addContainerEntry(optional = true, default = "@self")
     ) {
         it.group(
-            text(),
             vector(),
             theyContainer(true)
-        ).apply(it) { mode, vector, container ->
+        ).apply(it) { vector, container ->
             now {
                 val bukkit = vector?.getBukkit() ?: return@now null
-                val velocityMode = VelocityMode.valueOf(mode.uppercase())
                 container.readContainer(script()).orElse(self()).forEachInstance<ITargetEntity<*>> { target ->
-                    val entity = target.entity
-                    when(velocityMode) {
-                        VelocityMode.ADD -> entity.velocity = entity.velocity.add(bukkit)
-                        VelocityMode.CROSS_PRODUCT -> entity.velocity = entity.velocity.crossProduct(bukkit)
-                        VelocityMode.DIVIDE -> entity.velocity = entity.velocity.divide(bukkit)
-                        VelocityMode.NORMALIZE -> entity.velocity = bukkit.normalize()
-                        VelocityMode.SET -> entity.velocity = bukkit
-                    }
+                    target.entity.velocity = bukkit
                 }
             }
         }

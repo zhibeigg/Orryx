@@ -40,6 +40,26 @@ interface IEntity {
 
     val gravity: Boolean
 
+    val moveSpeed: Double
+
+    val isOnGround: Boolean
+
+    val isFrozen: Boolean
+
+    val isFired: Boolean
+
+    val isInsideVehicle: Boolean
+
+    val isSilent: Boolean
+
+    val isCustomNameVisible: Boolean
+
+    val isGlowing: Boolean
+
+    val isInWater: Boolean
+
+    val isInvulnerable: Boolean
+
     fun teleport(location: Location)
 
     fun remove()

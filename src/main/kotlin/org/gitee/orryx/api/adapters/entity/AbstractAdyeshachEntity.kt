@@ -3,12 +3,15 @@ package org.gitee.orryx.api.adapters.entity
 import ink.ptms.adyeshach.core.Adyeshach
 import ink.ptms.adyeshach.core.entity.EntityInstance
 import ink.ptms.adyeshach.core.entity.type.AdyEntityLiving
+import ink.ptms.adyeshach.impl.entity.trait.impl.isTraitSit
 import org.bukkit.Location
+import org.bukkit.Material
 import org.bukkit.World
 import org.bukkit.entity.EntityType
 import org.bukkit.util.Vector
 import org.gitee.orryx.api.adapters.IEntity
 import org.gitee.orryx.core.targets.ITargetEntity
+import taboolib.common5.cdouble
 import java.util.*
 
 open class AbstractAdyeshachEntity(val instance: EntityInstance) : IEntity, ITargetEntity<EntityInstance> {
@@ -85,6 +88,36 @@ open class AbstractAdyeshachEntity(val instance: EntityInstance) : IEntity, ITar
             instance.setVelocity(vector)
         }
 
+    override val moveSpeed: Double
+        get() = instance.moveSpeed
+
+
+    override val isOnGround: Boolean
+        get() = instance.getLocation().let { it.blockY.cdouble == it.y }
+
+    override val isFrozen: Boolean
+        get() = false
+
+    override val isFired: Boolean
+        get() = instance.isFired()
+
+    override val isCustomNameVisible: Boolean
+        get() = instance.isCustomNameVisible()
+
+    override val isGlowing: Boolean
+        get() = instance.isGlowing()
+
+    override val isInWater: Boolean
+        get() = eyeLocation.block.type == Material.WATER
+
+    override val isInsideVehicle: Boolean
+        get() = instance.isTraitSit()
+
+    override val isInvulnerable: Boolean
+        get() = true
+
+    override val isSilent: Boolean
+        get() = instance.isNitwit
 
     override fun hashCode(): Int {
         return instance.hashCode()

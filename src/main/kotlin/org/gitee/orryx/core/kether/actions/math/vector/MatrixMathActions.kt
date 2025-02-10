@@ -10,6 +10,16 @@ import taboolib.module.kether.*
 
 object MatrixMathActions {
 
+
+    /**
+     * ```
+     * set a matrix
+     * set b entity direction they "@self"
+     * matrix rotateX &a 30 dest a
+     * matrix transform &a &b dest b
+     * velocity &b they "@self"
+     * ```
+     * */
     @KetherParser(["matrix"], namespace = NAMESPACE, shared = true)
     private fun actionMatrix() = scriptParser(
         arrayOf(
@@ -68,20 +78,29 @@ object MatrixMathActions {
                 .result("旋转矩阵", Type.MATRIX),
             Action.new("Math数学运算", "rotate矩阵统一缩放", "matrix", true)
                 .description("矩阵按照系数统一缩放")
-                .addEntry("给定轴旋转标识符", Type.SYMBOL, head = "scale")
+                .addEntry("统一缩放标识符", Type.SYMBOL, head = "scale")
                 .addEntry("被缩放的矩阵", Type.MATRIX)
                 .addEntry("缩放系数", Type.DOUBLE)
                 .addDest(Type.MATRIX, optional = true)
                 .result("缩放矩阵", Type.MATRIX),
             Action.new("Math数学运算", "rotate矩阵缩放", "matrix", true)
                 .description("矩阵分别按照XYZ系数缩放")
-                .addEntry("给定轴旋转标识符", Type.SYMBOL, head = "scaleXYZ")
+                .addEntry("缩放标识符", Type.SYMBOL, head = "scaleXYZ")
                 .addEntry("被缩放的矩阵", Type.MATRIX)
                 .addEntry("缩放系数X", Type.DOUBLE)
                 .addEntry("缩放系数Y", Type.DOUBLE)
                 .addEntry("缩放系数Z", Type.DOUBLE)
                 .addDest(Type.MATRIX, optional = true)
                 .result("缩放矩阵", Type.MATRIX),
+            Action.new("Math数学运算", "rotate矩阵位移", "matrix", true)
+                .description("矩阵分别按照XYZ偏移")
+                .addEntry("位移标识符", Type.SYMBOL, head = "translate")
+                .addEntry("被缩放的矩阵", Type.MATRIX)
+                .addEntry("偏移X", Type.DOUBLE)
+                .addEntry("偏移Y", Type.DOUBLE)
+                .addEntry("偏移Z", Type.DOUBLE)
+                .addDest(Type.MATRIX, optional = true)
+                .result("偏移矩阵", Type.MATRIX),
             Action.new("Math数学运算", "transform应用矩阵变换向量", "matrix", true)
                 .description("应用矩阵变换向量")
                 .addEntry("应用矩阵标识符", Type.SYMBOL, head = "transform")
@@ -91,17 +110,18 @@ object MatrixMathActions {
                 .result("变换后的向量", Type.VECTOR),
         )
     ) {
-        when(it.expects("create", "identity", "rotateX", "rotateY", "rotateZ", "rotate", "scale", "scaleXYZ", "transform")) {
-            "create" -> create(it)
-            "identity" -> identity(it)
-            "rotateX" -> rotateX(it)
-            "rotateY" -> rotateY(it)
-            "rotateZ" -> rotateZ(it)
-            "rotate" -> rotate(it)
-            "scale" -> scale(it)
-            "scaleXYZ" -> scaleXYZ(it)
-            "transform" -> transform(it)
-            else -> identity(it)
+        it.switch {
+            case("create") { create(it) }
+            case("identity") { actionNow { Matrix4d() } }
+            case("rotateX") { rotateX(it) }
+            case("rotateY") { rotateY(it) }
+            case("rotateZ") { rotateZ(it) }
+            case("rotate") { rotate(it) }
+            case("scale") { scale(it) }
+            case("scaleXYZ") { scaleXYZ(it) }
+            case("translate") { translate(it) }
+            case("transform") { transform(it) }
+            other { actionNow { Matrix4d() } }
         }
     }
 
@@ -156,12 +176,6 @@ object MatrixMathActions {
                     }
                 }
             }
-        }
-    }
-
-    private fun identity(reader: QuestReader): ScriptAction<Any?> {
-        return actionNow {
-            Matrix4d()
         }
     }
 
@@ -256,6 +270,27 @@ object MatrixMathActions {
                         run(scaleZ).double { scaleZ ->
                             destMatrix(dest) {
                                 future.complete(matrix.scale(scaleX, scaleY, scaleZ, it))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun translate(reader: QuestReader): ScriptAction<Any?> {
+        val matrix = reader.nextParsedAction()
+        val offsetX = reader.nextParsedAction()
+        val offsetY = reader.nextParsedAction()
+        val offsetZ = reader.nextParsedAction()
+        val dest = reader.nextDest()
+        return actionFuture { future ->
+            run(matrix).matrix { matrix ->
+                run(offsetX).double { offsetX ->
+                    run(offsetY).double { offsetY ->
+                        run(offsetZ).double { offsetZ ->
+                            destMatrix(dest) {
+                                future.complete(matrix.translate(offsetX, offsetY, offsetZ, it))
                             }
                         }
                     }

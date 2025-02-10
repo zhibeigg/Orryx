@@ -1,4 +1,3 @@
-
 import io.izzel.taboolib.gradle.*
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -48,6 +47,7 @@ taboolib {
             name("MythicMobs").optional(true)
             name("PlaceholderAPI").optional(true)
             name("ProtocolLib").optional(true)
+            name("packetevents").optional(true)
             name("DragonArmourers").optional(true)
             name("DragonCore").optional(true)
             name("GlowAPI").optional(true)
@@ -70,6 +70,7 @@ repositories {
     maven { url = uri("https://repo.tabooproject.org/repository/releases") }
     maven { url = uri("https://repo.codemc.io/repository/maven-releases/") }
     maven { url = uri("https://repo.codemc.io/repository/maven-snapshots/") }
+    maven { url = uri("https://repo.dmulloy2.net/repository/public/") }
     maven {
         url = uri("http://play.mcwar.cn:18888/repository/maven-public/")
         isAllowInsecureProtocol = true
@@ -94,6 +95,7 @@ dependencies {
     compileOnly("ac.github.oa:OriginAttribute:1.1.4")
     compileOnly("org.serverct:ersha:3.3.3.0")
     compileOnly("com.github.retrooper:packetevents-spigot:2.7.0")
+    compileOnly("com.comphenix.protocol:ProtocolLib:5.3.0")
 
     taboo("com.google.code.gson:gson:2.10.1")
     taboo("com.github.ben-manes.caffeine:caffeine:2.9.3")

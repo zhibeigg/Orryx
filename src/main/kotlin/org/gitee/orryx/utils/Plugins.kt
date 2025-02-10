@@ -1,24 +1,21 @@
 package org.gitee.orryx.utils
 
-import org.bukkit.Bukkit
+import org.gitee.orryx.compat.HookManager
 
-val AdyeshachEnabled: Boolean
-    get() = Bukkit.getPluginManager().isPluginEnabled("Adyeshach")
+val AdyeshachPlugin = HookManager.Plugin("Adyeshach")
 
-val DragonCoreEnabled: Boolean
-    get() = Bukkit.getPluginManager().isPluginEnabled("DragonCore")
+val DragonCorePlugin = HookManager.Plugin("DragonCore")
 
-val GermPluginEnabled: Boolean
-    get() = Bukkit.getPluginManager().isPluginEnabled("GermPlugin")
+val GermPluginPlugin = HookManager.Plugin("GermPlugin")
 
-val MythicMobsEnabled
-    get() = Bukkit.getPluginManager().isPluginEnabled("MythicMobs")
+val MythicMobsPlugin = HookManager.Plugin("MythicMobs")
 
-val RedisChannelEnabled
-    get() = Bukkit.getPluginManager().isPluginEnabled("RedisChannel")
+val RedisChannelPlugin = HookManager.Plugin("RedisChannel")
 
-val OriginAttributeEnabled
-    get() = Bukkit.getPluginManager().isPluginEnabled("OriginAttribute")
+val OriginAttributePlugin = HookManager.Plugin("OriginAttribute")
 
-val AttributePlusEnabled
-    get() = Bukkit.getPluginManager().isPluginEnabled("AttributePlus")
+val AttributePlusPlugin = HookManager.Plugin("AttributePlus")
+
+val PacketEventsPlugin = HookManager.Plugin("packetevents")
+
+val ProtocolLibPlugin = HookManager.Plugin("ProtocolLib")
