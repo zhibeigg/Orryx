@@ -9,9 +9,10 @@ import org.bukkit.entity.LivingEntity
 import org.bukkit.util.Vector
 import org.gitee.orryx.api.adapters.IEntity
 import org.gitee.orryx.core.targets.ITargetEntity
+import org.gitee.orryx.core.targets.ITargetLocation
 import java.util.*
 
-open class AbstractBukkitEntity(val instance: Entity) : IEntity, ITargetEntity<Entity> {
+open class AbstractBukkitEntity(val instance: Entity) : IEntity, ITargetEntity<Entity>, ITargetLocation<Entity> {
 
     override fun getSource(): Entity {
         return instance

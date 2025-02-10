@@ -1,17 +1,22 @@
 package org.gitee.orryx.core.selector.geometry
 
-import org.bukkit.Particle
+import org.bukkit.Location
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.ISelectorGeometry
 import org.gitee.orryx.core.targets.ITarget
-import org.gitee.orryx.utils.*
+import org.gitee.orryx.utils.direction
+import org.gitee.orryx.utils.getParameter
+import org.gitee.orryx.utils.read
+import org.gitee.orryx.utils.toTarget
 import taboolib.module.kether.ScriptContext
 
 
 /**
  * 根据原点实体朝向来确认点的位置
+ * ```
  * @vector 2 3 5
  * @direction 前 上 右
+ * ```
  */
 object VectorLocation: ISelectorGeometry {
 
@@ -30,8 +35,8 @@ object VectorLocation: ISelectorGeometry {
         return listOf(loc.toTarget())
     }
 
-    override fun showAFrame(context: ScriptContext, parameter: StringParser.Entry) {
-        val origin = context.getParameter().origin ?: return
+    override fun showAFrame(context: ScriptContext, parameter: StringParser.Entry): List<Location> {
+        val origin = context.getParameter().origin ?: return emptyList()
 
         val x = parameter.read<Double>(0, "0.0")
         val y = parameter.read<Double>(1, "0.0")
@@ -40,16 +45,7 @@ object VectorLocation: ISelectorGeometry {
         val direction = origin.direction(x, y, z)
         val loc = origin.eyeLocation.clone().add(direction)
 
-        context.bukkitPlayer().spawnParticle(
-            Particle.FLAME,
-            loc,
-            1,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            null
-        )
+        return listOf(loc)
     }
 
 }

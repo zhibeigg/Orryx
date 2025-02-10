@@ -11,10 +11,11 @@ import org.bukkit.entity.EntityType
 import org.bukkit.util.Vector
 import org.gitee.orryx.api.adapters.IEntity
 import org.gitee.orryx.core.targets.ITargetEntity
+import org.gitee.orryx.core.targets.ITargetLocation
 import taboolib.common5.cdouble
 import java.util.*
 
-open class AbstractAdyeshachEntity(val instance: EntityInstance) : IEntity, ITargetEntity<EntityInstance> {
+open class AbstractAdyeshachEntity(val instance: EntityInstance) : IEntity, ITargetEntity<EntityInstance>, ITargetLocation<EntityInstance> {
 
     override fun getSource(): EntityInstance {
         return instance

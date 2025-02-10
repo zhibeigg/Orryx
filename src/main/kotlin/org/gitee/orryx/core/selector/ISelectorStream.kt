@@ -6,6 +6,9 @@ import taboolib.module.kether.ScriptContext
 
 interface ISelectorStream: ISelector {
 
+    /**
+     * 将目标流入容器
+     * */
     fun joinContainer(container: IContainer, context: ScriptContext, parameter: StringParser.Entry)
 
 }

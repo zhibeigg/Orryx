@@ -6,22 +6,21 @@ import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.adapters.entity.AbstractAdyeshachEntity
 import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
-import org.gitee.orryx.core.targets.ITarget
 import org.gitee.orryx.core.targets.LocationTarget
 import org.gitee.orryx.core.targets.PlayerTarget
 
-internal fun Player.toTarget(): ITarget<Player> {
+internal fun Player.toTarget(): PlayerTarget {
     return PlayerTarget(this)
 }
 
-internal fun Entity.toTarget(): ITarget<Entity> {
+internal fun Entity.toTarget(): AbstractBukkitEntity {
     return AbstractBukkitEntity(this)
 }
 
-internal fun EntityInstance.toTarget(): ITarget<EntityInstance> {
+internal fun EntityInstance.toTarget(): AbstractAdyeshachEntity {
     return AbstractAdyeshachEntity(this)
 }
 
-internal fun Location.toTarget(): ITarget<Location> {
+internal fun Location.toTarget(): LocationTarget {
     return LocationTarget(this)
 }

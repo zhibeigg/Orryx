@@ -6,7 +6,7 @@ import org.bukkit.event.Event
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.station.stations.IStation
 import org.gitee.orryx.core.station.stations.StationLoaderManager
-import org.gitee.orryx.core.targets.ITarget
+import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.utils.toTarget
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.warning
@@ -14,7 +14,7 @@ import taboolib.module.kether.orNull
 
 class StationParameter(val stationLoader: String, val sender: ProxyCommandSender, val event: Event): IParameter {
 
-    override var origin: ITarget<*>? = sender.castSafely<Player>()?.toTarget()
+    override var origin: ITargetLocation<*>? = sender.castSafely<Player>()?.toTarget()
 
     private val lazies by lazy { mutableMapOf<String, Any?>() }
 

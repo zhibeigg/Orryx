@@ -17,8 +17,7 @@ object ProxyDamageManager {
     //Bukkit
     @SubscribeEvent(ignoreCancelled = true, priority = EventPriority.MONITOR)
     private fun bukkit(e: EntityDamageByEntityEvent) {
-        if (OriginAttributeEnabled) return
-        if (AttributePlusEnabled) return
+        if (OriginAttributePlugin.isEnabled || AttributePlusPlugin.isEnabled) return
         val event = OrryxDamageEvents.Pre(e.damager, e.entity, e.damage, e, transfer(e.cause))
         if (event.call()) {
             e.damage = event.damage

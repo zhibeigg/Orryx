@@ -10,7 +10,6 @@ import taboolib.module.kether.extend
 /**
  * @author zhibei
  * @param skill 技能名
- * @param actions 脚本字符串
  * @throws IllegalStateException KetherScript初始化时检测到不存在的技能
  * @suppress 使用未注册的skill名
  * */

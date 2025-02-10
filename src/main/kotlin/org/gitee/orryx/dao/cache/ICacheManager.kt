@@ -6,7 +6,7 @@ import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.dao.pojo.PlayerData
 import org.gitee.orryx.dao.pojo.PlayerJob
 import org.gitee.orryx.dao.pojo.PlayerSkill
-import org.gitee.orryx.utils.RedisChannelEnabled
+import org.gitee.orryx.utils.RedisChannelPlugin
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.function.info
@@ -29,7 +29,7 @@ interface ICacheManager {
                     MemoryManager()
                 }
                 "REDIS" -> {
-                    if (RedisChannelEnabled) {
+                    if (RedisChannelPlugin.isEnabled) {
                         info(("&e┣&7已选择Redis缓存 &a√").colored())
                         RedisManager()
                     } else {

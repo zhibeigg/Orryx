@@ -7,6 +7,12 @@ import org.gitee.orryx.utils.bukkitPlayer
 import org.gitee.orryx.utils.toTarget
 import taboolib.module.kether.ScriptContext
 
+/**
+ * Sender转化为玩家
+ * ```
+ * @self
+ * ```
+ * */
 object Self: ISelectorStream {
 
     override val keys: Array<String>

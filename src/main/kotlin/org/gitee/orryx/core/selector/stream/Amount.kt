@@ -10,8 +10,10 @@ import taboolib.module.kether.ScriptContext
 
 /**
  * drop丢弃前方take丢弃后方
+ * ```
  * @amount 1 drop
  * @amount 1 take
+ * ```
  * */
 object Amount: ISelectorStream {
 

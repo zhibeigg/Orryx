@@ -5,7 +5,7 @@ import org.bukkit.entity.Player
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.skill.ISkill
 import org.gitee.orryx.core.skill.SkillLoaderManager
-import org.gitee.orryx.core.targets.ITarget
+import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.utils.toTarget
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common.platform.function.warning
@@ -15,7 +15,7 @@ import taboolib.module.kether.orNull
 
 class SkillParameter(val skill: String?, val player: Player, var level: Int = 1): IParameter {
 
-    override var origin: ITarget<*>? = player.toTarget()
+    override var origin: ITargetLocation<*>? = player.toTarget()
 
     private val proxyCommandSender by lazy { adaptPlayer(player) }
 

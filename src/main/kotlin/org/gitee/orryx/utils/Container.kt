@@ -70,6 +70,32 @@ inline fun <reified T: ITarget<*>> IContainer.forEachInstance(func: (target: T) 
 }
 
 /**
+ * 对某类型循环执行方法获得[R]并返回列表
+ * @param T [ITarget]类型
+ * @param func 对目标执行的匿名方法
+ * @return [R]列表
+ * */
+inline fun <reified T: ITarget<*>, R : Any> IContainer.mapInstance(func: (target: T) -> R?): List<R?> {
+    return targets.mapNotNull {
+        if (it is T) {
+            func(it)
+        } else {
+            null
+        }
+    }
+}
+
+/**
+ * 对某类型循环执行方法获得[R]并返回无NULL列表
+ * @param T [ITarget]类型
+ * @param func 对目标执行的匿名方法
+ * @return [R]列表
+ * */
+inline fun <reified T: ITarget<*>, R : Any> IContainer.mapNotNullInstance(func: (target: T) -> R?): List<R> {
+    return mapInstance<T, R> { func(it) }.mapNotNullTo(ArrayList()) { it }
+}
+
+/**
  * 获取第一个
  * @throws NoSuchElementException 如果容器为空
  * */

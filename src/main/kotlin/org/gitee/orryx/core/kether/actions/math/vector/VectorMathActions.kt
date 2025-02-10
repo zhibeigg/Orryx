@@ -49,6 +49,13 @@ object VectorMathActions {
                 .addEntry("点乘号前的向量A", Type.VECTOR, false)
                 .addEntry("点乘号后的向量B", Type.VECTOR, false)
                 .result("点乘结果", Type.VECTOR),
+            Action.new("Math数学运算", "数乘向量", "vector", true)
+                .description("数乘向量")
+                .addEntry("数乘标识符", Type.SYMBOL, false, "mul")
+                .addEntry("向量", Type.VECTOR, false)
+                .addEntry("数字", Type.DOUBLE, false)
+                .addDest(Type.VECTOR, optional = true)
+                .result("数乘结果", Type.VECTOR),
             Action.new("Math数学运算", "向量夹角", "vector", true)
                 .description("向量A与向量B的夹角")
                 .addEntry("夹角标识符", Type.SYMBOL, false, "angle")
@@ -84,29 +91,30 @@ object VectorMathActions {
                 .result("origin原点向量", Type.VECTOR),
         )
     ) {
-        when(it.expects("create", "add", "sub", "cross", "dot", "angle", "distance", "negate", "normalize", "center", "origin")) {
-            "create" -> create(it)
-            "add" -> add(it)
-            "sub" -> sub(it)
-            "cross" -> cross(it)
-            "dot" -> dot(it)
-            "angle" -> angle(it)
-            "distance" -> distance(it)
-            "negate" -> negate(it)
-            "normalize" -> normalize(it)
-            "center" -> {
+        it.switch {
+            case("create") { create(it) }
+            case("add") { add(it) }
+            case("sub") { sub(it) }
+            case("cross") { cross(it) }
+            case("dot") { dot(it) }
+            case("mul") { mul(it) }
+            case("angle") { angle(it) }
+            case("distance") { distance(it) }
+            case("negate") { negate(it) }
+            case("normalize") { normalize(it) }
+            case("center") {
                 actionFuture { future ->
                     future.complete(AbstractVector(Vector3d()))
                 }
             }
-            "origin" -> {
+            case("origin") {
                 actionFuture { future ->
                     val vector = script().getParameter().origin?.location?.toVector() ?: Vector(0, 0, 0)
-                    val Vector3d = Vector3d(vector.x, vector.y, vector.z)
-                    future.complete(AbstractVector(Vector3d))
+                    val vector3d = Vector3d(vector.x, vector.y, vector.z)
+                    future.complete(AbstractVector(vector3d))
                 }
             }
-            else -> create(it)
+            other { create(it) }
         }
     }
 
@@ -173,10 +181,25 @@ object VectorMathActions {
     private fun dot(reader: QuestReader): ScriptAction<Any?> {
         val a = reader.nextParsedAction()
         val b = reader.nextParsedAction()
-        return actionFuture {
+        return actionFuture {future ->
             run(a).vector { a ->
                 run(b).vector { b ->
-                    it.complete(a.dot(b))
+                    future.complete(a.dot(b))
+                }
+            }
+        }
+    }
+
+    private fun mul(reader: QuestReader): ScriptAction<Any?> {
+        val v = reader.nextParsedAction()
+        val scale = reader.nextParsedAction()
+        val dest = reader.nextDest()
+        return actionFuture {future ->
+            run(v).vector { v ->
+                run(scale).double { scale ->
+                    destVector(dest) {
+                        future.complete(v.mul(scale, it.joml))
+                    }
                 }
             }
         }

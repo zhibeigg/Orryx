@@ -6,7 +6,7 @@ import org.bukkit.entity.Player
 import org.gitee.orryx.api.adapters.IEntity
 import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
 
-class PlayerTarget(val player: Player): ITargetEntity<Player>, IEntity by AbstractBukkitEntity(player) {
+class PlayerTarget(val player: Player): ITargetEntity<Player>, ITargetLocation<Player>, IEntity by AbstractBukkitEntity(player) {
 
     override val entity: IEntity
         get() = this

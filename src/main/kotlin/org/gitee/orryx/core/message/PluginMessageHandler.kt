@@ -14,7 +14,7 @@ import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.plugin.messaging.PluginMessageListener
 import org.gitee.orryx.compat.dragoncore.DragonCoreCustomPacketSender
 import org.gitee.orryx.core.profile.IPlayerKeySetting
-import org.gitee.orryx.utils.DragonCoreEnabled
+import org.gitee.orryx.utils.DragonCorePlugin
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.Ghost
@@ -70,7 +70,7 @@ object PluginMessageHandler {
 
     @SubscribeEvent
     private fun onPlayerInteract(e: PlayerInteractEvent) {
-        if (DragonCoreEnabled) return
+        if (DragonCorePlugin.isEnabled) return
         when (e.action) {
             Action.LEFT_CLICK_AIR, Action.LEFT_CLICK_BLOCK -> handleConfirmation(e.player, false)
             Action.RIGHT_CLICK_AIR, Action.RIGHT_CLICK_BLOCK -> handleConfirmation(e.player, true)
@@ -80,7 +80,7 @@ object PluginMessageHandler {
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     private fun onPlayerJoin(e: PlayerJoinEvent) {
-        if (DragonCoreEnabled) {
+        if (DragonCorePlugin.isEnabled) {
             try {
                 DragonCoreCustomPacketSender.sendKeyRegister(e.player)
             } catch (ex: Throwable) {

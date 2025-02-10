@@ -2,11 +2,9 @@ package org.gitee.orryx.core.selector.geometry
 
 import org.bukkit.Bukkit
 import org.bukkit.Location
-import org.bukkit.Particle
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.ISelectorGeometry
 import org.gitee.orryx.core.targets.ITarget
-import org.gitee.orryx.utils.bukkitPlayer
 import org.gitee.orryx.utils.getParameter
 import org.gitee.orryx.utils.read
 import org.gitee.orryx.utils.toTarget
@@ -14,8 +12,10 @@ import taboolib.module.kether.ScriptContext
 
 /**
  * 具体坐标点
+ * ```
  * @location 2 3 5 1 2
  * @location x y z yaw pitch world
+ * ```
  */
 object Location: ISelectorGeometry {
 
@@ -37,8 +37,8 @@ object Location: ISelectorGeometry {
         return listOf(location.toTarget())
     }
 
-    override fun showAFrame(context: ScriptContext, parameter: StringParser.Entry) {
-        val origin = context.getParameter().origin ?: return
+    override fun showAFrame(context: ScriptContext, parameter: StringParser.Entry): List<Location> {
+        val origin = context.getParameter().origin ?: return emptyList()
 
         val x = parameter.read<Double>(0, "0.0")
         val y = parameter.read<Double>(1, "0.0")
@@ -49,16 +49,7 @@ object Location: ISelectorGeometry {
 
         val location = Location(Bukkit.getWorld(world), x, y, z, yaw, pitch)
 
-        context.bukkitPlayer().spawnParticle(
-            Particle.FLAME,
-            location,
-            1,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            null
-        )
+        return listOf(location)
     }
 
 }

@@ -32,11 +32,11 @@ internal fun getBytes(actions: String): ByteArray {
 }
 
 internal fun ScriptFrame.bukkitPlayer(): Player {
-    return script().sender?.castSafely<Player>() ?: error("Orryx脚本中未找到玩家")
+    return script().sender?.castSafely<Player>() ?: error("Orryx脚本中Sender不是玩家")
 }
 
 internal fun ScriptContext.bukkitPlayer(): Player {
-    return sender?.castSafely<Player>() ?: error("Orryx脚本中未找到玩家")
+    return sender?.castSafely<Player>() ?: error("Orryx脚本中Sender不是玩家")
 }
 
 internal fun ScriptFrame.self(): IContainer {

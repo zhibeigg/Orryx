@@ -4,8 +4,8 @@ import org.bukkit.entity.LivingEntity
 import org.gitee.orryx.api.events.damage.DamageType
 import org.gitee.orryx.compat.attributeplus.AttributePlusBridge
 import org.gitee.orryx.compat.originattribute.OriginAttributeBridge
-import org.gitee.orryx.utils.AttributePlusEnabled
-import org.gitee.orryx.utils.OriginAttributeEnabled
+import org.gitee.orryx.utils.AttributePlusPlugin
+import org.gitee.orryx.utils.OriginAttributePlugin
 
 interface IAttributeBridge {
 
@@ -13,8 +13,8 @@ interface IAttributeBridge {
 
         val INSTANCE by lazy {
             when {
-                AttributePlusEnabled -> AttributePlusBridge()
-                OriginAttributeEnabled -> OriginAttributeBridge()
+                AttributePlusPlugin.isEnabled -> AttributePlusBridge()
+                OriginAttributePlugin.isEnabled -> OriginAttributeBridge()
                 else -> DefaultAttributeBridge()
             }
         }
