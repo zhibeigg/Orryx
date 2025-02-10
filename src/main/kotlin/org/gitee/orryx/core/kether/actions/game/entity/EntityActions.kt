@@ -49,8 +49,7 @@ object EntityActions {
         val gravity = reader.nextHeadAction("gravity", true)
         val timeout = reader.nextHeadAction("timeout", 0.0)
         val they = reader.nextTheyContainer()
-        return actionNow {
-            addClosable(AutoCloseable {  })
+        return actionFuture { future ->
             run(name).str { name ->
                 run(type).str { type ->
                     run(health).double { health ->
@@ -58,7 +57,7 @@ object EntityActions {
                             run(gravity).bool { gravity ->
                                 run(timeout).long { timeout ->
                                     containerOrSelf(they) {
-                                        Container(
+                                        val container = Container(
                                             it.mapNotNullInstance<ITargetLocation<*>, AbstractBukkitEntity> { target ->
                                                 EntityBuilder()
                                                     .name(name)
@@ -71,6 +70,14 @@ object EntityActions {
                                                     .build() as AbstractBukkitEntity
                                             }.toMutableSet()
                                         )
+                                        val list = container.targets.mapNotNull { iTarget -> (iTarget.getSource() as? AbstractBukkitEntity) }
+                                        addClosable(AutoCloseable { list.forEach { entity ->
+                                            EntityBuilder.taskMap.remove(entity.uniqueId)?.cancel()
+                                            if (entity.isValid) {
+                                                entity.remove()
+                                            }
+                                        } })
+                                        future.complete(container)
                                     }
                                 }
                             }
