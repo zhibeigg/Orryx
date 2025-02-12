@@ -33,9 +33,9 @@ object Annular : ISelectorGeometry {
         val origin = context.getParameter().origin ?: return emptyList()
         val location = origin.location
 
-        val min = parameter.read<Double>(0, "0.0")
-        val max = parameter.read<Double>(1, "0.0")
-        val high = parameter.read<Double>(2, "0.0")
+        val min = parameter.read<Double>(0, 0.0)
+        val max = parameter.read<Double>(1, 0.0)
+        val high = parameter.read<Double>(2, 0.0)
 
         val livingEntities = origin.world.getNearbyEntities(origin.location, max, high, max)
         val list = mutableListOf<ITarget<*>>()
@@ -60,9 +60,9 @@ object Annular : ISelectorGeometry {
 
     override fun showAFrame(context: ScriptContext, parameter: StringParser.Entry): List<Location> {
         val origin = context.getParameter().origin?.location ?: return emptyList()
-        val min = parameter.read<Double>(0, "0.0")
-        val max = parameter.read<Double>(1, "0.0")
-        val high = parameter.read<Double>(2, "0.0")
+        val min = parameter.read<Double>(0, 0.0)
+        val max = parameter.read<Double>(1, 0.0)
+        val high = parameter.read<Double>(2, 0.0)
 
         val locations = mutableListOf<Location>()
 

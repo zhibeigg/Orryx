@@ -15,7 +15,7 @@ object DamageActions {
 
     internal val Default by lazy { DefaultAttributeBridge() }
 
-    @KetherParser(["damage"], namespace = NAMESPACE, shared = true)
+    @KetherParser(["damage"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun damageAction() = combinationParser(
         Action.new("属性系统", "攻击目标", "damage", true)
             .description("攻击目标，支持接入属性系统")

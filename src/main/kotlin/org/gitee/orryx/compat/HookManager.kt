@@ -13,6 +13,7 @@ object HookManager {
     private fun load() {
         AdyeshachPlugin.load()
         DragonCorePlugin.load()
+        DragonArmourersPlugin.load()
         GermPluginPlugin.load()
         MythicMobsPlugin.load()
         RedisChannelPlugin.load()

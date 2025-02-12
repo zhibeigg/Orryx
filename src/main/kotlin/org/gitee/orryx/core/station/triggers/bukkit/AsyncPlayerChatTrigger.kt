@@ -3,14 +3,13 @@ package org.gitee.orryx.core.station.triggers.bukkit
 import org.bukkit.event.player.AsyncPlayerChatEvent
 import org.gitee.orryx.core.station.pipe.IPipeTask
 import taboolib.module.kether.ScriptContext
-import kotlin.reflect.KClass
 
 object AsyncPlayerChatTrigger: AbstractEventTrigger<AsyncPlayerChatEvent>() {
 
     override val event: String = "Async Player Chat"
 
-    override val clazz: KClass<AsyncPlayerChatEvent>
-        get() = AsyncPlayerChatEvent::class
+    override val clazz: Class<AsyncPlayerChatEvent>
+        get() = AsyncPlayerChatEvent::class.java
 
     override fun onCheck(pipeTask: IPipeTask, event: AsyncPlayerChatEvent, map: Map<String, Any?>): Boolean {
         return pipeTask.scriptContext?.sender?.origin == event.player

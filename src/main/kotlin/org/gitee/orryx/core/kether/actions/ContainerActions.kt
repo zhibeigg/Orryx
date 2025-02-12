@@ -4,7 +4,7 @@ import org.gitee.orryx.core.container.Container
 import org.gitee.orryx.core.kether.ScriptManager.combinationParser
 import org.gitee.orryx.core.wiki.Action
 import org.gitee.orryx.core.wiki.Type
-import org.gitee.orryx.utils.NAMESPACE
+import org.gitee.orryx.utils.ORRYX_NAMESPACE
 import org.gitee.orryx.utils.container
 import org.gitee.orryx.utils.orElse
 import org.gitee.orryx.utils.theyContainer
@@ -15,7 +15,7 @@ import taboolib.module.kether.run
 
 object ContainerActions {
 
-    @KetherParser(["container"], namespace = NAMESPACE, shared = true)
+    @KetherParser(["container"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun actionContainer() = combinationParser(
         Action.new("Container容器", "目标容器", "container", true)
             .description("创建/复制 一个Container容器，用于储存各类Target")
@@ -29,7 +29,7 @@ object ContainerActions {
         }
     }
 
-    @KetherParser(["merge"], namespace = NAMESPACE, shared = true)
+    @KetherParser(["merge"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun actionMerge() = combinationParser(
         Action.new("Container容器", "合并目标容器", "merge", true)
             .description("合并两个Container容器")
@@ -45,7 +45,7 @@ object ContainerActions {
         }
     }
 
-    @KetherParser(["mergeIf"], namespace = NAMESPACE, shared = true)
+    @KetherParser(["mergeIf"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun actionMergeIf() = combinationParser(
         Action.new("Container容器", "合并如果目标容器", "mergeIf", true)
             .description("合并两个Container容器，剔除被合并容器中返回false的目标，可读取@Target参数")
@@ -70,7 +70,7 @@ object ContainerActions {
         }
     }
 
-    @KetherParser(["removeIf"], namespace = NAMESPACE, shared = true)
+    @KetherParser(["removeIf"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun actionRemoveIf() = combinationParser(
         Action.new("Container容器", "删除如果目标容器", "removeIf", true)
             .description("检测Container容器，删除返回值为true的Target，可读取@Target参数")

@@ -51,7 +51,7 @@ object SkillLoaderManager {
 
     internal fun loadScript(skill: ICastSkill): Script? {
         return try {
-            ketherScriptLoader.load(ScriptService, skill.key, getBytes(skill.actions), namespaces)
+            ketherScriptLoader.load(ScriptService, skill.key, getBytes(skill.actions), orryxEnvironmentNamespaces)
         } catch (ex: Exception) {
             ex.printKetherErrorMessage()
             warning("Skill: ${skill.key}")

@@ -11,7 +11,7 @@ import org.gitee.orryx.core.station.Plugin
 import org.gitee.orryx.utils.debug
 import org.gitee.orryx.utils.files
 import org.gitee.orryx.utils.getBytes
-import org.gitee.orryx.utils.namespaces
+import org.gitee.orryx.utils.orryxEnvironmentNamespaces
 import taboolib.common.LifeCycle
 import taboolib.common.inject.ClassVisitor
 import taboolib.common.platform.Awake
@@ -63,7 +63,7 @@ object StationLoaderManager: ClassVisitor(1) {
 
     internal fun loadScript(station: StationLoader): Script? {
         return try {
-            ketherScriptLoader.load(ScriptService, station.key, getBytes(station.actions), namespaces)
+            ketherScriptLoader.load(ScriptService, station.key, getBytes(station.actions), orryxEnvironmentNamespaces)
         } catch (ex: Exception) {
             ex.printKetherErrorMessage()
             warning("Station: ${station.configuration.file}")
@@ -103,7 +103,7 @@ object StationLoaderManager: ClassVisitor(1) {
     }
 
     private fun <E : Event> IStationTrigger<E>.register(priority: EventPriority, stations: List<IStation>) {
-        listenerList += registerBukkitListener(clazz.java, priority, false) { event ->
+        listenerList += registerBukkitListener(clazz, priority, false) { event ->
             stations.forEach { station ->
                 val map = specialKeys.associateWith { (station as? StationLoader)?.options?.get(it) }
                 if (onCheck(station, event, map)) {

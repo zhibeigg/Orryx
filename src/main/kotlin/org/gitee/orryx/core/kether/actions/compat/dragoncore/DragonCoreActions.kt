@@ -32,7 +32,7 @@ object DragonCoreActions {
         armourersMap.remove(e.player.uniqueId)
     }
 
-    @KetherParser(["dragoncore", "dragon"], namespace = NAMESPACE, shared = true)
+    @KetherParser(["dragoncore", "dragon"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun dragonCore() = scriptParser(
         arrayOf(
             Action.new("DragonCore附属语句", "设置临时时装", "dragoncore", true)

@@ -6,7 +6,7 @@ import org.gitee.orryx.core.kether.parameter.IParameter
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.utils.PARAMETER
 import org.gitee.orryx.utils.getBytes
-import org.gitee.orryx.utils.namespaces
+import org.gitee.orryx.utils.orryxEnvironmentNamespaces
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.library.kether.Parser.*
@@ -45,7 +45,7 @@ object ScriptManager {
     fun runScript(sender: ProxyCommandSender, parameter: IParameter, action: String, context: (ScriptContext.() -> Unit)? = null): CompletableFuture<Any?> {
         val uuid = UUID.randomUUID().toString()
         val script = scriptMap.computeIfAbsent(action) {
-            KetherScriptLoader().load(ScriptService, "orryx_temp_${uuid}", getBytes(it), namespaces)
+            KetherScriptLoader().load(ScriptService, "orryx_temp_${uuid}", getBytes(it), orryxEnvironmentNamespaces)
         }
         return ScriptContext.create(script).also {
             it.sender = sender
@@ -58,7 +58,7 @@ object ScriptManager {
     fun parseScript(sender: ProxyCommandSender, parameter: IParameter, actions: String, context: (ScriptContext.() -> Unit)? = null): String {
         return KetherFunction.parse(
             actions,
-            ScriptOptions.builder().sandbox(false).namespace(namespace = namespaces).sender(sender = sender).context {
+            ScriptOptions.builder().sandbox(false).namespace(namespace = orryxEnvironmentNamespaces).sender(sender = sender).context {
                 this[PARAMETER] = parameter
                 context?.invoke(this)
             }.build()
@@ -68,7 +68,7 @@ object ScriptManager {
     fun parseScript(sender: ProxyCommandSender, parameter: IParameter, actions: List<String>, context: (ScriptContext.() -> Unit)? = null): List<String> {
         return KetherFunction.parse(
             actions,
-            ScriptOptions.builder().sandbox(false).namespace(namespace = namespaces).sender(sender = sender).context {
+            ScriptOptions.builder().sandbox(false).namespace(namespace = orryxEnvironmentNamespaces).sender(sender = sender).context {
                 this[PARAMETER] = parameter
                 context?.invoke(this)
             }.build()

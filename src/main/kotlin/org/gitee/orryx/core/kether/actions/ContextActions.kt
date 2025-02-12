@@ -16,7 +16,7 @@ import taboolib.module.kether.script
 
 object ContextActions {
 
-    @KetherParser(["senderSpace"], namespace = NAMESPACE, shared = true)
+    @KetherParser(["senderSpace"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun senderSpace() = combinationParser(
         Action.new("上下文", "sender空间", "senderSpace", true)
             .description("循环以指定sender执行内部语句")
@@ -38,7 +38,7 @@ object ContextActions {
         }
     }
 
-    @KetherParser(["parameter", "parm"], namespace = NAMESPACE)
+    @KetherParser(["parameter", "parm"], namespace = ORRYX_NAMESPACE)
     private fun parameter() = combinationParser(
         Action.new("上下文", "parameter参数", "parameter/parm")
             .description("获取指定parameter参数")

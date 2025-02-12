@@ -16,7 +16,7 @@ import java.util.*
 
 object EntityActions {
 
-    @KetherParser(["entity"], namespace = NAMESPACE)
+    @KetherParser(["entity"], namespace = ORRYX_NAMESPACE)
     private fun entityParser() = scriptParser {
         arrayOf(
             Action.new("Entity实体操作", "获取实体参数", "entity", true)

@@ -20,7 +20,7 @@ object MatrixMathActions {
      * velocity &b they "@self"
      * ```
      * */
-    @KetherParser(["matrix"], namespace = NAMESPACE, shared = true)
+    @KetherParser(["matrix"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun actionMatrix() = scriptParser(
         arrayOf(
             Action.new("Math数学运算", "创建单位矩阵", "matrix", true)

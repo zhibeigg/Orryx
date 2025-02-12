@@ -48,7 +48,7 @@ object PipeManager: ClassVisitor(1) {
 
     private fun <E : Event> registerListener(trigger: IPipeTrigger<E>) {
         if (trigger.listener == null) {
-            trigger.listener = registerBukkitListener(trigger.clazz.java) { event ->
+            trigger.listener = registerBukkitListener(trigger.clazz) { event ->
                 val iterator = pipeTaskMap.values.iterator()
                 while (iterator.hasNext()) {
                     val next = iterator.next()

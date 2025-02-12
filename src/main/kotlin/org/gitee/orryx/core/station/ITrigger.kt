@@ -5,7 +5,6 @@ import org.bukkit.event.Event
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.module.kether.ScriptContext
 import taboolib.module.kether.extend
-import kotlin.reflect.KClass
 
 interface ITrigger<E : Event> {
 
@@ -17,7 +16,7 @@ interface ITrigger<E : Event> {
     /**
      * 监听的事件
      * */
-    val clazz: KClass<E>
+    val clazz: Class<E>
 
     /**
      * 当检测通过时

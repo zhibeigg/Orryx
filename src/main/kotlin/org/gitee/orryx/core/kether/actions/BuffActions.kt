@@ -119,7 +119,7 @@ object BuffActions {
         PacketSender.sendDeletePlaceholderCache(player, "dragoncore_buff", false)
     }
 
-    @KetherParser(["buff"], namespace = NAMESPACE, shared = true)
+    @KetherParser(["buff"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun buff() = scriptParser(
         arrayOf(
             Action.new("Orryx Profile玩家信息", "设置状态效果", "buff", true)

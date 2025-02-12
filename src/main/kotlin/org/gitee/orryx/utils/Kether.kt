@@ -19,9 +19,9 @@ import taboolib.module.kether.ParserHolder.option
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.CompletableFuture
 
-const val NAMESPACE = "Orryx"
+const val ORRYX_NAMESPACE = "Orryx"
 
-val namespaces = listOf("kether", NAMESPACE)
+val orryxEnvironmentNamespaces = listOf("kether", ORRYX_NAMESPACE)
 
 internal fun getBytes(actions: String): ByteArray {
     val s = if (actions.startsWith("def ")) actions else "def main = { $actions }"
@@ -181,7 +181,7 @@ internal fun Player.eval(action: String, map: Map<String, Any>): CompletableFutu
 }
 
 internal fun ProxyCommandSender.eval(action: String, map: Map<String, Any>): CompletableFuture<Any?> {
-    return KetherShell.eval(action, ScriptOptions.builder().sender(this@eval).sandbox(true).namespace(namespaces).vars(map).build())
+    return KetherShell.eval(action, ScriptOptions.builder().sender(this@eval).sandbox(true).namespace(orryxEnvironmentNamespaces).vars(map).build())
 }
 
 internal fun Player.parse(actions: List<String>, map: Map<String, Any>): List<String> {
@@ -193,10 +193,10 @@ internal fun Player.parse(action: String, map: Map<String, Any>): String {
 }
 
 internal fun ProxyCommandSender.parse(actions: List<String>, map: Map<String, Any>): List<String> {
-    return KetherFunction.parse(actions, ScriptOptions.builder().sender(this@parse).sandbox(true).namespace(namespaces).vars(map).build())
+    return KetherFunction.parse(actions, ScriptOptions.builder().sender(this@parse).sandbox(true).namespace(orryxEnvironmentNamespaces).vars(map).build())
 }
 
 internal fun ProxyCommandSender.parse(action: String, map: Map<String, Any>): String {
-    return KetherFunction.parse(action, ScriptOptions.builder().sender(this@parse).sandbox(true).namespace(namespaces).vars(map).build())
+    return KetherFunction.parse(action, ScriptOptions.builder().sender(this@parse).sandbox(true).namespace(orryxEnvironmentNamespaces).vars(map).build())
 }
 

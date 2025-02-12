@@ -5,7 +5,7 @@ import org.gitee.orryx.core.kether.ScriptManager.combinationParser
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.core.wiki.Action
 import org.gitee.orryx.core.wiki.Type
-import org.gitee.orryx.utils.NAMESPACE
+import org.gitee.orryx.utils.ORRYX_NAMESPACE
 import org.gitee.orryx.utils.bukkitPlayer
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
@@ -41,7 +41,7 @@ object AiActions {
         info("&e┣&7Npc loaded &e${npcMap.size} &a√".colored())
     }
 
-    @KetherParser(["aiChat"], namespace = NAMESPACE, shared = true)
+    @KetherParser(["aiChat"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun aiChat() = combinationParser(
         Action.new("AI智能", "模拟Npc对话", "npc", true)
             .description("模拟Npc对话，不同Npc人设请在npc.yml中配置，等待直到AI返回内容")

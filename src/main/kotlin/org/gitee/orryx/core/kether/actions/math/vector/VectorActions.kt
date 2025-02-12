@@ -10,7 +10,7 @@ import taboolib.module.kether.script
 
 object VectorActions {
 
-    @KetherParser(["launch"], namespace = NAMESPACE, shared = true)
+    @KetherParser(["launch"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun actionLaunch() = combinationParser(
         Action.new("Game原版游戏", "给予视角冲量", "launch", true)
             .description("给予视角冲量")
@@ -39,7 +39,7 @@ object VectorActions {
         }
     }
 
-    @KetherParser(["velocity"], namespace = NAMESPACE, shared = true)
+    @KetherParser(["velocity"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun actionVelocity() = combinationParser(
         Action.new("Game原版游戏", "改变目标速度", "velocity", true)
             .description("改变目标速度")
@@ -51,7 +51,7 @@ object VectorActions {
             theyContainer(true)
         ).apply(it) { vector, container ->
             now {
-                val bukkit = vector?.getBukkit() ?: return@now null
+                val bukkit = vector?.bukkit() ?: return@now null
                 container.readContainer(script()).orElse(self()).forEachInstance<ITargetEntity<*>> { target ->
                     target.entity.velocity = bukkit
                 }

@@ -6,6 +6,8 @@ val AdyeshachPlugin = HookManager.Plugin("Adyeshach")
 
 val DragonCorePlugin = HookManager.Plugin("DragonCore")
 
+val DragonArmourersPlugin = HookManager.Plugin("DragonArmourers")
+
 val GermPluginPlugin = HookManager.Plugin("GermPlugin")
 
 val MythicMobsPlugin = HookManager.Plugin("MythicMobs")

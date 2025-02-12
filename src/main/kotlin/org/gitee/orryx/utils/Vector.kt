@@ -2,10 +2,15 @@ package org.gitee.orryx.utils
 
 import io.lumine.xikage.mythicmobs.adapters.AbstractLocation
 import org.bukkit.Location
+import org.bukkit.entity.Entity
 import org.bukkit.entity.LivingEntity
 import org.bukkit.util.Vector
-import org.gitee.orryx.core.targets.ITarget
+import org.gitee.orryx.api.adapters.IVector
+import org.gitee.orryx.api.adapters.vector.AbstractVector
+import org.gitee.orryx.core.targets.ITargetEntity
+import org.gitee.orryx.core.targets.ITargetLocation
 import org.joml.Vector3d
+import org.joml.Vector3dc
 
 /**
  * AbstractLocation是否面相loc2
@@ -28,40 +33,11 @@ internal fun Location.isFace(target: Location?): Boolean {
 }
 
 /**
- * 判断点是否在立方体内
- */
-internal fun isPointInsideCuboid(point: Location, corners: Array<Location>, width: Double, height: Double): Boolean {
-    val xs = corners.map { it.x }
-    val ys = corners.map { it.y }
-    val zs = corners.map { it.z }
-
-    val offset = width / 2
-
-    val minX = point.x - offset
-    val maxX = point.x + offset
-
-    val minY = point.y
-    val maxY = point.y + height
-
-    val minZ = point.z - offset
-    val maxZ = point.z + offset
-
-    val under = under(minX, xs.maxOrNull()!!) && under(minY, ys.maxOrNull()!!) && under(minZ, zs.maxOrNull()!!)
-    val over = over(maxX, xs.minOrNull()!!) && over(maxY, ys.minOrNull()!!) && over(maxZ, zs.minOrNull()!!)
-
-    return under && over
-}
-
-/**
  * 判断点是否在圆圈内
  * */
 internal fun Location.isInRound(origin: Location, radius: Double): Boolean {
     return clone().also { it.y = 0.0 }.distance(origin.clone().also { it.y = 0.0 }) <= radius
 }
-
-private fun under(v: Double, top: Double): Boolean = v <= top
-
-private fun over(v: Double, floor: Double): Boolean = v >= floor
 
 /**
  * 获得实体的方向向量
@@ -81,8 +57,20 @@ internal fun LivingEntity.direction(x: Double, y: Double, z: Double): Vector {
  * @param y 上方
  * @param z 右方
  * */
-internal fun ITarget<*>.direction(x: Double, y: Double, z: Double): Vector {
+internal fun ITargetLocation<*>.direction(x: Double, y: Double, z: Double): Vector {
     val xV = eyeLocation.direction.clone().setY(0).normalize()
+    val zV = xV.clone().crossProduct(Vector(0, 1, 0)).normalize()
+    return Vector(0, 0, 0).add(xV.multiply(x)).add(Vector(0.0, y, 0.0)).add(zV.multiply(z))
+}
+
+/**
+ * 获得目标的方向向量
+ * @param x 前方
+ * @param y 上方
+ * @param z 右方
+ * */
+internal fun ITargetEntity<*>.direction(x: Double, y: Double, z: Double): Vector {
+    val xV = entity.eyeLocation.direction.clone().setY(0).normalize()
     val zV = xV.clone().crossProduct(Vector(0, 1, 0)).normalize()
     return Vector(0, 0, 0).add(xV.multiply(x)).add(Vector(0.0, y, 0.0)).add(zV.multiply(z))
 }
@@ -90,3 +78,58 @@ internal fun ITarget<*>.direction(x: Double, y: Double, z: Double): Vector {
 fun Vector.joml() = Vector3d(x, y, z)
 
 fun Vector3d.bukkit() = Vector(x, y, z)
+
+fun Vector.abstract() = AbstractVector(joml())
+
+fun Vector3d.abstract() = AbstractVector(this)
+
+fun IVector.bukkit() = Vector(joml.x, joml.y, joml.z)
+
+fun IVector.joml() = joml
+
+data class AABB(val minVector3d: Vector3dc, val maxVector3d: Vector3dc) {
+
+    val minX
+        get() = minVector3d.x()
+
+    val minY
+        get() = minVector3d.y()
+
+    val minZ
+        get() = minVector3d.z()
+
+    val maxX
+        get() = maxVector3d.x()
+
+    val maxY
+        get() = maxVector3d.y()
+
+    val maxZ
+        get() = maxVector3d.z()
+
+    constructor(minX: Double, minY: Double, minZ: Double, maxX: Double, maxY: Double, maxZ: Double) : this(Vector3d(minX, minY, minZ), Vector3d(minX, minY, minZ))
+
+}
+
+fun getEntityAABB(entity: Entity): AABB {
+    return getManualAABB(entity)
+}
+
+private fun getManualAABB(entity: Entity): AABB {
+    val loc = entity.location.toVector()
+    val (width, height) = entity.width to entity.height
+    return AABB(loc.x - width / 2, loc.y, loc.z - width / 2, loc.x + width / 2, loc.y + height, loc.z + width / 2)
+}
+
+/**
+ * 检测两碰撞箱是否碰撞
+ * */
+fun areAABBsColliding(aabb0: AABB, aabb1: AABB): Boolean {
+    // 检查每个轴是否有重叠
+    val xOverlap = aabb0.minX <= aabb1.maxX && aabb0.maxX >= aabb1.minX
+    val yOverlap = aabb0.minY <= aabb1.maxY && aabb0.maxY >= aabb1.minY
+    val zOverlap = aabb0.minZ <= aabb1.maxZ && aabb0.maxZ >= aabb1.minZ
+
+    // 所有轴都有重叠时返回 true
+    return xOverlap && yOverlap && zOverlap
+}

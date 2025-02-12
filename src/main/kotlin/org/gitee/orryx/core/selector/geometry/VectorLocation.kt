@@ -26,9 +26,9 @@ object VectorLocation: ISelectorGeometry {
     override fun getTargets(context: ScriptContext, parameter: StringParser.Entry): List<ITarget<*>> {
         val origin = context.getParameter().origin ?: return emptyList()
 
-        val x = parameter.read<Double>(0, "0.0")
-        val y = parameter.read<Double>(1, "0.0")
-        val z = parameter.read<Double>(2, "0.0")
+        val x = parameter.read<Double>(0, 0.0)
+        val y = parameter.read<Double>(1, 0.0)
+        val z = parameter.read<Double>(2, 0.0)
 
         val direction = origin.direction(x, y, z)
         val loc = origin.eyeLocation.clone().add(direction)
@@ -38,9 +38,9 @@ object VectorLocation: ISelectorGeometry {
     override fun showAFrame(context: ScriptContext, parameter: StringParser.Entry): List<Location> {
         val origin = context.getParameter().origin ?: return emptyList()
 
-        val x = parameter.read<Double>(0, "0.0")
-        val y = parameter.read<Double>(1, "0.0")
-        val z = parameter.read<Double>(2, "0.0")
+        val x = parameter.read<Double>(0, 0.0)
+        val y = parameter.read<Double>(1, 0.0)
+        val z = parameter.read<Double>(2, 0.0)
 
         val direction = origin.direction(x, y, z)
         val loc = origin.eyeLocation.clone().add(direction)

@@ -21,7 +21,7 @@ object Amount: ISelectorStream {
         get() = arrayOf("amount")
 
     override fun joinContainer(container: IContainer, context: ScriptContext, parameter: StringParser.Entry) {
-        val amount = parameter.read<Int>(0, "1")
+        val amount = parameter.read<Int>(0, 1)
         val type = parameter.read<String>(1, "take")
         if (container.targets.size > amount) {
             if (type.lowercase() == "drop") {

@@ -7,9 +7,7 @@ import org.gitee.orryx.api.adapters.vector.AbstractVector
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.ISelectorGeometry
 import org.gitee.orryx.core.targets.ITarget
-import org.gitee.orryx.utils.getParameter
-import org.gitee.orryx.utils.read
-import org.gitee.orryx.utils.toTarget
+import org.gitee.orryx.utils.*
 import org.joml.RayAabIntersection
 import org.joml.Vector3d
 import taboolib.common5.cfloat
@@ -27,7 +25,7 @@ object RayHit: ISelectorGeometry {
     override fun getTargets(context: ScriptContext, parameter: StringParser.Entry): List<ITarget<*>> {
         val origin = context.getParameter().origin ?: return emptyList()
         val v = parameter.read<String>(0, "a")
-        val distance = parameter.read<Double>(1, "0.0")
+        val distance = parameter.read<Double>(1, 0.0)
         val vector = context.get<IVector>(v)?.joml ?: return emptyList()
 
         return findEntitiesAlongRay(origin.location, vector, distance).map { it.toTarget() }
@@ -36,10 +34,10 @@ object RayHit: ISelectorGeometry {
     override fun showAFrame(context: ScriptContext, parameter: StringParser.Entry): List<Location> {
         val origin = context.getParameter().origin ?: return emptyList()
         val v = parameter.read<String>(0, "a")
-        val distance = parameter.read<Double>(1, "0.0")
+        val distance = parameter.read<Double>(1, 0.0)
         val vector = context.get<IVector>(v)?.joml ?: return emptyList()
 
-        val normal = AbstractVector(vector.normalize(0.1, Vector3d())).getBukkit()
+        val normal = AbstractVector(vector.normalize(0.1, Vector3d())).bukkit()
         var length = vector.length()
         val start = origin.location.clone()
         val list = mutableListOf<Location>()
@@ -71,27 +69,5 @@ object RayHit: ISelectorGeometry {
 
         return entitiesWithDistance
     }
-
-    private fun getEntityAABB(entity: Entity): AABB {
-        return getManualAABB(entity)
-    }
-
-    private fun getManualAABB(entity: Entity): AABB {
-        val loc = entity.location
-        val (width, height) = entity.width to entity.height
-        return AABB(
-            loc.x - width / 2, loc.y, loc.z - width / 2,
-            loc.x + width / 2, loc.y + height, loc.z + width / 2
-        )
-    }
-
-    data class AABB(
-        val minX: Double,
-        val minY: Double,
-        val minZ: Double,
-        val maxX: Double,
-        val maxY: Double,
-        val maxZ: Double
-    )
 
 }

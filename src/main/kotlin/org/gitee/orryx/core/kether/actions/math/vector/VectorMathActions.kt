@@ -12,7 +12,7 @@ import taboolib.module.kether.*
 
 object VectorMathActions {
 
-    @KetherParser(["vector"], namespace = NAMESPACE, shared = true)
+    @KetherParser(["vector"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun actionVector() = scriptParser(
         arrayOf(
             Action.new("Math数学运算", "创建向量", "vector", true)

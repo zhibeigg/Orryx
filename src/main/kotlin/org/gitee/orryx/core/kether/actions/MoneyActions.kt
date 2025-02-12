@@ -12,7 +12,7 @@ import taboolib.platform.compat.withdrawBalance
 
 object MoneyActions {
 
-    @KetherParser(["money"], namespace = NAMESPACE)
+    @KetherParser(["money"], namespace = ORRYX_NAMESPACE)
     private fun actionMoney() = scriptParser(
         arrayOf(
             Action.new("Money财富", "检测财富", "money")

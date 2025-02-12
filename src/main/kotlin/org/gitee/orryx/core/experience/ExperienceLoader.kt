@@ -1,6 +1,6 @@
 package org.gitee.orryx.core.experience
 
-import org.gitee.orryx.utils.namespaces
+import org.gitee.orryx.utils.orryxEnvironmentNamespaces
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common5.cint
 import taboolib.module.configuration.Configuration
@@ -29,7 +29,7 @@ class ExperienceLoader(override val key: String, val configuration: Configuratio
         if (level !in minLevel+1..maxLevel) return 0
         return KetherShell.eval(
             experienceEquation,
-            ScriptOptions.builder().sender(sender).set("level", level).namespace(namespaces).build()
+            ScriptOptions.builder().sender(sender).set("level", level).namespace(orryxEnvironmentNamespaces).build()
         ).orNull().cint
     }
 

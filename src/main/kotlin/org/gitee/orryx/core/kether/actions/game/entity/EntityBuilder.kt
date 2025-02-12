@@ -12,6 +12,7 @@ import org.gitee.orryx.api.adapters.entity.AbstractAdyeshachEntity
 import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
 import org.gitee.orryx.api.adapters.vector.AbstractVector
 import org.gitee.orryx.utils.AdyeshachPlugin
+import org.gitee.orryx.utils.bukkit
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common.platform.function.submit
 import taboolib.common.platform.service.PlatformExecutor
@@ -104,13 +105,13 @@ class EntityBuilder {
             Adyeshach.api().getPrivateEntityManager(player ?: error("生成私有实体必须指定玩家"), ManagerType.TEMPORARY).create(EntityTypes.valueOf(type.name), location) {
                 it.setTag("source", "Orryx")
                 it.setNoGravity(!gravity)
-                vector?.getBukkit()?.let { vector -> it.setVelocity(vector) }
+                vector?.bukkit()?.let { vector -> it.setVelocity(vector) }
             }
         } else {
             Adyeshach.api().getPublicEntityManager(ManagerType.TEMPORARY).create(EntityTypes.valueOf(type.name), location) {
                 it.setTag("source", "Orryx")
                 it.setNoGravity(!gravity)
-                vector?.getBukkit()?.let { vector -> it.setVelocity(vector) }
+                vector?.bukkit()?.let { vector -> it.setVelocity(vector) }
             }
         }
         return AbstractAdyeshachEntity(instance)
@@ -121,7 +122,7 @@ class EntityBuilder {
             entity.setMeta("source", "Orryx")
             if (health > 0) { (entity as? LivingEntity)?.health = health }
             entity.setGravity(gravity)
-            vector?.getBukkit()?.let { entity.velocity = it }
+            vector?.bukkit()?.let { entity.velocity = it }
         }
         return AbstractBukkitEntity(entity)
     }
