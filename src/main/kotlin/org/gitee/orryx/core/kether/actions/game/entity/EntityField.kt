@@ -3,9 +3,8 @@ package org.gitee.orryx.core.kether.actions.game.entity
 import org.bukkit.attribute.Attribute
 import org.gitee.orryx.api.adapters.IEntity
 import org.gitee.orryx.api.adapters.entity.AbstractAdyeshachEntity
-import org.gitee.orryx.api.adapters.vector.AbstractVector
+import org.gitee.orryx.utils.abstract
 import org.gitee.orryx.utils.getBukkitLivingEntity
-import org.gitee.orryx.utils.joml
 import java.util.*
 
 enum class EntityField(val get: IEntity.() -> Any?) {
@@ -30,13 +29,15 @@ enum class EntityField(val get: IEntity.() -> Any?) {
 
     EYE_LOCATION({ eyeLocation }),
 
+    DIRECTION({ location.direction.abstract() }),
+
     MOVE_SPEED({ moveSpeed }),
 
     HEALTH({ getBukkitLivingEntity()?.health }),
 
     VEHICLE({ vehicle }),
 
-    VELOCITY({ AbstractVector(velocity.joml()) }),
+    VELOCITY({ velocity.abstract() }),
 
     BODY_IN_ARROW({ getBukkitLivingEntity()?.arrowsInBody }),
 

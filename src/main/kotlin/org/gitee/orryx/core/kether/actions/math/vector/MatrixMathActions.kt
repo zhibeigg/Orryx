@@ -307,7 +307,7 @@ object MatrixMathActions {
             run(matrix).matrix { matrix ->
                 run(vector).vector { vector ->
                     destVector(dest) {
-                        future.complete(matrix.transformProject(vector, it.joml))
+                        future.complete(matrix.transformProject(vector.joml, it.joml))
                     }
                 }
             }

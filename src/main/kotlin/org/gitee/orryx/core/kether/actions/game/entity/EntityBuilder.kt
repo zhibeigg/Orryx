@@ -8,9 +8,9 @@ import org.bukkit.entity.EntityType
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.adapters.IEntity
+import org.gitee.orryx.api.adapters.IVector
 import org.gitee.orryx.api.adapters.entity.AbstractAdyeshachEntity
 import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
-import org.gitee.orryx.api.adapters.vector.AbstractVector
 import org.gitee.orryx.utils.AdyeshachPlugin
 import org.gitee.orryx.utils.bukkit
 import taboolib.common.platform.function.isPrimaryThread
@@ -35,7 +35,7 @@ class EntityBuilder {
     private var timeout: Long = 0
     private var health: Double = 0.0
     private var gravity: Boolean = true
-    private var vector: AbstractVector? = null
+    private var vector: IVector? = null
     private lateinit var location: Location
 
     fun name(name: String): EntityBuilder {
@@ -73,7 +73,7 @@ class EntityBuilder {
         return this
     }
 
-    fun vector(vector: AbstractVector): EntityBuilder {
+    fun vector(vector: IVector): EntityBuilder {
         this.vector = vector
         return this
     }

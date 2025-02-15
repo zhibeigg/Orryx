@@ -17,23 +17,23 @@ object MoneyActions {
         arrayOf(
             Action.new("Money财富", "检测财富", "money")
                 .description("检测是否有足够财富值")
-                .addEntry("has", type = Type.SYMBOL)
+                .addEntry("has", type = Type.SYMBOL, head = "has")
                 .addEntry("检测财富值", type = Type.DOUBLE)
                 .addContainerEntry("检测的目标们", true, "@self")
                 .result("是否有足够财富值", Type.BOOLEAN),
             Action.new("Money财富", "给予财富", "money")
                 .description("玩家获得财富值")
-                .addEntry("add/deposit", type = Type.SYMBOL)
+                .addEntry("add/deposit", type = Type.SYMBOL, head = "add/deposit")
                 .addEntry("财富值", type = Type.DOUBLE)
                 .addContainerEntry("给予财富的目标", true, "@self"),
             Action.new("Money财富", "减少财富", "money")
                 .description("获得财富值")
-                .addEntry("take/withdraw", type = Type.SYMBOL)
+                .addEntry("take/withdraw", type = Type.SYMBOL, head = "take/withdraw")
                 .addEntry("财富值", type = Type.DOUBLE)
                 .addContainerEntry("减少财富的目标", true, "@self"),
             Action.new("Money财富", "获取财富值", "money")
                 .description("获取玩家拥有的财富值")
-                .addEntry("get", optional = true, type = Type.SYMBOL)
+                .addEntry("get", optional = true, type = Type.SYMBOL, head = "get")
                 .addContainerEntry("获取的目标", true, "@self")
                 .result("财富值", Type.DOUBLE)
         )

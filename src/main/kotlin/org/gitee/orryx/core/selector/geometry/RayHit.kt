@@ -3,7 +3,6 @@ package org.gitee.orryx.core.selector.geometry
 import org.bukkit.Location
 import org.bukkit.entity.Entity
 import org.gitee.orryx.api.adapters.IVector
-import org.gitee.orryx.api.adapters.vector.AbstractVector
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.ISelectorGeometry
 import org.gitee.orryx.core.targets.ITarget
@@ -37,7 +36,7 @@ object RayHit: ISelectorGeometry {
         val distance = parameter.read<Double>(1, 0.0)
         val vector = context.get<IVector>(v)?.joml ?: return emptyList()
 
-        val normal = AbstractVector(vector.normalize(0.1, Vector3d())).bukkit()
+        val normal = vector.normalize(0.1, Vector3d()).bukkit()
         var length = vector.length()
         val start = origin.location.clone()
         val list = mutableListOf<Location>()

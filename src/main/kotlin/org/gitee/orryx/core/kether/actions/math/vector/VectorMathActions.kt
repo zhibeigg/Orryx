@@ -24,70 +24,70 @@ object VectorMathActions {
                 .result("创建的向量", Type.VECTOR),
             Action.new("Math数学运算", "向量相加", "vector", true)
                 .description("向量相加")
-                .addEntry("相加标识符", Type.SYMBOL, false, "add")
+                .addEntry("相加标识符", Type.SYMBOL, head = "add")
                 .addEntry("加号前的向量A", Type.VECTOR, false)
                 .addEntry("加号后的向量B", Type.VECTOR, false)
                 .addDest(Type.VECTOR, optional = true)
                 .result("相加结果的向量", Type.VECTOR),
             Action.new("Math数学运算", "向量相减", "vector", true)
                 .description("向量相减")
-                .addEntry("相减标识符", Type.SYMBOL, false, "sub")
+                .addEntry("相减标识符", Type.SYMBOL, head = "sub")
                 .addEntry("减号前的向量A", Type.VECTOR, false)
                 .addEntry("减号后的向量B", Type.VECTOR, false)
                 .addDest(Type.VECTOR, optional = true)
                 .result("相减结果的向量", Type.VECTOR),
             Action.new("Math数学运算", "叉乘向量", "vector", true)
                 .description("叉乘向量")
-                .addEntry("叉乘标识符", Type.SYMBOL, false, "cross")
+                .addEntry("叉乘标识符", Type.SYMBOL, head = "cross")
                 .addEntry("叉乘号前的向量A", Type.VECTOR, false)
                 .addEntry("叉乘号后的向量B", Type.VECTOR, false)
                 .addDest(Type.VECTOR, optional = true)
                 .result("叉乘结果的向量", Type.VECTOR),
             Action.new("Math数学运算", "点乘向量", "vector", true)
                 .description("点乘向量")
-                .addEntry("点乘标识符", Type.SYMBOL, false, "dot")
+                .addEntry("点乘标识符", Type.SYMBOL, head = "dot")
                 .addEntry("点乘号前的向量A", Type.VECTOR, false)
                 .addEntry("点乘号后的向量B", Type.VECTOR, false)
                 .result("点乘结果", Type.VECTOR),
             Action.new("Math数学运算", "数乘向量", "vector", true)
                 .description("数乘向量")
-                .addEntry("数乘标识符", Type.SYMBOL, false, "mul")
+                .addEntry("数乘标识符", Type.SYMBOL, head = "mul")
                 .addEntry("向量", Type.VECTOR, false)
                 .addEntry("数字", Type.DOUBLE, false)
                 .addDest(Type.VECTOR, optional = true)
                 .result("数乘结果", Type.VECTOR),
             Action.new("Math数学运算", "向量夹角", "vector", true)
                 .description("向量A与向量B的夹角")
-                .addEntry("夹角标识符", Type.SYMBOL, false, "angle")
+                .addEntry("夹角标识符", Type.SYMBOL, head = "angle")
                 .addEntry("向量A", Type.VECTOR, false)
                 .addEntry("向量B", Type.VECTOR, false)
                 .result("向量夹角", Type.DOUBLE),
             Action.new("Math数学运算", "向量距离", "vector", true)
                 .description("向量A与向量B的距离")
-                .addEntry("距离标识符", Type.SYMBOL, false, "distance")
+                .addEntry("距离标识符", Type.SYMBOL, head = "distance")
                 .addEntry("向量A", Type.VECTOR, false)
                 .addEntry("向量B", Type.VECTOR, false)
                 .result("向量距离", Type.DOUBLE),
             Action.new("Math数学运算", "反转向量", "vector", true)
                 .description("反转向量")
-                .addEntry("反转标识符", Type.SYMBOL, false, "negate")
+                .addEntry("反转标识符", Type.SYMBOL, head = "negate")
                 .addEntry("向量", Type.VECTOR, false)
                 .addDest(Type.VECTOR, optional = true)
                 .result("反转后向量", Type.VECTOR),
             Action.new("Math数学运算", "归一化", "vector", true)
                 .description("标准化向量")
-                .addEntry("标准化标识符", Type.SYMBOL, false, "normalize")
+                .addEntry("标准化标识符", Type.SYMBOL, head = "normalize")
                 .addEntry("需要标准化的向量", Type.VECTOR, false)
                 .addEntry("标准化的长度", Type.DOUBLE, true, "1.0", "length")
                 .addDest(Type.VECTOR, optional = true)
                 .result("标准化的向量", Type.VECTOR),
             Action.new("Math数学运算", "世界原点向量(0向量)", "vector", true)
                 .description("世界原点向量(0向量)")
-                .addEntry("0向量标识符", Type.SYMBOL, false, "center")
+                .addEntry("0向量标识符", Type.SYMBOL, head = "center")
                 .result("0向量", Type.VECTOR),
             Action.new("Math数学运算", "原点向量", "vector", true)
                 .description("原点向量")
-                .addEntry("原点标识符", Type.SYMBOL, false, "origin")
+                .addEntry("原点标识符", Type.SYMBOL, head = "origin")
                 .result("origin原点向量", Type.VECTOR),
         )
     ) {
@@ -104,14 +104,14 @@ object VectorMathActions {
             case("normalize") { normalize(it) }
             case("center") {
                 actionFuture { future ->
-                    future.complete(AbstractVector(Vector3d()))
+                    future.complete(AbstractVector())
                 }
             }
             case("origin") {
                 actionFuture { future ->
                     val vector = script().getParameter().origin?.location?.toVector() ?: Vector(0, 0, 0)
                     val vector3d = Vector3d(vector.x, vector.y, vector.z)
-                    future.complete(AbstractVector(vector3d))
+                    future.complete(vector3d.abstract())
                 }
             }
             other { create(it) }
@@ -126,7 +126,7 @@ object VectorMathActions {
             run(x).double { x ->
                 run(y).double { y ->
                     run(z).double { z ->
-                        it.complete(AbstractVector(Vector3d(x, y, z)))
+                        it.complete(Vector3d(x, y, z).abstract())
                     }
                 }
             }

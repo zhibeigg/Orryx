@@ -58,10 +58,6 @@ taboolib {
             name("AttributePlus").optional(true)
         }
     }
-    relocate("com.google", "org.gitee.orryx.google")
-    relocate("com.github.benmanes", "org.gitee.orryx.benmanes")
-    relocate("org.joml", "org.gitee.orryx.joml")
-    relocate("com.lark.oapi", "org.gitee.orryx.lark.oapi")
     version { taboolib = "6.2.1-df22fb1" }
 }
 
@@ -97,10 +93,10 @@ dependencies {
     compileOnly("com.github.retrooper:packetevents-spigot:2.7.0")
     compileOnly("com.comphenix.protocol:ProtocolLib:5.3.0")
 
-    taboo("com.google.code.gson:gson:2.10.1")
-    taboo("com.github.ben-manes.caffeine:caffeine:2.9.3")
-    taboo("org.joml:joml:1.10.7")
-    taboo("com.larksuite.oapi:oapi-sdk:2.4.7")
+    compileOnly("com.google.code.gson:gson:2.10.1")
+    compileOnly("com.github.ben-manes.caffeine:caffeine:2.9.3")
+    compileOnly("org.joml:joml:1.10.7")
+    compileOnly("com.larksuite.oapi:oapi-sdk:2.4.7")
 
     compileOnly(kotlin("stdlib"))
     compileOnly(fileTree("libs"))

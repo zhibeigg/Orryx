@@ -3,6 +3,7 @@ package org.gitee.orryx.utils
 import ink.ptms.adyeshach.core.entity.EntityInstance
 import org.bukkit.Bukkit
 import org.bukkit.Location
+import org.bukkit.World
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.container.Container
@@ -180,3 +181,5 @@ internal fun Any?.readContainer(context: ScriptContext): IContainer? {
 internal fun IContainer?.orElse(container: IContainer): IContainer {
     return this ?: container
 }
+
+fun worldPlayerWorldContainer(world: World) = Container(world.players.map { it.toTarget() }.toMutableSet())

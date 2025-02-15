@@ -9,8 +9,10 @@ import org.gitee.orryx.api.adapters.IVector
 import org.gitee.orryx.api.adapters.vector.AbstractVector
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.core.targets.ITargetLocation
+import org.joml.Matrix4d
 import org.joml.Vector3d
 import org.joml.Vector3dc
+import taboolib.module.effect.math.Matrix
 
 /**
  * AbstractLocation是否面相loc2
@@ -86,6 +88,15 @@ fun Vector3d.abstract() = AbstractVector(this)
 fun IVector.bukkit() = Vector(joml.x, joml.y, joml.z)
 
 fun IVector.joml() = joml
+
+fun Matrix4d.taboo() = Matrix(
+    arrayOf(
+        doubleArrayOf(m00(), m01(), m02(), m03()),
+        doubleArrayOf(m10(), m11(), m12(), m13()),
+        doubleArrayOf(m20(), m21(), m22(), m23()),
+        doubleArrayOf(m30(), m31(), m32(), m33())
+    )
+)
 
 data class AABB(val minVector3d: Vector3dc, val maxVector3d: Vector3dc) {
 

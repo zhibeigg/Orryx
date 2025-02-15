@@ -45,7 +45,7 @@ object EntityActions {
         val name = reader.nextParsedAction()
         val type = reader.nextParsedAction()
         val health = reader.nextHeadAction("health", 0.0)
-        val vector = reader.nextHeadAction("vector", AbstractVector(Vector3d()))
+        val vector = reader.nextHeadAction("vector", AbstractVector())
         val gravity = reader.nextHeadAction("gravity", true)
         val timeout = reader.nextHeadAction("timeout", 0.0)
         val they = reader.nextTheyContainer()

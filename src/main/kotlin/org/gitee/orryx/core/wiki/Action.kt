@@ -85,20 +85,15 @@ class Action(val group: String, val name: String, val key: String, val sharded: 
             )).build())
             .build()
         val line = "$key " + entries.joinToString(" ") { entry ->
-            val start = if (entry.optional) {
-                "["
+            val (start, end) = if (entry.optional) {
+                "[" to "]"
             } else {
-                "<"
-            }
-            val end = if (entry.optional) {
-                "]"
-            } else {
-                ">"
+                "<" to ">"
             }
             var string = if (entry.type == Type.SYMBOL) {
-                "${start}${entry.type.name}"
-            } else {
                 entry.head!!
+            } else {
+                "${start}${entry.type.name}"
             }
             if (entry.type != Type.SYMBOL) {
                 if (entry.head != null) {
@@ -247,7 +242,7 @@ class Action(val group: String, val name: String, val key: String, val sharded: 
                             .headerRow(true)
                             .columnSize(4)
                             .rowSize(entries.size + 1)
-                            .columnWidth(arrayOf(100, 100, 100, 400))
+                            .columnWidth(arrayOf(100, 200, 60, 400))
                             .build()
                     )
                     .build()
@@ -312,7 +307,7 @@ class Action(val group: String, val name: String, val key: String, val sharded: 
                 .property(
                     TableProperty.newBuilder()
                         .headerRow(true)
-                        .columnWidth(arrayOf(100, 400))
+                        .columnWidth(arrayOf(150, 400))
                         .columnSize(2)
                         .rowSize(2)
                         .build()
