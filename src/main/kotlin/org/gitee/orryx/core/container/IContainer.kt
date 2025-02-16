@@ -44,27 +44,27 @@ interface IContainer {
     /**
      * 循环容器中的每个目标
      *
-     * 如果[func]返回 true 则删除目标
-     * @param func 对目标执行的匿名方法
+     * 如果[predicate]返回 true 则删除目标
+     * @param predicate 对目标执行的匿名方法
      * @return 原容器
      * */
-    fun removeIf(func: (target: ITarget<*>) -> Boolean): IContainer
+    fun removeIf(predicate: (target: ITarget<*>) -> Boolean): IContainer
 
     /**
      * 循环容器[other]中的每个目标
      *
-     * 如果[func]返回 true 则合并目标
+     * 如果[predicate]返回 true 则合并目标
      * @param other 被合并容器
-     * @param func 对目标执行的匿名方法
+     * @param predicate 对目标执行的匿名方法
      * @return 原容器
      * */
-    fun mergeIf(other: IContainer, func: (target: ITarget<*>) -> Boolean): IContainer
+    fun mergeIf(other: IContainer, predicate: (target: ITarget<*>) -> Boolean): IContainer
 
     /**
      * 循环执行容器中每个目标的匿名方法
-     * @param func 对目标执行的匿名方法
+     * @param action 对目标执行的匿名方法
      * */
-    fun foreach(func: (target: ITarget<*>) -> Unit)
+    fun foreach(action: (target: ITarget<*>) -> Unit)
 
     /**
      * 获取第一个

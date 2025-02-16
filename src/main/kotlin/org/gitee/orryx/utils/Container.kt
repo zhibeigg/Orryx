@@ -15,171 +15,118 @@ import taboolib.module.kether.ScriptContext
 import java.util.*
 
 /**
- * 移除容器中的类型目标
- * @param T [ITarget]类型
+ * 移除容器中所有指定类型的目标
  * @return 原容器
- * */
-inline fun <reified T> IContainer.remove(): IContainer {
-    targets.removeIf {
-        it is T
-    }
-    return this
+ */
+inline fun <reified T> IContainer.remove(): IContainer = apply {
+    targets.removeIf { it is T }
 }
 
 /**
- * 获取容器中的类型目标
- * @param T [ITarget]类型
- * @return 满足的目标
- * */
-inline fun <reified T : ITarget<*>> IContainer.get(): MutableSet<T> {
-    return targets.filterIsInstance<T>().toMutableSet()
+ * 获取容器中指定类型目标的不可变视图
+ */
+inline fun <reified T : ITarget<*>> IContainer.get(): List<T> {
+    return targets.filterIsInstance<T>()
 }
 
 /**
- * 类型中全部满足true时返回true
- * @param T [ITarget]类型
- * @param func 对目标执行的匿名方法
- * @return 是否全部满足
- * */
-inline fun <reified T : ITarget<*>> IContainer.all(func: (target: T) -> Boolean): Boolean {
-    return get<T>().all { func(it) }
+ * 检查所有指定类型目标是否满足条件
+ */
+inline fun <reified T : ITarget<*>> IContainer.all(predicate: (T) -> Boolean): Boolean {
+    return targets.none { it is T && !predicate(it) }
 }
 
 /**
- * 类型中任一满足true时返回true
- * @param T [ITarget]类型
- * @param func 对目标执行的匿名方法
- * @return 是否任一满足
- * */
-inline fun <reified T : ITarget<*>> IContainer.any(func: (target: T) -> Boolean): Boolean {
-    return get<T>().any { func(it) }
+ * 检查是否存在满足条件的指定类型目标
+ */
+inline fun <reified T : ITarget<*>> IContainer.any(predicate: (T) -> Boolean): Boolean {
+    return targets.any { it is T && predicate(it) }
 }
 
 /**
- * 对某类型循环执行方法
- * @param T [ITarget]类型
- * @param func 对目标执行的匿名方法
- * @return 原容器
- * */
-inline fun <reified T: ITarget<*>> IContainer.forEachInstance(func: (target: T) -> Unit): IContainer {
-    targets.forEach {
-        if (it is T) {
-            func(it)
-        }
-    }
-    return this
+ * 对指定类型目标执行操作
+ */
+inline fun <reified T : ITarget<*>> IContainer.forEachInstance(action: (T) -> Unit): IContainer = apply {
+    targets.filterIsInstance<T>().forEach(action)
 }
 
 /**
- * 对某类型循环执行方法获得[R]并返回列表
- * @param T [ITarget]类型
- * @param func 对目标执行的匿名方法
- * @return [R]列表
- * */
-inline fun <reified T: ITarget<*>, R : Any> IContainer.mapInstance(func: (target: T) -> R?): List<R?> {
-    return targets.mapNotNull {
-        if (it is T) {
-            func(it)
-        } else {
-            null
-        }
-    }
+ * 转换指定类型目标为[R]类型列表
+ */
+inline fun <reified T : ITarget<*>, R> IContainer.mapInstance(transform: (T) -> R): List<R> {
+    return targets.mapNotNull { (it as? T)?.let(transform) }
 }
 
 /**
- * 对某类型循环执行方法获得[R]并返回无NULL列表
- * @param T [ITarget]类型
- * @param func 对目标执行的匿名方法
- * @return [R]列表
- * */
-inline fun <reified T: ITarget<*>, R : Any> IContainer.mapNotNullInstance(func: (target: T) -> R?): List<R> {
-    return mapInstance<T, R> { func(it) }.mapNotNullTo(ArrayList()) { it }
+ * 转换指定类型目标为非空[R]类型列表
+ */
+inline fun <reified T : ITarget<*>, R : Any> IContainer.mapNotNullInstance(transform: (T) -> R?): List<R> {
+    return targets.mapNotNull { (it as? T)?.let(transform) }
 }
 
 /**
- * 获取第一个
- * @throws NoSuchElementException 如果容器为空
- * */
-inline fun <reified T: ITarget<*>> IContainer.firstInstance(): T {
-    return firstInstanceOrNull<T>() ?: throw NoSuchElementException()
+ * 获取第一个指定类型目标（非空）
+ */
+inline fun <reified T : ITarget<*>> IContainer.firstInstance(): T {
+    return firstInstanceOrNull() ?: throw NoSuchElementException()
 }
 
 /**
- * 获取第一个或null
- * */
-inline fun <reified T: ITarget<*>> IContainer.firstInstanceOrNull(): T? {
-    var target: T? = null
-    targets.forEach {
-        if (it is T) {
-            target = it
-        }
-    }
-    return target
+ * 获取第一个指定类型目标（可为空）
+ */
+inline fun <reified T : ITarget<*>> IContainer.firstInstanceOrNull(): T? {
+    return targets.find { it is T } as? T
 }
 
+/**
+ * 合并多个容器
+ */
 fun mergeAll(containers: List<IContainer>): IContainer {
-    return Container().apply {
-        containers.forEach {
-            merge(it)
-        }
+    return containers.fold(Container()) { acc, container ->
+        acc.apply { merge(container) }
     }
 }
 
-internal fun Any?.readContainer(context: ScriptContext): IContainer? {
-    if (AdyeshachPlugin.isEnabled && this is EntityInstance) {
+/**
+ * 安全容器解析（性能优化版）
+ */
+internal fun Any?.readContainer(context: ScriptContext): IContainer? = when {
+    // Adyeshach 实体处理
+    AdyeshachPlugin.isEnabled && this is EntityInstance -> {
         debug("readEntityInstance")
-        return toTarget().readContainer(context)
+        toTarget().readContainer(context)
     }
-    return when (this) {
-        is String -> {
-            debug("readString")
-            StringParser(this).container(context)
-        }
-        is Player -> {
-            debug("readPlayer")
-            toTarget().readContainer(context)
-        }
-        is IContainer -> {
-            debug("readIContainer")
-            this
-        }
-        is Entity -> {
-            debug("readEntity")
-            toTarget().readContainer(context)
-        }
-        is Location -> {
-            debug("readLocation")
-            toTarget().readContainer(context)
-        }
-        is UUID -> {
-            debug("readUUID")
-            Bukkit.getEntity(this)?.readContainer(context) ?: Container()
-        }
-        is ITarget<*> -> {
-            debug("readTarget")
-            Container(mutableSetOf(this))
-        }
-        is Iterable<*> -> {
-            debug("readIterable")
-            mergeAll(mapNotNull { readContainer(context) })
-        }
-        is ProxyCommandSender -> {
-            debug("readProxyCommandSender")
-            castSafely<Player>()?.toTarget().readContainer(context)
-        }
-        null -> {
-            debug("readNull")
-            null
-        }
-        else -> {
-            debug("readElse")
-            Container()
-        }
-    }
+
+    // 基础类型处理
+    this == null -> null.also { debug("readNull") }
+    this is String -> StringParser(this).container(context).also { debug("readString") }
+    this is IContainer -> this.also { debug("readIContainer") }
+    this is ITarget<*> -> Container(mutableSetOf(this)).also { debug("readTarget") }
+
+    // 实体相关处理
+    this is Player -> toTarget().readContainer(context).also { debug("readPlayer") }
+    this is Entity -> toTarget().readContainer(context).also { debug("readEntity") }
+    this is Location -> toTarget().readContainer(context).also { debug("readLocation") }
+    this is UUID -> Bukkit.getEntity(this)?.readContainer(context) ?: Container().also { debug("readUUID") }
+
+    // 集合处理
+    this is Iterable<*> -> mergeAll(mapNotNull { it?.readContainer(context) }).also { debug("readIterable") }
+
+    // 命令发送者处理
+    this is ProxyCommandSender -> castSafely<Player>()?.toTarget()?.readContainer(context).also { debug("readProxyCommandSender") }
+
+    // 默认处理
+    else -> Container().also { debug("readElse") }
 }
 
-internal fun IContainer?.orElse(container: IContainer): IContainer {
-    return this ?: container
-}
+/**
+ * 安全获取容器或返回默认值
+ */
+internal fun IContainer?.orElse(default: IContainer): IContainer = this ?: default
 
-fun worldPlayerWorldContainer(world: World) = Container(world.players.map { it.toTarget() }.toMutableSet())
+/**
+ * 创建世界玩家容器（性能优化版）
+ */
+fun worldPlayerWorldContainer(world: World): IContainer {
+    return Container(world.players.mapTo(LinkedHashSet(), Player::toTarget))
+}

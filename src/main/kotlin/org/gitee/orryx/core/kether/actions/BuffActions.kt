@@ -150,7 +150,7 @@ object BuffActions {
                         run(timeout).long { timeout ->
                             containerOrSelf(container) { container ->
                                 container.forEachInstance<PlayerTarget> { player ->
-                                    sendBuff(player.player, buff, timeout)
+                                    sendBuff(player.getSource(), buff, timeout)
                                 }
                             }
                         }
@@ -158,7 +158,7 @@ object BuffActions {
                 }
             }
             case("clear") {
-                val container1 = it.nextTheyContainer()
+                val container1 = it.nextTheyContainerOrNull()
                 val buff = it.nextParsedAction()
                 val container2 = it.nextTheyContainer()
                 actionNow {
@@ -166,14 +166,14 @@ object BuffActions {
                         run(buff).str { buff ->
                             containerOrSelf(container2) { container ->
                                 container.forEachInstance<PlayerTarget> { player ->
-                                    clearBuff(player.player, buff)
+                                    clearBuff(player.getSource(), buff)
                                 }
                             }
                         }
                     } else {
                         containerOrSelf(container1) { container ->
                             container.forEachInstance<PlayerTarget> { player ->
-                                clearBuffAll(player.player)
+                                clearBuffAll(player.getSource())
                             }
                         }
                     }
@@ -186,7 +186,7 @@ object BuffActions {
                     run(buff).str { buff ->
                         containerOrSelf(container) { container ->
                             it.complete(container.all<PlayerTarget> { player ->
-                                hasBuff(player.player, buff)
+                                hasBuff(player.getSource(), buff)
                             })
                         }
                     }

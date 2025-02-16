@@ -25,7 +25,7 @@ internal inline fun <reified T> StringParser.Entry.read(index: Int, def: T): T {
         EffectType::class -> try {
             EffectType.valueOf(value.uppercase())
         } catch (e: Exception) {
-            warning("not found Material")
+            warning("not found EffectType")
             EffectType.valueOf("ARC")
         }
         Material::class -> try {

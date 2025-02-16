@@ -38,13 +38,13 @@ object DamageActions {
                 if (attribute) {
                     container!!.forEachInstance<ITargetEntity<*>> { target ->
                         target.entity.getBukkitLivingEntity()?.let { entity ->
-                            IAttributeBridge.INSTANCE.damage(sources.firstInstance<PlayerTarget>().player, entity, damage, damageType)
+                            IAttributeBridge.INSTANCE.damage(sources.firstInstance<PlayerTarget>().getSource(), entity, damage, damageType)
                         }
                     }
                 } else {
                     container!!.forEachInstance<ITargetEntity<*>> { target ->
                         target.entity.getBukkitLivingEntity()?.let { entity ->
-                            Default.damage(sources.firstInstance<PlayerTarget>().player, entity, damage, damageType)
+                            Default.damage(sources.firstInstance<PlayerTarget>().getSource(), entity, damage, damageType)
                         }
                     }
                 }

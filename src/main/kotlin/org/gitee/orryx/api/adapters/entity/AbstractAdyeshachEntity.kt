@@ -15,14 +15,18 @@ import org.gitee.orryx.core.targets.ITargetLocation
 import taboolib.common5.cdouble
 import java.util.*
 
-open class AbstractAdyeshachEntity(val instance: EntityInstance) : IEntity, ITargetEntity<EntityInstance>, ITargetLocation<EntityInstance> {
-
-    override fun getSource(): EntityInstance {
-        return instance
-    }
+open class AbstractAdyeshachEntity(private val instance: EntityInstance) : IEntity, ITargetEntity<EntityInstance>, ITargetLocation<EntityInstance> {
 
     override val entity: IEntity
-        get() = this
+        get() = object : IEntity by this {}
+
+    override val location: Location
+        get() = instance.getLocation().clone()
+
+    override val eyeLocation: Location
+        get() = instance.getEyeLocation().clone()
+
+    override fun getSource(): EntityInstance = instance
 
     override val entityId: Int
         get() = instance.index
@@ -43,11 +47,7 @@ open class AbstractAdyeshachEntity(val instance: EntityInstance) : IEntity, ITar
         get() = instance.isRemoved
 
     override val isDead: Boolean
-        get() = if(instance is AdyEntityLiving) {
-            instance.isDie
-        } else {
-            false
-        }
+        get() = (instance as? AdyEntityLiving)?.isDie ?: false
 
     override val isValid: Boolean
         get() = !isDeleted
@@ -55,7 +55,14 @@ open class AbstractAdyeshachEntity(val instance: EntityInstance) : IEntity, ITar
     override var customName: String?
         get() = instance.getCustomName()
         set(value) {
-            instance.setCustomName(value ?: error("Not name."))
+            requireNotNull(value) { "Custom name cannot be null" }
+            instance.setCustomName(value)
+        }
+
+    override var velocity: Vector
+        get() = instance.getVelocity().clone()
+        set(value) {
+            instance.setVelocity(value.clone())
         }
 
     override val gravity: Boolean
@@ -76,25 +83,13 @@ open class AbstractAdyeshachEntity(val instance: EntityInstance) : IEntity, ITar
     override val vehicle: IEntity?
         get() = instance.getVehicle()?.let { AbstractAdyeshachEntity(it) }
 
-    override val location: Location
-        get() = instance.getLocation()
-
-    override val eyeLocation: Location
-        get() = instance.getEyeLocation()
-
-    override var velocity: Vector
-        get() = instance.getVelocity()
-        set(value) {
-            val vector = Vector(value.x, value.y, value.z)
-            instance.setVelocity(vector)
-        }
-
     override val moveSpeed: Double
         get() = instance.moveSpeed
 
-
     override val isOnGround: Boolean
-        get() = instance.getLocation().let { it.blockY.cdouble == it.y }
+        get() = instance.getLocation().let { loc ->
+            loc.y == loc.blockY.cdouble
+        }
 
     override val isFrozen: Boolean
         get() = false
@@ -120,35 +115,25 @@ open class AbstractAdyeshachEntity(val instance: EntityInstance) : IEntity, ITar
     override val isSilent: Boolean
         get() = instance.isNitwit
 
-    override fun hashCode(): Int {
-        return instance.hashCode()
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-
-        if (other is EntityInstance) {
-            return instance == other
-        }
-
-        if (other is AbstractAdyeshachEntity) {
-            return other.instance == instance
-        }
-
-        return false
-    }
-
     override fun teleport(location: Location) {
-        instance.teleport(location)
+        instance.teleport(location.clone())
     }
 
     override fun remove() {
         instance.remove()
     }
 
-    override fun toString(): String {
-        return "ady{id:${instance.id},uuid:${instance.uniqueId}}"
+    override fun hashCode(): Int = instance.hashCode()
+
+    override fun equals(other: Any?): Boolean = when (other) {
+        this -> true
+        is EntityInstance -> instance == other
+        is AbstractAdyeshachEntity -> instance == other.instance
+        else -> false
     }
 
+    override fun toString(): String {
+        return "AbstractAdyeshachEntity(id=${instance.id}, type=${type}, world=${world.name})"
+    }
 
 }

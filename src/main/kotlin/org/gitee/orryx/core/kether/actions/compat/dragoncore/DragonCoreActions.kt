@@ -64,11 +64,11 @@ object DragonCoreActions {
                                     containerOrSelf(container) { container ->
                                         container.forEachInstance<PlayerTarget> { player ->
                                             armourersMap.computeIfAbsent(player.uniqueId) { mutableListOf() }.add(armourers)
-                                            DragonAPI.updatePlayerSkin(player.player)
+                                            DragonAPI.updatePlayerSkin(player.getSource())
                                             SimpleTimeoutTask.createSimpleTask(timeout) {
                                                 if (armourersMap.containsKey(player.uniqueId)) {
                                                     armourersMap[player.uniqueId]!!.remove(armourers)
-                                                    DragonAPI.updatePlayerSkin(player.player)
+                                                    DragonAPI.updatePlayerSkin(player.getSource())
                                                 }
                                             }
                                         }
@@ -89,7 +89,7 @@ object DragonCoreActions {
                                         container.forEachInstance<PlayerTarget> { player ->
                                             if (armourersMap.containsKey(player.uniqueId)) {
                                                 armourersMap[player.uniqueId]!!.remove(armourers)
-                                                DragonAPI.updatePlayerSkin(player.player)
+                                                DragonAPI.updatePlayerSkin(player.getSource())
                                             }
                                         }
                                     }
@@ -99,7 +99,7 @@ object DragonCoreActions {
                                     container.forEachInstance<PlayerTarget> { player ->
                                         if (armourersMap.containsKey(player.uniqueId)) {
                                             armourersMap[player.uniqueId]!!.clear()
-                                            DragonAPI.updatePlayerSkin(player.player)
+                                            DragonAPI.updatePlayerSkin(player.getSource())
                                         }
                                     }
                                 }

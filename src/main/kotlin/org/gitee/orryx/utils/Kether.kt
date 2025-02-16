@@ -69,6 +69,10 @@ internal fun QuestReader.nextTheyContainer(): ParsedAction<*> {
     return this.nextHeadAction("they", "")
 }
 
+internal fun QuestReader.nextTheyContainerOrNull(): ParsedAction<*>? {
+    return this.nextHeadActionOrNull(arrayOf("they"))
+}
+
 internal fun QuestReader.nextTheyContainerOrSelf(): ParsedAction<*> {
     return this.nextHeadAction("they", "@self")
 }

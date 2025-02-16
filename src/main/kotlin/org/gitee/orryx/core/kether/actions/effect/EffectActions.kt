@@ -21,7 +21,7 @@ object EffectActions {
      * ```
      * set m matrix
      * effect create/new e {
-     *   draw particle "@type DRAGON_BREATH @color 0 0 0 @count 1"
+     *   draw particle "@type DRAGON_BREATH @count 1"
      *   draw matrix &m
      * }
      * effect show &e they "@self" viewer "@self" onHit {
@@ -33,7 +33,7 @@ object EffectActions {
      * set m matrix
      *
      * effect show effect temp {
-     *   draw particle "@type DRAGON_BREATH @color 0 0 0 @count 1"
+     *   draw particle "@type DRAGON_BREATH @count 1"
      *   draw matrix &m
      * } duration 20 period 2 they "@self" viewer "@self" onHit {
      *   tell &target
@@ -44,7 +44,7 @@ object EffectActions {
     private fun effect() = scriptParser(
         arrayOf(
             Action.new("Effect粒子效果", "显示粒子", "effect", true)
-                .description("显示一次粒子")
+                .description("创建粒子生成器并显示粒子")
                 .addEntry("显示占位符", Type.SYMBOL, head = "show")
                 .addEntry("粒子效果构建器", Type.EFFECT)
                 .addEntry("粒子显示时长，默认单次", Type.LONG, true, "1", "duration")
@@ -52,6 +52,11 @@ object EffectActions {
                 .addContainerEntry("粒子显示位置", true, default = "@self")
                 .addContainerEntry("粒子可视者", true, default = "@world", head = "viewer")
                 .addEntry("当粒子击中实体时触发", Type.ANY, true, head = "onHit")
+                .result("粒子生成器", Type.EFFECT_SPAWNER),
+            Action.new("Effect粒子效果", "停止显示粒子", "effect", true)
+                .description("停止显示粒子")
+                .addEntry("停止显示占位符", Type.SYMBOL, head = "stop")
+                .addEntry("粒子生成器", Type.EFFECT_SPAWNER)
                 .result("粒子生成器", Type.EFFECT_SPAWNER),
             Action.new("Effect粒子效果", "创建临时特效构建器", "effect", true)
                 .description("创建临时特效构建器")
@@ -62,18 +67,21 @@ object EffectActions {
                 .description("创建指定名特效构建器，并存储到键名中")
                 .addEntry("创建占位符", Type.SYMBOL, head = "create/new")
                 .addEntry("画板语句", Type.ANY)
-                .result("粒子生成器", Type.EFFECT),
+                .result("粒子生成器", Type.EFFECT)
         )
     ) {
         it.switch {
             case("show") {
                 show(this)
             }
+            case("stop") {
+                stop(this)
+            }
             case("temp") {
-                show(this)
+                temp(this)
             }
             case("create", "new") {
-                show(this)
+                create(this)
             }
             other { show(this) }
         }
@@ -252,8 +260,8 @@ object EffectActions {
         return actionNow {
             container(origin, self()) { origin ->
                 run(arrivalTime).int { arrivalTime ->
-                    container(destination, self()) {
-                        val effectBuilder = effectBuilder() ?: return@container
+                    container(destination, self()) end@{
+                        val effectBuilder = effectBuilder() ?: return@end
                         val des = it.firstInstanceOrNull<ITargetEntity<*>>()?.entity?.uniqueId?.let { uuid -> ProxyParticle.VibrationData.EntityDestination(uuid) } ?: ProxyParticle.VibrationData.LocationDestination(adaptLocation(it.firstInstance<ITargetLocation<*>>().location))
                         effectBuilder.vibrationData = ProxyParticle.VibrationData(
                             adaptLocation(origin.firstInstance<ITargetLocation<*>>().location),
@@ -326,13 +334,15 @@ object EffectActions {
                     run(tick).long { period ->
                         containerOrSelf(they) { origins ->
                             container(viewer, worldPlayerWorldContainer(script().bukkitPlayer().world)) { viewers ->
-                                future.complete(EffectSpawner(
+                                val spawner = EffectSpawner(
                                     effect,
                                     duration,
                                     period,
                                     origins,
                                     viewers
-                                ))
+                                )
+                                spawner.start()
+                                future.complete(spawner)
                             }
                         }
                     }
@@ -341,5 +351,42 @@ object EffectActions {
         }
     }
 
+    private fun stop(reader: QuestReader): ScriptAction<Any?> {
+        val spawner = reader.nextParsedAction()
+        return actionFuture { future ->
+            run(spawner).effectSpawner { spawner ->
+                spawner.stop()
+                future.complete(spawner)
+            }
+        }
+    }
+
+    private fun temp(reader: QuestReader): ScriptAction<Any?> {
+        val function = reader.nextParsedAction()
+        return actionFuture { future ->
+            val effect = EffectBuilder()
+            script()["@effect"] = effect
+            run(function).thenRun {
+                script()["@effect"] = null
+                future.complete(effect)
+            }
+        }
+    }
+
+    private fun create(reader: QuestReader): ScriptAction<Any?> {
+        val function = reader.nextParsedAction()
+        val key = reader.nextParsedAction()
+        return actionFuture { future ->
+            val effect = EffectBuilder()
+            script()["@effect"] = effect
+            run(function).thenRun {
+                run(key).str { key ->
+                    script()["@effect"] = null
+                    script()[key] = effect
+                    future.complete(effect)
+                }
+            }
+        }
+    }
 
 }

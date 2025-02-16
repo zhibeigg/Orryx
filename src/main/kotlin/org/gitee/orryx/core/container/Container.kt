@@ -2,85 +2,67 @@ package org.gitee.orryx.core.container
 
 import org.gitee.orryx.core.targets.ITarget
 
-class Container(override val targets: MutableSet<ITarget<*>> = mutableSetOf()): IContainer {
+class Container(override val targets: MutableSet<ITarget<*>> = LinkedHashSet()) : IContainer {
 
-    override fun merge(other: IContainer): IContainer {
-        targets += other.targets
-        return this
+    override fun merge(other: IContainer): IContainer = apply {
+        targets.addAll(other.targets)
     }
 
-    override infix fun and(other: IContainer): IContainer {
-        targets += other.targets
-        return this
+    override infix fun and(other: IContainer): IContainer = merge(other)
+
+    override fun remove(other: IContainer): IContainer = apply {
+        targets.removeAll(other.targets)
     }
 
-
-    override fun remove(other: IContainer): IContainer {
-        targets -= other.targets
-        return this
+    override fun remove(target: ITarget<*>): IContainer = apply {
+        targets.remove(target)
     }
 
-    override fun remove(target: ITarget<*>): IContainer {
-        targets -= target
-        return this
+    override fun add(target: ITarget<*>): IContainer = apply {
+        targets.add(target)
     }
 
-    override fun add(target: ITarget<*>): IContainer {
-        targets += target
-        return this
+    override fun addAll(targets: Iterable<ITarget<*>>): IContainer = apply {
+        this.targets.addAll(targets)
     }
 
-    override fun removeIf(func: (target: ITarget<*>) -> Boolean): IContainer {
-        targets.removeIf {
-            func(it)
-        }
-        return this
+    override fun removeIf(predicate: (ITarget<*>) -> Boolean): IContainer = apply {
+        targets.removeIf(predicate)
     }
 
-    override fun mergeIf(other: IContainer, func: (target: ITarget<*>) -> Boolean): IContainer {
-        other.targets.forEach {
-            if (func(it)) {
-                targets.add(it)
-            }
-        }
-        return this
+    override fun mergeIf(other: IContainer, predicate: (ITarget<*>) -> Boolean): IContainer = apply {
+        targets.addAll(other.targets.filter(predicate))
     }
 
-    override fun foreach(func: (target: ITarget<*>) -> Unit) {
-        targets.forEach {
-            func(it)
-        }
+    override fun foreach(action: (ITarget<*>) -> Unit) {
+        targets.forEach(action)
     }
 
-    override fun addAll(targets: Iterable<ITarget<*>>): IContainer {
-        targets.forEach {
-            this.targets += it
-        }
-        return this
-    }
+    override fun clone(): IContainer = Container(LinkedHashSet(targets))
 
-    override fun clone(): IContainer = Container().also {
-        it.addAll(targets)
-    }
+    override fun first(): ITarget<*> = targets.first()
 
-    override fun first(): ITarget<*> {
-        return targets.first()
-    }
+    override fun firstOrNull(): ITarget<*>? = targets.firstOrNull()
 
-    override fun firstOrNull(): ITarget<*>? {
-        return targets.firstOrNull()
-    }
+    override fun take(amount: Int): List<ITarget<*>> = targets.take(amount)
 
-    override fun take(amount: Int): List<ITarget<*>> {
-        return targets.take(amount)
-    }
-
-    override fun drop(amount: Int): List<ITarget<*>> {
-        return targets.drop(amount)
-    }
+    override fun drop(amount: Int): List<ITarget<*>> = targets.drop(amount)
 
     override fun toString(): String {
-        return targets.map { it.getSource().toString() }.toString()
+        return targets.joinToString(
+            prefix = "[",
+            postfix = "]",
+            transform = { it.getSource().toString() }
+        )
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        other as Container
+        return targets == other.targets
+    }
+
+    override fun hashCode(): Int = targets.hashCode()
 
 }

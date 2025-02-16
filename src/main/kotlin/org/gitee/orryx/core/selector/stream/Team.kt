@@ -27,11 +27,11 @@ object Team: ISelectorStream {
         val teamPlayers = DungeonPlus.teamManager.getTeam(context.bukkitPlayer())?.getPlayers(PlayerStateType.ONLINE) ?: return
         if (parameter.reverse) {
             container.removeIf {
-                it is PlayerTarget && teamPlayers.contains(it.player)
+                it is PlayerTarget && teamPlayers.contains(it.getSource())
             }
         } else {
             container.removeIf {
-                !(it is PlayerTarget && teamPlayers.contains(it.player))
+                !(it is PlayerTarget && teamPlayers.contains(it.getSource()))
             }
         }
     }

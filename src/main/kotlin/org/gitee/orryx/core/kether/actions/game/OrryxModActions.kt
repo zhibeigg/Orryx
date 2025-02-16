@@ -30,7 +30,7 @@ object OrryxModActions {
             now {
                 container.orElse(self()).forEachInstance<PlayerTarget> { player ->
                     viewers.orElse(self()).forEachInstance<PlayerTarget> { viewer ->
-                        PluginMessageHandler.applyGhostEffect(viewer.player, player.player, timeout*50, density, gap)
+                        PluginMessageHandler.applyGhostEffect(viewer.getSource(), player.getSource(), timeout*50, density, gap)
                     }
                 }
             }
@@ -55,7 +55,7 @@ object OrryxModActions {
             now {
                 container.orElse(self()).forEachInstance<PlayerTarget> { player ->
                     viewers.orElse(self()).forEachInstance<PlayerTarget> { viewer ->
-                        PluginMessageHandler.applyFlickerEffect(viewer.player, player.player, timeout*50, alpha)
+                        PluginMessageHandler.applyFlickerEffect(viewer.getSource(), player.getSource(), timeout*50, alpha)
                     }
                 }
             }

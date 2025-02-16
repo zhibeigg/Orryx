@@ -47,7 +47,7 @@ object MoneyActions {
                         containerOrSelf(container) { container ->
                             complete.complete(
                                 container.all<PlayerTarget> { target ->
-                                    target.player.getBalance() >= money
+                                    target.getSource().getBalance() >= money
                                 }
                             )
                         }
@@ -61,7 +61,7 @@ object MoneyActions {
                     run(money).double { money ->
                         containerOrSelf(they) {  container ->
                             container.forEachInstance<PlayerTarget> { target ->
-                                target.player.depositBalance(money)
+                                target.getSource().depositBalance(money)
                             }
                         }
                     }
@@ -74,7 +74,7 @@ object MoneyActions {
                     run(money).double { money ->
                         containerOrSelf(they) {  container ->
                             container.forEachInstance<PlayerTarget> { target ->
-                                target.player.withdrawBalance(money)
+                                target.getSource().withdrawBalance(money)
                             }
                         }
                     }
@@ -84,7 +84,7 @@ object MoneyActions {
                 val they = it.nextTheyContainer()
                 actionFuture {
                     containerOrSelf(they) { container ->
-                        it.complete(container.firstInstanceOrNull<PlayerTarget>()?.player?.getBalance() ?: 0.0)
+                        it.complete(container.firstInstanceOrNull<PlayerTarget>()?.getSource()?.getBalance() ?: 0.0)
                     }
                 }
             }
@@ -92,7 +92,7 @@ object MoneyActions {
                 val they = it.nextTheyContainer()
                 actionFuture {
                     containerOrSelf(they) { container ->
-                        it.complete(container.firstInstanceOrNull<PlayerTarget>()?.player?.getBalance() ?: 0.0)
+                        it.complete(container.firstInstanceOrNull<PlayerTarget>()?.getSource()?.getBalance() ?: 0.0)
                     }
                 }
             }

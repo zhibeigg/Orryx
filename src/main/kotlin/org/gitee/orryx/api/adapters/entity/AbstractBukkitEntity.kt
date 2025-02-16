@@ -12,14 +12,15 @@ import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.core.targets.ITargetLocation
 import java.util.*
 
-open class AbstractBukkitEntity(val instance: Entity) : IEntity, ITargetEntity<Entity>, ITargetLocation<Entity> {
-
-    override fun getSource(): Entity {
-        return instance
-    }
+open class AbstractBukkitEntity(private val instance: Entity) : IEntity, ITargetEntity<Entity>, ITargetLocation<Entity> {
 
     override val entity: IEntity
-        get() = this
+        get() = object : IEntity by this {}
+
+    override val location: Location
+        get() = instance.location
+
+    override fun getSource(): Entity = instance
 
     override val entityId: Int
         get() = instance.entityId
@@ -29,9 +30,6 @@ open class AbstractBukkitEntity(val instance: Entity) : IEntity, ITargetEntity<E
 
     override val isValid: Boolean
         get() = instance.isValid
-
-    override val location: Location
-        get() = instance.location
 
     override val eyeLocation: Location
         get() = (instance as? LivingEntity)?.eyeLocation ?: location
@@ -50,9 +48,7 @@ open class AbstractBukkitEntity(val instance: Entity) : IEntity, ITargetEntity<E
 
     override var customName: String?
         get() = instance.customName
-        set(value) {
-            instance.customName = value
-        }
+        set(value) { instance.customName = value }
 
     override val type: String
         get() = instance.type.name
@@ -67,15 +63,14 @@ open class AbstractBukkitEntity(val instance: Entity) : IEntity, ITargetEntity<E
         get() = instance.width
 
     override val vehicle: IEntity?
-        get() = instance.vehicle?.run { AbstractBukkitEntity(this) }
+        get() = instance.vehicle?.let { AbstractBukkitEntity(it) }
 
-    val isLivingEntity = instance is LivingEntity
+    val isLivingEntity: Boolean
+        get() = instance is LivingEntity
 
     override var velocity: Vector
         get() = instance.velocity
-        set(value) {
-            instance.velocity = value
-        }
+        set(value) { instance.velocity = value }
 
     override val moveSpeed: Double
         get() = (instance as? LivingEntity)?.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED)?.value ?: 0.0
@@ -107,24 +102,6 @@ open class AbstractBukkitEntity(val instance: Entity) : IEntity, ITargetEntity<E
     override val isInsideVehicle: Boolean
         get() = instance.isInsideVehicle
 
-    override fun hashCode(): Int {
-        return instance.hashCode()
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-
-        if (other is AbstractBukkitEntity) {
-            return instance == other.instance
-        }
-
-        if (other is Entity) {
-            return instance == other
-        }
-
-        return false
-    }
-
     override fun teleport(location: Location) {
         instance.teleport(location)
     }
@@ -133,8 +110,17 @@ open class AbstractBukkitEntity(val instance: Entity) : IEntity, ITargetEntity<E
         instance.remove()
     }
 
+    override fun hashCode(): Int = instance.hashCode()
+
+    override fun equals(other: Any?): Boolean = when (other) {
+        this -> true
+        is AbstractBukkitEntity -> instance == other.instance
+        is Entity -> instance == other
+        else -> false
+    }
+
     override fun toString(): String {
-        return "bukkit{name:${instance.name},uuid:${instance.uniqueId}}"
+        return "AbstractBukkitEntity(name=${instance.name}, type=${instance.type}, uuid=${instance.uniqueId})"
     }
 
 }

@@ -12,6 +12,7 @@ import org.joml.Vector3d
 import taboolib.common.platform.ProxyParticle
 import taboolib.common.platform.function.adaptLocation
 import taboolib.common.platform.function.adaptPlayer
+import taboolib.common.platform.function.info
 import taboolib.common.util.Location
 import taboolib.common5.cdouble
 import taboolib.module.effect.*
@@ -19,17 +20,13 @@ import taboolib.module.effect.shape.NStar
 import taboolib.module.effect.shape.OctagonalStar
 import taboolib.module.effect.shape.Pyramid
 import taboolib.module.effect.shape.Ray.RayStopType
-import java.awt.Color
 
 class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick: Long = 1, val origins: IContainer, val viewers: IContainer, val func: () -> Unit = {}): ParticleSpawner {
 
-    private val effects by lazy {
-        origins.mapNotNullInstance<ITargetLocation<*>, OrryxParticleObj> {
-            build(it).apply {
-                bindTarget = it
-            }
+    private val effects =
+        origins.mapInstance<ITargetLocation<*>, OrryxParticleObj> {
+            build(it)
         }
-    }
 
     fun start() {
         effects.forEach { effect ->
@@ -45,15 +42,19 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
 
     override fun spawn(location: Location) {
         viewers.forEachInstance<ITargetEntity<Player>> { target ->
-            adaptPlayer(target.entity).sendParticle(
+            adaptPlayer(target.getSource()).sendParticle(
                 builder.particle,
                 location,
                 taboolib.common.util.Vector(),
                 builder.count,
                 builder.speed,
-                ProxyParticle.DustData(Color.BLACK, 1.0f)
+                getParticleData()
             )
         }
+    }
+
+    private fun getParticleData(): ProxyParticle.Data? {
+        return builder.dustData ?: builder.dustTransitionData ?: builder.itemData ?: builder.blockData ?: builder.vibrationData
     }
 
     fun build(origin: ITargetLocation<*>): OrryxParticleObj {
@@ -74,11 +75,12 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
             RAY -> buildRay(origin)
             SPHERE -> buildSphere(origin)
             STAR -> buildStar(origin)
-            WING -> TODO()
+            WING -> error("")
         }
     }
 
     private fun buildArc(origin: ITargetLocation<*>): OrryxParticleObj {
+        info("build arc location ${origin.location}")
         return OrryxParticleObj(origin, createArc(
             adaptLocation(origin.location),
             builder.startAngle,

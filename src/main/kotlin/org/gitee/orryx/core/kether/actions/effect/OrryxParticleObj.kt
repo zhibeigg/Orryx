@@ -20,11 +20,23 @@ class OrryxParticleObj(var bindTarget: ITargetLocation<*>, val obj: ParticleObj,
     private var task: PlatformExecutor.PlatformTask? = null
 
     fun start() {
-        obj.alwaysShowAsync()
+        obj.spawner = spawner
+        spawner.builder.matrix?.taboo()?.let { obj.addMatrix(it) }
+        if (spawner.duration <= 1L) {
+            obj.show()
+        } else {
+            obj.alwaysPlayAsync()
+            createTask()
+        }
+    }
+
+    private fun createTask() {
         var delay = 0L
         task = submit(period = 1) {
             if (delay >= spawner.duration) {
+                task = null
                 cancel()
+                obj.turnOffTask()
             }
             if (delay % spawner.tick == 0L) {
                 spawner.func()
@@ -44,6 +56,7 @@ class OrryxParticleObj(var bindTarget: ITargetLocation<*>, val obj: ParticleObj,
                     is Star -> syncStar()
                 }
                 obj.period = spawner.builder.period
+                spawner.builder.matrix?.taboo()?.let { obj.setMatrix(it) }
             }
             delay ++
         }
@@ -51,6 +64,7 @@ class OrryxParticleObj(var bindTarget: ITargetLocation<*>, val obj: ParticleObj,
 
     fun stop() {
         task?.cancel()
+        task = null
         obj.turnOffTask()
     }
 
@@ -175,6 +189,10 @@ class OrryxParticleObj(var bindTarget: ITargetLocation<*>, val obj: ParticleObj,
         (obj as Star).also {
             it.origin = adaptLocation(bindTarget.location)
         }
+    }
+
+    override fun toString(): String {
+        return "OrryxParticleObj(bindTarget=$bindTarget ,obj=$obj, spawner=$spawner)"
     }
 
 }

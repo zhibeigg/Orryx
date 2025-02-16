@@ -22,7 +22,7 @@ object GameActions {
         ).apply(it) { isSprint, container ->
             now {
                 container.orElse(self()).forEachInstance<PlayerTarget> { player ->
-                    player.player.isSprinting = isSprint
+                    player.getSource().isSprinting = isSprint
                 }
             }
         }
