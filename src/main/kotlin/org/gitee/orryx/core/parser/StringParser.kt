@@ -27,6 +27,7 @@ class StringParser(val value: String) {
                     entry += Entry(true, it.removePrefix("!@"), mutableListOf())
                 }
                 else -> {
+                    if (i == -1) return@forEach
                     entry[i].body.add(it)
                 }
             }

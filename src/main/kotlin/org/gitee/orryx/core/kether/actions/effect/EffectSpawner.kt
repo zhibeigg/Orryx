@@ -1,18 +1,16 @@
 package org.gitee.orryx.core.kether.actions.effect
 
 import org.bukkit.entity.Player
-import org.bukkit.util.Vector
 import org.gitee.orryx.core.container.IContainer
 import org.gitee.orryx.core.kether.actions.effect.EffectType.*
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.utils.*
-import org.joml.Matrix4d
+import org.joml.Matrix3d
 import org.joml.Vector3d
 import taboolib.common.platform.ProxyParticle
 import taboolib.common.platform.function.adaptLocation
 import taboolib.common.platform.function.adaptPlayer
-import taboolib.common.platform.function.info
 import taboolib.common.util.Location
 import taboolib.common5.cdouble
 import taboolib.module.effect.*
@@ -25,7 +23,7 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
 
     private val effects =
         origins.mapInstance<ITargetLocation<*>, OrryxParticleObj> {
-            build(it)
+            build(EffectOrigin(it))
         }
 
     fun start() {
@@ -45,7 +43,7 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
             adaptPlayer(target.getSource()).sendParticle(
                 builder.particle,
                 location,
-                taboolib.common.util.Vector(),
+                taboolib.common.util.Vector(builder.offset.x(), builder.offset.y(), builder.offset.z()),
                 builder.count,
                 builder.speed,
                 getParticleData()
@@ -57,7 +55,7 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
         return builder.dustData ?: builder.dustTransitionData ?: builder.itemData ?: builder.blockData ?: builder.vibrationData
     }
 
-    fun build(origin: ITargetLocation<*>): OrryxParticleObj {
+    fun build(origin: EffectOrigin): OrryxParticleObj {
         return when(builder.type) {
             ARC -> buildArc(origin)
             ASTROID -> buildAstroid(origin)
@@ -79,10 +77,9 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
         }
     }
 
-    private fun buildArc(origin: ITargetLocation<*>): OrryxParticleObj {
-        info("build arc location ${origin.location}")
+    private fun buildArc(origin: EffectOrigin): OrryxParticleObj {
         return OrryxParticleObj(origin, createArc(
-            adaptLocation(origin.location),
+            adaptLocation(origin.getLocation(builder)),
             builder.startAngle,
             builder.angle,
             builder.radius,
@@ -91,61 +88,61 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
         ), this)
     }
 
-    private fun buildAstroid(origin: ITargetLocation<*>): OrryxParticleObj {
+    private fun buildAstroid(origin: EffectOrigin): OrryxParticleObj {
         return OrryxParticleObj(origin, createAstroid(
-            adaptLocation(origin.location),
+            adaptLocation(origin.getLocation(builder)),
             builder.radius,
             builder.step,
             builder.period
         ), this)
     }
 
-    private fun buildCircle(origin: ITargetLocation<*>): OrryxParticleObj {
+    private fun buildCircle(origin: EffectOrigin): OrryxParticleObj {
         return OrryxParticleObj(origin, createCircle(
-            adaptLocation(origin.location),
+            adaptLocation(origin.getLocation(builder)),
             builder.radius,
             builder.step,
             builder.period
         ), this)
     }
 
-    private fun buildCube(origin: ITargetLocation<*>): OrryxParticleObj {
-        val o = origin.location.toVector().joml()
+    private fun buildCube(origin: EffectOrigin): OrryxParticleObj {
+        val o = origin.getLocation(builder).toVector().joml()
         val width = builder.width
         val height = builder.height
         val length = builder.length
         val min = o.add(-0.5, -0.5, -0.5, Vector3d()).toLocation()
         val max = o.add(0.5, 0.5, 0.5, Vector3d())
-        val z = origin.location.direction.clone().setY(0).normalize().crossProduct(Vector(0, 1, 0)).joml()
-        val matrix = Matrix4d().scale(width, height, length).rotateY(origin.location.yaw.cdouble).rotate(origin.location.pitch.cdouble, z)
+        val z = origin.getLocation(builder).direction.clone().setY(0).normalize().crossProduct(taboolib.common.util.Vector(0, 1, 0)).joml()
+        val matrix = Matrix3d().scale(width, height, length).rotateY(origin.getLocation(builder).yaw.cdouble).rotate(origin.getLocation(builder).pitch.cdouble, z)
         return OrryxParticleObj(origin, createCube(
-            Location(origin.world.name, min.x, min.y, min.z),
-            Location(origin.world.name, max.x, max.y, max.z),
+            Location(origin.bindTarget.world.name, min.x, min.y, min.z),
+            Location(origin.bindTarget.world.name, max.x, max.y, max.z),
             builder.step,
             builder.period
         ).addMatrix(matrix.taboo()), this)
     }
 
-    private fun buildFilledCircle(origin: ITargetLocation<*>): OrryxParticleObj {
+    private fun buildFilledCircle(origin: EffectOrigin): OrryxParticleObj {
         return OrryxParticleObj(origin, createFilledCircle(
-            adaptLocation(origin.location),
+            adaptLocation(origin.getLocation(builder)),
             builder.radius,
             builder.sample,
             builder.period
         ), this)
     }
 
-    private fun buildHeart(origin: ITargetLocation<*>): OrryxParticleObj {
+    private fun buildHeart(origin: EffectOrigin): OrryxParticleObj {
         return OrryxParticleObj(origin, createHeart(
             builder.xScaleRate,
             builder.yScaleRate,
-            adaptLocation(origin.location),
+            adaptLocation(origin.getLocation(builder)),
             builder.period
         ), this)
     }
 
-    private fun buildLine(origin: ITargetLocation<*>): OrryxParticleObj {
-        val start = adaptLocation(origin.location)
+    private fun buildLine(origin: EffectOrigin): OrryxParticleObj {
+        val start = adaptLocation(origin.getLocation(builder))
         val vector = builder.vector ?: error("粒子未设置Vector")
         val end = start.clone().add(vector.x(), vector.y(), vector.z())
         return OrryxParticleObj(origin, createLine(
@@ -156,27 +153,28 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
         ), this)
     }
 
-    private fun buildLotus(origin: ITargetLocation<*>): OrryxParticleObj {
+    private fun buildLotus(origin: EffectOrigin): OrryxParticleObj {
         return OrryxParticleObj(origin, createLotus(
-            adaptLocation(origin.location),
+            adaptLocation(origin.getLocation(builder)),
             builder.period
         ), this)
     }
 
-    private fun buildNRankBezierCurve(origin: ITargetLocation<*>): OrryxParticleObj {
-        val locs = mutableListOf<Pair<Int, ITargetLocation<*>>>()
+    private fun buildNRankBezierCurve(origin: EffectOrigin): OrryxParticleObj {
+        val locs = mutableListOf<Pair<Int, EffectOrigin>>()
         locs += 0 to origin
+        locs.addAll(builder.locations)
         locs.sortBy { it.first }
         return OrryxParticleObj(origin, createNRankBezierCurve(
-            locs.map { adaptLocation(it.second.location) },
+            locs.map { adaptLocation(it.second.getLocation(builder)) },
             builder.step,
             builder.period
         ), this)
     }
 
-    private fun buildNStar(origin: ITargetLocation<*>): OrryxParticleObj {
+    private fun buildNStar(origin: EffectOrigin): OrryxParticleObj {
         return OrryxParticleObj(origin, NStar(
-            adaptLocation(origin.location),
+            adaptLocation(origin.getLocation(builder)),
             builder.corner,
             builder.radius,
             builder.step,
@@ -187,9 +185,9 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
         ), this)
     }
 
-    private fun buildOctagonalStar(origin: ITargetLocation<*>): OrryxParticleObj {
+    private fun buildOctagonalStar(origin: EffectOrigin): OrryxParticleObj {
         return OrryxParticleObj(origin, OctagonalStar(
-            adaptLocation(origin.location),
+            adaptLocation(origin.getLocation(builder)),
             builder.radius,
             builder.step,
             object : ParticleSpawner {
@@ -199,9 +197,9 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
         ), this)
     }
 
-    private fun buildPolygon(origin: ITargetLocation<*>): OrryxParticleObj {
+    private fun buildPolygon(origin: EffectOrigin): OrryxParticleObj {
         return OrryxParticleObj(origin, createPolygon(
-            adaptLocation(origin.location),
+            adaptLocation(origin.getLocation(builder)),
             builder.radius,
             builder.side,
             builder.step,
@@ -209,9 +207,9 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
         ), this)
     }
 
-    private fun buildPyramid(origin: ITargetLocation<*>): OrryxParticleObj {
+    private fun buildPyramid(origin: EffectOrigin): OrryxParticleObj {
         return OrryxParticleObj(origin, Pyramid(
-            adaptLocation(origin.location),
+            adaptLocation(origin.getLocation(builder)),
             builder.side,
             builder.radius,
             builder.height,
@@ -223,11 +221,11 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
         ), this)
     }
 
-    private fun buildRay(origin: ITargetLocation<*>): OrryxParticleObj {
+    private fun buildRay(origin: EffectOrigin): OrryxParticleObj {
         val vector = builder.vector ?: error("粒子未设置Vector")
         val direction = taboolib.common.util.Vector(vector.x(), vector.y(), vector.z())
         return OrryxParticleObj(origin, createRay(
-            adaptLocation(origin.location),
+            adaptLocation(origin.getLocation(builder)),
             direction,
             builder.maxLength,
             builder.step,
@@ -237,18 +235,18 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
         ), this)
     }
 
-    private fun buildSphere(origin: ITargetLocation<*>): OrryxParticleObj {
+    private fun buildSphere(origin: EffectOrigin): OrryxParticleObj {
         return OrryxParticleObj(origin, createSphere(
-            adaptLocation(origin.location),
+            adaptLocation(origin.getLocation(builder)),
             builder.radius,
             builder.sample,
             builder.period
         ), this)
     }
 
-    private fun buildStar(origin: ITargetLocation<*>): OrryxParticleObj {
+    private fun buildStar(origin: EffectOrigin): OrryxParticleObj {
         return OrryxParticleObj(origin, createStar(
-            adaptLocation(origin.location),
+            adaptLocation(origin.getLocation(builder)),
             builder.radius,
             builder.step,
             builder.period

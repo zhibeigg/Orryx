@@ -1,9 +1,9 @@
 package org.gitee.orryx.core.kether.actions.effect
 
+import org.gitee.orryx.api.adapters.IVector
 import org.gitee.orryx.api.adapters.vector.AbstractVector
 import org.gitee.orryx.core.kether.actions.effect.EffectType.ARC
-import org.gitee.orryx.core.targets.ITargetLocation
-import org.joml.Matrix4d
+import org.joml.Matrix3d
 import taboolib.common.platform.ProxyParticle
 
 class EffectBuilder {
@@ -14,6 +14,9 @@ class EffectBuilder {
     var step: Double = 0.2
     var count: Int = 1
     var speed: Double = 1.0
+
+    var offset: IVector = AbstractVector()
+    var translate: IVector = AbstractVector()
 
     var startAngle: Double = 0.0
     var angle: Double = 30.0
@@ -28,7 +31,7 @@ class EffectBuilder {
     var yScaleRate: Double = 1.0
 
     var vector: AbstractVector? = null
-    var matrix: Matrix4d? = null
+    var matrix: Matrix3d? = null
 
     var corner: Int = 5
     var side: Int = 3
@@ -46,6 +49,6 @@ class EffectBuilder {
     //VibrationData
     var vibrationData: ProxyParticle.VibrationData? = null
 
-    val locations by lazy { mutableListOf<Pair<Int, ITargetLocation<*>>>() }
+    val locations by lazy { mutableListOf<Pair<Int, EffectOrigin>>() }
 
 }

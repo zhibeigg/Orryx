@@ -9,7 +9,7 @@ import org.gitee.orryx.api.adapters.IVector
 import org.gitee.orryx.api.adapters.vector.AbstractVector
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.core.targets.ITargetLocation
-import org.joml.Matrix4d
+import org.joml.Matrix3dc
 import org.joml.Vector3d
 import org.joml.Vector3dc
 import taboolib.module.effect.math.Matrix
@@ -79,6 +79,8 @@ internal fun ITargetEntity<*>.direction(x: Double, y: Double, z: Double): Vector
 
 fun Vector.joml() = Vector3d(x, y, z)
 
+fun taboolib.common.util.Vector.joml() = Vector3d(x, y, z)
+
 fun Vector3d.bukkit() = Vector(x, y, z)
 
 fun Vector.abstract() = AbstractVector(joml())
@@ -89,12 +91,11 @@ fun IVector.bukkit() = Vector(joml.x, joml.y, joml.z)
 
 fun IVector.joml() = joml
 
-fun Matrix4d.taboo() = Matrix(
+fun Matrix3dc.taboo() = Matrix(
     arrayOf(
-        doubleArrayOf(m00(), m01(), m02(), m03()),
-        doubleArrayOf(m10(), m11(), m12(), m13()),
-        doubleArrayOf(m20(), m21(), m22(), m23()),
-        doubleArrayOf(m30(), m31(), m32(), m33())
+        doubleArrayOf(m00(), m01(), m02()),
+        doubleArrayOf(m10(), m11(), m12()),
+        doubleArrayOf(m20(), m21(), m22())
     )
 )
 

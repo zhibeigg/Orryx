@@ -4,7 +4,7 @@ import org.gitee.orryx.core.kether.ScriptManager.scriptParser
 import org.gitee.orryx.core.wiki.Action
 import org.gitee.orryx.core.wiki.Type
 import org.gitee.orryx.utils.*
-import org.joml.Matrix4d
+import org.joml.Matrix3d
 import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*
 
@@ -33,19 +33,12 @@ object MatrixMathActions {
                 .addEntry("0行0列", Type.DOUBLE)
                 .addEntry("0行1列", Type.DOUBLE)
                 .addEntry("0行2列", Type.DOUBLE)
-                .addEntry("0行3列", Type.DOUBLE)
                 .addEntry("1行0列", Type.DOUBLE)
                 .addEntry("1行1列", Type.DOUBLE)
                 .addEntry("1行2列", Type.DOUBLE)
-                .addEntry("1行3列", Type.DOUBLE)
                 .addEntry("2行0列", Type.DOUBLE)
                 .addEntry("2行1列", Type.DOUBLE)
                 .addEntry("2行2列", Type.DOUBLE)
-                .addEntry("2行3列", Type.DOUBLE)
-                .addEntry("3行0列", Type.DOUBLE)
-                .addEntry("3行1列", Type.DOUBLE)
-                .addEntry("3行2列", Type.DOUBLE)
-                .addEntry("3行3列", Type.DOUBLE)
                 .result("创建的矩阵", Type.MATRIX),
             Action.new("Math数学运算", "rotateX矩阵绕X轴旋转", "matrix", true)
                 .description("矩阵绕X轴旋转")
@@ -92,15 +85,6 @@ object MatrixMathActions {
                 .addEntry("缩放系数Z", Type.DOUBLE)
                 .addDest(Type.MATRIX, optional = true)
                 .result("缩放矩阵", Type.MATRIX),
-            Action.new("Math数学运算", "rotate矩阵位移", "matrix", true)
-                .description("矩阵分别按照XYZ偏移")
-                .addEntry("位移标识符", Type.SYMBOL, head = "translate")
-                .addEntry("被缩放的矩阵", Type.MATRIX)
-                .addEntry("偏移X", Type.DOUBLE)
-                .addEntry("偏移Y", Type.DOUBLE)
-                .addEntry("偏移Z", Type.DOUBLE)
-                .addDest(Type.MATRIX, optional = true)
-                .result("偏移矩阵", Type.MATRIX),
             Action.new("Math数学运算", "transform应用矩阵变换向量", "matrix", true)
                 .description("应用矩阵变换向量")
                 .addEntry("应用矩阵标识符", Type.SYMBOL, head = "transform")
@@ -112,16 +96,15 @@ object MatrixMathActions {
     ) {
         it.switch {
             case("create") { create(it) }
-            case("identity") { actionNow { Matrix4d() } }
+            case("identity") { actionNow { Matrix3d() } }
             case("rotateX") { rotateX(it) }
             case("rotateY") { rotateY(it) }
             case("rotateZ") { rotateZ(it) }
             case("rotate") { rotate(it) }
             case("scale") { scale(it) }
             case("scaleXYZ") { scaleXYZ(it) }
-            case("translate") { translate(it) }
             case("transform") { transform(it) }
-            other { actionNow { Matrix4d() } }
+            other { actionNow { Matrix3d() } }
         }
     }
 
@@ -129,44 +112,23 @@ object MatrixMathActions {
         val m00 = reader.nextParsedAction()
         val m01 = reader.nextParsedAction()
         val m02 = reader.nextParsedAction()
-        val m03 = reader.nextParsedAction()
         val m10 = reader.nextParsedAction()
         val m11 = reader.nextParsedAction()
         val m12 = reader.nextParsedAction()
-        val m13 = reader.nextParsedAction()
         val m20 = reader.nextParsedAction()
         val m21 = reader.nextParsedAction()
         val m22 = reader.nextParsedAction()
-        val m23 = reader.nextParsedAction()
-        val m30 = reader.nextParsedAction()
-        val m31 = reader.nextParsedAction()
-        val m32 = reader.nextParsedAction()
-        val m33 = reader.nextParsedAction()
         return actionFuture { future ->
             run(m00).double { m00 ->
                 run(m01).double { m01 ->
                     run(m02).double { m02 ->
-                        run(m03).double { m03 ->
-                            run(m10).double { m10 ->
-                                run(m11).double { m11 ->
-                                    run(m12).double { m12 ->
-                                        run(m13).double { m13 ->
-                                            run(m20).double { m20 ->
-                                                run(m21).double { m21 ->
-                                                    run(m22).double { m22 ->
-                                                        run(m23).double { m23 ->
-                                                            run(m30).double { m30 ->
-                                                                run(m31).double { m31 ->
-                                                                    run(m32).double { m32 ->
-                                                                        run(m33).double { m33 ->
-                                                                            future.complete(Matrix4d(m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33))
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
+                        run(m10).double { m10 ->
+                            run(m11).double { m11 ->
+                                run(m12).double { m12 ->
+                                    run(m20).double { m20 ->
+                                        run(m21).double { m21 ->
+                                            run(m22).double { m22 ->
+                                                future.complete(Matrix3d(m00, m01, m02, m10, m11, m12, m20, m21, m22))
                                             }
                                         }
                                     }
@@ -278,27 +240,6 @@ object MatrixMathActions {
         }
     }
 
-    private fun translate(reader: QuestReader): ScriptAction<Any?> {
-        val matrix = reader.nextParsedAction()
-        val offsetX = reader.nextParsedAction()
-        val offsetY = reader.nextParsedAction()
-        val offsetZ = reader.nextParsedAction()
-        val dest = reader.nextDest()
-        return actionFuture { future ->
-            run(matrix).matrix { matrix ->
-                run(offsetX).double { offsetX ->
-                    run(offsetY).double { offsetY ->
-                        run(offsetZ).double { offsetZ ->
-                            destMatrix(dest) {
-                                future.complete(matrix.translate(offsetX, offsetY, offsetZ, it))
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     private fun transform(reader: QuestReader): ScriptAction<Any?> {
         val matrix = reader.nextParsedAction()
         val vector = reader.nextParsedAction()
@@ -307,7 +248,8 @@ object MatrixMathActions {
             run(matrix).matrix { matrix ->
                 run(vector).vector { vector ->
                     destVector(dest) {
-                        future.complete(matrix.transformProject(vector.joml, it.joml))
+                        matrix.transform(vector.joml, it.joml)
+                        future.complete(it)
                     }
                 }
             }

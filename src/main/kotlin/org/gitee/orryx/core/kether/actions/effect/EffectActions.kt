@@ -100,9 +100,9 @@ object EffectActions {
                 .addEntry("途经点占位符", Type.SYMBOL, head = "locations")
                 .addContainerEntry("贝塞尔曲线途经点")
                 .result("无返回值", Type.NULL),
-            Action.new("Effect粒子效果", "设置矩阵", "draw", true)
-                .description("设置矩阵")
-                .addEntry("矩阵", Type.SYMBOL, head = "matrix")
+            Action.new("Effect粒子效果", "设置变换矩阵", "draw", true)
+                .description("设置变换矩阵")
+                .addEntry("矩阵变换占位符", Type.SYMBOL, head = "transform")
                 .addEntry("矩阵", Type.MATRIX)
                 .result("无返回值", Type.NULL),
             Action.new("Effect粒子效果", "设置红石粒子数据", "draw", true)
@@ -139,6 +139,16 @@ object EffectActions {
                 .addEntry("origin", Type.CONTAINER)
                 .addEntry("到达时间", Type.INT)
                 .addContainerEntry("目标", true, default = "@self")
+                .result("无返回值", Type.NULL),
+            Action.new("Effect粒子效果", "设置偏移向量", "draw", true)
+                .description("设置偏移向量")
+                .addEntry("占位符", Type.SYMBOL, head = "offset")
+                .addEntry("vector", Type.VECTOR)
+                .result("无返回值", Type.NULL),
+            Action.new("Effect粒子效果", "设置位移向量", "draw", true)
+                .description("设置位移向量")
+                .addEntry("占位符", Type.SYMBOL, head = "translate")
+                .addEntry("vector", Type.VECTOR)
                 .result("无返回值", Type.NULL)
         )
     ) {
@@ -146,8 +156,14 @@ object EffectActions {
             case("particle") {
                 drawParticle(this)
             }
-            case("matrix") {
-                drawMatrix(this)
+            case("offset") {
+                drawOffset(this)
+            }
+            case("translate") {
+                drawTranslate(this)
+            }
+            case("transform") {
+                drawTransform(this)
             }
             case("dustData") {
                 drawDustData(this)
@@ -171,7 +187,27 @@ object EffectActions {
         }
     }
 
-    private fun drawMatrix(reader: QuestReader): ScriptAction<Any?> {
+    private fun drawTranslate(reader: QuestReader): ScriptAction<Any?> {
+        val vector = reader.nextParsedAction()
+        return actionNow {
+            run(vector).vector { vector ->
+                val effectBuilder = effectBuilder() ?: return@vector
+                effectBuilder.translate = vector
+            }
+        }
+    }
+
+    private fun drawOffset(reader: QuestReader): ScriptAction<Any?> {
+        val vector = reader.nextParsedAction()
+        return actionNow {
+            run(vector).vector { vector ->
+                val effectBuilder = effectBuilder() ?: return@vector
+                effectBuilder.offset = vector
+            }
+        }
+    }
+
+    private fun drawTransform(reader: QuestReader): ScriptAction<Any?> {
         val matrix = reader.nextParsedAction()
         return actionNow {
             run(matrix).matrix { matrix ->
@@ -281,7 +317,7 @@ object EffectActions {
                 val effectBuilder = effectBuilder() ?: return@container
                 var index = 0
                 it.forEachInstance<ITargetLocation<*>> { target ->
-                    effectBuilder.locations.add(index to target)
+                    effectBuilder.locations.add(index to EffectOrigin(target))
                     index ++
                 }
             }

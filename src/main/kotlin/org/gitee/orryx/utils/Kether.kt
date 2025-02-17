@@ -8,7 +8,7 @@ import org.gitee.orryx.core.container.IContainer
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.kether.actions.effect.EffectBuilder
 import org.gitee.orryx.core.kether.actions.effect.EffectSpawner
-import org.joml.Matrix4d
+import org.joml.Matrix3d
 import org.joml.Vector3d
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptCommandSender
@@ -81,12 +81,12 @@ internal fun QuestReader.nextDest(): ParsedAction<*>? {
     return this.nextHeadActionOrNull(arrayOf("dest"))
 }
 
-internal fun <T> ScriptFrame.destMatrix(dest: ParsedAction<*>?, func: (ScriptFrame.(dest: Matrix4d) -> T)): CompletableFuture<Any> {
+internal fun <T> ScriptFrame.destMatrix(dest: ParsedAction<*>?, func: (ScriptFrame.(dest: Matrix3d) -> T)): CompletableFuture<Any> {
     return if (dest == null) {
-        CompletableFuture.completedFuture(func(Matrix4d()))
+        CompletableFuture.completedFuture(func(Matrix3d()))
     } else {
         run(dest).str { key ->
-            val matrix = Matrix4d()
+            val matrix = Matrix3d()
             func(matrix)
             script()[key] = matrix
             matrix
@@ -159,8 +159,8 @@ fun <T> CompletableFuture<Any?>.effectSpawner(then: (EffectSpawner) -> T): Compl
     return thenApply { effect -> then(effect as EffectSpawner) }
 }
 
-fun <T> CompletableFuture<Any?>.matrix(then: (Matrix4d) -> T): CompletableFuture<T> {
-    return thenApply { matrix -> then(matrix as Matrix4d) }.except { then(Matrix4d()) }
+fun <T> CompletableFuture<Any?>.matrix(then: (Matrix3d) -> T): CompletableFuture<T> {
+    return thenApply { matrix -> then(matrix as Matrix3d) }.except { then(Matrix3d()) }
 }
 
 internal fun theyContainer(optional: Boolean = false) = if (optional) {
