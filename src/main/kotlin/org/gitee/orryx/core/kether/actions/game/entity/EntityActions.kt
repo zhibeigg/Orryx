@@ -9,7 +9,6 @@ import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.core.wiki.Action
 import org.gitee.orryx.core.wiki.Type
 import org.gitee.orryx.utils.*
-import org.joml.Vector3d
 import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*
 import java.util.*
@@ -93,10 +92,10 @@ object EntityActions {
             reader.mark()
             val expect = reader.expects(*EntityField.fields().toTypedArray())
             val they = reader.nextTheyContainer()
-            actionTake {
+            actionFuture { future ->
                 containerOrSelf(they) {
                     val entity = it.firstInstance<ITargetEntity<*>>().entity
-                    EntityField.valueOf(expect.uppercase(Locale.getDefault())).get(entity)
+                    future.complete(EntityField.valueOf(expect.uppercase(Locale.getDefault())).get(entity))
                 }
             }
         } catch (_: Throwable) {

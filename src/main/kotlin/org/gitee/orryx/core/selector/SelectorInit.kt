@@ -11,7 +11,7 @@ import taboolib.library.reflex.ReflexClass
 @Awake
 object SelectorInit: ClassVisitor(1) {
 
-    private val selectors by lazy {  mutableListOf<ISelector>() }
+    private val selectors by lazy { mutableListOf<ISelector>() }
 
     override fun getLifeCycle(): LifeCycle {
         return LifeCycle.INIT
@@ -19,25 +19,29 @@ object SelectorInit: ClassVisitor(1) {
 
     override fun visitStart(clazz: ReflexClass) {
         try {
-            if (ISelector::class.java.isAssignableFrom(clazz.toClass())) {
-                val instance = clazz.getInstance() as? ISelector ?: return
-                if (clazz.hasAnnotation(Plugin::class.java)) {
-                    val annotation = clazz.getAnnotation(Plugin::class.java)
-                    val pluginEnabled = Bukkit.getPluginManager().isPluginEnabled(annotation.property<String>("plugin")!!)
-                    debug("&e┣&7Selector loaded &e${instance.keys.map { it }} ${if (pluginEnabled) "&a√" else "&4×" }")
-                    if (!pluginEnabled) return
-                } else {
-                    debug("&e┣&7Selector loaded &e${instance.keys.map { it }} &a√")
+            clazz.toClassOrNull()?.let { clazzClass ->
+                if (ISelector::class.java.isAssignableFrom(clazzClass)) {
+                    clazz.getInstance().let { instance ->
+                        if (instance is ISelector) {
+                            clazz.getAnnotationIfPresent(Plugin::class.java)?.let { annotation ->
+                                val pluginEnabled = Bukkit.getPluginManager().isPluginEnabled(annotation.property<String>("plugin")!!)
+                                debug("&e┣&7Selector loaded &e${instance.keys.map { it }} ${if (pluginEnabled) "&a√" else "&4×" }")
+                                if (!pluginEnabled) return
+                            } ?: run {
+                                debug("&e┣&7Selector loaded &e${instance.keys.map { it }} &a√")
+                            }
+                            selectors.add(instance)
+                        }
+                    }
                 }
-                selectors.add(instance)
             }
         } catch (_: Throwable) {
         }
     }
 
     fun getSelector(key: String): ISelector? {
-        return selectors.firstOrNull {
-            key in it.keys.map { v -> v.uppercase() }
+        return selectors.firstOrNull { selector ->
+            selector.keys.any { it.uppercase() == key.uppercase() }
         }
     }
 

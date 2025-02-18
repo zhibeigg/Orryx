@@ -66,11 +66,7 @@ object Rectangle: ISelectorGeometry {
         val minVector = AbstractVector(location.toVector()).add(vectorX.mul(-long/2+forward, Vector3d())).add(vectorY.mul(-high/2+offsetY)).add(vectorZ.mul(-wide/2, Vector3d()))
         val maxVector = AbstractVector(location.toVector()).add(vectorX.mul(long/2+forward, Vector3d())).add(vectorY.mul(high/2+offsetY)).add(vectorZ.mul(wide/2, Vector3d()))
 
-        val locations = mutableListOf<Location>()
-        createCube(taboolib.common.util.Location(location.world?.name, minVector.x(), minVector.y(), minVector.z()), taboolib.common.util.Location(location.world?.name, maxVector.x(), maxVector.y(), maxVector.z())) {
-            locations.add(platformLocation(it))
-        }.show()
-        return locations
+        return createCube(taboolib.common.util.Location(location.world?.name, minVector.x(), minVector.y(), minVector.z()), taboolib.common.util.Location(location.world?.name, maxVector.x(), maxVector.y(), maxVector.z())).calculateLocations().map { platformLocation(it) }
     }
 
 }

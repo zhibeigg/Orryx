@@ -67,24 +67,24 @@ object Annular : ISelectorGeometry {
         val locations = mutableListOf<Location>()
 
         fun circleMax(loc: Location) {
-            createCircle(
-                adaptLocation(loc),
-                max,
-                5.0,
-                0
-            ) {
-                locations.add(platformLocation(it))
-            }.show()
+            locations.addAll(
+                createCircle(
+                    adaptLocation(loc),
+                    max,
+                    5.0,
+                    0
+                ).calculateLocations().map { platformLocation(it) }
+            )
         }
         fun circleMin(loc: Location) {
-            createCircle(
-                adaptLocation(loc),
-                min,
-                5.0,
-                0
-            ) {
-                locations.add(platformLocation(it))
-            }.show()
+            locations.addAll(
+                createCircle(
+                    adaptLocation(loc),
+                    min,
+                    5.0,
+                    0
+                ).calculateLocations().map { platformLocation(it) }
+            )
         }
 
         circleMax(origin.clone().add(Vector(0.0, high / 2, 0.0)))

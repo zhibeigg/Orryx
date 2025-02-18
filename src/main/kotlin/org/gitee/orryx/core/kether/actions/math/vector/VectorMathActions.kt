@@ -61,7 +61,7 @@ object VectorMathActions {
                 .addEntry("夹角标识符", Type.SYMBOL, head = "angle")
                 .addEntry("向量A", Type.VECTOR, false)
                 .addEntry("向量B", Type.VECTOR, false)
-                .result("向量夹角", Type.DOUBLE),
+                .result("向量夹角角度值", Type.DOUBLE),
             Action.new("Math数学运算", "向量距离", "vector", true)
                 .description("向量A与向量B的距离")
                 .addEntry("距离标识符", Type.SYMBOL, head = "distance")
@@ -211,7 +211,7 @@ object VectorMathActions {
         return actionFuture {
             run(a).vector { a ->
                 run(b).vector { b ->
-                    it.complete(a.angle(b))
+                    it.complete(Math.toDegrees(a.angle(b)))
                 }
             }
         }

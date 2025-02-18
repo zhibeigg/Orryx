@@ -5,12 +5,12 @@ import org.gitee.orryx.utils.taboo
 import org.gitee.orryx.utils.toLocation
 import org.joml.Matrix3d
 import org.joml.Vector3d
-import taboolib.common.platform.function.adaptLocation
 import taboolib.common.platform.function.submit
 import taboolib.common.platform.service.PlatformExecutor
 import taboolib.common.util.Location
 import taboolib.common5.cdouble
 import taboolib.module.effect.ParticleObj
+import taboolib.module.effect.Playable
 import taboolib.module.effect.shape.*
 
 class OrryxParticleObj(var effectOrigin: EffectOrigin, val obj: ParticleObj, val spawner: EffectSpawner) {
@@ -23,7 +23,11 @@ class OrryxParticleObj(var effectOrigin: EffectOrigin, val obj: ParticleObj, val
         if (spawner.duration <= 1L) {
             obj.show()
         } else {
-            obj.alwaysPlayAsync()
+            if (obj is Playable && spawner.mode == SpawnerType.PLAY) {
+                obj.alwaysPlayAsync()
+            } else {
+                obj.alwaysShowAsync()
+            }
             createTask()
         }
     }
@@ -68,7 +72,7 @@ class OrryxParticleObj(var effectOrigin: EffectOrigin, val obj: ParticleObj, val
 
     private fun syncArc() {
         (obj as Arc).also {
-            it.origin = adaptLocation(effectOrigin.getLocation(spawner.builder))
+            it.origin = effectOrigin.getLocation(spawner.builder)
             it.startAngle = spawner.builder.startAngle
             it.angle = spawner.builder.angle
             it.radius = spawner.builder.radius
@@ -78,7 +82,7 @@ class OrryxParticleObj(var effectOrigin: EffectOrigin, val obj: ParticleObj, val
 
     private fun syncAstroid() {
         (obj as Astroid).also {
-            it.origin = adaptLocation(effectOrigin.getLocation(spawner.builder))
+            it.origin = effectOrigin.getLocation(spawner.builder)
             it.radius = spawner.builder.radius
             it.step = spawner.builder.step
         }
@@ -103,7 +107,7 @@ class OrryxParticleObj(var effectOrigin: EffectOrigin, val obj: ParticleObj, val
 
     private fun syncHeart() {
         (obj as Heart).also {
-            it.origin = adaptLocation(effectOrigin.getLocation(spawner.builder))
+            it.origin = effectOrigin.getLocation(spawner.builder)
             it.xScaleRate = spawner.builder.xScaleRate
             it.yScaleRate = spawner.builder.yScaleRate
             it.step = spawner.builder.step
@@ -111,7 +115,7 @@ class OrryxParticleObj(var effectOrigin: EffectOrigin, val obj: ParticleObj, val
     }
 
     private fun syncLine() {
-        val start = adaptLocation(effectOrigin.getLocation(spawner.builder))
+        val start = effectOrigin.getLocation(spawner.builder)
         (obj as Line).also {
             it.start = start
             it.step = spawner.builder.step
@@ -123,13 +127,13 @@ class OrryxParticleObj(var effectOrigin: EffectOrigin, val obj: ParticleObj, val
 
     private fun syncLotus() {
         (obj as Lotus).also {
-            it.origin = adaptLocation(effectOrigin.getLocation(spawner.builder))
+            it.origin = effectOrigin.getLocation(spawner.builder)
         }
     }
 
     private fun syncNStar() {
         (obj as NStar).also {
-            it.origin = adaptLocation(effectOrigin.getLocation(spawner.builder))
+            it.origin = effectOrigin.getLocation(spawner.builder)
             it.corner = spawner.builder.corner
             it.radius = spawner.builder.radius
             it.step = spawner.builder.step
@@ -138,7 +142,7 @@ class OrryxParticleObj(var effectOrigin: EffectOrigin, val obj: ParticleObj, val
 
     private fun syncOctagonalStar() {
         (obj as OctagonalStar).also {
-            it.origin = adaptLocation(effectOrigin.getLocation(spawner.builder))
+            it.origin = effectOrigin.getLocation(spawner.builder)
             it.radius = spawner.builder.radius
             it.step = spawner.builder.step
         }
@@ -146,7 +150,7 @@ class OrryxParticleObj(var effectOrigin: EffectOrigin, val obj: ParticleObj, val
 
     private fun syncPolygon() {
         (obj as Polygon).also {
-            it.origin = adaptLocation(effectOrigin.getLocation(spawner.builder))
+            it.origin = effectOrigin.getLocation(spawner.builder)
             it.radius = spawner.builder.radius
             it.side = spawner.builder.side
             it.step = spawner.builder.step
@@ -155,7 +159,7 @@ class OrryxParticleObj(var effectOrigin: EffectOrigin, val obj: ParticleObj, val
 
     private fun syncPyramid() {
         (obj as Pyramid).also {
-            it.origin = adaptLocation(effectOrigin.getLocation(spawner.builder))
+            it.origin = effectOrigin.getLocation(spawner.builder)
             it.side = spawner.builder.side
             it.radius = spawner.builder.radius
             it.height = spawner.builder.height
@@ -165,7 +169,7 @@ class OrryxParticleObj(var effectOrigin: EffectOrigin, val obj: ParticleObj, val
 
     private fun syncRay() {
         (obj as Ray).also {
-            it.origin = adaptLocation(effectOrigin.getLocation(spawner.builder))
+            it.origin = effectOrigin.getLocation(spawner.builder)
             it.maxLength = spawner.builder.maxLength
             it.range = spawner.builder.range
             it.step = spawner.builder.step
@@ -177,7 +181,7 @@ class OrryxParticleObj(var effectOrigin: EffectOrigin, val obj: ParticleObj, val
 
     private fun syncSphere() {
         (obj as Sphere).also {
-            it.origin = adaptLocation(effectOrigin.getLocation(spawner.builder))
+            it.origin = effectOrigin.getLocation(spawner.builder)
             it.radius = spawner.builder.radius
             it.sample = spawner.builder.sample
         }
@@ -185,7 +189,7 @@ class OrryxParticleObj(var effectOrigin: EffectOrigin, val obj: ParticleObj, val
 
     private fun syncStar() {
         (obj as Star).also {
-            it.origin = adaptLocation(effectOrigin.getLocation(spawner.builder))
+            it.origin = effectOrigin.getLocation(spawner.builder)
         }
     }
 

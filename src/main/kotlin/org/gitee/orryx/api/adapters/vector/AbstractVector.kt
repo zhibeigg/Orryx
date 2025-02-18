@@ -22,4 +22,8 @@ open class AbstractVector(override val joml: Vector3d): IVector, Vector3dc by jo
         return this
     }
 
+    override fun toString(): String {
+        return joml.toString()
+    }
+
 }

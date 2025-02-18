@@ -58,16 +58,22 @@ object EffectActions {
                 .addEntry("停止显示占位符", Type.SYMBOL, head = "stop")
                 .addEntry("粒子生成器", Type.EFFECT_SPAWNER)
                 .result("粒子生成器", Type.EFFECT_SPAWNER),
-            Action.new("Effect粒子效果", "创建临时特效构建器", "effect", true)
-                .description("创建临时特效构建器")
+            Action.new("Effect粒子效果", "创建临时粒子效果构建器", "effect", true)
+                .description("创建临时粒子效果构建器")
                 .addEntry("临时占位符", Type.SYMBOL, head = "temp")
                 .addEntry("画板语句", Type.ANY)
-                .result("粒子生成器", Type.EFFECT),
-            Action.new("Effect粒子效果", "创建指定名特效构建器", "effect", true)
-                .description("创建指定名特效构建器，并存储到键名中")
+                .result("粒子效果构建器", Type.EFFECT),
+            Action.new("Effect粒子效果", "创建指定名粒子效果构建器", "effect", true)
+                .description("创建指定名粒子效果构建器，并存储到键名中")
                 .addEntry("创建占位符", Type.SYMBOL, head = "create/new")
                 .addEntry("画板语句", Type.ANY)
-                .result("粒子生成器", Type.EFFECT)
+                .result("粒子效果构建器", Type.EFFECT),
+            Action.new("Effect粒子效果", "微调粒子效果构建器", "effect", true)
+                .description("微调粒子效果构建器")
+                .addEntry("微调占位符", Type.SYMBOL, head = "trim")
+                .addEntry("特效构建器", Type.EFFECT)
+                .addEntry("画板语句", Type.ANY)
+                .result("粒子效果构建器", Type.EFFECT)
         )
     ) {
         it.switch {
@@ -79,6 +85,9 @@ object EffectActions {
             }
             case("temp") {
                 temp(this)
+            }
+            case("trim") {
+                trim(this)
             }
             case("create", "new") {
                 create(this)
@@ -362,26 +371,47 @@ object EffectActions {
         val effect = reader.nextParsedAction()
         val duration = reader.nextParsedAction()
         val tick = reader.nextParsedAction()
+        val mode = reader.nextHeadAction("mode", "show")
         val they = reader.nextTheyContainer()
         val viewer = reader.nextHeadActionOrNull(arrayOf("viewer"))
+        val onHit = reader.nextHeadActionOrNull(arrayOf("onHit"))
         return actionFuture { future ->
             run(effect).effect { effect ->
                 run(duration).long { duration ->
                     run(tick).long { period ->
-                        containerOrSelf(they) { origins ->
-                            container(viewer, worldPlayerWorldContainer(script().bukkitPlayer().world)) { viewers ->
-                                val spawner = EffectSpawner(
-                                    effect,
-                                    duration,
-                                    period,
-                                    origins,
-                                    viewers
-                                )
-                                spawner.start()
-                                future.complete(spawner)
+                        run(mode).str { mode ->
+                            containerOrSelf(they) { origins ->
+                                container(viewer, worldPlayerWorldContainer(script().bukkitPlayer().world)) { viewers ->
+                                    val spawner = EffectSpawner(
+                                        effect,
+                                        duration,
+                                        period,
+                                        SpawnerType.valueOf(mode.uppercase()),
+                                        origins,
+                                        viewers
+                                    ) {
+                                        onHit?.let { run(it) }
+                                    }
+                                    spawner.start()
+                                    future.complete(spawner)
+                                }
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+
+    private fun trim(reader: QuestReader): ScriptAction<Any?> {
+        val effect = reader.nextParsedAction()
+        val function = reader.nextParsedAction()
+        return actionFuture { future ->
+            run(effect).effect { effect ->
+                script()["@effect"] = effect
+                run(function).thenRun {
+                    script()["@effect"] = null
+                    future.complete(effect)
                 }
             }
         }
@@ -410,13 +440,13 @@ object EffectActions {
     }
 
     private fun create(reader: QuestReader): ScriptAction<Any?> {
-        val function = reader.nextParsedAction()
         val key = reader.nextParsedAction()
+        val function = reader.nextParsedAction()
         return actionFuture { future ->
             val effect = EffectBuilder()
             script()["@effect"] = effect
-            run(function).thenRun {
-                run(key).str { key ->
+            run(key).str { key ->
+                run(function).thenRun {
                     script()["@effect"] = null
                     script()[key] = effect
                     future.complete(effect)

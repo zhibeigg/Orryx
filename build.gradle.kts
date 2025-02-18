@@ -58,7 +58,7 @@ taboolib {
             name("AttributePlus").optional(true)
         }
     }
-    version { taboolib = "6.2.1-df22fb1" }
+    version { taboolib = "6.2.2" }
 }
 
 repositories {

@@ -81,28 +81,22 @@ internal fun QuestReader.nextDest(): ParsedAction<*>? {
     return this.nextHeadActionOrNull(arrayOf("dest"))
 }
 
-internal fun <T> ScriptFrame.destMatrix(dest: ParsedAction<*>?, func: (ScriptFrame.(dest: Matrix3d) -> T)): CompletableFuture<Any> {
+internal fun <T> ScriptFrame.destMatrix(dest: ParsedAction<*>?, func: (ScriptFrame.(dest: Matrix3d) -> T)): CompletableFuture<T> {
     return if (dest == null) {
         CompletableFuture.completedFuture(func(Matrix3d()))
     } else {
-        run(dest).str { key ->
-            val matrix = Matrix3d()
+        run(dest).matrix { matrix ->
             func(matrix)
-            script()[key] = matrix
-            matrix
         }
     }
 }
 
-internal fun <T> ScriptFrame.destVector(dest: ParsedAction<*>?, func: (ScriptFrame.(dest: AbstractVector) -> T)): CompletableFuture<Any> {
+internal fun <T> ScriptFrame.destVector(dest: ParsedAction<*>?, func: (ScriptFrame.(dest: IVector) -> T)): CompletableFuture<T> {
     return if (dest == null) {
         CompletableFuture.completedFuture(func(AbstractVector()))
     } else {
-        run(dest).str { key ->
-            val vector = AbstractVector()
+        run(dest).vector { vector ->
             func(vector)
-            script()[key] = vector
-            vector
         }
     }
 }
