@@ -5,7 +5,6 @@ import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.profile.PlayerProfileManager.job
 import org.gitee.orryx.core.profile.PlayerProfileManager.orryxProfile
-import org.gitee.orryx.core.skill.CastResult
 import org.gitee.orryx.core.skill.ICastSkill
 import org.gitee.orryx.core.skill.SkillLoaderManager
 import org.gitee.orryx.utils.*
@@ -73,11 +72,13 @@ object OrryxSkillCommand {
                     val player = ctx.bukkitPlayer() ?: return@exec
                     val skill = player.getSkill(player.orryxProfile().job!!, ctx["skill"]) ?: return@exec
                     val parameter = skill.parameter()
-                    val result = skill.castCheck(parameter)
-                    if (result == CastResult.SUCCESS) {
-                        skill.cast(parameter)
+                    skill.castCheck(parameter).apply {
+                        sendLang(player)
+                        if (isSuccess()) {
+                            skill.cast(parameter)
+                        }
+                        debug("${player.name}指令skill tryCast结果${this}")
                     }
-                    debug("${player.name}指令skill tryCast结果${result}")
                 }
             }
         }

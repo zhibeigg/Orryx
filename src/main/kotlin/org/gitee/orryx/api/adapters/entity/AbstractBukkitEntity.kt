@@ -15,7 +15,7 @@ import java.util.*
 open class AbstractBukkitEntity(private val instance: Entity) : IEntity, ITargetEntity<Entity>, ITargetLocation<Entity> {
 
     override val entity: IEntity
-        get() = object : IEntity by this {}
+        get() = this
 
     override val location: Location
         get() = instance.location

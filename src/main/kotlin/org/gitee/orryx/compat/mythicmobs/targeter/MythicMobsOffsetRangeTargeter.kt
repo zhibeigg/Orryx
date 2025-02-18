@@ -7,8 +7,10 @@ import io.lumine.xikage.mythicmobs.io.MythicLineConfig
 import io.lumine.xikage.mythicmobs.skills.SkillMetadata
 import io.lumine.xikage.mythicmobs.skills.targeters.IEntitySelector
 import org.bukkit.util.Vector
+import taboolib.common.platform.Ghost
 import kotlin.math.pow
 
+@Ghost
 class MythicMobsOffsetRangeTargeter(mlc: MythicLineConfig) : IEntitySelector(mlc) {
 
     private val radius = mlc.getDouble(arrayOf("range", "r"), 5.0)

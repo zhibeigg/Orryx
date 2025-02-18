@@ -4,7 +4,9 @@ import com.github.retrooper.packetevents.event.PacketListener
 import com.github.retrooper.packetevents.event.PacketReceiveEvent
 import com.github.retrooper.packetevents.protocol.packettype.PacketType
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientChatMessage
+import taboolib.common.platform.Ghost
 
+@Ghost
 class PacketEventsPacketListener : PacketListener {
 
     override fun onPacketReceive(event: PacketReceiveEvent) {

@@ -6,10 +6,12 @@ import io.lumine.xikage.mythicmobs.io.MythicLineConfig
 import io.lumine.xikage.mythicmobs.skills.SkillMetadata
 import io.lumine.xikage.mythicmobs.skills.targeters.LivingInConeTargeter
 import org.gitee.orryx.utils.isFace
+import taboolib.common.platform.Ghost
 import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.pow
 
+@Ghost
 class MythicMobsLivingInConeTargeter(mlc: MythicLineConfig) : LivingInConeTargeter(mlc) {
 
     private val faceMe = mlc.getBoolean("face", false)

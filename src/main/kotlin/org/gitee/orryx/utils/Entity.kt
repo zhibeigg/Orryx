@@ -6,19 +6,20 @@ import org.bukkit.entity.LivingEntity
 import org.gitee.orryx.api.adapters.IEntity
 import org.gitee.orryx.api.adapters.entity.AbstractAdyeshachEntity
 import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
+import org.gitee.orryx.core.targets.PlayerTarget
 
 /**
  *安全的将AbstractEntity转换成Bukkit Entity
  */
 internal fun IEntity.getBukkitEntity(): Entity? {
-    return (this as? AbstractBukkitEntity)?.getSource()
+    return (this as? AbstractBukkitEntity ?: this as? PlayerTarget)?.getSource()
 }
 
 /**
  *安全的将AbstractEntity转换成Bukkit LivingEntity
  */
 internal fun IEntity.getBukkitLivingEntity(): LivingEntity? {
-    return (this as? AbstractBukkitEntity)?.getSource() as? LivingEntity
+    return getBukkitEntity() as? LivingEntity
 }
 
 /**

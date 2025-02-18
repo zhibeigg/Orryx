@@ -9,7 +9,7 @@ import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
 class PlayerTarget(private val player: Player) : ITargetEntity<Player>, ITargetLocation<Player>, IEntity by AbstractBukkitEntity(player) {
 
     override val entity: IEntity
-        get() = AbstractBukkitEntity(player) // 使用新实例代替this
+        get() = this
 
     override val location: Location
         get() = player.location

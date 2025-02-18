@@ -85,6 +85,8 @@ fun Vector3d.bukkit() = Vector(x, y, z)
 
 fun Vector.abstract() = AbstractVector(joml())
 
+fun taboolib.common.util.Vector.abstract() = AbstractVector(joml())
+
 fun Vector3d.abstract() = AbstractVector(this)
 
 fun IVector.bukkit() = Vector(joml.x, joml.y, joml.z)
@@ -119,7 +121,7 @@ data class AABB(val minVector3d: Vector3dc, val maxVector3d: Vector3dc) {
     val maxZ
         get() = maxVector3d.z()
 
-    constructor(minX: Double, minY: Double, minZ: Double, maxX: Double, maxY: Double, maxZ: Double) : this(Vector3d(minX, minY, minZ), Vector3d(minX, minY, minZ))
+    constructor(minX: Double, minY: Double, minZ: Double, maxX: Double, maxY: Double, maxZ: Double) : this(Vector3d(minX, minY, minZ), Vector3d(maxX, maxY, maxZ))
 
 }
 
@@ -128,7 +130,7 @@ fun getEntityAABB(entity: Entity): AABB {
 }
 
 private fun getManualAABB(entity: Entity): AABB {
-    val loc = entity.location.toVector()
+    val loc = entity.location
     val (width, height) = entity.width to entity.height
     return AABB(loc.x - width / 2, loc.y, loc.z - width / 2, loc.x + width / 2, loc.y + height, loc.z + width / 2)
 }

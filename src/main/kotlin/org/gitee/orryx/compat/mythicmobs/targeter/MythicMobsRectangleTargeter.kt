@@ -11,7 +11,9 @@ import org.gitee.orryx.utils.areAABBsColliding
 import org.gitee.orryx.utils.getEntityAABB
 import org.gitee.orryx.utils.joml
 import org.joml.Vector3d
+import taboolib.common.platform.Ghost
 
+@Ghost
 class MythicMobsRectangleTargeter(mlc: MythicLineConfig) : LivingInConeTargeter(mlc) {
 
     private val long = mlc.getDouble(arrayOf("long", "l"), 0.0)

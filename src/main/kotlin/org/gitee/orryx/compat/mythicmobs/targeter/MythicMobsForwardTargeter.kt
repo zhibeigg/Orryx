@@ -6,7 +6,9 @@ import io.lumine.xikage.mythicmobs.io.MythicLineConfig
 import io.lumine.xikage.mythicmobs.skills.SkillMetadata
 import io.lumine.xikage.mythicmobs.skills.targeters.ForwardTargeter
 import org.bukkit.util.Vector
+import taboolib.common.platform.Ghost
 
+@Ghost
 class MythicMobsForwardTargeter(mlc: MythicLineConfig) : ForwardTargeter(mlc) {
 
     private val sideOffset = mlc.getDouble(arrayOf("z", "sideOffset"), 0.0)

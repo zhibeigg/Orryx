@@ -29,12 +29,13 @@ object Range: ISelectorGeometry {
         val origin = context.getParameter().origin ?: return emptyList()
 
         val r = parameter.read<Double>(0, 10.0)
+        val ray = RayAabIntersection()
 
         val entities = origin.world.getNearbyEntities(origin.eyeLocation, r, r, r)
         return entities.mapNotNull {
             if (it is LivingEntity) {
                 val dir = it.eyeLocation.toVector().subtract(origin.eyeLocation.toVector()).normalize().multiply(r)
-                val ray = RayAabIntersection(origin.eyeLocation.x.cfloat, origin.eyeLocation.y.cfloat, origin.eyeLocation.z.cfloat, dir.x.cfloat, dir.y.cfloat, dir.z.cfloat)
+                ray.set(origin.eyeLocation.x.cfloat, origin.eyeLocation.y.cfloat, origin.eyeLocation.z.cfloat, dir.x.cfloat, dir.y.cfloat, dir.z.cfloat)
                 val aabb = getEntityAABB(it)
                 if (ray.test(aabb.minX.cfloat, aabb.minY.cfloat, aabb.minZ.cfloat, aabb.maxX.cfloat, aabb.maxY.cfloat, aabb.maxZ.cfloat)) {
                     it.toTarget()

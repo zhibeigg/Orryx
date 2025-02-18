@@ -42,6 +42,9 @@ object PluginMessageHandler {
         data object Ghost : PacketType(3)
         data object AimResponse : PacketType(4)
         data object Flicker : PacketType(5)
+        data object PressRequest : PacketType(6)
+        data object PressAimRequest : PacketType(7)
+        data object PressResponse : PacketType(8)
     }
 
     @Awake(LifeCycle.ENABLE)
@@ -101,6 +104,7 @@ object PluginMessageHandler {
     fun requestAiming(
         player: Player,
         skillId: String,
+        picture: String,
         scale: Double,
         radius: Double,
         callback: (Result<AimInfo>) -> Unit
@@ -121,9 +125,51 @@ object PluginMessageHandler {
 
         sendDataPacket(player, PacketType.AimRequest) {
             writeUTF(skillId)
-            writeUTF("default")
+            writeUTF(picture)
             writeDouble(scale)
             writeDouble(radius)
+        }
+    }
+
+    /**
+     * 发起蓄力瞄准请求
+     * @param player 目标玩家
+     * @param skillId 技能唯一标识
+     * @param picture 使用的图片组
+     * @param scale 指示图缩放大小
+     * @param radius 瞄准半径（方块）
+     * @param maxTick 最大Tick
+     * @param callback 结果回调（在主线程执行）
+     */
+    fun requestAiming(
+        player: Player,
+        skillId: String,
+        picture: String,
+        scale: Double,
+        radius: Double,
+        maxTick: Long,
+        callback: (Result<AimInfo>) -> Unit
+    ) {
+        if (!isLegacyVersion) {
+            callback(Result.failure(UnsupportedVersionException()))
+            return
+        }
+
+        CompletableFuture<AimInfo>().apply {
+            pendingRequests[player.uniqueId] = this
+            whenComplete { result, ex ->
+                submit { // 切换到主线程执行回调
+                    callback(ex?.let { Result.failure(it) } ?: Result.success(result))
+                }
+            }
+        }
+
+        sendDataPacket(player, PacketType.PressAimRequest) {
+            writeUTF(skillId)
+            writeUTF(picture)
+            writeDouble(scale)
+            writeDouble(radius)
+            writeLong(maxTick)
         }
     }
 
@@ -240,13 +286,8 @@ object PluginMessageHandler {
     )
 
     /* 异常体系 */
-    class UnsupportedVersionException :
-        IllegalStateException("此功能仅支持 1.12.2 版本")
+    class UnsupportedVersionException : IllegalStateException("此功能仅支持 1.12.2 版本")
 
-    class PlayerCancelledException :
-        RuntimeException("玩家取消操作")
-
-    class TargetingFailedException :
-        RuntimeException("瞄准失败，请检查环境是否遮挡")
+    class PlayerCancelledException : RuntimeException("玩家取消操作")
 
 }

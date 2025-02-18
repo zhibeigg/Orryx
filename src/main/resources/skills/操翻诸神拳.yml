@@ -24,6 +24,11 @@ Options:
   AimRangeAction: 5
   # 指示范围缩放大小
   AimScaleAction: 10
+  # 蓄力每Tick执行
+  PressTickAction: |-
+    tell &pressTick
+  # 最大蓄力Tick
+  MaxPressTickAction: 10
   # 升级检查
   UpLevelCheckAction: |-
     tell inline "从{{ &from }}到{{ &to }}"

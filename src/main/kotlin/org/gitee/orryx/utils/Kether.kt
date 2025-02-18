@@ -146,15 +146,15 @@ fun <T> CompletableFuture<Any?>.vector(then: (IVector) -> T): CompletableFuture<
 }
 
 fun <T> CompletableFuture<Any?>.effect(then: (EffectBuilder) -> T): CompletableFuture<T> {
-    return thenApply { effect -> then(effect as EffectBuilder) }.except { then(EffectBuilder()) }
+    return thenApply { effect -> then(effect as? EffectBuilder ?: error("应传入粒子效果构建器但是传入了${effect?.javaClass?.name}")) }.except { then(EffectBuilder()) }
 }
 
 fun <T> CompletableFuture<Any?>.effectSpawner(then: (EffectSpawner) -> T): CompletableFuture<T> {
-    return thenApply { effect -> then(effect as EffectSpawner) }
+    return thenApply { effect -> then(effect as? EffectSpawner ?: error("应传入粒子生成器但是传入了${effect?.javaClass?.name}")) }
 }
 
 fun <T> CompletableFuture<Any?>.matrix(then: (Matrix3d) -> T): CompletableFuture<T> {
-    return thenApply { matrix -> then(matrix as Matrix3d) }.except { then(Matrix3d()) }
+    return thenApply { matrix -> then(matrix as? Matrix3d ?: error("应传入矩阵但是传入了${matrix?.javaClass?.name}")) }.except { then(Matrix3d()) }
 }
 
 internal fun theyContainer(optional: Boolean = false) = if (optional) {
@@ -207,3 +207,12 @@ internal fun ProxyCommandSender.parse(action: String, map: Map<String, Any>): St
     return KetherFunction.parse(action, ScriptOptions.builder().sender(this@parse).sandbox(true).namespace(orryxEnvironmentNamespaces).vars(map).build())
 }
 
+internal fun ScriptContext.vector(key: String, def: IVector? = null): IVector? {
+    return when(val vector = get<Any?>(key, def)) {
+        is Vector -> vector.abstract()
+        is taboolib.common.util.Vector -> vector.abstract()
+        is Vector3d -> vector.abstract()
+        is AbstractVector -> vector
+        else -> def
+    }
+}

@@ -14,28 +14,26 @@ object SelectorInit: ClassVisitor(1) {
     private val selectors by lazy { mutableListOf<ISelector>() }
 
     override fun getLifeCycle(): LifeCycle {
-        return LifeCycle.INIT
+        return LifeCycle.ENABLE
     }
 
     override fun visitStart(clazz: ReflexClass) {
-        try {
-            clazz.toClassOrNull()?.let { clazzClass ->
-                if (ISelector::class.java.isAssignableFrom(clazzClass)) {
-                    clazz.getInstance().let { instance ->
-                        if (instance is ISelector) {
-                            clazz.getAnnotationIfPresent(Plugin::class.java)?.let { annotation ->
-                                val pluginEnabled = Bukkit.getPluginManager().isPluginEnabled(annotation.property<String>("plugin")!!)
-                                debug("&e┣&7Selector loaded &e${instance.keys.map { it }} ${if (pluginEnabled) "&a√" else "&4×" }")
-                                if (!pluginEnabled) return
-                            } ?: run {
-                                debug("&e┣&7Selector loaded &e${instance.keys.map { it }} &a√")
-                            }
-                            selectors.add(instance)
+        clazz.toClassOrNull()?.let { clazzClass ->
+            if (ISelector::class.java.isAssignableFrom(clazzClass)) {
+                clazz.getInstance().let { instance ->
+                    if (instance is ISelector) {
+                        clazz.getAnnotationIfPresent(Plugin::class.java)?.let { annotation ->
+                            val pluginEnabled =
+                                Bukkit.getPluginManager().isPluginEnabled(annotation.property<String>("plugin")!!)
+                            debug("&e┣&7Selector loaded &e${instance.keys.map { it }} ${if (pluginEnabled) "&a√" else "&4×"}")
+                            if (!pluginEnabled) return
+                        } ?: run {
+                            debug("&e┣&7Selector loaded &e${instance.keys.map { it }} &a√")
                         }
+                        selectors.add(instance)
                     }
                 }
             }
-        } catch (_: Throwable) {
         }
     }
 

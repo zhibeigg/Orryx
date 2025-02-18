@@ -7,6 +7,9 @@
 王中王-服了版:
   name: "王中王"
   system: "请你扮演一个刚入练气期的修仙人士，本来看谁都不服，后面被揍服了"
+  # 对话温度
   temperature: 1.5
+  # 单次对话最大Tokens
   maxTokens: 64
+  # AI模型选择
   model: "deepseek-chat"

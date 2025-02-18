@@ -72,20 +72,17 @@ object StationLoaderManager: ClassVisitor(1) {
     }
 
     override fun visitStart(clazz: ReflexClass) {
-        try {
-            if (IStationTrigger::class.java.isAssignableFrom(clazz.toClass())) {
-                val instance = clazz.getInstance() as? IStationTrigger<*> ?: return
-                if (clazz.hasAnnotation(Plugin::class.java)) {
-                    val annotation = clazz.getAnnotation(Plugin::class.java)
-                    val pluginEnabled = Bukkit.getPluginManager().isPluginEnabled(annotation.property<String>("plugin")!!)
-                    debug("&e┣&7StationTrigger loaded &e${instance.event} ${if (pluginEnabled) "&a√" else "&4×"}")
-                    if (!pluginEnabled) return
-                } else {
-                    debug("&e┣&7StationTrigger loaded &e${instance.event} &a√")
-                }
-                triggers[instance.event] = instance
+        if (IStationTrigger::class.java.isAssignableFrom(clazz.toClass())) {
+            val instance = clazz.getInstance() as? IStationTrigger<*> ?: return
+            if (clazz.hasAnnotation(Plugin::class.java)) {
+                val annotation = clazz.getAnnotation(Plugin::class.java)
+                val pluginEnabled = Bukkit.getPluginManager().isPluginEnabled(annotation.property<String>("plugin")!!)
+                debug("&e┣&7StationTrigger loaded &e${instance.event} ${if (pluginEnabled) "&a√" else "&4×"}")
+                if (!pluginEnabled) return
+            } else {
+                debug("&e┣&7StationTrigger loaded &e${instance.event} &a√")
             }
-        } catch (_: Throwable) {
+            triggers[instance.event] = instance
         }
     }
 

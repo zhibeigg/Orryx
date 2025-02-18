@@ -1,18 +1,19 @@
 package org.gitee.orryx.core.kether.actions
 
 import org.gitee.orryx.core.kether.ScriptManager.combinationParser
+import org.gitee.orryx.core.kether.actions.ContextActions.Method.*
 import org.gitee.orryx.core.kether.parameter.IParameter
 import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.kether.parameter.StationParameter
 import org.gitee.orryx.core.targets.ITargetEntity
+import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.core.wiki.Action
 import org.gitee.orryx.core.wiki.Type
 import org.gitee.orryx.utils.*
 import taboolib.common.platform.function.adaptCommandSender
 import taboolib.common.platform.function.warning
-import taboolib.module.kether.KetherParser
-import taboolib.module.kether.run
-import taboolib.module.kether.script
+import taboolib.module.kether.*
+import java.util.concurrent.CompletableFuture
 
 object ContextActions {
 
@@ -45,22 +46,32 @@ object ContextActions {
             .addEntry("目标参数", Type.STRING)
     ) {
         it.group(
-            text()
-        ).apply(it) { key ->
-            now {
+            text(),
+            symbol().option(),
+            action().option()
+        ).apply(it) { key, symbol, action ->
+            future {
                 val parameter = script().getParameter()
-                return@now when(val pkey = key.uppercase()) {
-                    "SKILL" -> parameter.parseParm(pkey, ParmType.SKILL)
-                    "LEVEL" -> parameter.parseParm(pkey, ParmType.SKILL)
-                    "STATION" -> parameter.parseParm(pkey, ParmType.STATION)
-                    "ORIGIN" -> parameter.parseParm(pkey, ParmType.ALL)
-                    else -> warning("not found parm $key")
-                }
+                val method = Method.entries.find { method ->
+                    symbol?.lowercase() in method.symbols
+                } ?: NONE
+                val future = CompletableFuture<Any>()
+                val value = action?.let { run(action).orNull() }
+                    future.complete(
+                        when(val pkey = key.uppercase()) {
+                            "SKILL" -> parameter.parseParm(pkey, ParmType.SKILL, method, value, script())
+                            "LEVEL" -> parameter.parseParm(pkey, ParmType.SKILL, method, value, script())
+                            "STATION" -> parameter.parseParm(pkey, ParmType.STATION, method, value, script())
+                            "ORIGIN" -> parameter.parseParm(pkey, ParmType.ALL, method, value, script())
+                            else -> warning("not found parm $key")
+                        }
+                    )
+                future
             }
         }
     }
 
-    private fun IParameter.parseParm(key: String, type: ParmType): Any? {
+    private fun IParameter.parseParm(key: String, type: ParmType, method: Method, value: Any?, context: ScriptContext): Any? {
         return when(type) {
             ParmType.SKILL -> {
                 this as SkillParameter
@@ -79,7 +90,14 @@ object ContextActions {
             }
             ParmType.ALL -> {
                 when(key) {
-                    "ORIGIN" -> origin
+                    "ORIGIN" -> {
+                        when(method) {
+                            INCREASE -> origin
+                            DECREASE -> origin
+                            MODIFY -> value.readContainer(context)?.firstInstanceOrNull<ITargetLocation<*>>()?.let { origin = it }
+                            NONE -> origin
+                        }
+                    }
                     else -> null
                 }
             }
@@ -88,6 +106,10 @@ object ContextActions {
 
     enum class ParmType {
         SKILL, STATION, ALL;
+    }
+
+    enum class Method(vararg val symbols: String) {
+        INCREASE("add"), DECREASE("sub"), MODIFY("set", "to"), NONE;
     }
 
 }

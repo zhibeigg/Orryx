@@ -24,9 +24,7 @@ object EffectActions {
      *   draw particle "@type DRAGON_BREATH @count 1"
      *   draw matrix &m
      * }
-     * effect show &e they "@self" viewer "@self" onHit {
-     *   tell &target
-     * }
+     * effect show &e they "@self" viewer "@self"
      *
      * or
      *
@@ -35,9 +33,7 @@ object EffectActions {
      * effect show effect temp {
      *   draw particle "@type DRAGON_BREATH @count 1"
      *   draw matrix &m
-     * } duration 20 period 2 they "@self" viewer "@self" onHit {
-     *   tell &target
-     * }
+     * } duration 20 period 2 they "@self" viewer "@self"
      * ```
      * */
     @KetherParser(["effect"], namespace = ORRYX_NAMESPACE, shared = true)
@@ -51,7 +47,6 @@ object EffectActions {
                 .addEntry("粒子显示周期", Type.LONG, true, "1", "period")
                 .addContainerEntry("粒子显示位置", true, default = "@self")
                 .addContainerEntry("粒子可视者", true, default = "@world", head = "viewer")
-                .addEntry("当粒子击中实体时触发", Type.ANY, true, head = "onHit")
                 .result("粒子生成器", Type.EFFECT_SPAWNER),
             Action.new("Effect粒子效果", "停止显示粒子", "effect", true)
                 .description("停止显示粒子")
@@ -374,7 +369,6 @@ object EffectActions {
         val mode = reader.nextHeadAction("mode", "show")
         val they = reader.nextTheyContainer()
         val viewer = reader.nextHeadActionOrNull(arrayOf("viewer"))
-        val onHit = reader.nextHeadActionOrNull(arrayOf("onHit"))
         return actionFuture { future ->
             run(effect).effect { effect ->
                 run(duration).long { duration ->
@@ -389,9 +383,7 @@ object EffectActions {
                                         SpawnerType.valueOf(mode.uppercase()),
                                         origins,
                                         viewers
-                                    ) {
-                                        onHit?.let { run(it) }
-                                    }
+                                    )
                                     spawner.start()
                                     future.complete(spawner)
                                 }

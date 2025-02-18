@@ -5,7 +5,9 @@ import io.lumine.xikage.mythicmobs.adapters.AbstractEntity
 import io.lumine.xikage.mythicmobs.io.MythicLineConfig
 import io.lumine.xikage.mythicmobs.skills.SkillMetadata
 import io.lumine.xikage.mythicmobs.skills.targeters.IEntitySelector
+import taboolib.common.platform.Ghost
 
+@Ghost
 class MythicMobsMobInRangeTargeter(mlc: MythicLineConfig) : IEntitySelector(mlc) {
 
     private val range = mlc.getDouble(arrayOf("range", "r"), 5.0)

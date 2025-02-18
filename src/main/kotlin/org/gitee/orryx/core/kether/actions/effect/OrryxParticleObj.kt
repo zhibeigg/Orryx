@@ -41,7 +41,6 @@ class OrryxParticleObj(var effectOrigin: EffectOrigin, val obj: ParticleObj, val
                 obj.turnOffTask()
             }
             if (delay % spawner.tick == 0L) {
-                spawner.func()
                 when(obj) {
                     is Arc -> syncArc()
                     is Astroid -> syncAstroid()

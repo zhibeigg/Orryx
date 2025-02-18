@@ -18,7 +18,7 @@ import java.util.*
 open class AbstractAdyeshachEntity(private val instance: EntityInstance) : IEntity, ITargetEntity<EntityInstance>, ITargetLocation<EntityInstance> {
 
     override val entity: IEntity
-        get() = object : IEntity by this {}
+        get() = this
 
     override val location: Location
         get() = instance.getLocation().clone()

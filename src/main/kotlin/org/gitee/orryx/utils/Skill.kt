@@ -24,6 +24,8 @@ const val PRESSING = "Pressing"
 const val PRESSING_AIM = "Pressing Aim"
 const val PASSIVE = "Passive"
 
+const val DEFAULT_PICTURE = "default"
+
 internal fun SkillParameter.runSkillAction(map: Map<String, Any> = emptyMap()) {
     SkillLoaderManager.getSkillLoader(skill ?: return)?.let { skill ->
         if (skill is ICastSkill) {
@@ -72,17 +74,30 @@ internal fun IPlayerSkill.parameter(): IParameter {
 
 fun ISkill.castSkill(player: Player, parameter: SkillParameter) {
     when(val skill = this) {
-        is PressingSkill -> {
-
-        }
+        is PressingSkill -> parameter.runSkillAction(mapOf("pressTick" to 1))
         is PressingAimSkill -> {
-
+            val aimRange = parameter.runCustomAction(skill.aimRangeAction).orNull().cdouble
+            val aimScale = parameter.runCustomAction(skill.aimScaleAction).orNull().cdouble
+            PluginMessageHandler.requestAiming(player, key, DEFAULT_PICTURE, aimScale, aimRange) { aimInfo ->
+                aimInfo.getOrNull()?.let {
+                    if (it.skillId == skill.key) {
+                        parameter.origin = it.location.toTarget()
+                        parameter.runSkillAction(
+                            mapOf(
+                                "aimRange" to aimRange,
+                                "aimScale" to aimScale,
+                                "pressTick" to 1
+                            )
+                        )
+                    }
+                }
+            }
         }
         is DirectSkill -> parameter.runSkillAction()
         is DirectAimSkill -> {
             val aimRange = parameter.runCustomAction(skill.aimRangeAction).orNull().cdouble
             val aimScale = parameter.runCustomAction(skill.aimScaleAction).orNull().cdouble
-            PluginMessageHandler.requestAiming(player, key, aimScale, aimRange) { aimInfo ->
+            PluginMessageHandler.requestAiming(player, key, DEFAULT_PICTURE, aimScale, aimRange) { aimInfo ->
                 aimInfo.getOrNull()?.let {
                     if (it.skillId == skill.key) {
                         parameter.origin = it.location.toTarget()
@@ -97,4 +112,8 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter) {
             }
         }
     }
+}
+
+fun CastResult.isSuccess(): Boolean {
+    return this == CastResult.SUCCESS
 }

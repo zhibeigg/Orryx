@@ -17,7 +17,7 @@ object VectorMathActions {
         arrayOf(
             Action.new("Math数学运算", "创建向量", "vector", true)
                 .description("创建向量")
-                .addEntry("创建标识符", Type.SYMBOL, true, "create", "create")
+                .addEntry("创建标识符", Type.SYMBOL, true, "create", "create/new")
                 .addEntry("X", Type.DOUBLE, false)
                 .addEntry("Y", Type.DOUBLE, false)
                 .addEntry("Z", Type.DOUBLE, false)
@@ -81,6 +81,12 @@ object VectorMathActions {
                 .addEntry("标准化的长度", Type.DOUBLE, true, "1.0", "length")
                 .addDest(Type.VECTOR, optional = true)
                 .result("标准化的向量", Type.VECTOR),
+            Action.new("Math数学运算", "向量长度", "vector", true)
+                .description("向量长度")
+                .addEntry("长度标识符", Type.SYMBOL, head = "length")
+                .addEntry("向量", Type.VECTOR, false)
+                .addDest(Type.DOUBLE, optional = true)
+                .result("标准化的向量", Type.VECTOR),
             Action.new("Math数学运算", "世界原点向量(0向量)", "vector", true)
                 .description("世界原点向量(0向量)")
                 .addEntry("0向量标识符", Type.SYMBOL, head = "center")
@@ -92,7 +98,7 @@ object VectorMathActions {
         )
     ) {
         it.switch {
-            case("create") { create(it) }
+            case("create", "new") { create(it) }
             case("add") { add(it) }
             case("sub") { sub(it) }
             case("cross") { cross(it) }
@@ -102,6 +108,7 @@ object VectorMathActions {
             case("distance") { distance(it) }
             case("negate") { negate(it) }
             case("normalize") { normalize(it) }
+            case("length") { length(it) }
             case("center") {
                 actionFuture { future ->
                     future.complete(AbstractVector())
@@ -252,6 +259,15 @@ object VectorMathActions {
                         future.complete(a.normalize(length, it.joml))
                     }
                 }
+            }
+        }
+    }
+
+    private fun length(reader: QuestReader): ScriptAction<Any?> {
+        val a = reader.nextParsedAction()
+        return actionFuture { future ->
+            run(a).vector { a ->
+                future.complete(a.length())
             }
         }
     }

@@ -1,2 +1,7 @@
 hook-true: "[Orryx] &e┣&7已检测到{0} 附属功能已注册 &a√"
 hook-false: "[Orryx] &e┣&7未检测到{0} 附属功能已关闭 &4×"
+
+mana-not-enough: "&4| &f法力值不足"
+check-action-failed: "&4| &f检测语句未通过"
+cooldown: "&4| &f技能正处于冷却"
+canceled: "&4| &f事件已取消"

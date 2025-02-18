@@ -12,6 +12,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause
 import org.gitee.orryx.api.events.damage.DamageType
 import org.gitee.orryx.compat.IAttributeBridge
 import org.gitee.orryx.utils.doDamage
+import taboolib.common.platform.Ghost
 
 class OriginAttributeBridge: IAttributeBridge {
 
@@ -57,6 +58,7 @@ class OriginAttributeBridge: IAttributeBridge {
         }
     }
 
+    @Ghost
     class Data(val timeout: Long) : AttributeData() {
 
         val create = System.currentTimeMillis()

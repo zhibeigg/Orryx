@@ -1,11 +1,11 @@
 package org.gitee.orryx.core.kether.actions
 
+import org.bukkit.entity.LivingEntity
 import org.gitee.orryx.api.events.damage.DamageType
 import org.gitee.orryx.compat.DefaultAttributeBridge
 import org.gitee.orryx.compat.IAttributeBridge
 import org.gitee.orryx.core.kether.ScriptManager.combinationParser
 import org.gitee.orryx.core.targets.ITargetEntity
-import org.gitee.orryx.core.targets.PlayerTarget
 import org.gitee.orryx.core.wiki.Action
 import org.gitee.orryx.core.wiki.Type
 import org.gitee.orryx.utils.*
@@ -38,13 +38,23 @@ object DamageActions {
                 if (attribute) {
                     container!!.forEachInstance<ITargetEntity<*>> { target ->
                         target.entity.getBukkitLivingEntity()?.let { entity ->
-                            IAttributeBridge.INSTANCE.damage(sources.firstInstance<PlayerTarget>().getSource(), entity, damage, damageType)
+                            IAttributeBridge.INSTANCE.damage(
+                                sources.firstInstance<ITargetEntity<LivingEntity>>().getSource(),
+                                entity,
+                                damage,
+                                damageType
+                            )
                         }
                     }
                 } else {
                     container!!.forEachInstance<ITargetEntity<*>> { target ->
                         target.entity.getBukkitLivingEntity()?.let { entity ->
-                            Default.damage(sources.firstInstance<PlayerTarget>().getSource(), entity, damage, damageType)
+                            Default.damage(
+                                sources.firstInstance<ITargetEntity<LivingEntity>>().getSource(),
+                                entity,
+                                damage,
+                                damageType
+                            )
                         }
                     }
                 }
