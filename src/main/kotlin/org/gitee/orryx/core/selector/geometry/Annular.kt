@@ -11,7 +11,6 @@ import org.gitee.orryx.utils.isInRound
 import org.gitee.orryx.utils.read
 import org.gitee.orryx.utils.toTarget
 import taboolib.common.platform.function.adaptLocation
-import taboolib.common.platform.function.platformLocation
 import taboolib.module.effect.createCircle
 import taboolib.module.kether.ScriptContext
 import kotlin.math.pow
@@ -58,13 +57,13 @@ object Annular : ISelectorGeometry {
         return list
     }
 
-    override fun showAFrame(context: ScriptContext, parameter: StringParser.Entry): List<Location> {
+    override fun aFrameShowLocations(context: ScriptContext, parameter: StringParser.Entry): List<taboolib.common.util.Location> {
         val origin = context.getParameter().origin?.location ?: return emptyList()
         val min = parameter.read<Double>(0, 0.0)
         val max = parameter.read<Double>(1, 0.0)
         val high = parameter.read<Double>(2, 0.0)
 
-        val locations = mutableListOf<Location>()
+        val locations = mutableListOf<taboolib.common.util.Location>()
 
         fun circleMax(loc: Location) {
             locations.addAll(
@@ -73,7 +72,7 @@ object Annular : ISelectorGeometry {
                     max,
                     5.0,
                     0
-                ).calculateLocations().map { platformLocation(it) }
+                ).calculateLocations().map { it }
             )
         }
         fun circleMin(loc: Location) {
@@ -83,7 +82,7 @@ object Annular : ISelectorGeometry {
                     min,
                     5.0,
                     0
-                ).calculateLocations().map { platformLocation(it) }
+                ).calculateLocations().map { it }
             )
         }
 

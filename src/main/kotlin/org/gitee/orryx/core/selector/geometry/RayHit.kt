@@ -8,6 +8,7 @@ import org.gitee.orryx.core.targets.ITarget
 import org.gitee.orryx.utils.*
 import org.joml.RayAabIntersection
 import org.joml.Vector3d
+import taboolib.common.platform.function.adaptLocation
 import taboolib.common5.cfloat
 import taboolib.module.kether.ScriptContext
 import java.util.stream.Collectors
@@ -30,16 +31,16 @@ object RayHit: ISelectorGeometry {
         return findEntitiesAlongRay(origin.eyeLocation, vector, distance).map { it.toTarget() }
     }
 
-    override fun showAFrame(context: ScriptContext, parameter: StringParser.Entry): List<Location> {
+    override fun aFrameShowLocations(context: ScriptContext, parameter: StringParser.Entry): List<taboolib.common.util.Location> {
         val origin = context.getParameter().origin ?: return emptyList()
         val v = parameter.read<String>(0, "a")
         val distance = parameter.read<Double>(1, 0.0)
         val vector = context.vector(v)?.joml ?: return emptyList()
 
-        val normal = vector.normalize(0.1, Vector3d()).bukkit()
+        val normal = vector.normalize(0.1, Vector3d()).taboo()
         var length = vector.length()
-        val start = origin.location.clone()
-        val list = mutableListOf<Location>()
+        val start = adaptLocation(origin.eyeLocation)
+        val list = mutableListOf<taboolib.common.util.Location>()
         while (length > 0) {
             list += start.add(normal).clone()
             length -= 0.1

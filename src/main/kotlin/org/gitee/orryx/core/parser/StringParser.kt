@@ -5,6 +5,9 @@ import org.gitee.orryx.core.container.IContainer
 import org.gitee.orryx.core.selector.ISelectorGeometry
 import org.gitee.orryx.core.selector.ISelectorStream
 import org.gitee.orryx.core.selector.SelectorInit
+import org.gitee.orryx.utils.bukkitPlayer
+import taboolib.common.platform.ProxyParticle
+import taboolib.common.platform.function.adaptPlayer
 import taboolib.common.platform.function.info
 import taboolib.module.kether.ScriptContext
 
@@ -44,6 +47,23 @@ class StringParser(val value: String) {
                 }
                 is ISelectorGeometry -> {
                     container.targets += selector.getTargets(context, entry)
+                }
+                null -> {
+                    info("选择器${entry.head}未注册")
+                }
+            }
+        }
+        return container
+    }
+
+    fun showAFrame(context: ScriptContext): IContainer {
+        val container = Container()
+        entries.forEach { entry ->
+            when(val selector = SelectorInit.getSelector(entry.head.uppercase())) {
+                is ISelectorGeometry -> {
+                    selector.aFrameShowLocations(context, entry).forEach {
+                        ProxyParticle.DUST.sendTo(adaptPlayer(context.bukkitPlayer()), it)
+                    }
                 }
                 null -> {
                     info("选择器${entry.head}未注册")

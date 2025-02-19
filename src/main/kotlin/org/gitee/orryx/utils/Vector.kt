@@ -2,6 +2,7 @@ package org.gitee.orryx.utils
 
 import io.lumine.xikage.mythicmobs.adapters.AbstractLocation
 import org.bukkit.Location
+import org.bukkit.World
 import org.bukkit.entity.Entity
 import org.bukkit.entity.LivingEntity
 import org.bukkit.util.Vector
@@ -9,10 +10,14 @@ import org.gitee.orryx.api.adapters.IVector
 import org.gitee.orryx.api.adapters.vector.AbstractVector
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.core.targets.ITargetLocation
+import org.gitee.orryx.utils.raytrace.FluidHandling
+import org.gitee.orryx.utils.raytrace.RayTraceResult
+import org.gitee.orryx.utils.raytrace.SpigotWorld
 import org.joml.Matrix3dc
 import org.joml.Vector3d
 import org.joml.Vector3dc
 import taboolib.module.effect.math.Matrix
+
 
 /**
  * AbstractLocation是否面相loc2
@@ -77,6 +82,10 @@ internal fun ITargetEntity<*>.direction(x: Double, y: Double, z: Double): Vector
     return Vector(0, 0, 0).add(xV.multiply(x)).add(Vector(0.0, y, 0.0)).add(zV.multiply(z))
 }
 
+fun Location.joml() = Vector3d(x, y, z)
+
+fun taboolib.common.util.Location.joml() = Vector3d(x, y, z)
+
 fun Vector.joml() = Vector3d(x, y, z)
 
 fun taboolib.common.util.Vector.joml() = Vector3d(x, y, z)
@@ -89,7 +98,11 @@ fun taboolib.common.util.Vector.abstract() = AbstractVector(joml())
 
 fun Vector3d.abstract() = AbstractVector(this)
 
+fun Vector3dc.taboo() = taboolib.common.util.Vector(x(), y(), z())
+
 fun IVector.bukkit() = Vector(joml.x, joml.y, joml.z)
+
+fun IVector.taboo() = taboolib.common.util.Vector(joml.x, joml.y, joml.z)
 
 fun IVector.joml() = joml
 
@@ -146,4 +159,24 @@ fun areAABBsColliding(aabb0: AABB, aabb1: AABB): Boolean {
 
     // 所有轴都有重叠时返回 true
     return xOverlap && yOverlap && zOverlap
+}
+
+/**
+ * 光线追踪碰撞计算
+ * @param start 原点向量
+ * @param direction 射线向量
+ * @param maxDistance 碰撞范围（1.12.2及以下无效）
+ * @param fluidHandling 流体处理
+ * @param checkAxisAlignedBB 是否比对轴对称包围盒
+ * @param returnClosestPos 即使光线未命中任何可碰撞方块，也会返回光线路径中最后的落点
+ * */
+fun World.rayTraceBlocks(
+    start: Vector3dc,
+    direction: Vector3dc,
+    maxDistance: Double = 1.0,
+    fluidHandling: FluidHandling = FluidHandling.NONE,
+    checkAxisAlignedBB: Boolean = true,
+    returnClosestPos: Boolean = true
+): RayTraceResult? {
+    return SpigotWorld(this).rayTraceBlocks(start, direction, maxDistance, fluidHandling, checkAxisAlignedBB, returnClosestPos)
 }

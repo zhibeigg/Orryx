@@ -1,4 +1,4 @@
-package org.gitee.orryx.core.kether.actions.math.vector
+package org.gitee.orryx.core.kether.actions.game
 
 import org.gitee.orryx.core.kether.ScriptManager.combinationParser
 import org.gitee.orryx.core.targets.ITargetEntity

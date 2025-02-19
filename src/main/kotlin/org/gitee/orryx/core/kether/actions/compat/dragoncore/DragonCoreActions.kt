@@ -78,7 +78,7 @@ object DragonCoreActions {
                         }
                     }
                     "clear" -> {
-                        val container1 = it.nextTheyContainer()
+                        val container1 = it.nextTheyContainerOrNull()
                         val armourers = it.nextParsedAction()
                         val container2 = it.nextTheyContainer()
 

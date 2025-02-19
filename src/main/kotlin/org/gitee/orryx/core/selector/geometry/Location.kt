@@ -37,7 +37,7 @@ object Location: ISelectorGeometry {
         return listOf(location.toTarget())
     }
 
-    override fun showAFrame(context: ScriptContext, parameter: StringParser.Entry): List<Location> {
+    override fun aFrameShowLocations(context: ScriptContext, parameter: StringParser.Entry): List<taboolib.common.util.Location> {
         val origin = context.getParameter().origin ?: return emptyList()
 
         val x = parameter.read<Double>(0, 0.0)
@@ -47,7 +47,7 @@ object Location: ISelectorGeometry {
         val pitch = parameter.read<Float>(4, 0.0f)
         val world = parameter.read<String>(5, origin.world.name)
 
-        val location = Location(Bukkit.getWorld(world), x, y, z, yaw, pitch)
+        val location = taboolib.common.util.Location(world, x, y, z, yaw, pitch)
 
         return listOf(location)
     }

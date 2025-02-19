@@ -1,6 +1,5 @@
 package org.gitee.orryx.core.selector.geometry
 
-import org.bukkit.Location
 import org.bukkit.entity.LivingEntity
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.ISelectorGeometry
@@ -11,7 +10,6 @@ import org.gitee.orryx.utils.read
 import org.gitee.orryx.utils.toTarget
 import org.joml.RayAabIntersection
 import taboolib.common.platform.function.adaptLocation
-import taboolib.common.platform.function.platformLocation
 import taboolib.common5.cfloat
 import taboolib.module.effect.createSphere
 import taboolib.module.kether.ScriptContext
@@ -44,12 +42,12 @@ object Range: ISelectorGeometry {
         }
     }
 
-    override fun showAFrame(context: ScriptContext, parameter: StringParser.Entry): List<Location> {
+    override fun aFrameShowLocations(context: ScriptContext, parameter: StringParser.Entry): List<taboolib.common.util.Location> {
         val origin = context.getParameter().origin ?: return emptyList()
 
         val r = parameter.read<Double>(0, 10.0)
 
-        return createSphere(adaptLocation(origin.eyeLocation), radius = r).calculateLocations().map { platformLocation(it) }
+        return createSphere(adaptLocation(origin.eyeLocation), radius = r).calculateLocations().map { it }
     }
 
 }

@@ -30,17 +30,17 @@ object PlayerProfileActions {
                     }
                 }
                 when (type) {
-                    "set", "to" -> foreach {
-                        it.player.orryxProfile().setSuperBody(timeout)
+                    "set", "to" -> foreach { target ->
+                        target.getSource().orryxProfile().setSuperBody(timeout)
                     }
-                    "add", "+" -> foreach {
-                        it.player.orryxProfile().addSuperBody(timeout)
+                    "add", "+" -> foreach { target ->
+                        target.getSource().orryxProfile().addSuperBody(timeout)
                     }
-                    "reduce", "-" -> foreach {
-                        it.player.orryxProfile().reduceSuperBody(timeout)
+                    "reduce", "-" -> foreach { target ->
+                        target.getSource().orryxProfile().reduceSuperBody(timeout)
                     }
-                    "cancel", "stop" -> foreach {
-                        it.player.orryxProfile().cancelSuperBody()
+                    "cancel", "stop" -> foreach { target ->
+                        target.getSource().orryxProfile().cancelSuperBody()
                     }
                 }
             }

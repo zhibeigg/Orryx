@@ -1,13 +1,11 @@
 package org.gitee.orryx.core.selector.geometry
 
-import org.bukkit.Location
 import org.gitee.orryx.api.adapters.vector.AbstractVector
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.ISelectorGeometry
 import org.gitee.orryx.core.targets.ITarget
 import org.gitee.orryx.utils.*
 import org.joml.Vector3d
-import taboolib.common.platform.function.platformLocation
 import taboolib.module.effect.createCube
 import taboolib.module.kether.ScriptContext
 
@@ -48,7 +46,7 @@ object Rectangle: ISelectorGeometry {
         }.map { it.toTarget() }
     }
 
-    override fun showAFrame(context: ScriptContext, parameter: StringParser.Entry): List<Location> {
+    override fun aFrameShowLocations(context: ScriptContext, parameter: StringParser.Entry): List<taboolib.common.util.Location> {
         val origin = context.getParameter().origin ?: return emptyList()
         val location = origin.eyeLocation
         val long = parameter.read<Double>(0, 0.0)
@@ -66,7 +64,7 @@ object Rectangle: ISelectorGeometry {
         val minVector = AbstractVector(location.toVector()).add(vectorX.mul(-long/2+forward, Vector3d())).add(vectorY.mul(-high/2+offsetY)).add(vectorZ.mul(-wide/2, Vector3d()))
         val maxVector = AbstractVector(location.toVector()).add(vectorX.mul(long/2+forward, Vector3d())).add(vectorY.mul(high/2+offsetY)).add(vectorZ.mul(wide/2, Vector3d()))
 
-        return createCube(taboolib.common.util.Location(location.world?.name, minVector.x(), minVector.y(), minVector.z()), taboolib.common.util.Location(location.world?.name, maxVector.x(), maxVector.y(), maxVector.z())).calculateLocations().map { platformLocation(it) }
+        return createCube(taboolib.common.util.Location(location.world?.name, minVector.x(), minVector.y(), minVector.z()), taboolib.common.util.Location(location.world?.name, maxVector.x(), maxVector.y(), maxVector.z())).calculateLocations().map { it }
     }
 
 }
