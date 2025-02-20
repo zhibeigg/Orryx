@@ -2,8 +2,6 @@ package org.gitee.orryx.core.skill
 
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.kether.parameter.IParameter
-import org.gitee.orryx.core.key.IBindKey
-import org.gitee.orryx.core.key.IGroup
 
 interface IPlayerSkill {
 
@@ -36,11 +34,6 @@ interface IPlayerSkill {
      * 技能等级
      * */
     val level: Int
-
-    /**
-     * 绑定的组和按键
-     * */
-    val bindKeyOfGroup: Map<String, String?>
 
     /**
      * 强制的释放技能
@@ -95,14 +88,6 @@ interface IPlayerSkill {
      * @return 是否成功
      * */
     fun setLevel(level: Int): SkillLevelResult
-
-    /**
-     * 设置技能绑定按键
-     * @param group 技能组
-     * @param bindKey 绑定按键
-     * @return 是否成功
-     * */
-    fun setBindKey(group: IGroup, bindKey: IBindKey): Boolean
 
     /**
      * 保存数据

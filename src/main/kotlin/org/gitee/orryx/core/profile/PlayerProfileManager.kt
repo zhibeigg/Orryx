@@ -5,6 +5,7 @@ import org.bukkit.event.player.PlayerQuitEvent
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.job.PlayerJob
 import org.gitee.orryx.dao.cache.ICacheManager
+import org.gitee.orryx.utils.DEFAULT
 import org.gitee.orryx.utils.playerData
 import taboolib.common.platform.event.SubscribeEvent
 import java.util.*
@@ -32,12 +33,13 @@ object PlayerProfileManager {
 
     fun Player.job(): IPlayerJob? {
         val job = orryxProfile().job ?: return null
-        return ICacheManager.INSTANCE.getPlayerJob(uniqueId, job)?.let { PlayerJob(this, it.job, it.experience) } ?: PlayerJob(this, job, 0).apply { save(true) }
+        return job(job)
     }
 
     fun Player.job(job: String): IPlayerJob {
-        return ICacheManager.INSTANCE.getPlayerJob(uniqueId, job)?.let { PlayerJob(this, it.job, it.experience) } ?: PlayerJob(this, job, 0)
+        return ICacheManager.INSTANCE.getPlayerJob(uniqueId, job)?.let { PlayerJob(this, it.job, it.experience, it.group, it.bindKeyOfGroup.mapValues { map -> map.value.toMutableMap() }.toMutableMap()) } ?: defaultJob(job).apply { save(true) }
     }
 
+    private fun Player.defaultJob(job: String) = PlayerJob(this, job, 0, DEFAULT, mutableMapOf())
 
 }

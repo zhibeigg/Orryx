@@ -1,9 +1,6 @@
 package org.gitee.orryx.utils
 
-import com.google.gson.Gson
 import java.util.*
-
-val gson by lazy { Gson() }
 
 const val PLAYER_DATA = "orryx_player_data_"
 const val PLAYER_JOB_DATA = "orryx_player_job_data_"

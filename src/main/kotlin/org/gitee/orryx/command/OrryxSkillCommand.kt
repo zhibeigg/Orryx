@@ -31,10 +31,11 @@ object OrryxSkillCommand {
                         suggest { BindKeyLoaderManager.getBindKeys().keys.toList() }
                         exec<ProxyCommandSender> {
                             val player = ctx.bukkitPlayer() ?: return@exec
-                            val skill = player.getSkill(player.orryxProfile().job ?: return@exec, ctx["skill"]) ?: return@exec
+                            val job = player.job()
+                            val skill = player.getSkill(job?.key ?: return@exec, ctx["skill"]) ?: return@exec
                             val group = BindKeyLoaderManager.getGroup(ctx["group"]) ?: return@exec
                             val bindKey = BindKeyLoaderManager.getBindKey(ctx["key"]) ?: return@exec
-                            debug("${player.name}指令skill bindKey结果${skill.setBindKey(group, bindKey)}")
+                            debug("${player.name}指令skill bindKey结果${job.setBindKey(skill, group, bindKey)}")
                         }
                     }
                 }

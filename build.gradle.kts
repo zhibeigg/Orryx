@@ -1,3 +1,4 @@
+
 import io.izzel.taboolib.gradle.*
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -8,8 +9,9 @@ val build: String by project
 plugins {
     java
     `maven-publish`
+    kotlin("jvm") version "1.9.24"
+    kotlin("plugin.serialization") version "1.9.24"
     id("io.izzel.taboolib") version "2.0.22"
-    id("org.jetbrains.kotlin.jvm") version "1.9.0"
     id("org.jetbrains.dokka") version "2.0.0"
 }
 
@@ -93,7 +95,7 @@ dependencies {
     compileOnly("com.github.retrooper:packetevents-spigot:2.7.0")
     compileOnly("com.comphenix.protocol:ProtocolLib:5.3.0")
 
-    compileOnly("com.google.code.gson:gson:2.10.1")
+    compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
     compileOnly("com.github.ben-manes.caffeine:caffeine:2.9.3")
     compileOnly("org.joml:joml:1.10.7")
     compileOnly("com.larksuite.oapi:oapi-sdk:2.4.7")

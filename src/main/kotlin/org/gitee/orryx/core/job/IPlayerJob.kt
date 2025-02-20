@@ -2,6 +2,9 @@ package org.gitee.orryx.core.job
 
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.experience.IExperience
+import org.gitee.orryx.core.key.IBindKey
+import org.gitee.orryx.core.key.IGroup
+import org.gitee.orryx.core.skill.IPlayerSkill
 
 interface IPlayerJob {
 
@@ -19,6 +22,11 @@ interface IPlayerJob {
      * 职业配置文件
      * */
     val job: IJob
+
+    /**
+     * 绑定的组和按键
+     * */
+    val bindKeyOfGroup: Map<IGroup, Map<IBindKey, String?>>
 
     /**
      * 职业当前选择的技能组
@@ -113,6 +121,23 @@ interface IPlayerJob {
      * @return 是否成功
      * */
     fun setGroup(group: String): Boolean
+
+    /**
+     * 设置技能绑定按键
+     * @param skill 技能
+     * @param group 技能组
+     * @param bindKey 绑定按键
+     * @return 是否成功
+     * */
+    fun setBindKey(skill: IPlayerSkill, group: IGroup, bindKey: IBindKey): Boolean
+
+    /**
+     * 取消技能绑定按键
+     * @param skill 技能
+     * @param group 技能组
+     * @return 是否成功
+     * */
+    fun unBindKey(skill: IPlayerSkill, group: IGroup): Boolean
 
     /**
      * 保存数据

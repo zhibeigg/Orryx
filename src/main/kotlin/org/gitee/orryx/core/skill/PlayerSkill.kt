@@ -1,14 +1,11 @@
 package org.gitee.orryx.core.skill
 
 import org.bukkit.entity.Player
-import org.gitee.orryx.api.events.player.OrryxPlayerSkillBindKeyEvent
 import org.gitee.orryx.api.events.player.OrryxPlayerSkillCastEvents
 import org.gitee.orryx.api.events.player.OrryxPlayerSkillLevelEvents
 import org.gitee.orryx.core.common.timer.SkillTimer
 import org.gitee.orryx.core.kether.parameter.IParameter
 import org.gitee.orryx.core.kether.parameter.SkillParameter
-import org.gitee.orryx.core.key.IBindKey
-import org.gitee.orryx.core.key.IGroup
 import org.gitee.orryx.core.mana.IManaManager
 import org.gitee.orryx.core.skill.skills.PassiveSkill
 import org.gitee.orryx.dao.cache.ICacheManager
@@ -25,8 +22,7 @@ class PlayerSkill(
     override val key: String,
     override val job: String,
     private var privateLevel: Int,
-    private var privateLocked: Boolean,
-    private val privateBindKeyOfGroup: MutableMap<String, String?>
+    private var privateLocked: Boolean
 ): IPlayerSkill {
 
     override val level: Int
@@ -34,9 +30,6 @@ class PlayerSkill(
 
     override val locked: Boolean
         get() = privateLocked
-
-    override val bindKeyOfGroup: Map<String, String?>
-        get() = privateBindKeyOfGroup
 
     override val skill: ISkill
         get() = SkillLoaderManager.getSkillLoader(key)!!
@@ -114,19 +107,8 @@ class PlayerSkill(
         }
     }
 
-    override fun setBindKey(group: IGroup, bindKey: IBindKey): Boolean {
-        val event = OrryxPlayerSkillBindKeyEvent(player, this, group, bindKey)
-        return if (event.call()) {
-            privateBindKeyOfGroup[event.group.key] = event.bindKey.key
-            save(true)
-            true
-        } else {
-            false
-        }
-    }
-
     private fun createDaoData(): PlayerSkill {
-        return PlayerSkill(player.uniqueId, job, key, locked, level, bindKeyOfGroup)
+        return PlayerSkill(player.uniqueId, job, key, locked, level)
     }
 
     override fun save(async: Boolean) {

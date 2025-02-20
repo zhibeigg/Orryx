@@ -85,7 +85,6 @@ object VectorMathActions {
                 .description("向量长度")
                 .addEntry("长度标识符", Type.SYMBOL, head = "length")
                 .addEntry("向量", Type.VECTOR, false)
-                .addDest(Type.DOUBLE, optional = true)
                 .result("标准化的向量", Type.VECTOR),
             Action.new("Math数学运算", "世界原点向量(0向量)", "vector", true)
                 .description("世界原点向量(0向量)")
@@ -95,6 +94,29 @@ object VectorMathActions {
                 .description("原点向量")
                 .addEntry("原点标识符", Type.SYMBOL, head = "origin")
                 .result("origin原点向量", Type.VECTOR),
+            Action.new("Math数学运算", "根据法线反射向量", "vector", true)
+                .description("根据法线反射向量")
+                .addEntry("反射占位符", Type.SYMBOL, head = "reflect")
+                .addEntry("向量", Type.VECTOR)
+                .addEntry("法线向量", Type.VECTOR)
+                .addDest(Type.VECTOR, optional = true)
+                .result("反射后向量", Type.VECTOR),
+            Action.new("Math数学运算", "向量靠近另一向量", "vector", true)
+                .description("使向量靠近另一向量")
+                .addEntry("靠近占位符", Type.SYMBOL, head = "closer")
+                .addEntry("移动向量", Type.VECTOR)
+                .addEntry("目标向量", Type.VECTOR)
+                .addEntry("距离", Type.DOUBLE)
+                .addDest(Type.VECTOR, optional = true)
+                .result("移动后的向量", Type.VECTOR),
+            Action.new("Math数学运算", "向量远离另一向量", "vector", true)
+                .description("使向量远离另一向量")
+                .addEntry("远离占位符", Type.SYMBOL, head = "further")
+                .addEntry("移动向量", Type.VECTOR)
+                .addEntry("目标向量", Type.VECTOR)
+                .addEntry("距离", Type.DOUBLE)
+                .addDest(Type.VECTOR, optional = true)
+                .result("移动后的向量", Type.VECTOR)
         )
     ) {
         it.switch {
@@ -109,6 +131,9 @@ object VectorMathActions {
             case("negate") { negate(it) }
             case("normalize") { normalize(it) }
             case("length") { length(it) }
+            case("reflect") { reflect(it) }
+            case("closer") { closer(it) }
+            case("further") { further(it) }
             case("center") {
                 actionFuture { future ->
                     future.complete(AbstractVector())
@@ -133,6 +158,7 @@ object VectorMathActions {
             run(x).double { x ->
                 run(y).double { y ->
                     run(z).double { z ->
+                        Vector3d()
                         it.complete(Vector3d(x, y, z).abstract())
                     }
                 }
@@ -268,6 +294,59 @@ object VectorMathActions {
         return actionFuture { future ->
             run(a).vector { a ->
                 future.complete(a.length())
+            }
+        }
+    }
+
+    private fun reflect(reader: QuestReader): ScriptAction<Any?> {
+        val a = reader.nextParsedAction()
+        val normal = reader.nextParsedAction()
+        val dest = reader.nextDest()
+        return actionFuture { future ->
+            run(a).vector { a ->
+                run(normal).vector { normal ->
+                    destVector(dest) {
+                        future.complete(a.reflect(normal, it.joml))
+                    }
+                }
+            }
+        }
+    }
+
+    private fun closer(reader: QuestReader): ScriptAction<Any?> {
+        val a = reader.nextParsedAction()
+        val to = reader.nextParsedAction()
+        val length = reader.nextParsedAction()
+        val dest = reader.nextDest()
+        return actionFuture { future ->
+            run(a).vector { a ->
+                run(to).vector { to ->
+                    run(length).double { length ->
+                        destVector(dest) {
+                            val dir = to.sub(a, Vector3d()).normalize(length)
+                            future.complete(a.add(dir, it.joml))
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun further(reader: QuestReader): ScriptAction<Any?> {
+        val a = reader.nextParsedAction()
+        val to = reader.nextParsedAction()
+        val length = reader.nextParsedAction()
+        val dest = reader.nextDest()
+        return actionFuture { future ->
+            run(a).vector { a ->
+                run(to).vector { to ->
+                    run(length).double { length ->
+                        destVector(dest) {
+                            val dir = a.sub(to, Vector3d()).normalize(length)
+                            future.complete(a.add(dir, it.joml))
+                        }
+                    }
+                }
             }
         }
     }

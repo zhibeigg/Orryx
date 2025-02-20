@@ -3,6 +3,7 @@ package org.gitee.orryx.core.kether.actions.game.entity
 import org.bukkit.attribute.Attribute
 import org.gitee.orryx.api.adapters.IEntity
 import org.gitee.orryx.api.adapters.entity.AbstractAdyeshachEntity
+import org.gitee.orryx.core.targets.LocationTarget
 import org.gitee.orryx.utils.abstract
 import org.gitee.orryx.utils.getBukkitLivingEntity
 import java.util.*
@@ -25,9 +26,9 @@ enum class EntityField(val get: IEntity.() -> Any?) {
 
     WIDTH({ width }),
 
-    LOCATION({ location }),
+    LOCATION({ LocationTarget(location) }),
 
-    EYE_LOCATION({ eyeLocation }),
+    EYE_LOCATION({ LocationTarget(eyeLocation) }),
 
     DIRECTION({ location.direction.abstract() }),
 

@@ -2,13 +2,15 @@ package org.gitee.orryx.core.ai
 
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.github.benmanes.caffeine.cache.Scheduler
-import com.google.gson.annotations.SerializedName
 import com.lark.oapi.okhttp.MediaType
 import com.lark.oapi.okhttp.OkHttpClient
 import com.lark.oapi.okhttp.Request
 import com.lark.oapi.okhttp.RequestBody
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.gitee.orryx.api.OrryxAPI
-import org.gitee.orryx.utils.gson
 import java.util.concurrent.TimeUnit
 
 
@@ -26,14 +28,16 @@ object OpenAI {
         }
 
     // 请求参数模型
+    @Serializable
     data class OpenAIRequest(
         val model: String,
-        @SerializedName("max_tokens")
+        @SerialName("max_tokens")
         val maxTokens: Int,
         val messages: List<Message>,
         val temperature: Double = 1.0
     )
 
+    @Serializable
     data class Message(
         val role: String,
         val content: String,
@@ -41,14 +45,16 @@ object OpenAI {
     )
 
     // 响应解析模型
+    @Serializable
     data class OpenAIResponse(
         val id: String,
         val choices: List<Choice>
     )
 
+    @Serializable
     data class Choice(
         val message: Message,
-        @SerializedName("finish_reason")
+        @SerialName("finish_reason")
         val finishReason: String
     )
 
@@ -79,7 +85,7 @@ object OpenAI {
             temperature = temperature
         )
 
-        val jsonBody = gson.toJson(requestBody)
+        val jsonBody = Json.encodeToString(requestBody)
 
         val request = Request.Builder()
             .url("$BASE_URL/chat/completions")
@@ -92,8 +98,8 @@ object OpenAI {
         try {
             val response = client.newCall(request).execute()
             if (response.isSuccessful) {
-                val responseBody = response.body()?.string()
-                val openAIResponse = gson.fromJson(responseBody, OpenAIResponse::class.java)
+                val responseBody = response.body()!!.string()
+                val openAIResponse = Json.decodeFromString<OpenAIResponse>(responseBody)
 
                 // 提取回复内容
                 val reply = openAIResponse.choices.first().message

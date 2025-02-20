@@ -65,7 +65,7 @@ internal fun PlayerSkill.up() {
 }
 
 internal fun Player.getSkill(job: String, skill: String): IPlayerSkill? {
-    return ICacheManager.INSTANCE.getPlayerSkill(uniqueId, job, skill)?.let { PlayerSkill(this, skill, job, it.level, it.locked, it.bindKeyOfGroup.toMutableMap()) }
+    return ICacheManager.INSTANCE.getPlayerSkill(uniqueId, job, skill)?.let { PlayerSkill(this, skill, job, it.level, it.locked) }
 }
 
 internal fun IPlayerSkill.parameter(): IParameter {

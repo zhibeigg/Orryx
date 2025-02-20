@@ -1,5 +1,6 @@
 package org.gitee.orryx.api.adapters.vector
 
+import org.bukkit.Location
 import org.bukkit.util.Vector
 import org.gitee.orryx.api.adapters.IVector
 import org.gitee.orryx.utils.joml
@@ -9,6 +10,8 @@ import org.joml.Vector3dc
 open class AbstractVector(override val joml: Vector3d): IVector, Vector3dc by joml {
 
     constructor(vector: Vector): this(vector.joml())
+
+    constructor(location: Location): this(location.joml())
 
     constructor(): this(Vector3d())
 

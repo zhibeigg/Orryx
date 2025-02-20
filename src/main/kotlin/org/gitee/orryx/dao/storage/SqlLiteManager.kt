@@ -1,6 +1,7 @@
 package org.gitee.orryx.dao.storage
 
-import org.gitee.orryx.core.profile.IFlag
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.gitee.orryx.dao.pojo.PlayerData
 import org.gitee.orryx.dao.pojo.PlayerJob
 import org.gitee.orryx.dao.pojo.PlayerSkill
@@ -30,6 +31,7 @@ class SqlLiteManager: IStorageManager {
         add(JOB) { type(ColumnTypeSQLite.TEXT) }
         add(EXPERIENCE) { type(ColumnTypeSQLite.INTEGER) }
         add(GROUP) { type(ColumnTypeSQLite.TEXT) }
+        add(BIND_KEY_OF_GROUP) { type(ColumnTypeSQLite.TEXT) }
         primaryKeyForLegacy += listOf(UUID, JOB)
     }
 
@@ -39,7 +41,6 @@ class SqlLiteManager: IStorageManager {
         add(SKILL) { type(ColumnTypeSQLite.TEXT) }
         add(LOCKED) { type(ColumnTypeSQLite.BLOB) }
         add(LEVEL) { type(ColumnTypeSQLite.INTEGER) }
-        add(BIND_KEY_OF_GROUP) { type(ColumnTypeSQLite.TEXT) }
         primaryKeyForLegacy += listOf(UUID, JOB, SKILL)
     }
 
@@ -58,7 +59,7 @@ class SqlLiteManager: IStorageManager {
                 player,
                 getString(JOB),
                 getInt(POINT),
-                gson.fromJson<Map<String, IFlag<*>>>(getString(FLAGS), Map::class.java)
+                Json.decodeFromString(getString(FLAGS))
             )
         }
     }
@@ -66,20 +67,18 @@ class SqlLiteManager: IStorageManager {
     override fun getPlayerJob(player: UUID, job: String): PlayerJob? {
         return jobsTable.select(dataSource) {
             where { UUID eq player.toString() and ( JOB eq job ) }
-            rows(EXPERIENCE, GROUP)
+            rows(EXPERIENCE, GROUP, BIND_KEY_OF_GROUP)
         }.firstOrNull {
-            PlayerJob(player, job, getInt(EXPERIENCE), getString(GROUP))
+            PlayerJob(player, job, getInt(EXPERIENCE), getString(GROUP), Json.decodeFromString(getString(BIND_KEY_OF_GROUP)))
         }
     }
 
     override fun getPlayerSkill(player: UUID, job: String, skill: String): PlayerSkill? {
         return skillsTable.select(dataSource) {
             where { UUID eq player.toString() and ( JOB eq job ) and ( SKILL eq skill ) }
-            rows(LOCKED, LEVEL, BIND_KEY_OF_GROUP)
+            rows(LOCKED, LEVEL)
         }.firstOrNull {
-            PlayerSkill(player, job, skill, getBoolean(LOCKED), getInt(LEVEL), gson.fromJson<Map<String, String?>>(getString(
-                FLAGS
-            ), Map::class.java))
+            PlayerSkill(player, job, skill, getBoolean(LOCKED), getInt(LEVEL))
         }
     }
 
@@ -87,20 +86,20 @@ class SqlLiteManager: IStorageManager {
         playerTable.insert(dataSource, UUID, JOB, POINT, FLAGS) {
             onDuplicateKeyUpdate {
                 update(POINT, playerData.point)
-                update(FLAGS, gson.toJson(playerData.flags))
-                value()
+                update(FLAGS, Json.encodeToString(playerData.flags))
             }
-            value(player.toString(), playerData.job, playerData.point, gson.toJson(playerData.flags))
+            value(player.toString(), playerData.job, playerData.point, Json.encodeToString(playerData.flags))
         }
     }
 
     override fun savePlayerJob(player: UUID, playerJob: PlayerJob) {
-        jobsTable.insert(dataSource, UUID, JOB, EXPERIENCE, GROUP) {
+        jobsTable.insert(dataSource, UUID, JOB, EXPERIENCE, GROUP, BIND_KEY_OF_GROUP) {
             onDuplicateKeyUpdate {
                 update(EXPERIENCE, playerJob.experience)
                 update(GROUP, playerJob.group)
+                update(BIND_KEY_OF_GROUP, Json.encodeToString(playerJob.bindKeyOfGroup))
             }
-            value(player.toString(), playerJob.job, playerJob.experience, playerJob.group)
+            value(player.toString(), playerJob.job, playerJob.experience, playerJob.group, Json.encodeToString(playerJob.bindKeyOfGroup))
         }
     }
 
@@ -109,9 +108,8 @@ class SqlLiteManager: IStorageManager {
             onDuplicateKeyUpdate {
                 update(LOCKED, playerSkill.locked)
                 update(LEVEL, playerSkill.level)
-                update(BIND_KEY_OF_GROUP, gson.toJson(playerSkill.bindKeyOfGroup))
             }
-            value(player.toString(), playerSkill.job, playerSkill.skill, playerSkill.locked, playerSkill.level, gson.toJson(playerSkill.bindKeyOfGroup))
+            value(player.toString(), playerSkill.job, playerSkill.skill, playerSkill.locked)
         }
     }
 

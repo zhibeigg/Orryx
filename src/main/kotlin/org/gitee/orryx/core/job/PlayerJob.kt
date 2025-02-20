@@ -1,13 +1,14 @@
 package org.gitee.orryx.core.job
 
 import org.bukkit.entity.Player
-import org.gitee.orryx.api.events.player.OrryxPlayerChangeGroupEvent
-import org.gitee.orryx.api.events.player.OrryxPlayerJobExperienceEvents
-import org.gitee.orryx.api.events.player.OrryxPlayerJobLevelEvents
+import org.gitee.orryx.api.events.player.*
 import org.gitee.orryx.core.experience.ExperienceLoaderManager
 import org.gitee.orryx.core.experience.IExperience
 import org.gitee.orryx.core.job.ExperienceResult.*
 import org.gitee.orryx.core.key.BindKeyLoaderManager
+import org.gitee.orryx.core.key.IBindKey
+import org.gitee.orryx.core.key.IGroup
+import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.dao.cache.ICacheManager
 import org.gitee.orryx.dao.pojo.PlayerJob
 import org.gitee.orryx.dao.storage.IStorageManager
@@ -16,10 +17,19 @@ import taboolib.common.platform.function.submitAsync
 import taboolib.common5.cdouble
 import taboolib.module.kether.orNull
 
-class PlayerJob(override val player: Player, override val key: String, private var privateExperience: Int, private var privateGroup: String = "default"): IPlayerJob {
+class PlayerJob(
+    override val player: Player,
+    override val key: String,
+    private var privateExperience: Int,
+    private var privateGroup: String = DEFAULT,
+    private val privateBindKeyOfGroup: MutableMap<IGroup, MutableMap<IBindKey, String?>>
+): IPlayerJob {
 
     override val job: IJob
         get() = JobLoaderManager.getJobLoader(key)!!
+
+    override val bindKeyOfGroup: Map<IGroup, Map<IBindKey, String?>>
+        get() = privateBindKeyOfGroup
 
     override val experience: Int
         get() = privateExperience
@@ -37,7 +47,7 @@ class PlayerJob(override val player: Player, override val key: String, private v
         get() = getExperience().getExperienceOfLevel(player, experience)
 
     private fun createDaoData(): PlayerJob {
-        return PlayerJob(player.uniqueId, key, experience, group)
+        return PlayerJob(player.uniqueId, key, experience, group, bindKeyOfGroup)
     }
 
     override fun getExperience(): IExperience {
@@ -125,6 +135,32 @@ class PlayerJob(override val player: Player, override val key: String, private v
         val event = OrryxPlayerChangeGroupEvent(player, this, iGroup)
         return if (event.call()) {
             privateGroup = event.group.key
+            save(true)
+            true
+        } else {
+            false
+        }
+    }
+
+    override fun setBindKey(skill: IPlayerSkill, group: IGroup, bindKey: IBindKey): Boolean {
+        val event = OrryxPlayerSkillBindKeyEvent(player, skill, group, bindKey)
+        return if (event.call()) {
+            privateBindKeyOfGroup.getOrPut(event.group) { mutableMapOf() }[bindKey] = skill.key
+            save(true)
+            true
+        } else {
+            false
+        }
+    }
+
+    override fun unBindKey(skill: IPlayerSkill, group: IGroup): Boolean {
+        val event = OrryxPlayerSkillUnBindKeyEvent(player, skill, group)
+        return if (event.call()) {
+            privateBindKeyOfGroup[event.group]?.apply {
+                filter { it.value == skill.key }.forEach { (key, _) ->
+                    remove(key)
+                }
+            }
             save(true)
             true
         } else {

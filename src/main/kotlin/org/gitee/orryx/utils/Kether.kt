@@ -8,6 +8,7 @@ import org.gitee.orryx.core.container.IContainer
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.kether.actions.effect.EffectBuilder
 import org.gitee.orryx.core.kether.actions.effect.EffectSpawner
+import org.gitee.orryx.core.targets.ITargetLocation
 import org.joml.Matrix3d
 import org.joml.Vector3d
 import taboolib.common.platform.ProxyCommandSender
@@ -125,6 +126,7 @@ internal fun vector(): Parser<AbstractVector> {
                     is AbstractVector -> vector
                     is Vector -> Vector3d(vector.x, vector.y, vector.z).abstract()
                     is Vector3d -> vector.abstract()
+                    is ITargetLocation<*> -> AbstractVector(vector.location)
                     else -> AbstractVector()
                 }
             }
@@ -139,6 +141,7 @@ fun <T> CompletableFuture<Any?>.vector(then: (IVector) -> T): CompletableFuture<
                 is AbstractVector -> vector
                 is Vector -> Vector3d(vector.x, vector.y, vector.z).abstract()
                 is Vector3d -> vector.abstract()
+                is ITargetLocation<*> -> AbstractVector(vector.location)
                 else -> AbstractVector()
             }
         )
@@ -213,6 +216,7 @@ internal fun ScriptContext.vector(key: String, def: IVector? = null): IVector? {
         is taboolib.common.util.Vector -> vector.abstract()
         is Vector3d -> vector.abstract()
         is AbstractVector -> vector
+        is ITargetLocation<*> -> AbstractVector(vector.location)
         else -> def
     }
 }

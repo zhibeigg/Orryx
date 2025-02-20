@@ -8,10 +8,11 @@ import com.lark.oapi.service.auth.v3.model.InternalTenantAccessTokenReq
 import com.lark.oapi.service.auth.v3.model.InternalTenantAccessTokenReqBody
 import com.lark.oapi.service.docx.v1.enums.BlockBlockTypeEnum
 import com.lark.oapi.service.docx.v1.model.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.encodeToJsonElement
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.utils.debug
-import org.gitee.orryx.utils.gson
 import taboolib.common.platform.function.info
 import taboolib.common.platform.function.pluginId
 import taboolib.common.platform.function.pluginVersion
@@ -108,7 +109,7 @@ object LarkSuite {
                     resp.code,
                     resp.msg,
                     resp.requestId,
-                    gson.toJson(String(resp.rawResponse.body, UTF_8))
+                    Json.encodeToJsonElement(String(resp.rawResponse.body, UTF_8))
                 )
             )
             return null

@@ -23,9 +23,16 @@ object OrryxPlugin : Plugin() {
         private set
 
     /**
-     * "com.google.code.gson:gson:2.10.1"
+     * "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.3"
+     *
+     * "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.6.3"
+     *
+     * "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3"
+     *
      * "com.github.ben-manes.caffeine:caffeine:2.9.3"
+     *
      * "org.joml:joml:1.10.7"
+     *
      * "com.larksuite.oapi:oapi-sdk:2.4.7"
      * */
     @Awake(LifeCycle.CONST)
@@ -43,7 +50,9 @@ object OrryxPlugin : Plugin() {
                     PrimitiveIO.println(PrimitiveIO.t("加载外部依赖失败 {0}:{1}:{2}", "Load outside library failed {0}:{1}:{2}"), group, name, version)
                 }
             }
-            load("com.google.code.gson", "gson", "2.10.1")
+            load("org.jetbrains.kotlinx", "kotlinx-coroutines-core-jvm", "1.7.3")
+            load("org.jetbrains.kotlinx", "kotlinx-serialization-core-jvm", "1.6.3")
+            load("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.6.3")
             load("com.github.ben-manes.caffeine", "caffeine", "2.9.3")
             load("org.joml", "joml", "1.10.7")
             load("com.larksuite.oapi", "oapi-sdk", "2.4.7")
