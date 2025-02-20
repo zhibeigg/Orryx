@@ -28,6 +28,9 @@ abstract class AbstractSkillLoader(override val key: String, open val configurat
     override val maxLevel: Int
         get() = options.getInt("MaxLevel", 5)
 
+    override val upgradePointAction: String?
+        get() = options.getString("UpgradePointAction")
+
     override val upLevelCheckAction: String?
         get() = options.getString("UpLevelCheckAction")
 

@@ -1,7 +1,7 @@
 package org.gitee.orryx.core.profile
 
 import org.bukkit.entity.Player
-import org.gitee.orryx.api.events.player.OrryxPlayerJobChangeEvent
+import org.gitee.orryx.api.events.player.job.OrryxPlayerJobChangeEvent
 import org.gitee.orryx.api.events.player.OrryxPlayerPointEvents
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.dao.cache.ICacheManager

@@ -1,11 +1,13 @@
 package org.gitee.orryx.utils
 
 import org.bukkit.entity.Player
+import org.gitee.orryx.api.events.player.skill.OrryxClearSkillLevelAndBackPointEvent
 import org.gitee.orryx.core.kether.KetherScript
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.kether.parameter.IParameter
 import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.message.PluginMessageHandler
+import org.gitee.orryx.core.profile.PlayerProfileManager.orryxProfile
 import org.gitee.orryx.core.skill.*
 import org.gitee.orryx.core.skill.skills.DirectAimSkill
 import org.gitee.orryx.core.skill.skills.DirectSkill
@@ -56,12 +58,34 @@ internal fun SkillParameter.runCustomAction(action: String, map: Map<String, Any
     }
 }
 
-internal fun PlayerSkill.up() {
+fun IPlayerSkill.up(): SkillLevelResult {
     val from = level
     val to = level+1
-    if (upLevelCheck(from, to) && upLevel(1) == SkillLevelResult.SUCCESS) {
-        upLevelSuccess(from, level)
+    return if(upLevelCheck(from, to)) {
+        val pointCheck = upgradePointCheck(from, to)
+        if (pointCheck.second) {
+            val result = upLevel(1)
+            if (result == SkillLevelResult.SUCCESS) {
+                player.orryxProfile().takePoint(pointCheck.first)
+                upLevelSuccess(from, level)
+            }
+            result
+        } else {
+            SkillLevelResult.POINT
+        }
+    } else {
+        SkillLevelResult.CHECK
     }
+}
+
+fun <T> Player.skill(skill: String, function: (IPlayerSkill) -> T): T? {
+    return getSkill(skill)?.let {
+        function(it)
+    }
+}
+
+internal fun Player.getSkill(skill: String): IPlayerSkill? {
+    return orryxProfile().job?.let { getSkill(it, skill) }
 }
 
 internal fun Player.getSkill(job: String, skill: String): IPlayerSkill? {
@@ -116,4 +140,19 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter) {
 
 fun CastResult.isSuccess(): Boolean {
     return this == CastResult.SUCCESS
+}
+
+fun IPlayerSkill.clearLevelAndBackPoint(): Boolean {
+    if (level == skill.minLevel) return false
+    val event = OrryxClearSkillLevelAndBackPointEvent(player, this)
+    return if (event.call()) {
+        player.orryxProfile().givePoint(upgradePointCheck(skill.minLevel, level).first)
+        clearLevel() == SkillLevelResult.SUCCESS
+    } else {
+        false
+    }
+}
+
+fun IPlayerSkill.clearLevel(): SkillLevelResult {
+    return setLevel(skill.minLevel)
 }

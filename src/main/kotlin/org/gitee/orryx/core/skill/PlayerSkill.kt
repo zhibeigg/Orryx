@@ -1,12 +1,13 @@
 package org.gitee.orryx.core.skill
 
 import org.bukkit.entity.Player
-import org.gitee.orryx.api.events.player.OrryxPlayerSkillCastEvents
-import org.gitee.orryx.api.events.player.OrryxPlayerSkillLevelEvents
+import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillCastEvents
+import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillLevelEvents
 import org.gitee.orryx.core.common.timer.SkillTimer
 import org.gitee.orryx.core.kether.parameter.IParameter
 import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.mana.IManaManager
+import org.gitee.orryx.core.profile.PlayerProfileManager.orryxProfile
 import org.gitee.orryx.core.skill.skills.PassiveSkill
 import org.gitee.orryx.dao.cache.ICacheManager
 import org.gitee.orryx.dao.pojo.PlayerSkill
@@ -15,6 +16,7 @@ import org.gitee.orryx.utils.castSkill
 import org.gitee.orryx.utils.runCustomAction
 import taboolib.common.platform.function.submitAsync
 import taboolib.common5.cbool
+import taboolib.common5.cint
 import taboolib.module.kether.orNull
 
 class PlayerSkill(
@@ -67,6 +69,11 @@ class PlayerSkill(
         skill.upLevelSuccessAction?.let {
             runCustomAction(it, mapOf("from" to from, "to" to to))
         }
+    }
+
+    override fun upgradePointCheck(from: Int, to: Int): Pair<Int,Boolean> {
+        val point = skill.upgradePointAction?.let { runCustomAction(it, mapOf("from" to from, "to" to to)).orNull() }.cint
+        return point to (player.orryxProfile().point >= point)
     }
 
     override fun upLevel(level: Int): SkillLevelResult {

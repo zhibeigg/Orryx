@@ -18,6 +18,18 @@ enum class SkillLevelResult {
      * */
     SAME,
     /**
+     * 无职业
+     * */
+    NONE,
+    /**
+     * 技能点不足
+     * */
+    POINT,
+    /**
+     * checkAction不通过
+     * */
+    CHECK,
+    /**
      * 成功
      * */
     SUCCESS;

@@ -54,6 +54,14 @@ interface IPlayerSkill {
     fun castCheck(parameter: IParameter): CastResult
 
     /**
+     * 升级技能点检测
+     * @param from 从等级
+     * @param to 到等级
+     * @return 需要消耗数量，是否足够
+     * */
+    fun upgradePointCheck(from: Int, to: Int): Pair<Int, Boolean>
+
+    /**
      * 升级检测
      * @param from 从等级
      * @param to 到等级

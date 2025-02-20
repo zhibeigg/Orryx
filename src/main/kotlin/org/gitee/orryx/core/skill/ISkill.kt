@@ -43,6 +43,11 @@ interface ISkill {
     val description: Description
 
     /**
+     * 技能升级消耗的技能点
+     * */
+    val upgradePointAction: String?
+
+    /**
      * 技能升级前检测
      * */
     val upLevelCheckAction: String?

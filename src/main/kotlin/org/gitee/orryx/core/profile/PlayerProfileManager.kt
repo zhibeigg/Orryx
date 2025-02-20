@@ -31,6 +31,12 @@ object PlayerProfileManager {
         }
     }
 
+    fun <T> Player.job(function: (IPlayerJob) -> T): T? {
+        return job()?.let {
+            function(it)
+        }
+    }
+
     fun Player.job(): IPlayerJob? {
         val job = orryxProfile().job ?: return null
         return job(job)

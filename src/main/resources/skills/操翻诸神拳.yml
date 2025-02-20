@@ -29,6 +29,8 @@ Options:
     tell &pressTick
   # 最大蓄力Tick
   MaxPressTickAction: 10
+  # 升级消耗的技能点
+  UpgradePointAction: math add [ &from 1 ]
   # 升级检查
   UpLevelCheckAction: |-
     tell inline "从{{ &from }}到{{ &to }}"
@@ -45,7 +47,5 @@ Options:
     Mana: 5
     #释放冷却时间
     Cooldown: 5
-    #升级消耗的技能点
-    UpgradePoint: math add [ &from 1 ]
 Actions: |-
   tell "我不会"
