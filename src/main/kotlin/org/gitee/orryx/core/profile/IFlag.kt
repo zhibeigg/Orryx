@@ -1,10 +1,8 @@
 package org.gitee.orryx.core.profile
 
-import java.io.Serializable
+sealed interface IFlag {
 
-interface IFlag<T: Serializable> {
-
-    val value: T
+    val value: Any
 
     val isPersistence: Boolean
 

@@ -1,9 +1,9 @@
 package org.gitee.orryx.command
 
 import org.gitee.orryx.core.job.JobLoaderManager
-import org.gitee.orryx.core.profile.PlayerProfileManager.job
 import org.gitee.orryx.core.profile.PlayerProfileManager.orryxProfile
 import org.gitee.orryx.utils.bukkitPlayer
+import org.gitee.orryx.utils.job
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.command.*
 

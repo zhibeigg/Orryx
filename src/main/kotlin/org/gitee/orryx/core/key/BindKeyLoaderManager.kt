@@ -14,6 +14,7 @@ object BindKeyLoaderManager {
 
     @Config("keys.yml")
     lateinit var keys: ConfigFile
+        private set
 
     private lateinit var bindKeyLoaderMap: Map<String, IBindKey>
     private lateinit var groupMap: Map<String, IGroup>

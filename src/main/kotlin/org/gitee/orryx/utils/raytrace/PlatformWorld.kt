@@ -1,6 +1,5 @@
 package org.gitee.orryx.utils.raytrace
 
-import org.joml.Vector3d
 import org.joml.Vector3dc
 
 interface PlatformWorld {

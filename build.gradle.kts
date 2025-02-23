@@ -1,4 +1,3 @@
-
 import io.izzel.taboolib.gradle.*
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -60,6 +59,7 @@ taboolib {
             name("AttributePlus").optional(true)
         }
     }
+    relocate("kotlinx", "org.gitee.orryx.kotlinx")
     version { taboolib = "6.2.2" }
 }
 
@@ -95,12 +95,14 @@ dependencies {
     compileOnly("com.github.retrooper:packetevents-spigot:2.7.0")
     compileOnly("com.comphenix.protocol:ProtocolLib:5.3.0")
 
-    compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    taboo("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3")
+    taboo("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
     compileOnly("com.github.ben-manes.caffeine:caffeine:2.9.3")
     compileOnly("org.joml:joml:1.10.7")
     compileOnly("com.larksuite.oapi:oapi-sdk:2.4.7")
 
     compileOnly(kotlin("stdlib"))
+    compileOnly(kotlin("reflect"))
     compileOnly(fileTree("libs"))
 }
 

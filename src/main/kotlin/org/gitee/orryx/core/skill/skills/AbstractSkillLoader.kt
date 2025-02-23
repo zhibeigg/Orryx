@@ -2,7 +2,9 @@ package org.gitee.orryx.core.skill.skills
 
 import org.gitee.orryx.core.skill.Description
 import org.gitee.orryx.core.skill.ISkill
+import org.gitee.orryx.core.skill.Icon
 import org.gitee.orryx.utils.getMap
+import taboolib.library.xseries.XMaterial
 import taboolib.module.chat.colored
 import taboolib.module.configuration.Configuration
 
@@ -13,8 +15,11 @@ abstract class AbstractSkillLoader(override val key: String, open val configurat
     override val name: String
         get() = (options.getString("Name") ?: key).colored()
 
-    override val icon: String
-        get() = options.getString("Icon") ?: name
+    override val icon: Icon
+        get() = Icon(options.getString("Icon") ?: name)
+
+    override val xMaterial: String
+        get() = options.getString("XMaterial") ?: XMaterial.BLAZE_ROD.name
 
     override val description: Description
         get() = Description(options.getStringList("Description"))

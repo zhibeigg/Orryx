@@ -12,6 +12,7 @@ object OrryxAPI {
 
     @Config("config.yml")
     lateinit var config: ConfigFile
+        private set
 
     val ketherScriptLoader by lazy { KetherScriptLoader() }
 

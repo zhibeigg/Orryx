@@ -17,7 +17,7 @@ object PipeManager: ClassVisitor(1) {
     private val pipeTaskMap = mutableMapOf<UUID, IPipeTask>()
 
     override fun getLifeCycle(): LifeCycle {
-        return LifeCycle.INIT
+        return LifeCycle.ENABLE
     }
 
     override fun visitStart(clazz: ReflexClass) {

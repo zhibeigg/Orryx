@@ -10,4 +10,4 @@ Options:
     math add [ orryx level 5 ]
   UpgradePointActions: |-
     1
-  Experience: "战士专属"
+  Experience: "default"

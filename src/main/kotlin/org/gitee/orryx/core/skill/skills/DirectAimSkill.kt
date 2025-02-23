@@ -8,15 +8,21 @@ import taboolib.module.kether.Script
 class DirectAimSkill(
     override val key: String,
     override val configuration: Configuration
-) : AbstractCastSkillLoader(key, configuration) {
+) : AbstractCastSkillLoader(key, configuration), IAim {
 
     override val type = DIRECT_AIM
 
-    val aimScaleAction: String
-        get() = options.getString("AimScaleAction", "5")!!
+    val aimSizeAction: String
+        get() = options.getString("AimSizeAction", "5")!!
 
-    val aimRangeAction: String
-        get() = options.getString("AimRangeAction", "10")!!
+    override val aimMinAction: String
+        get() = aimSizeAction
+
+    override val aimMaxAction: String
+        get() = aimSizeAction
+
+    override val aimRadiusAction: String
+        get() = options.getString("AimRadiusAction", "10")!!
 
     override val script: Script? = SkillLoaderManager.loadScript(this)
 

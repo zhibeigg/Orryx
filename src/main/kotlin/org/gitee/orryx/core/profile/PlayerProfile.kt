@@ -1,17 +1,18 @@
 package org.gitee.orryx.core.profile
 
 import org.bukkit.entity.Player
-import org.gitee.orryx.api.events.player.job.OrryxPlayerJobChangeEvent
 import org.gitee.orryx.api.events.player.OrryxPlayerPointEvents
+import org.gitee.orryx.api.events.player.job.OrryxPlayerJobChangeEvent
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.dao.cache.ICacheManager
 import org.gitee.orryx.dao.pojo.PlayerData
 import org.gitee.orryx.dao.storage.IStorageManager
+import org.gitee.orryx.utils.toSerializable
 import taboolib.common.platform.function.submitAsync
 
-class PlayerProfile(override val player: Player, private var privateJob: String?, private var privatePoint: Int, private val privateFlags: MutableMap<String, IFlag<*>>): IPlayerProfile {
+class PlayerProfile(override val player: Player, private var privateJob: String?, private var privatePoint: Int, private val privateFlags: MutableMap<String, IFlag>): IPlayerProfile {
 
-    override val flags: Map<String, IFlag<*>>
+    override val flags: Map<String, IFlag>
         get() = privateFlags
 
     override val job: String?
@@ -23,17 +24,25 @@ class PlayerProfile(override val player: Player, private var privateJob: String?
     //霸体过期时间
     private var superBody: Long = 0
 
-    override fun setFlag(flagName: String, flag: IFlag<*>) {
+    override fun setFlag(flagName: String, flag: IFlag) {
         privateFlags[flagName] = flag
         if (flag.isPersistence) {
             save(true)
         }
     }
 
-    override fun getFlag(flagName: String): IFlag<*>? {
+    override fun getFlag(flagName: String): IFlag? {
         privateFlags.asSequence().filter { it.value.isTimeout() }.forEach { (key, _) -> privateFlags.remove(key) }
         save(true)
         return privateFlags[flagName]
+    }
+
+    override fun removeFlag(flagName: String): IFlag? {
+        return privateFlags.remove(flagName)
+    }
+
+    override fun clearFlags() {
+        privateFlags.clear()
     }
 
     override fun isSuperBody(): Boolean {
@@ -95,7 +104,7 @@ class PlayerProfile(override val player: Player, private var privateJob: String?
     }
 
     private fun createDaoData(): PlayerData {
-        return PlayerData(player.uniqueId, job, point, privateFlags.filter { it.value.isPersistence })
+        return PlayerData(player.uniqueId, job, point, privateFlags.filter { it.value.isPersistence }.mapValues { it.value.toSerializable() })
     }
 
     override fun save(async: Boolean) {

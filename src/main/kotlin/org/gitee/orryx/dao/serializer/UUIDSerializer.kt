@@ -18,8 +18,7 @@ object UUIDSerializer : KSerializer<UUID> {
     }
 
     override fun deserialize(decoder: Decoder): UUID {
-        val string = decoder.decodeString()
-        return UUID.fromString(string)
+        return UUID.fromString(decoder.decodeString())
     }
 
 }

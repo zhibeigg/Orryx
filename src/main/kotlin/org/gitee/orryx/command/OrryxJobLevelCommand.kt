@@ -1,8 +1,8 @@
 package org.gitee.orryx.command
 
-import org.gitee.orryx.core.profile.PlayerProfileManager.job
 import org.gitee.orryx.utils.bukkitPlayer
 import org.gitee.orryx.utils.debug
+import org.gitee.orryx.utils.job
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.command.CommandBody
 import taboolib.common.platform.command.int

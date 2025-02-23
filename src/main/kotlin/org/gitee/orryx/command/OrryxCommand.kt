@@ -42,6 +42,9 @@ object OrryxCommand {
     val skill = OrryxSkillCommand
 
     @CommandBody
+    val ui = OrryxUICommand
+
+    @CommandBody
     val test = subCommandExec<Player> {
         val pos = SpigotWorld(sender.world).rayTraceBlocks(
             sender.eyeLocation.toVector().joml(),

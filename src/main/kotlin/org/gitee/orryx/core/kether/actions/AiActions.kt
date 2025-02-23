@@ -20,6 +20,7 @@ object AiActions {
 
     @Config("npc.yml")
     lateinit var config: ConfigFile
+        private set
 
     class Npc(val key: String, val name: String, val system: String, val model: String, val maxTokens: Int, val temperature: Double)
 

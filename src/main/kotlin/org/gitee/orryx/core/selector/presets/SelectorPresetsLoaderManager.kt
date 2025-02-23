@@ -12,6 +12,7 @@ object SelectorPresetsLoaderManager {
 
     @Config("selectors.yml")
     lateinit var selectors: ConfigFile
+        private set
 
     private val selectorPresets by lazy { mutableMapOf<String, PresetsLoader>() }
 

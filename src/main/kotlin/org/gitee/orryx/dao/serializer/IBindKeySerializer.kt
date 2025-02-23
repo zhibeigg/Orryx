@@ -20,8 +20,7 @@ object IBindKeySerializer : KSerializer<IBindKey> {
     }
 
     override fun deserialize(decoder: Decoder): IBindKey {
-        val string = decoder.decodeString()
-        return BindKeyLoaderManager.getBindKey(string) ?: BindKeyLoaderManager.getBindKey(DEFAULT)!!
+        return BindKeyLoaderManager.getBindKey(decoder.decodeString()) ?: BindKeyLoaderManager.getBindKey(DEFAULT)!!
     }
 
 }

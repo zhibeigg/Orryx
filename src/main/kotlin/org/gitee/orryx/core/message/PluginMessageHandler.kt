@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap
 object PluginMessageHandler {
 
     private const val CHANNEL_NAME = "orryxmod:main"
-    private val pendingRequests = ConcurrentHashMap<UUID, CompletableFuture<AimInfo>>()
+    private val pendingRequests = ConcurrentHashMap<UUID, Pair<Double, CompletableFuture<AimInfo>>>()
 
     private val isLegacyVersion by lazy { MinecraftVersion.versionId == 11202 }
 
@@ -42,9 +42,7 @@ object PluginMessageHandler {
         data object Ghost : PacketType(3)
         data object AimResponse : PacketType(4)
         data object Flicker : PacketType(5)
-        data object PressRequest : PacketType(6)
-        data object PressAimRequest : PacketType(7)
-        data object PressResponse : PacketType(8)
+        data object PressAimRequest : PacketType(6)
     }
 
     @Awake(LifeCycle.ENABLE)
@@ -97,7 +95,7 @@ object PluginMessageHandler {
      * 发起瞄准请求
      * @param player 目标玩家
      * @param skillId 技能唯一标识
-     * @param scale 指示图缩放大小
+     * @param size 指示图大小
      * @param radius 瞄准半径（方块）
      * @param callback 结果回调（在主线程执行）
      */
@@ -105,7 +103,7 @@ object PluginMessageHandler {
         player: Player,
         skillId: String,
         picture: String,
-        scale: Double,
+        size: Double,
         radius: Double,
         callback: (Result<AimInfo>) -> Unit
     ) {
@@ -115,7 +113,7 @@ object PluginMessageHandler {
         }
 
         CompletableFuture<AimInfo>().apply {
-            pendingRequests[player.uniqueId] = this
+            pendingRequests[player.uniqueId] = radius to this
             whenComplete { result, ex ->
                 submit { // 切换到主线程执行回调
                     callback(ex?.let { Result.failure(it) } ?: Result.success(result))
@@ -126,7 +124,7 @@ object PluginMessageHandler {
         sendDataPacket(player, PacketType.AimRequest) {
             writeUTF(skillId)
             writeUTF(picture)
-            writeDouble(scale)
+            writeDouble(size)
             writeDouble(radius)
         }
     }
@@ -136,7 +134,8 @@ object PluginMessageHandler {
      * @param player 目标玩家
      * @param skillId 技能唯一标识
      * @param picture 使用的图片组
-     * @param scale 指示图缩放大小
+     * @param min 指示图初始大小
+     * @param max 指示图最大大小
      * @param radius 瞄准半径（方块）
      * @param maxTick 最大Tick
      * @param callback 结果回调（在主线程执行）
@@ -145,7 +144,8 @@ object PluginMessageHandler {
         player: Player,
         skillId: String,
         picture: String,
-        scale: Double,
+        min: Double,
+        max: Double,
         radius: Double,
         maxTick: Long,
         callback: (Result<AimInfo>) -> Unit
@@ -156,7 +156,7 @@ object PluginMessageHandler {
         }
 
         CompletableFuture<AimInfo>().apply {
-            pendingRequests[player.uniqueId] = this
+            pendingRequests[player.uniqueId] = radius to this
             whenComplete { result, ex ->
                 submit { // 切换到主线程执行回调
                     callback(ex?.let { Result.failure(it) } ?: Result.success(result))
@@ -167,7 +167,8 @@ object PluginMessageHandler {
         sendDataPacket(player, PacketType.PressAimRequest) {
             writeUTF(skillId)
             writeUTF(picture)
-            writeDouble(scale)
+            writeDouble(min)
+            writeDouble(max)
             writeDouble(radius)
             writeLong(maxTick)
         }
@@ -216,7 +217,7 @@ object PluginMessageHandler {
 
     private fun cleanupRequest(player: Player, isCancelled: Boolean) {
         pendingRequests.remove(player.uniqueId)?.apply {
-            if (isCancelled) completeExceptionally(PlayerCancelledException())
+            if (isCancelled) second.completeExceptionally(PlayerCancelledException())
         }
     }
 
@@ -261,7 +262,12 @@ object PluginMessageHandler {
                 val skillId = input.readUTF()
                 val location = readLocation(player, input)
 
-                pendingRequests.remove(player.uniqueId)?.complete(AimInfo(player, location, skillId))
+                if (location.distance(player.location) <= ((pendingRequests[player.uniqueId]?.first ?: 0.0) + 1.0)) {
+                    pendingRequests.remove(player.uniqueId)?.second?.complete(AimInfo(player, location, skillId))
+                } else {
+                    pendingRequests.remove(player.uniqueId)
+                    warning("玩家${player.name} 向服务器发送了作弊 超远释放${skillId}技能数据包")
+                }
             } catch (ex: Exception) {
                 warning("解析瞄准数据包失败: ${ex.message}")
             }

@@ -15,7 +15,12 @@ interface ISkill {
     /**
      * 技能显示图标名
      * */
-    val icon: String
+    val icon: Icon
+
+    /**
+     * 技能显示材质
+     * */
+    val xMaterial: String
 
     /**
      * 技能类型

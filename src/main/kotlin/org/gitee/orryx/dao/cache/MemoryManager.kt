@@ -49,15 +49,21 @@ class MemoryManager: ICacheManager {
         }
 
     override fun getPlayerData(player: UUID): PlayerData? {
-        return playerDataCache.getIfPresent(player)
+        return playerDataCache.get(player) {
+            IStorageManager.INSTANCE.getPlayerData(player)
+        }
     }
 
     override fun getPlayerJob(player: UUID, job: String): PlayerJob? {
-        return playerJobCache.getIfPresent(playerJobDataTag(player, job))
+        return playerJobCache.get(playerJobDataTag(player, job)) {
+            IStorageManager.INSTANCE.getPlayerJob(player, job)
+        }
     }
 
     override fun getPlayerSkill(player: UUID, job: String, skill: String): PlayerSkill? {
-        return playerSkillCache.getIfPresent(playerJobSkillDataTag(player, job, skill))
+        return playerSkillCache.get(playerJobSkillDataTag(player, job, skill)) {
+            IStorageManager.INSTANCE.getPlayerSkill(player, job, skill)
+        }
     }
 
     override fun savePlayerData(player: UUID, playerData: PlayerData, async: Boolean) {

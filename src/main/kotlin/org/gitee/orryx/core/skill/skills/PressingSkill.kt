@@ -8,14 +8,17 @@ import taboolib.module.kether.Script
 class PressingSkill(
     override val key: String,
     override val configuration: Configuration
-) : AbstractCastSkillLoader(key, configuration) {
+) : AbstractCastSkillLoader(key, configuration), IPress {
 
     override val type = PRESSING
 
-    val pressTickAction: String
-        get() = options.getString("PressTickAction", "")!!
+    override val period: Long
+        get() = options.getLong("Period")
 
-    val maxPressTickAction: String
+    override val pressPeriodAction: String
+        get() = options.getString("PressPeriodAction", "")!!
+
+    override val maxPressTickAction: String
         get() = options.getString("MaxPressTickAction", "20")!!
 
     override val script: Script? = SkillLoaderManager.loadScript(this)

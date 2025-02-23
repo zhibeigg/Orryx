@@ -1,7 +1,7 @@
 package org.gitee.orryx.dao.pojo
 
 import kotlinx.serialization.Serializable
-import org.gitee.orryx.core.profile.IFlag
+import org.gitee.orryx.core.profile.SerializableFlag
 import org.gitee.orryx.dao.serializer.UUIDSerializer
 import java.util.*
 
@@ -11,5 +11,5 @@ data class PlayerData(
     val player: UUID,
     val job: String?,
     val point: Int,
-    val flags: Map<String, IFlag<*>>
+    val flags: Map<String, SerializableFlag>
 )

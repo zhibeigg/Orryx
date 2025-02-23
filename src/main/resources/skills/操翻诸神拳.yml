@@ -4,9 +4,10 @@ Options:
   # DIRECT直接释放
   # PRESSING AIM蓄力指向性释放
   # PRESSING蓄力释放
-  Type: "DIRECT AIM"
+  Type: "DIRECT"
   Name: "操翻诸神拳"
   Icon: "操翻诸神拳 {{ flag 操翻诸神拳 }} 段"
+  XMaterial: "BLAZE_ROD"
   # * 代表此行不进行下一级预览
   # 此外内联{{}}的语句都将进行二级预览
   Description:
@@ -15,17 +16,22 @@ Options:
     - "玩家等级{{ orryx level }}"
     - "技能等级{{ params level }}"
   # 是否需要解锁
-  IsLocked: true
+  IsLocked: false
   # 初始等级
   MinLevel: 1
   # 最高等级
   MaxLevel: 1
   # 指示原点距离玩家半径
-  AimRangeAction: 5
+  AimRadiusAction: 5
   # 指示范围缩放大小
-  AimScaleAction: 10
-  # 蓄力每Tick执行
-  PressTickAction: |-
+  AimSizeAction: 10
+  # 指示范围缩放初始大小
+  AimMinAction: 1
+  # 指示范围缩放最大Tick大小
+  AimMaxAction: 10
+  Period: 10
+  # 蓄力每Period执行
+  PressPeriodAction: |-
     tell &pressTick
   # 最大蓄力Tick
   MaxPressTickAction: 10
@@ -48,4 +54,107 @@ Options:
     #释放冷却时间
     Cooldown: 5
 Actions: |-
-  tell "我不会"
+  ghost 200 2 0
+  # 创建5个粒子的矩阵
+  set x to matrix identity
+  set y to matrix identity
+  set z to matrix identity
+  set n to matrix identity
+  set m to matrix identity
+  # 创建向上偏移1.5格的向量
+  set v to vector 0 1.5 0
+  # 放大矩阵1.5倍
+  matrix scale &x 1.5 dest &x
+  matrix scale &y 1.5 dest &y
+  matrix scale &z 1.5 dest &z
+  matrix scale &n 1.5 dest &n
+  matrix scale &m 1.5 dest &m
+  # 创建五个粒子效果的粒子效果构建器
+  effect create a {
+    draw particle "@particle CRIT @type arc @angle 360 @radius 1 @step 10 @count 5 @period 1 @speed 0.02"
+    draw offset vector 0.1 0.1 0.1
+    draw transform matrix rotateX &x 72 dest &x
+  }
+  effect create b {
+    draw particle "@particle CRIT @type arc @angle 360 @radius 1 @step 10 @count 5 @period 1 @speed 0.02"
+    draw offset vector 0.1 0.1 0.1
+    draw transform matrix rotateX &y 144 dest &y
+  }
+  effect create c {
+    draw particle "@particle CRIT @type arc @angle 360 @radius 1 @step 10 @count 5 @period 1 @speed 0.02"
+    draw offset vector 0.1 0.1 0.1
+    draw transform matrix rotateX &z 216 dest &z
+  }
+  effect create d {
+    draw particle "@particle CRIT @type arc @angle 360 @radius 1 @step 10 @count 5 @period 1 @speed 0.02"
+    draw offset vector 0.1 0.1 0.1
+    draw transform matrix rotateX &n 288 dest &n
+  }
+  effect create e {
+    draw particle "@particle CRIT @type arc @angle 360 @radius 1 @step 10 @count 5 @period 1 @speed 0.02"
+    draw offset vector 0.1 0.1 0.1
+    draw transform &m
+  }
+  # 启动5个粒子生成器
+  effect show &a 200 1 mode play they "@self" viewer "@self"
+  effect show &b 200 1 mode play they "@self" viewer "@self"
+  effect show &c 200 1 mode play they "@self" viewer "@self"
+  effect show &d 200 1 mode play they "@self" viewer "@self"
+  effect show &e 200 1 mode play they "@self" viewer "@self"
+  set off to 1.5
+  # 变换循环
+  for i in range 1 to 200 then {
+    set off to math add [ &off 0.1 ]
+    # 计算视角向量并归一化到10个单位长度
+    set eye to vector normalize entity direction length 10
+    set dir to vector sub ray &eye 0 SOURCE_ONLY true true entity eye_location
+    set dir to vector sub &dir vector normalize &dir
+    # 计算以粒子效果为坐标系的z轴向量并归一化
+    set y0Dir to vector mul vector normalize entity direction vector 1 0 1
+    set rotateDir to vector normalize vector cross &y0Dir vector 0 1 0
+    set r to math add [ 90 player yaw ]
+    set p to player pitch
+    matrix rotateX &x 10 dest &x
+    matrix rotateX &y 10 dest &y
+    matrix rotateX &z 10 dest &z
+    matrix rotateX &n 10 dest &n
+    matrix rotateX &m 10 dest &m
+    # 新建每次的临时变换矩阵
+    set xx to matrix
+    set yy to matrix
+    set zz to matrix
+    set nn to matrix
+    set mm to matrix
+    # 以y轴为旋转轴并旋转yaw
+    matrix rotateY &x &r dest &xx
+    matrix rotateY &y &r dest &yy
+    matrix rotateY &z &r dest &zz
+    matrix rotateY &n &r dest &nn
+    matrix rotateY &m &r dest &mm
+    # 重新设置位移向量
+    # 重新设置变换后的矩阵
+    # 以相对z轴向量为旋转轴并旋转pitch
+    effect trim &a {
+      draw translate vector add &v &dir
+      draw transform matrix rotate &xx &rotateDir &p
+    }
+    effect trim &b {
+      draw translate vector add &v &dir
+      draw transform matrix rotate &yy &rotateDir &p
+    }
+    effect trim &c {
+      draw translate vector add &v &dir
+      draw transform matrix rotate &zz &rotateDir &p
+    }
+    effect trim &d {
+      draw translate vector add &v &dir
+      draw transform matrix rotate &nn &rotateDir &p
+    }
+    effect trim &e {
+      draw translate vector add &v &dir
+      draw transform matrix rotate &mm &rotateDir &p
+    }
+    set dir0 to vector add &dir vector normalize &dir length 2
+    damage 1 false they "@rayhit dir0 1 !@self"
+    sleep 0.05s
+  }

@@ -5,8 +5,8 @@ import org.gitee.orryx.core.common.timer.SkillTimer
 import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.key.IGroup
-import org.gitee.orryx.core.profile.PlayerProfileManager.job
 import org.gitee.orryx.core.skill.IPlayerSkill
+import org.gitee.orryx.utils.job
 
 abstract class AbstractSkillHud(override val viewer: Player, override val owner: Player): ISkillHud {
 

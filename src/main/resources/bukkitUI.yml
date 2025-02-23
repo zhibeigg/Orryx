@@ -1,0 +1,23 @@
+SkillUI:
+  title: "技能界面"
+  Skills:
+    Slots: [28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 41, 42, 43]
+  BindSkills:
+    Slots: [10, 11, 12, 13, 14, 15, 16]
+  Space:
+    Amount: 1
+    Lore:
+      - "&f分隔符"
+    Slots: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 35, 36, 44, 46, 47, 48, 49, 50, 51, 52]
+  Previous:
+    Name: "上一页"
+    XMaterial: "PAPER"
+    Lore:
+      - "&f数量为当前页数"
+    Slots: [ 45 ]
+  Next:
+    Name: "下一页"
+    XMaterial: "PAPER"
+    Lore:
+      - "&f数量为最大页数"
+    Slots: [ 53 ]

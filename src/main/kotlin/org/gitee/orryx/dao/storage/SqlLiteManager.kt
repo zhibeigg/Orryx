@@ -83,33 +83,45 @@ class SqlLiteManager: IStorageManager {
     }
 
     override fun savePlayerData(player: UUID, playerData: PlayerData) {
-        playerTable.insert(dataSource, UUID, JOB, POINT, FLAGS) {
-            onDuplicateKeyUpdate {
-                update(POINT, playerData.point)
-                update(FLAGS, Json.encodeToString(playerData.flags))
+        if (playerTable.find(dataSource) { where { UUID eq player.toString() } }) {
+            playerTable.update(dataSource) {
+                where { UUID eq player.toString() }
+                set(POINT, playerData.point)
+                set(FLAGS, Json.encodeToString(playerData.flags))
             }
-            value(player.toString(), playerData.job, playerData.point, Json.encodeToString(playerData.flags))
+        } else {
+            playerTable.insert(dataSource, UUID, JOB, POINT, FLAGS) {
+                value(player.toString(), playerData.job, playerData.point, Json.encodeToString(playerData.flags))
+            }
         }
     }
 
     override fun savePlayerJob(player: UUID, playerJob: PlayerJob) {
-        jobsTable.insert(dataSource, UUID, JOB, EXPERIENCE, GROUP, BIND_KEY_OF_GROUP) {
-            onDuplicateKeyUpdate {
-                update(EXPERIENCE, playerJob.experience)
-                update(GROUP, playerJob.group)
-                update(BIND_KEY_OF_GROUP, Json.encodeToString(playerJob.bindKeyOfGroup))
+        if (jobsTable.find(dataSource) { where { UUID eq player.toString() and ( JOB eq playerJob.job ) } }) {
+            jobsTable.update(dataSource) {
+                where { UUID eq player.toString() and ( JOB eq playerJob.job ) }
+                set(EXPERIENCE, playerJob.experience)
+                set(GROUP, playerJob.group)
+                set(BIND_KEY_OF_GROUP, Json.encodeToString(playerJob.bindKeyOfGroup))
             }
-            value(player.toString(), playerJob.job, playerJob.experience, playerJob.group, Json.encodeToString(playerJob.bindKeyOfGroup))
+        } else {
+            jobsTable.insert(dataSource, UUID, JOB, EXPERIENCE, GROUP, BIND_KEY_OF_GROUP) {
+                value(player.toString(), playerJob.job, playerJob.experience, playerJob.group, Json.encodeToString(playerJob.bindKeyOfGroup))
+            }
         }
     }
 
     override fun savePlayerSkill(player: UUID, playerSkill: PlayerSkill) {
-        skillsTable.insert(dataSource, UUID, JOB, SKILL, LOCKED, LEVEL, BIND_KEY_OF_GROUP) {
-            onDuplicateKeyUpdate {
-                update(LOCKED, playerSkill.locked)
-                update(LEVEL, playerSkill.level)
+        if (skillsTable.find(dataSource) { where { UUID eq player.toString() and ( JOB eq playerSkill.job ) and ( SKILL eq playerSkill.skill ) } }) {
+            skillsTable.update(dataSource) {
+                where { UUID eq player.toString() and ( JOB eq playerSkill.job ) and ( SKILL eq playerSkill.skill ) }
+                set(LOCKED, playerSkill.locked)
+                set(LEVEL, playerSkill.level)
             }
-            value(player.toString(), playerSkill.job, playerSkill.skill, playerSkill.locked)
+        } else {
+            skillsTable.insert(dataSource, UUID, JOB, SKILL, LOCKED, LEVEL) {
+                value(player.toString(), playerSkill.job, playerSkill.skill, playerSkill.locked, playerSkill.level)
+            }
         }
     }
 

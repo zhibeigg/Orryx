@@ -1,7 +1,7 @@
 package org.gitee.orryx.core.job
 
 import org.bukkit.entity.Player
-import org.gitee.orryx.api.events.player.*
+import org.gitee.orryx.api.events.player.OrryxPlayerChangeGroupEvent
 import org.gitee.orryx.api.events.player.job.OrryxPlayerJobExperienceEvents
 import org.gitee.orryx.api.events.player.job.OrryxPlayerJobLevelEvents
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillBindKeyEvent
@@ -55,7 +55,7 @@ class PlayerJob(
     }
 
     override fun getExperience(): IExperience {
-        return ExperienceLoaderManager.getExperience(job.experience) ?: error("职业${key}的经验计算器${experience}找不到")
+        return ExperienceLoaderManager.getExperience(job.experience) ?: error("职业${key}的经验计算器${job.experience}找不到")
     }
 
     override fun getMaxMana(): Double {
@@ -149,7 +149,16 @@ class PlayerJob(
     override fun setBindKey(skill: IPlayerSkill, group: IGroup, bindKey: IBindKey): Boolean {
         val event = OrryxPlayerSkillBindKeyEvent(player, skill, group, bindKey)
         return if (event.call()) {
-            privateBindKeyOfGroup.getOrPut(event.group) { mutableMapOf() }[bindKey] = skill.key
+            privateBindKeyOfGroup.getOrPut(event.group) { mutableMapOf() }.apply {
+                replaceAll { _, u ->
+                    if (u == skill.key) {
+                        null
+                    } else {
+                        u
+                    }
+                }
+                set(bindKey, skill.key)
+            }
             save(true)
             true
         } else {
@@ -160,9 +169,11 @@ class PlayerJob(
     override fun unBindKey(skill: IPlayerSkill, group: IGroup): Boolean {
         val event = OrryxPlayerSkillUnBindKeyEvent(player, skill, group)
         return if (event.call()) {
-            privateBindKeyOfGroup[event.group]?.apply {
-                filter { it.value == skill.key }.forEach { (key, _) ->
-                    remove(key)
+            privateBindKeyOfGroup[event.group]?.replaceAll { _, u ->
+                if (u == skill.key) {
+                    null
+                } else {
+                    u
                 }
             }
             save(true)

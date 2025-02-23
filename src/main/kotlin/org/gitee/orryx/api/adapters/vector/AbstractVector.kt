@@ -15,6 +15,8 @@ open class AbstractVector(override val joml: Vector3d): IVector, Vector3dc by jo
 
     constructor(): this(Vector3d())
 
+    constructor(x: Double, y: Double, z: Double): this(Vector3d(x, y, z))
+
     override fun add(vector3dc: Vector3dc): AbstractVector {
         joml.add(vector3dc)
         return this

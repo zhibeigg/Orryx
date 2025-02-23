@@ -54,6 +54,7 @@ object BuffActions {
 
     @Config("buffs.yml", migrate = true)
     lateinit var config: ConfigFile
+        private set
 
     @Reload(2)
     @Awake(LifeCycle.ENABLE)

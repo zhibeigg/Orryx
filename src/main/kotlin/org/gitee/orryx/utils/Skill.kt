@@ -6,6 +6,8 @@ import org.gitee.orryx.core.kether.KetherScript
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.kether.parameter.IParameter
 import org.gitee.orryx.core.kether.parameter.SkillParameter
+import org.gitee.orryx.core.key.BindKeyLoaderManager
+import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.message.PluginMessageHandler
 import org.gitee.orryx.core.profile.PlayerProfileManager.orryxProfile
 import org.gitee.orryx.core.skill.*
@@ -16,6 +18,7 @@ import org.gitee.orryx.core.skill.skills.PressingSkill
 import org.gitee.orryx.dao.cache.ICacheManager
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common5.cdouble
+import taboolib.common5.clong
 import taboolib.module.kether.extend
 import taboolib.module.kether.orNull
 import java.util.concurrent.CompletableFuture
@@ -78,39 +81,72 @@ fun IPlayerSkill.up(): SkillLevelResult {
     }
 }
 
-fun <T> Player.skill(skill: String, function: (IPlayerSkill) -> T): T? {
-    return getSkill(skill)?.let {
+fun <T> Player.skill(skill: String, create: Boolean = false, function: (IPlayerSkill) -> T): T? {
+    return getSkill(skill, create)?.let {
         function(it)
     }
 }
 
-internal fun Player.getSkill(skill: String): IPlayerSkill? {
-    return orryxProfile().job?.let { getSkill(it, skill) }
+internal fun Player.getSkill(skill: String, create: Boolean = false): IPlayerSkill? {
+    return orryxProfile().job?.let { getSkill(it, skill, create) }
 }
 
-internal fun Player.getSkill(job: String, skill: String): IPlayerSkill? {
-    return ICacheManager.INSTANCE.getPlayerSkill(uniqueId, job, skill)?.let { PlayerSkill(this, skill, job, it.level, it.locked) }
+internal fun Player.getSkill(job: String, skill: String, create: Boolean = false): IPlayerSkill? {
+    val skillLoader = SkillLoaderManager.getSkillLoader(skill) ?: return null
+    return ICacheManager.INSTANCE.getPlayerSkill(uniqueId, job, skill)?.let {
+        PlayerSkill(this, skill, job, it.level, if (it.locked && !skillLoader.isLocked) false else it.locked)
+    } ?: if (create) {
+        PlayerSkill(this, skill, job, skillLoader.minLevel, skillLoader.isLocked).apply { save(true) }
+    } else {
+        null
+    }
+}
+
+fun Player.getSkills(): List<IPlayerSkill> {
+    return job()?.job?.skills?.mapNotNull {
+        getSkill(it, true)
+    } ?: emptyList()
+}
+
+fun Player.getGroupSkills(group: String): Map<IBindKey, String?> {
+    return job { job ->
+        BindKeyLoaderManager.getGroup(group)?.let { group ->
+            job.bindKeyOfGroup[group]
+        }
+    } ?: emptyMap()
 }
 
 internal fun IPlayerSkill.parameter(): IParameter {
     return SkillParameter(key, player, level)
 }
 
+fun IPlayerSkill.getDescriptionComparison(): List<String> {
+    return skill.description.getDescriptionComparison(player, SkillParameter(key, player, level))
+}
+
+fun IPlayerSkill.getIcon(): String {
+    return skill.icon.getIcon(player, SkillParameter(key, player, level))
+}
+
 fun ISkill.castSkill(player: Player, parameter: SkillParameter) {
     when(val skill = this) {
         is PressingSkill -> parameter.runSkillAction(mapOf("pressTick" to 1))
         is PressingAimSkill -> {
-            val aimRange = parameter.runCustomAction(skill.aimRangeAction).orNull().cdouble
-            val aimScale = parameter.runCustomAction(skill.aimScaleAction).orNull().cdouble
-            PluginMessageHandler.requestAiming(player, key, DEFAULT_PICTURE, aimScale, aimRange) { aimInfo ->
+            val aimRadius = parameter.runCustomAction(skill.aimRadiusAction).orNull().cdouble
+            val aimMin = parameter.runCustomAction(skill.aimMinAction).orNull().cdouble
+            val aimMax = parameter.runCustomAction(skill.aimMaxAction).orNull().cdouble
+            val maxTick = parameter.runCustomAction(skill.maxPressTickAction).orNull().clong
+            val timestamp = System.currentTimeMillis()
+            PluginMessageHandler.requestAiming(player, key, DEFAULT_PICTURE, aimMin, aimMax, aimRadius, maxTick) { aimInfo ->
                 aimInfo.getOrNull()?.let {
                     if (it.skillId == skill.key) {
                         parameter.origin = it.location.toTarget()
                         parameter.runSkillAction(
                             mapOf(
-                                "aimRange" to aimRange,
-                                "aimScale" to aimScale,
-                                "pressTick" to 1
+                                "aimRadius" to aimRadius,
+                                "aimMin" to aimMin,
+                                "aimMax" to aimMax,
+                                "pressTick" to (it.timestamp - timestamp)/50
                             )
                         )
                     }
@@ -119,16 +155,16 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter) {
         }
         is DirectSkill -> parameter.runSkillAction()
         is DirectAimSkill -> {
-            val aimRange = parameter.runCustomAction(skill.aimRangeAction).orNull().cdouble
-            val aimScale = parameter.runCustomAction(skill.aimScaleAction).orNull().cdouble
-            PluginMessageHandler.requestAiming(player, key, DEFAULT_PICTURE, aimScale, aimRange) { aimInfo ->
+            val aimRadius = parameter.runCustomAction(skill.aimRadiusAction).orNull().cdouble
+            val aimSize = parameter.runCustomAction(skill.aimSizeAction).orNull().cdouble
+            PluginMessageHandler.requestAiming(player, key, DEFAULT_PICTURE, aimSize, aimRadius) { aimInfo ->
                 aimInfo.getOrNull()?.let {
                     if (it.skillId == skill.key) {
                         parameter.origin = it.location.toTarget()
                         parameter.runSkillAction(
                             mapOf(
-                                "aimRange" to aimRange,
-                                "aimScale" to aimScale
+                                "aimRadius" to aimRadius,
+                                "aimSize" to aimSize
                             )
                         )
                     }

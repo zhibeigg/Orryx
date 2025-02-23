@@ -1,8 +1,7 @@
 package org.gitee.orryx.core.ui
 
 import org.bukkit.entity.Player
-import org.gitee.orryx.core.key.IBindKey
-import org.gitee.orryx.core.skill.IPlayerSkill
+import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.skill.SkillLevelResult
 
 interface ISkillUI {
@@ -34,7 +33,7 @@ interface ISkillUI {
      * @param bindKey 绑定按键
      * @return 是否成功
      * */
-    fun bindSkill(skill: String, group: String, bindKey: String): Boolean
+    fun bindSkill(job: IPlayerJob, skill: String, group: String, bindKey: String): Boolean
 
     /**
      * 取消技能绑定
@@ -42,7 +41,7 @@ interface ISkillUI {
      * @param group 技能组
      * @return 是否成功
      * */
-    fun unBindSkill(skill: String, group: String): Boolean
+    fun unBindSkill(job: IPlayerJob, skill: String, group: String): Boolean
 
     /**
      * 升级技能
@@ -63,18 +62,5 @@ interface ISkillUI {
      * @return 是否成功
      * */
     fun clearAllAndBackPoint(): Boolean
-
-    /**
-     * 获得玩家技能列表
-     * @return 是否成功
-     * */
-    fun getSkills(): List<IPlayerSkill>
-
-    /**
-     * 获得玩家绑定技能
-     * @param group 技能组
-     * @return 是否成功
-     * */
-    fun getGroupSkills(group: String): Map<IBindKey, String?>
 
 }

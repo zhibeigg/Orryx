@@ -3,6 +3,10 @@ package org.gitee.orryx.utils
 import taboolib.common.platform.function.getDataFolder
 import taboolib.common.platform.function.releaseResourceFile
 import taboolib.library.configuration.ConfigurationSection
+import taboolib.module.configuration.ConfigLoader
+import taboolib.module.configuration.ConfigNodeFile
+import taboolib.module.configuration.Configuration
+import taboolib.module.configuration.Type
 import java.io.File
 
 
@@ -35,4 +39,15 @@ internal fun ConfigurationSection.getMap(path: String): Map<String, String> {
         }
     }
     return map
+}
+
+internal fun loadFromFile(name: String): Configuration {
+    return if (ConfigLoader.files.containsKey(name)) {
+        ConfigLoader.files[name]!!.configuration
+    } else {
+        val file = releaseResourceFile(name)
+        val conf = Configuration.loadFromFile(file, Type.YAML, false)
+        ConfigLoader.files[name] = ConfigNodeFile(conf, file)
+        conf
+    }
 }

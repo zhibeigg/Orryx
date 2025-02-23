@@ -8,20 +8,26 @@ import taboolib.module.kether.Script
 class PressingAimSkill(
     override val key: String,
     override val configuration: Configuration
-) : AbstractCastSkillLoader(key, configuration) {
+) : AbstractCastSkillLoader(key, configuration), IAim, IPress {
 
     override val type = PRESSING_AIM
 
-    val aimScaleAction: String
-        get() = options.getString("AimScaleAction", "5")!!
+    override val aimMinAction: String
+        get() = options.getString("AimMinAction", "5")!!
 
-    val aimRangeAction: String
-        get() = options.getString("AimRangeAction", "10")!!
+    override val aimMaxAction: String
+        get() = options.getString("AimMaxAction", "5")!!
 
-    val pressTickAction: String
-        get() = options.getString("PressTickAction", "")!!
+    override val aimRadiusAction: String
+        get() = options.getString("AimRadiusAction", "10")!!
 
-    val maxPressTickAction: String
+    override val period: Long
+        get() = options.getLong("Period")
+
+    override val pressPeriodAction: String
+        get() = options.getString("PressPeriodAction", "")!!
+
+    override val maxPressTickAction: String
         get() = options.getString("MaxPressTickAction", "20")!!
 
     override val script: Script? = SkillLoaderManager.loadScript(this)

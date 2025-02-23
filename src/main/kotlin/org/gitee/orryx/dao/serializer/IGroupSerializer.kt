@@ -20,8 +20,7 @@ object IGroupSerializer : KSerializer<IGroup> {
     }
 
     override fun deserialize(decoder: Decoder): IGroup {
-        val string = decoder.decodeString()
-        return BindKeyLoaderManager.getGroup(string) ?: BindKeyLoaderManager.getGroup(DEFAULT)!!
+        return BindKeyLoaderManager.getGroup(decoder.decodeString()) ?: BindKeyLoaderManager.getGroup(DEFAULT)!!
     }
 
 }

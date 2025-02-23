@@ -23,21 +23,33 @@ interface IPlayerProfile {
     /**
      * 玩家的FLAG存储器
      * */
-    val flags: Map<String, IFlag<*>>
+    val flags: Map<String, IFlag>
 
     /**
      * 尝试获取flag
      * @param flagName flag的键名
      * @return flag
      * */
-    fun getFlag(flagName: String): IFlag<*>?
+    fun getFlag(flagName: String): IFlag?
 
     /**
      * 设置flag
      * @param flagName flag的键名
      * @param flag flag
      * */
-    fun setFlag(flagName: String, flag: IFlag<*>)
+    fun setFlag(flagName: String, flag: IFlag)
+
+    /**
+     * 移除flag
+     * @param flagName flag的键名
+     * @return 移除的flag
+     * */
+    fun removeFlag(flagName: String): IFlag?
+
+    /**
+     * 清除flag
+     * */
+    fun clearFlags()
 
     /**
      * 是否在霸体状态

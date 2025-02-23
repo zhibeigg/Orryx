@@ -1,9 +1,7 @@
 package org.gitee.orryx.command
 
-import org.gitee.orryx.core.job.JobLoaderManager
 import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.key.BindKeyLoaderManager
-import org.gitee.orryx.core.profile.PlayerProfileManager.job
 import org.gitee.orryx.core.profile.PlayerProfileManager.orryxProfile
 import org.gitee.orryx.core.skill.ICastSkill
 import org.gitee.orryx.core.skill.SkillLoaderManager
@@ -20,15 +18,12 @@ object OrryxSkillCommand {
             dynamic("skill") {
                 suggest {
                     val player = ctx.bukkitPlayer() ?: return@suggest emptyList()
-                    val job = player.job() ?: return@suggest emptyList()
-                    job.job.skills.filter { skill ->
-                        player.getSkill(job.key, skill)?.locked == false
-                    }
+                    player.getSkills().map { it.key }
                 }
                 dynamic("group") {
                     suggest { BindKeyLoaderManager.getGroups().keys.toList() }
                     dynamic("key") {
-                        suggest { BindKeyLoaderManager.getBindKeys().keys.toList() }
+                        suggest { BindKeyLoaderManager.getBindKeys().values.sortedBy { it.sort }.map { it.key } }
                         exec<ProxyCommandSender> {
                             val player = ctx.bukkitPlayer() ?: return@exec
                             val job = player.job()
@@ -65,9 +60,7 @@ object OrryxSkillCommand {
             dynamic("skill") {
                 suggest {
                     val player = ctx.bukkitPlayer() ?: return@suggest emptyList()
-                    val job = player.orryxProfile().job?.let { JobLoaderManager.getJobLoader(it) }
-                        ?: return@suggest emptyList()
-                    job.skills.filter { SkillLoaderManager.getSkillLoader(it) is ICastSkill }
+                    player.getSkills().map { it.key }
                 }
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec

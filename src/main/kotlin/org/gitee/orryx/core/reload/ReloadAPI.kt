@@ -18,22 +18,19 @@ object ReloadAPI: IReloadAPI, ClassVisitor(1) {
     class ReloadFunction(val method: ClassMethod, val obj: Any, val weight: Int)
 
     override fun getLifeCycle(): LifeCycle {
-        return LifeCycle.INIT
+        return LifeCycle.ENABLE
     }
 
     private val methodList by lazy { mutableListOf<ReloadFunction>() }
 
     override fun visit(method: ClassMethod, owner: ReflexClass) {
-        try {
-            if (method.isAnnotationPresent(Reload::class.java)) {
-                methodList += ReloadFunction(
-                    method,
-                    owner.getInstance() ?: return,
-                    method.getAnnotation(Reload::class.java).property<Int>("weight")!!
-                )
-                debug("&e┣&7Reload loaded &e${method.owner.name}/${method.name} &a√")
-            }
-        } catch (_: Throwable) {
+        if (method.isAnnotationPresent(Reload::class.java)) {
+            methodList += ReloadFunction(
+                method,
+                owner.getInstance() ?: return,
+                method.getAnnotation(Reload::class.java).property<Int>("weight")!!
+            )
+            debug("&e┣&7Reload loaded &e${method.owner.name}/${method.name} &a√")
         }
     }
 
