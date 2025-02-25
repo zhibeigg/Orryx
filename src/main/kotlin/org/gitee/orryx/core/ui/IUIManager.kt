@@ -42,8 +42,32 @@ interface IUIManager {
 
     }
 
+    /**
+     * UI配置
+     * */
     val config: Configuration
 
-    fun getSkillUI(viewer: Player, owner: Player): ISkillUI
+    /**
+     * 创建技能UI
+     * @param viewer 浏览者
+     * @param owner 拥有者
+     * @return 技能UI[ISkillUI]
+     * */
+    fun createSkillUI(viewer: Player, owner: Player): ISkillUI
+
+    /**
+     * 创建技能HUD
+     * @param viewer 浏览者
+     * @param owner 拥有者
+     * @return 技能HUD[ISkillHud]
+     * */
+    fun createSkillHUD(viewer: Player, owner: Player): ISkillHud
+
+    /**
+     * 获取技能HUD
+     * @param viewer 浏览者
+     * @return 技能HUD[ISkillHud]
+     * */
+    fun getSkillHUD(viewer: Player): ISkillHud?
 
 }

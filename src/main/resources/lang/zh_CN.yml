@@ -5,3 +5,5 @@ mana-not-enough: "&4| &f法力值不足"
 check-action-failed: "&4| &f检测语句未通过"
 cooldown: "&4| &f技能正处于冷却"
 canceled: "&4| &f事件已取消"
+
+command-hud-owner: "&a| &f当前你浏览的技能HUD拥有者是 &e{0}"

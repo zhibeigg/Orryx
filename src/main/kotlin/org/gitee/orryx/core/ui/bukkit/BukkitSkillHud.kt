@@ -24,7 +24,6 @@ import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common5.cdouble
 import taboolib.common5.cint
 import taboolib.library.xseries.XMaterial
-import taboolib.module.nms.getItemTag
 import taboolib.platform.util.buildItem
 import java.util.*
 import kotlin.collections.component1
@@ -38,9 +37,14 @@ class BukkitSkillHud(override val viewer: Player, override val owner: Player): A
         private const val TAG = "OrryxHud"
         private val slots = (36..44).toList()
         private val slotIndex = (0..8).toList()
-        // owner
+
+        /**
+         * owner, skill, [Cooldown]
+         */
         private val skillCooldownMap = mutableMapOf<UUID, MutableMap<String, Cooldown>>()
-        // owner, viewer to HUD
+        /**
+         * owner, viewer, [BukkitSkillHud]
+         */
         private val bukkitSkillHudMap = mutableMapOf<UUID, MutableMap<UUID, BukkitSkillHud>>()
 
         class Cooldown(val skill: String, val max: Long) {
@@ -61,6 +65,12 @@ class BukkitSkillHud(override val viewer: Player, override val owner: Player): A
 
         }
 
+        fun getViewerHud(player: Player): BukkitSkillHud? {
+            return bukkitSkillHudMap.firstNotNullOfOrNull {
+                it.value[player.uniqueId]
+            }
+        }
+
         @Schedule(async = false, period = 5)
         private fun cooldown() {
             bukkitSkillHudMap.forEach {
@@ -73,8 +83,11 @@ class BukkitSkillHud(override val viewer: Player, override val owner: Player): A
         @SubscribeEvent
         private fun click(e: PlayerItemHeldEvent) {
             val bindKey = getBindKey("MC" + (e.newSlot + 1)) ?: return
-            bindKey.tryCast(e.player)
-            e.isCancelled = true
+            val ui = getViewerHud(e.player) ?: return
+            if (ui.viewer == ui.owner || ui.viewer.isOp) {
+                bindKey.tryCast(ui.owner)
+                e.isCancelled = true
+            }
         }
 
         @SubscribeEvent(priority = EventPriority.MONITOR)
@@ -180,23 +193,26 @@ class BukkitSkillHud(override val viewer: Player, override val owner: Player): A
     }
 
     override fun open() {
+        remove()
         bukkitSkillHudMap.getOrPut(owner.uniqueId) { mutableMapOf() }[viewer.uniqueId] = this
         update()
     }
 
     override fun update() {
         slotIndex.forEach { i ->
-            fun clear() {
-                if (viewer.inventory.getItem(i)?.getItemTag()?.containsKey(TAG) == true) {
-                    viewer.inventory.setItem(i, null)
-                }
-            }
-            val bindKey = getBindKey("MC" + (i + 1)) ?: run {
-                clear()
-                return@forEach
-            }
+            val bindKey = getBindKey("MC" + (i + 1)) ?: return@forEach
             val skill = bindKey.getBindSkill(owner) ?: run {
-                clear()
+                viewer.inventory.setItem(
+                    i,
+                    buildItem(XMaterial.BARRIER) {
+                        name = "&f技能槽"
+                        lore += "&f无技能绑定的技能槽位"
+                        amount = i + 1
+                        hideAll()
+                        unique()
+                        colored()
+                    }
+                )
                 return@forEach
             }
             val material = XMaterial.matchXMaterial(skill.skill.xMaterial).orElse(XMaterial.BLAZE_ROD)
@@ -207,16 +223,12 @@ class BukkitSkillHud(override val viewer: Player, override val owner: Player): A
                     lore += skill.getDescriptionComparison()
                     amount = i + 1
                     hideAll()
+                    unique()
                     material.parseMaterial()?.maxDurability?.let {
                         val percent = skillCooldownMap[owner.uniqueId]?.get(skill.key)?.percent(owner) ?: 1.0
                         if (percent < 1) {
                             damage = (it.cdouble * percent).cint
                         }
-                    }
-                    finishing = {
-                        val tag = it.getItemTag()
-                        tag[TAG] = true
-                        tag.saveTo(it)
                     }
                     colored()
                 }
@@ -224,11 +236,23 @@ class BukkitSkillHud(override val viewer: Player, override val owner: Player): A
         }
     }
 
-    fun close() {
+    override fun close() {
+        remove()
         slotIndex.forEach { i ->
-            val bindKey = getBindKey("MC" + (i + 1)) ?: return@forEach
-            bindKey.getBindSkill(owner) ?: return@forEach
+            getBindKey("MC" + (i + 1)) ?: return@forEach
             viewer.inventory.setItem(i, null)
+        }
+    }
+
+    fun remove() {
+        bukkitSkillHudMap.forEach {
+            val iterator = it.value.iterator()
+            while (iterator.hasNext()) {
+                val next = iterator.next()
+                if (next.key == viewer.uniqueId) {
+                    iterator.remove()
+                }
+            }
         }
     }
 

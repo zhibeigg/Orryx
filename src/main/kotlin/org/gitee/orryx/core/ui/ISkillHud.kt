@@ -28,6 +28,11 @@ interface ISkillHud {
     fun update()
 
     /**
+     * 关闭HUD
+     * */
+    fun close()
+
+    /**
      * 设置使用的技能组
      * @param group 技能组
      * @return 是否设置成功
