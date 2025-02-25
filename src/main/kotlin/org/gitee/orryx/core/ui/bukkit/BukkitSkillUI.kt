@@ -91,6 +91,7 @@ class BukkitSkillUI(override val viewer: Player, override val owner: Player): Ab
                         name = space.name
                         lore += space.lore
                         amount = space.amount
+                        hideAll()
                         colored()
                     }
                 }
@@ -102,6 +103,7 @@ class BukkitSkillUI(override val viewer: Player, override val owner: Player): Ab
                         name = previous.name
                         lore += previous.lore
                         amount = page + 1
+                        hideAll()
                         colored()
                     }
                 }
@@ -113,6 +115,7 @@ class BukkitSkillUI(override val viewer: Player, override val owner: Player): Ab
                         name = next.name
                         lore += next.lore
                         amount = ceil(elementsCache.size.cdouble / menuSlots.size.cdouble).cint
+                        hideAll()
                         colored()
                     }
                 }
@@ -129,6 +132,7 @@ class BukkitSkillUI(override val viewer: Player, override val owner: Player): Ab
                             lore += "&a| &c左键&f将技能绑定在此格子"
                             lore += "&a| &c右键&f将此格技能解绑"
                             amount = index + 1
+                            hideAll()
                             colored()
                         }
                     }
@@ -138,6 +142,7 @@ class BukkitSkillUI(override val viewer: Player, override val owner: Player): Ab
                             name = "空技能槽"
                             lore += "&a| &c左键&f将技能绑定在此格子"
                             amount = index + 1
+                            hideAll()
                             colored()
                         }
                     }
@@ -151,6 +156,7 @@ class BukkitSkillUI(override val viewer: Player, override val owner: Player): Ab
                     lore += ""
                     lore += "&a| &c左键&f选中此技能"
                     amount = index + 1
+                    hideAll()
                     colored()
                 }
             }
@@ -214,6 +220,7 @@ class BukkitSkillUI(override val viewer: Player, override val owner: Player): Ab
                         lore += "&a| &c左键&f将技能绑定在此格子"
                         lore += "&a| &c右键&f将此格技能解绑"
                         amount = index + 1
+                        hideAll()
                         colored()
                     }
                 )
@@ -224,6 +231,7 @@ class BukkitSkillUI(override val viewer: Player, override val owner: Player): Ab
                         name = "空技能槽"
                         lore += "&a| &c左键&f将技能绑定在此格子"
                         amount = index + 1
+                        hideAll()
                         colored()
                     }
                 )

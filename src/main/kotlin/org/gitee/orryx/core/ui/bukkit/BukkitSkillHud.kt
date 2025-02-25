@@ -1,6 +1,7 @@
 package org.gitee.orryx.core.ui.bukkit
 
 import org.bukkit.entity.Player
+import org.bukkit.event.inventory.ClickType.*
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryDragEvent
 import org.bukkit.event.player.PlayerItemHeldEvent
@@ -11,25 +12,32 @@ import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillCooldownEvents
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillUnBindKeyEvent
 import org.gitee.orryx.core.common.timer.SkillTimer
 import org.gitee.orryx.core.key.BindKeyLoaderManager.getBindKey
+import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.core.ui.AbstractSkillHud
 import org.gitee.orryx.utils.getBindSkill
 import org.gitee.orryx.utils.getDescriptionComparison
 import org.gitee.orryx.utils.getIcon
 import org.gitee.orryx.utils.tryCast
+import taboolib.common.platform.Schedule
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common5.cdouble
 import taboolib.common5.cint
-import taboolib.common5.cshort
 import taboolib.library.xseries.XMaterial
+import taboolib.module.nms.getItemTag
 import taboolib.platform.util.buildItem
 import java.util.*
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.set
 
 class BukkitSkillHud(override val viewer: Player, override val owner: Player): AbstractSkillHud(viewer, owner) {
 
     companion object {
 
-        private val slots = (0..8).toList()
+        private const val TAG = "OrryxHud"
+        private val slots = (36..44).toList()
+        private val slotIndex = (0..8).toList()
         // owner
         private val skillCooldownMap = mutableMapOf<UUID, MutableMap<String, Cooldown>>()
         // owner, viewer to HUD
@@ -51,6 +59,15 @@ class BukkitSkillHud(override val viewer: Player, override val owner: Player): A
                 }
             }
 
+        }
+
+        @Schedule(async = false, period = 5)
+        private fun cooldown() {
+            bukkitSkillHudMap.forEach {
+                it.value.forEach { map ->
+                    map.value.update()
+                }
+            }
         }
 
         @SubscribeEvent
@@ -114,10 +131,22 @@ class BukkitSkillHud(override val viewer: Player, override val owner: Player): A
 
         @SubscribeEvent
         private fun click(e: InventoryClickEvent) {
-            if (e.rawSlot in slots) {
-                getBindKey("MC" + (slots.indexOf(e.rawSlot) + 1)) ?: return
-                if (bukkitSkillHudMap.any { it.value.containsKey(e.view.player.uniqueId) }) {
-                    e.isCancelled = true
+            when(e.click) {
+                DOUBLE_CLICK, LEFT, RIGHT, MIDDLE, WINDOW_BORDER_LEFT, SHIFT_LEFT, SHIFT_RIGHT, WINDOW_BORDER_RIGHT, CREATIVE, DROP, CONTROL_DROP, SWAP_OFFHAND, UNKNOWN -> {
+                    if (e.rawSlot in slots) {
+                        getBindKey("MC" + (slots.indexOf(e.rawSlot) + 1)) ?: return
+                        if (bukkitSkillHudMap.any { it.value.containsKey(e.view.player.uniqueId) }) {
+                            e.isCancelled = true
+                        }
+                    }
+                }
+                NUMBER_KEY -> {
+                    if (e.hotbarButton in slotIndex) {
+                        getBindKey("MC" + (e.hotbarButton + 1)) ?: return
+                        if (bukkitSkillHudMap.any { it.value.containsKey(e.view.player.uniqueId) }) {
+                            e.isCancelled = true
+                        }
+                    }
                 }
             }
         }
@@ -135,7 +164,17 @@ class BukkitSkillHud(override val viewer: Player, override val owner: Player): A
 
         @SubscribeEvent
         private fun join(e: PlayerJoinEvent) {
+            e.player.inventory.heldItemSlot = slotIndex.firstOrNull { getBindKey("MC" + (it + 1)) == null } ?: 0
             BukkitSkillHud(e.player, e.player).open()
+        }
+
+        @Reload(2)
+        private fun reload() {
+            bukkitSkillHudMap.forEach {
+                it.value.forEach { map ->
+                    map.value.update()
+                }
+            }
         }
 
     }
@@ -146,17 +185,38 @@ class BukkitSkillHud(override val viewer: Player, override val owner: Player): A
     }
 
     override fun update() {
-        slots.forEachIndexed { index, i ->
-            val bindKey = getBindKey("MC" + (index + 1)) ?: return@forEachIndexed
-            val skill = bindKey.getBindSkill(owner) ?: return@forEachIndexed
+        slotIndex.forEach { i ->
+            fun clear() {
+                if (viewer.inventory.getItem(i)?.getItemTag()?.containsKey(TAG) == true) {
+                    viewer.inventory.setItem(i, null)
+                }
+            }
+            val bindKey = getBindKey("MC" + (i + 1)) ?: run {
+                clear()
+                return@forEach
+            }
+            val skill = bindKey.getBindSkill(owner) ?: run {
+                clear()
+                return@forEach
+            }
+            val material = XMaterial.matchXMaterial(skill.skill.xMaterial).orElse(XMaterial.BLAZE_ROD)
             viewer.inventory.setItem(
                 i,
-                buildItem(XMaterial.matchXMaterial(skill.skill.xMaterial).orElse(XMaterial.BLAZE_ROD)) {
+                buildItem(material) {
                     name = skill.getIcon()
                     lore += skill.getDescriptionComparison()
-                    amount = index + 1
+                    amount = i + 1
+                    hideAll()
+                    material.parseMaterial()?.maxDurability?.let {
+                        val percent = skillCooldownMap[owner.uniqueId]?.get(skill.key)?.percent(owner) ?: 1.0
+                        if (percent < 1) {
+                            damage = (it.cdouble * percent).cint
+                        }
+                    }
                     finishing = {
-                        it.durability = (it.type.maxDurability * (skillCooldownMap[owner.uniqueId]?.get(skill.key)?.percent(owner) ?: 1.0)).cint.cshort
+                        val tag = it.getItemTag()
+                        tag[TAG] = true
+                        tag.saveTo(it)
                     }
                     colored()
                 }
@@ -165,9 +225,9 @@ class BukkitSkillHud(override val viewer: Player, override val owner: Player): A
     }
 
     fun close() {
-        slots.forEachIndexed { index, i ->
-            val bindKey = getBindKey("MC" + (index + 1)) ?: return@forEachIndexed
-            bindKey.getBindSkill(owner) ?: return@forEachIndexed
+        slotIndex.forEach { i ->
+            val bindKey = getBindKey("MC" + (i + 1)) ?: return@forEach
+            bindKey.getBindSkill(owner) ?: return@forEach
             viewer.inventory.setItem(i, null)
         }
     }

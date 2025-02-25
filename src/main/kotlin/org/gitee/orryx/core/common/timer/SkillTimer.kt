@@ -46,7 +46,7 @@ object SkillTimer : ITimer {
     }
 
     override fun getCountdown(sender: ProxyCommandSender, tag: String): Long {
-        return getCooldownMap(sender)[tag]?.remaining ?: 0
+        return getCooldownMap(sender)[tag]?.countdown ?: 0
     }
 
     override fun increase(sender: ProxyCommandSender, tag: String, amount: Long) {
