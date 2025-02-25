@@ -51,7 +51,7 @@ class PlayerJob(
         get() = getExperience().getExperienceOfLevel(player, experience)
 
     private fun createDaoData(): PlayerJob {
-        return PlayerJob(player.uniqueId, key, experience, group, bindKeyOfGroup)
+        return PlayerJob(player.uniqueId, key, experience, group, bindKeyOfGroupToMap(bindKeyOfGroup))
     }
 
     override fun getExperience(): IExperience {

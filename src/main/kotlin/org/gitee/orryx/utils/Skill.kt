@@ -2,6 +2,7 @@ package org.gitee.orryx.utils
 
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.events.player.skill.OrryxClearSkillLevelAndBackPointEvent
+import org.gitee.orryx.core.common.timer.SkillTimer
 import org.gitee.orryx.core.kether.KetherScript
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.kether.parameter.IParameter
@@ -128,7 +129,7 @@ fun IPlayerSkill.getIcon(): String {
     return skill.icon.getIcon(player, SkillParameter(key, player, level))
 }
 
-fun ISkill.castSkill(player: Player, parameter: SkillParameter) {
+fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean = true) {
     when(val skill = this) {
         is PressingSkill -> parameter.runSkillAction(mapOf("pressTick" to 1))
         is PressingAimSkill -> {
@@ -140,6 +141,9 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter) {
             PluginMessageHandler.requestAiming(player, key, DEFAULT_PICTURE, aimMin, aimMax, aimRadius, maxTick) { aimInfo ->
                 aimInfo.getOrNull()?.let {
                     if (it.skillId == skill.key) {
+                        if (consume) {
+                            SkillTimer.reset(player, parameter)
+                        }
                         parameter.origin = it.location.toTarget()
                         parameter.runSkillAction(
                             mapOf(
@@ -153,7 +157,12 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter) {
                 }
             }
         }
-        is DirectSkill -> parameter.runSkillAction()
+        is DirectSkill -> {
+            if (consume) {
+                SkillTimer.reset(player, parameter)
+            }
+            parameter.runSkillAction()
+        }
         is DirectAimSkill -> {
             val aimRadius = parameter.runCustomAction(skill.aimRadiusAction).orNull().cdouble
             val aimSize = parameter.runCustomAction(skill.aimSizeAction).orNull().cdouble
@@ -161,6 +170,9 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter) {
                 aimInfo.getOrNull()?.let {
                     if (it.skillId == skill.key) {
                         parameter.origin = it.location.toTarget()
+                        if (consume) {
+                            SkillTimer.reset(player, parameter)
+                        }
                         parameter.runSkillAction(
                             mapOf(
                                 "aimRadius" to aimRadius,
@@ -170,6 +182,16 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter) {
                     }
                 }
             }
+        }
+    }
+}
+
+fun IPlayerSkill.tryCast() {
+    val parameter = parameter()
+    castCheck(parameter).apply {
+        sendLang(player)
+        if (isSuccess()) {
+            cast(parameter, true)
         }
     }
 }

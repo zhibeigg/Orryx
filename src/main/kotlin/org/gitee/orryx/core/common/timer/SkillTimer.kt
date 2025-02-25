@@ -2,9 +2,11 @@ package org.gitee.orryx.core.common.timer
 
 import org.bukkit.entity.Player
 import org.bukkit.event.player.PlayerQuitEvent
+import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillCooldownEvents
 import org.gitee.orryx.core.common.CooldownEntry
 import org.gitee.orryx.core.kether.parameter.IParameter
 import org.gitee.orryx.core.kether.parameter.SkillParameter
+import org.gitee.orryx.utils.getSkill
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.adaptPlayer
@@ -21,12 +23,12 @@ object SkillTimer : ITimer {
     override fun reset(sender: ProxyCommandSender, parameter: IParameter): Long {
         require(parameter is SkillParameter) { "Invalid parameter type" }
         val timeout = parameter.cooldownValue(true)
-        val skillName = parameter.skill ?: return timeout
+        val skillKey = parameter.skill ?: return timeout
 
-        if (timeout > 0) {
-            set(sender, skillName, timeout)
+        if (timeout >= 0) {
+            set(sender, skillKey, timeout)
         } else {
-            getCooldownMap(sender).remove(skillName)
+            set(sender, skillKey, 0)
         }
         return timeout
     }
@@ -47,30 +49,34 @@ object SkillTimer : ITimer {
         return getCooldownMap(sender)[tag]?.remaining ?: 0
     }
 
-    fun increase(player: Player, skill: String, amount: Long) {
-        increase(adaptPlayer(player), skill, amount)
-    }
-
     override fun increase(sender: ProxyCommandSender, tag: String, amount: Long) {
-        getCooldownMap(sender)[tag]?.addDuration(amount)
-    }
-
-    fun reduce(player: Player, skill: String, amount: Long) {
-        reduce(adaptPlayer(player), skill, amount)
+        val player = sender.castSafely<Player>() ?: return
+        val event = OrryxPlayerSkillCooldownEvents.Increase(player, player.getSkill(tag)!!, amount)
+        if (event.call()) {
+            getCooldownMap(sender)[tag]?.addDuration(event.amount)
+        }
     }
 
     override fun reduce(sender: ProxyCommandSender, tag: String, amount: Long) {
-        getCooldownMap(sender)[tag]?.reduceDuration(amount)
-    }
-
-    fun set(player: Player, skill: String, amount: Long) {
-        set(adaptPlayer(player), skill, amount)
+        val player = sender.castSafely<Player>() ?: return
+        val event = OrryxPlayerSkillCooldownEvents.Reduce(player, player.getSkill(tag)!!, amount)
+        if (event.call()) {
+            getCooldownMap(sender)[tag]?.reduceDuration(event.amount)
+        }
     }
 
     override fun set(sender: ProxyCommandSender, tag: String, amount: Long) {
-        val cooldownMap = getCooldownMap(sender)
-        cooldownMap.values.removeIf { it.isReady }
-        cooldownMap[tag] = CooldownEntry(tag, amount)
+        val player = sender.castSafely<Player>() ?: return
+        val event = OrryxPlayerSkillCooldownEvents.Set(player, player.getSkill(tag)!!, amount)
+        if (event.call()) {
+            val cooldownMap = getCooldownMap(sender)
+            cooldownMap.values.removeIf { it.isReady }
+            if (event.amount <= 0L) {
+                cooldownMap.remove(tag)
+            } else {
+                cooldownMap[tag] = CooldownEntry(tag, event.amount)
+            }
+        }
     }
 
     override fun getCooldownMap(sender: ProxyCommandSender): MutableMap<String, CooldownEntry> {

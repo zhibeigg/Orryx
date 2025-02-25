@@ -65,14 +65,7 @@ object OrryxSkillCommand {
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
                     val skill = player.getSkill(player.orryxProfile().job!!, ctx["skill"]) ?: return@exec
-                    val parameter = skill.parameter()
-                    skill.castCheck(parameter).apply {
-                        sendLang(player)
-                        if (isSuccess()) {
-                            skill.cast(parameter)
-                        }
-                        debug("${player.name}指令skill tryCast结果${this}")
-                    }
+                    skill.tryCast()
                 }
             }
         }

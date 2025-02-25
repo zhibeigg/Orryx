@@ -42,7 +42,7 @@ interface IPlayerSkill {
      * @param parameter 释放参数
      * @return 释放结果
      * */
-    fun cast(parameter: IParameter): CastResult
+    fun cast(parameter: IParameter, consume: Boolean = true): CastResult
 
     /**
      * 释放技能检测

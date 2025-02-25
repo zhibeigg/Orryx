@@ -11,10 +11,10 @@ class CooldownEntry(
         private set
 
     val countdown: Long
-        get() = remaining - (System.currentTimeMillis() - timeStamp)
+        get() = (remaining + timeStamp - System.currentTimeMillis()).coerceAtLeast(0)
 
     val isReady: Boolean
-        get() = remaining <= 0
+        get() = countdown <= 0
 
     fun addDuration(amount: Long) {
         remaining += amount

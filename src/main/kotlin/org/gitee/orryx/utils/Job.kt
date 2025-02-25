@@ -40,7 +40,7 @@ fun Player.job(): IPlayerJob? {
 }
 
 fun Player.job(job: String): IPlayerJob {
-    return ICacheManager.INSTANCE.getPlayerJob(uniqueId, job)?.let { PlayerJob(this, it.job, it.experience, it.group, it.bindKeyOfGroup.mapValues { map -> map.value.toMutableMap() }.toMutableMap()) } ?: defaultJob(job).apply { save(true) }
+    return ICacheManager.INSTANCE.getPlayerJob(uniqueId, job)?.let { PlayerJob(this, it.job, it.experience, it.group, bindKeyOfGroupToMutableMap(it.bindKeyOfGroup)) } ?: defaultJob(job).apply { save(true) }
 }
 
 private fun Player.defaultJob(job: String) = PlayerJob(this, job, 0, DEFAULT, mutableMapOf())

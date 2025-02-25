@@ -6,8 +6,6 @@ import kotlinx.serialization.json.Json
 import org.bukkit.Bukkit
 import org.gitee.orryx.api.adapters.entity.AbstractAdyeshachEntity
 import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
-import org.gitee.orryx.core.key.IBindKey
-import org.gitee.orryx.core.key.IGroup
 import org.gitee.orryx.core.profile.Flag
 import org.gitee.orryx.core.profile.IFlag
 import org.gitee.orryx.core.profile.SerializableFlag
@@ -71,14 +69,6 @@ enum class SerializableType(val key: String, val type: KClass<*>) {
         override fun encodeToString(value: Any) = Json.encodeToString(value as Instant)
         override fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long) = Flag(Json.decodeFromString(InstantSerializer, value), isPersistence, timeout)
     },
-    GROUP("group", IGroup::class) {
-        override fun encodeToString(value: Any) = Json.encodeToString(IGroupSerializer, value as IGroup)
-        override fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long) = Flag(Json.decodeFromString(IGroupSerializer, value), isPersistence, timeout)
-    },
-    BIND_KEY("bind_key", IBindKey::class) {
-        override fun encodeToString(value: Any) = Json.encodeToString(IBindKeySerializer, value as IBindKey)
-        override fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long) = Flag(Json.decodeFromString(IBindKeySerializer, value), isPersistence, timeout)
-    },
     VECTOR("vector", Vector3dc::class) {
         override fun encodeToString(value: Any) = Json.encodeToString(IVector3dcSerializer, value as Vector3dc)
         override fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long) = Flag(Json.decodeFromString(IVector3dcSerializer, value), isPersistence, timeout)
@@ -116,8 +106,6 @@ fun IFlag.toSerializable(): SerializableFlag {
         SerializableType.CHAR.type -> SerializableType.CHAR
         SerializableType.DATE.type -> SerializableType.DATE
         SerializableType.INSTANT.type -> SerializableType.INSTANT
-        SerializableType.GROUP.type -> SerializableType.GROUP
-        SerializableType.BIND_KEY.type -> SerializableType.BIND_KEY
         SerializableType.VECTOR.type -> SerializableType.VECTOR
         SerializableType.MATRIX.type -> SerializableType.MATRIX
         SerializableType.UUID.type -> SerializableType.UUID
@@ -141,8 +129,6 @@ fun SerializableFlag.toFlag(): IFlag? {
         SerializableType.CHAR.key -> SerializableType.CHAR
         SerializableType.DATE.key -> SerializableType.DATE
         SerializableType.INSTANT.key -> SerializableType.INSTANT
-        SerializableType.GROUP.key -> SerializableType.GROUP
-        SerializableType.BIND_KEY.key -> SerializableType.BIND_KEY
         SerializableType.VECTOR.key -> SerializableType.VECTOR
         SerializableType.MATRIX.key -> SerializableType.MATRIX
         SerializableType.UUID.key -> SerializableType.UUID

@@ -36,9 +36,9 @@ class PlayerSkill(
     override val skill: ISkill
         get() = SkillLoaderManager.getSkillLoader(key)!!
 
-    override fun cast(parameter: IParameter): CastResult {
+    override fun cast(parameter: IParameter, consume: Boolean): CastResult {
         if (parameter !is SkillParameter) return CastResult.PARAMETER
-        skill.castSkill(player, parameter)
+        skill.castSkill(player, parameter, consume)
         return CastResult.SUCCESS
     }
 

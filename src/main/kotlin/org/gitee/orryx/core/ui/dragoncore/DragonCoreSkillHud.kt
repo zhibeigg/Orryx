@@ -9,4 +9,8 @@ class DragonCoreSkillHud(override val viewer: Player, override val owner: Player
         TODO("Not yet implemented")
     }
 
+    override fun open() {
+        TODO("Not yet implemented")
+    }
+
 }

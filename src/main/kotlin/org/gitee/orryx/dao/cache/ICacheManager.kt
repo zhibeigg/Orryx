@@ -10,6 +10,7 @@ import org.gitee.orryx.utils.RedisChannelPlugin
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.function.info
+import taboolib.common5.format
 import taboolib.module.chat.colored
 import java.util.*
 
@@ -52,7 +53,7 @@ interface ICacheManager {
         private fun disable() {
             val instance = INSTANCE as? MemoryManager ?: return
             fun printStats(name: String, stats: CacheStats) {
-                info("&e┣&f缓存：$name &c命中率：${stats.hitRate()} &c加载平均时间：${stats.averageLoadPenalty()}".colored())
+                info("&e┣&f缓存：$name &c命中率：${(stats.hitRate()*100).format(2)} % &c加载平均时间：${stats.averageLoadPenalty()/1000000} ms".colored())
             }
             printStats("玩家", instance.playerDataCache.stats())
             printStats("职业", instance.playerJobCache.stats())

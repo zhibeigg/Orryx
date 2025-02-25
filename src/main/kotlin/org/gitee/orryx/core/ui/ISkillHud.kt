@@ -18,6 +18,11 @@ interface ISkillHud {
     val owner: Player
 
     /**
+     * 打开HUD
+     * */
+    fun open()
+
+    /**
      * 更新HUD
      * */
     fun update()
