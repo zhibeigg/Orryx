@@ -17,7 +17,7 @@ import taboolib.platform.util.buildItem
 import kotlin.jvm.optionals.getOrNull
 import kotlin.math.ceil
 
-class BukkitSkillUI(override val viewer: Player, override val owner: Player): AbstractSkillUI(viewer, owner) {
+open class BukkitSkillUI(override val viewer: Player, override val owner: Player): AbstractSkillUI(viewer, owner) {
 
     companion object {
 
@@ -63,12 +63,12 @@ class BukkitSkillUI(override val viewer: Player, override val owner: Player): Ab
 
     }
 
-    private var cursorSkill: IPlayerSkill? = null
+    protected open var cursorSkill: IPlayerSkill? = null
 
-    private val isWrite
+    protected open val isWrite
         get() = viewer == owner || viewer.isOp
 
-    private lateinit var inventory: Inventory
+    protected open lateinit var inventory: Inventory
     private lateinit var job: IPlayerJob
 
     override fun open() {
@@ -76,7 +76,7 @@ class BukkitSkillUI(override val viewer: Player, override val owner: Player): Ab
         viewer.openMenu(build(job).also { inventory = it })
     }
 
-    private fun build(job: IPlayerJob): Inventory {
+    protected open fun build(job: IPlayerJob): Inventory {
         return buildMenu<PageableChestImpl<IPlayerSkill>>(title) {
             rows(6)
             handLocked(false)

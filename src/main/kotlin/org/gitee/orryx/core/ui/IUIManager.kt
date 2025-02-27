@@ -4,6 +4,9 @@ import org.bukkit.entity.Player
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.core.ui.bukkit.BukkitUIManager
+import org.gitee.orryx.core.ui.germplugin.GermPluginUIManager
+import org.gitee.orryx.utils.DragonCorePlugin
+import org.gitee.orryx.utils.GermPluginPlugin
 import taboolib.common.platform.function.info
 import taboolib.module.chat.colored
 import taboolib.module.configuration.Configuration
@@ -15,25 +18,33 @@ interface IUIManager {
         private val type
             get() = OrryxAPI.config.getString("UI.use", "bukkit")!!.uppercase()
 
-        internal val INSTANCE: IUIManager =
+        internal val INSTANCE: IUIManager by lazy {
             when (type) {
                 "BUKKIT" -> {
                     info(("&e┣&7已选择原版UI &a√").colored())
                     BukkitUIManager()
                 }
-
-                "DRAGONCORE" -> {
-                    info(("&e┣&7已选择龙核UI &a√").colored())
+                "DRAGONCORE", "DRAGON" -> {
+                    if (DragonCorePlugin.isEnabled) {
+                        info(("&e┣&7已选择龙核UI &a√").colored())
+                    } else {
+                        info(("&e┣&7因为未检测到DragonCore，已自动选择BUKKIT UI &a√").colored())
+                        BukkitUIManager()
+                    }
                     TODO()
                 }
-
                 "GERMPLUGIN", "GERM" -> {
-                    info(("&e┣&7已选择萌芽UI &a√").colored())
-                    TODO()
+                    if (GermPluginPlugin.isEnabled) {
+                        info(("&e┣&7已选择萌芽UI &a√").colored())
+                        GermPluginUIManager()
+                    } else {
+                        info(("&e┣&7因为未检测到GermPlugin，已自动选择BUKKIT UI &a√").colored())
+                        BukkitUIManager()
+                    }
                 }
-
                 else -> error("未知的UI类型: $type")
             }
+        }
 
         @Reload(1)
         private fun reload() {

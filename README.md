@@ -1,8 +1,8 @@
 # Orryx
 
-[![pEFaJDs.png](https://s21.ax1x.com/2025/01/16/pEFaJDs.png)](https://imgse.com/i/pEFaJDs)
+![pEFaJDs.png](https://s21.ax1x.com/2025/01/16/pEFaJDs.png)
 
-![Static Badge](https://img.shields.io/badge/wiki-%E5%BC%80%E5%A7%8B%E4%BD%BF%E7%94%A8WIKI-darkred?style=flat-square&logo=circuitverse&logoColor=darkred&logoSize=auto&label=%E4%B8%AD%E6%96%87&link=https%3A%2F%2Fo0vvjwgpeju.feishu.cn%2Fdocx%2FT0g6dTDjMoxolhxuVSQc2cOYnLj%3Ffrom%3Dfrom_copylink)
+[![Static Badge](https://img.shields.io/badge/%E4%B8%AD%E6%96%87-%E5%BC%80%E5%A7%8B%E4%BD%BF%E7%94%A8WIKI-orryx?style=flat-square&logo=n8n&logoColor=darkred&color=darkred)](https://o0vvjwgpeju.feishu.cn/docx/T0g6dTDjMoxolhxuVSQc2cOYnLj?from=from_copylink)
 
 > 跨时代技能插件，支持实现复杂逻辑，为稳定高效而生。
 ## 构建发行版本

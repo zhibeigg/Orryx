@@ -12,9 +12,7 @@ import java.io.File
 
 internal fun files(path: String, vararg defs: String, callback: (File) -> Unit) {
     val file = File(getDataFolder(), path)
-    if (!file.exists()) {
-        defs.forEach { releaseResourceFile("$path/$it") }
-    }
+    defs.forEach { releaseResourceFile("$path/$it") }
     getFiles(file).forEach { callback(it) }
 }
 

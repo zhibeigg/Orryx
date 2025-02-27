@@ -26,13 +26,18 @@ object HookManager {
         ProtocolLibPlugin.load()
     }
 
-    class Plugin(val name: String) {
+    class Plugin(val name: String, val extensionFunction: () -> Unit = {}) {
 
         val isEnabled
             get() = Bukkit.getPluginManager().isPluginEnabled(name)
 
         fun load() {
-            console().sendLang(if (isEnabled) "hook-true" else "hook-false", name)
+            if (isEnabled) {
+                extensionFunction()
+                console().sendLang("hook-true", name)
+            } else {
+                console().sendLang("hook-false", name)
+            }
         }
 
     }

@@ -11,6 +11,9 @@ Group:
 CacheManager: "memory"
 # 多少Tick自然恢复法力值一次
 ManaReginTick: 20
+UI:
+  #bukkit/germplugin/dragoncore
+  use: "bukkit"
 # 持久存储数据库
 Database:
   # SQLLITE,MYSQL
