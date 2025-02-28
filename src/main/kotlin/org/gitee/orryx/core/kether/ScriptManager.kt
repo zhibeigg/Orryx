@@ -12,6 +12,7 @@ import taboolib.common.platform.event.SubscribeEvent
 import taboolib.library.kether.Parser.*
 import taboolib.library.kether.QuestAction
 import taboolib.library.kether.QuestReader
+import taboolib.module.database.Database
 import taboolib.module.kether.*
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -22,6 +23,14 @@ object ScriptManager {
     val runningScriptsMap by lazy { mutableMapOf<UUID, PlayerSkillsRunningSpace>() }
     val wikiActions by lazy { mutableMapOf<String, org.gitee.orryx.core.wiki.Action>() }
     private val scriptMap by lazy { ConcurrentHashMap<String, Script>() }
+
+    init {
+        Database.prepareClose {
+            runningScriptsMap.forEach {
+                it.value.terminateAll()
+            }
+        }
+    }
 
     @SubscribeEvent
     private fun quit(e: PlayerQuitEvent) {

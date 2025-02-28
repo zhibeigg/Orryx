@@ -25,16 +25,21 @@ import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.function.registerBukkitListener
 import taboolib.common.platform.function.submit
 import taboolib.module.configuration.Configuration
+import taboolib.module.database.Database
 
 class BukkitUIManager: IUIManager {
 
     init {
-        submit(period = 5) {
+        val task = submit(period = 5) {
             bukkitSkillHudMap.forEach {
                 it.value.forEach { map ->
                     map.value.update()
                 }
             }
+        }
+
+        Database.prepareClose {
+            task.cancel()
         }
 
         registerBukkitListener(PlayerItemHeldEvent::class.java, EventPriority.MONITOR) { e ->

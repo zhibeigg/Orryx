@@ -1,7 +1,8 @@
 # debug模式，后台看到插件运行状况
 Debug: false
 # 技能描述的二级预览中间分隔符
-DescriptionSplit: "&7→&r"
+# 分隔符前后将保证格式一致性
+DescriptionSplit: "&0→"
 # 注册技能组类型，只能切换以下技能组或其他插件注册的
 Group:
   - "爆发"

@@ -25,100 +25,114 @@ open class GermPluginSkillUI(override val viewer: Player, override val owner: Pl
     }
 
     override fun update() {
+        job.getBindSkills().forEach {
+            val bindKeyIcon = screen
+                    .pickPart<GermGuiScroll>("skillBindKeyScroll")
+                    .pickPart<GermGuiCanvas>("skillBindKey-canvas-${it.key.key}")
+                    .pickPart<GermGuiTexture>("skillBindKey-icon-${it.key.key}")
+            if (it.value != null) {
+                bindKeyIcon.path = path.replace("{skill}", it.value!!.key)
+                bindKeyIcon.enable = true
+            } else {
+                bindKeyIcon.enable = false
+            }
+        }
     }
 
     private lateinit var job: IPlayerJob
-    protected open var cursorSkill: IPlayerSkill? = null
+    private lateinit var path: String
 
+    protected open var cursorSkill: IPlayerSkill? = null
     protected open lateinit var screen: GermGuiScreen
 
     protected open fun build(job: IPlayerJob): GermGuiScreen {
         screen = GermGuiScreen.getGermGuiScreen("OrryxSkillUI", skillUIConfiguration)
         val skills = owner.getSkills()
 
-        val skillScroll = screen.getGuiPart("skillScroll") as GermGuiScroll
-        val skillBackgroundBase = skillScroll.getGuiPart("skillBackground") as GermGuiButton
-        val skillIconBase = skillScroll.getGuiPart("skillIcon") as GermGuiButton
+        val skillScroll = screen.pickPart<GermGuiScroll>("skillScroll")
+        val skillBackgroundBase = screen.pickPart<GermGuiButton>("skillBackground")
+        val skillIconBase = screen.pickPart<GermGuiButton>("skillIcon")
+        val skillListNameBase = screen.pickPart<GermGuiLabel>("skillListName")
 
-        val name = screen.getGuiPart("skillName") as GermGuiLabel
-        val description = screen.getGuiPart("skillDescription") as GermGuiLabel
+        val name = screen.pickPart<GermGuiLabel>("skillName")
+        val description = screen.pickPart<GermGuiLabel>("skillDescription")
 
-        val cursor = screen.getGuiPart("cursor") as GermGuiTexture
+        val cursor = screen.pickPart<GermGuiTexture>("cursor")
 
-        val skillBindKeyScroll = screen.getGuiPart("skillBindKeyScroll") as GermGuiScroll
-        val bindKeyBackgroundBase = screen.getGuiPart("skillBindKeyBackground") as GermGuiButton
-        val bindKeyLabelBase = screen.getGuiPart("skillBindKey") as GermGuiLabel
-        val bindKeyIconBase = screen.getGuiPart("skillBindKeyIcon") as GermGuiTexture
-        val path = cursor.path
+        val skillBindKeyScroll = screen.pickPart<GermGuiScroll>("skillBindKeyScroll")
+        val bindKeyBackgroundBase = screen.pickPart<GermGuiButton>("skillBindKeyBackground")
+        val bindKeyLabelBase = screen.pickPart<GermGuiLabel>("skillBindKey")
+        val bindKeyIconBase = screen.pickPart<GermGuiTexture>("skillBindKeyIcon")
+        path = cursor.path
 
         skills.forEach { skill ->
-            val background = GermGuiButton("skillIcon_background_${skill.key}").copyFrom(skillBackgroundBase)
-            val skillIcon = GermGuiButton("skillIcon_${skill.key}").copyFrom(skillIconBase)
+            val background = GermGuiButton("skillIcon-background-${skill.key}").copyFrom(skillBackgroundBase)
+            val skillIcon = GermGuiButton("skillIcon-${skill.key}").copyFrom(skillIconBase)
+            val skillListName = GermGuiLabel("skillListName-${skill.key}").copyFrom(skillListNameBase)
+
+            background.callback(GermGuiButton.EventType.LEFT_CLICK) { _, _ ->
+                name.setText(skill.skill.name)
+                description.setTexts(skill.getDescriptionComparison())
+            }
+            background.enable = true
 
             skillIcon.defaultPath = skillIcon.defaultPath.replace("{skill}", skill.key)
             skillIcon.hoverPath = skillIcon.hoverPath.replace("{skill}", skill.key)
-            background.registerCallbackHandler(
-                { _, _ ->
-                    name.setText(skill.skill.name)
-                    description.setTexts(skill.getDescriptionComparison())
-                },
-                GermGuiButton.EventType.LEFT_CLICK
-            )
-            skillIcon.registerCallbackHandler(
-                { _, _ ->
-                    cursorSkill = skill
-                    cursor.setPath(path.replace("{skill}", skill.key))
-                    cursor.enable = true
-                },
-                GermGuiButton.EventType.LEFT_CLICK,
-                GermGuiButton.EventType.RIGHT_CLICK
-            )
-            val canvas = GermGuiCanvas("skillIcon_canvas_${skill.key}")
-            canvas.width = skillBackgroundBase.width
-            canvas.height = skillBackgroundBase.height
+            skillIcon.callback(GermGuiButton.EventType.LEFT_CLICK, GermGuiButton.EventType.RIGHT_CLICK) { _, _ ->
+                cursorSkill = skill
+                cursor.setPath(path.replace("{skill}", skill.key))
+                cursor.enable = true
+            }
+            skillIcon.enable = true
+
+            skillListName.setText(skill.skill.name)
+            skillListName.enable = true
+
+            val canvas = GermGuiCanvas("skillIcon-canvas-${skill.key}")
+            canvas.width = "%${screen.guiName}_${skillScroll.indexName}$${canvas.indexName}$${background.indexName}_width%"
+            canvas.height = "%${screen.guiName}_${skillScroll.indexName}$${canvas.indexName}$${background.indexName}_height%"
+            canvas.enable = true
+
             canvas.addGuiPart(background)
             canvas.addGuiPart(skillIcon)
+            canvas.addGuiPart(skillListName)
             skillScroll.addGuiPart(canvas)
         }
+        skillScroll.enable = true
+
         val bind = job.getBindSkills()
         bindKeys().forEach {
-            val bindBackground = GermGuiButton("skillBindKey_background_${it.key}").copyFrom(bindKeyBackgroundBase)
-            val bindKeyLabel = GermGuiLabel("skillBindKey_label_${it.key}").copyFrom(bindKeyLabelBase)
-            val bindKeyIcon = GermGuiTexture("skillBindKey_icon_${it.key}").copyFrom(bindKeyIconBase)
+            val bindKeyBackground = GermGuiButton("skillBindKey-background-${it.key}").copyFrom(bindKeyBackgroundBase)
+            val bindKeyLabel = GermGuiLabel("skillBindKey-label-${it.key}").copyFrom(bindKeyLabelBase)
+            val bindKeyIcon = GermGuiTexture("skillBindKey-icon-${it.key}").copyFrom(bindKeyIconBase)
 
-            bindBackground.registerCallbackHandler(
-                { _, _ ->
-                    if (cursorSkill != null) {
-                        if (bindSkill(job, cursorSkill!!.key, job.group, it.key)) {
-                            cursorSkill = null
-                            cursor.enable = false
-                            bindKeyIcon.path = bindKeyIconBase.path.replace("{skill}", cursorSkill!!.key)
-                            bindKeyIcon.enable = true
-                        }
+            bindKeyBackground.callback(GermGuiButton.EventType.LEFT_CLICK) { _, _ ->
+                if (cursorSkill != null) {
+                    if (bindSkill(job, cursorSkill!!.key, job.group, it.key)) {
+                        update()
+                        cursorSkill = null
+                        cursor.enable = false
                     }
-                },
-                GermGuiButton.EventType.LEFT_CLICK
-            )
-            bindBackground.registerCallbackHandler(
-                { _, _ ->
-                    if (cursorSkill != null) {
-                        if (bindSkill(job, cursorSkill!!.key, job.group, it.key)) {
-                            cursorSkill = null
-                            cursor.enable = false
-                            bindKeyIcon.path = bindKeyIconBase.path.replace("{skill}", cursorSkill!!.key)
-                            bindKeyIcon.enable = true
-                        }
-                    } else {
-                        if (unBindSkill(job, job.group, it.key)) {
-                            bindKeyIcon.enable = false
-                        }
+                }
+            }
+            bindKeyBackground.callback(GermGuiButton.EventType.RIGHT_CLICK) { _, _ ->
+                if (cursorSkill != null) {
+                    if (bindSkill(job, cursorSkill!!.key, job.group, it.key)) {
+                        update()
+                        cursorSkill = null
+                        cursor.enable = false
                     }
-                },
-                GermGuiButton.EventType.RIGHT_CLICK
-            )
+                } else {
+                    val skill = job.getBindSkills()[it] ?: return@callback
+                    if (unBindSkill(job, skill.key, job.group)) {
+                        bindKeyIcon.enable = false
+                    }
+                }
+            }
+            bindKeyBackground.enable = true
+
             bindKeyLabel.setText(it.key)
-
-            val canvas = GermGuiCanvas("skillBindKey_canvas_${it.key}")
+            bindKeyLabel.enable = true
 
             val skill = bind[it]
             if (bind[it] != null) {
@@ -126,11 +140,17 @@ open class GermPluginSkillUI(override val viewer: Player, override val owner: Pl
                 bindKeyIcon.enable = true
             }
 
-            canvas.addGuiPart(bindBackground)
+            val canvas = GermGuiCanvas("skillBindKey-canvas-${it.key}")
+            canvas.width = "%${screen.guiName}_${skillBindKeyScroll.indexName}$${canvas.indexName}$${bindKeyBackground.indexName}_width%"
+            canvas.height = "%${screen.guiName}_${skillBindKeyScroll.indexName}$${canvas.indexName}$${bindKeyBackground.indexName}_height%"
+            canvas.addGuiPart(bindKeyBackground)
             canvas.addGuiPart(bindKeyLabel)
             canvas.addGuiPart(bindKeyIcon)
+            canvas.enable = true
+
             skillBindKeyScroll.addGuiPart(canvas)
         }
+        skillBindKeyScroll.enable = true
         screen.removeGuiPart(skillBackgroundBase)
         screen.removeGuiPart(skillIconBase)
 

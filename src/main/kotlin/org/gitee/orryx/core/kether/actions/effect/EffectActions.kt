@@ -385,6 +385,7 @@ object EffectActions {
                                         viewers
                                     )
                                     spawner.start()
+                                    addClosable(AutoCloseable { spawner.stop() })
                                     future.complete(spawner)
                                 }
                             }

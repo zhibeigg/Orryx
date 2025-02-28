@@ -26,4 +26,14 @@ class PlayerSkillsRunningSpace(val player: Player) {
         }
     }
 
+    fun terminateAll() {
+        skillRunningSpaceMap.forEach {
+            it.value.terminate()
+        }
+    }
+
+    fun terminate(skill: String) {
+        skillRunningSpaceMap[skill]?.terminate()
+    }
+
 }

@@ -58,13 +58,14 @@ object SelectorActions {
             run(timeout).long { timeout ->
                 run(they).str { they ->
                     var time = 0
-                    submitAsync(period = 5) {
+                    val task = submitAsync(period = 5) {
                         if (time * 5 >= timeout) {
                             cancel()
                         }
                         StringParser(they).showAFrame(script())
                         time ++
                     }
+                    addClosable(AutoCloseable { task.cancel() })
                 }
             }
         }

@@ -1,23 +1,49 @@
 package org.gitee.orryx.utils
 
-import org.gitee.orryx.compat.HookManager
+import org.bukkit.Bukkit
+import taboolib.common.platform.function.console
+import taboolib.module.lang.sendLang
 
-val AdyeshachPlugin = HookManager.Plugin("Adyeshach")
+class Plugin(val name: String, val extensionFunction: () -> Unit = {}) {
 
-val DragonCorePlugin = HookManager.Plugin("DragonCore")
+    val isEnabled
+        get() = Bukkit.getPluginManager().isPluginEnabled(name)
 
-val DragonArmourersPlugin = HookManager.Plugin("DragonArmourers")
+    fun load() {
+        if (isEnabled) {
+            extensionFunction()
+            console().sendLang("hook-true", name)
+        } else {
+            console().sendLang("hook-false", name)
+        }
+    }
 
-val GermPluginPlugin = HookManager.Plugin("GermPlugin")
+}
 
-val MythicMobsPlugin = HookManager.Plugin("MythicMobs")
+val AdyeshachPlugin = Plugin("Adyeshach")
 
-val RedisChannelPlugin = HookManager.Plugin("RedisChannel")
+val DragonCorePlugin = Plugin("DragonCore")
 
-val OriginAttributePlugin = HookManager.Plugin("OriginAttribute")
+val DragonArmourersPlugin = Plugin("DragonArmourers")
 
-val AttributePlusPlugin = HookManager.Plugin("AttributePlus")
+val GermPluginPlugin = Plugin("GermPlugin")
 
-val PacketEventsPlugin = HookManager.Plugin("packetevents")
+val MythicMobsPlugin = Plugin("MythicMobs")
 
-val ProtocolLibPlugin = HookManager.Plugin("ProtocolLib")
+val RedisChannelPlugin = Plugin("RedisChannel")
+
+val OriginAttributePlugin = Plugin("OriginAttribute")
+
+val AttributePlusPlugin = Plugin("AttributePlus")
+
+val PacketEventsPlugin = Plugin("packetevents")
+
+val ProtocolLibPlugin = Plugin("ProtocolLib")
+
+val GDDTitlePlugin = Plugin("GDDTitle")
+
+val PlaceholderAPIPlugin = Plugin("PlaceholderAPI")
+
+val GlowAPIPlugin = Plugin("GlowAPI")
+
+val DungeonPlusPlugin = Plugin("DungeonPlus")

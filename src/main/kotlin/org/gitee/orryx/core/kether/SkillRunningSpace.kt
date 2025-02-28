@@ -18,4 +18,10 @@ class SkillRunningSpace(val skill: String, val ketherScript: IKetherScript) {
         return runningScriptContexts.isEmpty()
     }
 
+    fun terminate() {
+        runningScriptContexts.forEach {
+            it.terminate()
+        }
+    }
+
 }
