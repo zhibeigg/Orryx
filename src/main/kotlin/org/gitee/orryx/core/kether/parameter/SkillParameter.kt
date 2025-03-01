@@ -19,7 +19,7 @@ class SkillParameter(val skill: String?, val player: Player, var level: Int = 1)
 
     private val proxyCommandSender by lazy { adaptPlayer(player) }
 
-    private val lazies by lazy { mutableMapOf<String, Any?>() }
+    private val lazies by lazy { hashMapOf<String, Any?>() }
 
     fun getSkill(): ISkill? {
         return skill?.let { SkillLoaderManager.getSkillLoader(skill) }

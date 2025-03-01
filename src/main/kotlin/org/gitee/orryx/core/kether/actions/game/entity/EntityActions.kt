@@ -4,6 +4,7 @@ import org.bukkit.entity.EntityType
 import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
 import org.gitee.orryx.api.adapters.vector.AbstractVector
 import org.gitee.orryx.core.container.Container
+import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.core.wiki.Action
@@ -69,13 +70,13 @@ object EntityActions {
                                                     .build() as AbstractBukkitEntity
                                             }.toMutableSet()
                                         )
-                                        val list = container.targets.mapNotNull { iTarget -> (iTarget.getSource() as? AbstractBukkitEntity) }
-                                        addClosable(AutoCloseable { list.forEach { entity ->
-                                            EntityBuilder.taskMap.remove(entity.uniqueId)?.cancel()
-                                            if (entity.isValid) {
-                                                entity.remove()
+                                        when(val param = script().getParameter()) {
+                                            is SkillParameter -> param.player.addCloseable(script(), param.skill!!) {
+                                                container.forEachInstance<ITargetEntity<*>> { target ->
+                                                    target.entity.remove()
+                                                }
                                             }
-                                        } })
+                                        }
                                         future.complete(container)
                                     }
                                 }

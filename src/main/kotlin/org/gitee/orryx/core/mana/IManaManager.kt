@@ -9,7 +9,6 @@ import taboolib.common.platform.Awake
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.submit
 import taboolib.common.platform.service.PlatformExecutor
-import taboolib.module.database.Database
 import taboolib.platform.util.onlinePlayers
 
 interface IManaManager {
@@ -32,9 +31,10 @@ interface IManaManager {
                     INSTANCE.reginMana(it)
                 }
             }
-            Database.prepareClose {
-                thread?.cancel()
-            }
+        }
+
+        internal fun closeThread() {
+            thread?.cancel()
         }
 
     }

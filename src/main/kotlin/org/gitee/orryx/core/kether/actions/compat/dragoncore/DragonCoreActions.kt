@@ -16,7 +16,7 @@ import java.util.*
 
 object DragonCoreActions {
 
-    private val armourersMap = mutableMapOf<UUID, MutableList<String>>()
+    private val armourersMap by lazy { hashMapOf<UUID, MutableList<String>>() }
 
     @Ghost
     @SubscribeEvent
@@ -63,7 +63,7 @@ object DragonCoreActions {
                                 run(timeout).long { timeout ->
                                     containerOrSelf(container) { container ->
                                         container.forEachInstance<PlayerTarget> { player ->
-                                            armourersMap.computeIfAbsent(player.uniqueId) { mutableListOf() }.add(armourers)
+                                            armourersMap.getOrPut(player.uniqueId) { mutableListOf() }.add(armourers)
                                             DragonAPI.updatePlayerSkin(player.getSource())
                                             SimpleTimeoutTask.createSimpleTask(timeout) {
                                                 if (armourersMap.containsKey(player.uniqueId)) {

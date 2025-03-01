@@ -7,16 +7,12 @@ import org.bukkit.event.inventory.InventoryDragEvent
 import org.bukkit.event.player.PlayerItemHeldEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
-import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillBindKeyEvent
-import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillCooldownEvents
-import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillUnBindKeyEvent
 import org.gitee.orryx.core.key.BindKeyLoaderManager.getBindKey
 import org.gitee.orryx.core.ui.ISkillHud
 import org.gitee.orryx.core.ui.ISkillUI
 import org.gitee.orryx.core.ui.IUIManager
 import org.gitee.orryx.core.ui.bukkit.BukkitSkillHud.Companion.bukkitSkillHudMap
 import org.gitee.orryx.core.ui.bukkit.BukkitSkillHud.Companion.getViewerHud
-import org.gitee.orryx.core.ui.bukkit.BukkitSkillHud.Companion.skillCooldownMap
 import org.gitee.orryx.core.ui.bukkit.BukkitSkillHud.Companion.slotIndex
 import org.gitee.orryx.core.ui.bukkit.BukkitSkillHud.Companion.slots
 import org.gitee.orryx.utils.loadFromFile
@@ -52,50 +48,10 @@ class BukkitUIManager: IUIManager {
             }
         }
 
-        registerBukkitListener(OrryxPlayerSkillCooldownEvents.Set::class.java, EventPriority.MONITOR) { e ->
-            if (e.isCancelled) return@registerBukkitListener
-            val cooldownMap = skillCooldownMap.getOrPut(e.player.uniqueId) { mutableMapOf() }
-            val iterator = cooldownMap.iterator()
-            while (iterator.hasNext()) {
-                val entry = iterator.next()
-                if (entry.value.isOver(e.player)) {
-                    iterator.remove()
-                }
-            }
-            cooldownMap[e.skill.key] = BukkitSkillHud.Companion.Cooldown(e.skill.key, e.amount).apply { update(e.player) }
-        }
-
-        registerBukkitListener(OrryxPlayerSkillCooldownEvents.Increase::class.java, EventPriority.MONITOR) { e ->
-            if (e.isCancelled) return@registerBukkitListener
-            val cooldownMap = skillCooldownMap.getOrPut(e.player.uniqueId) { mutableMapOf() }
-            cooldownMap[e.skill.key]?.update(e.player)
-        }
-
-        registerBukkitListener(OrryxPlayerSkillCooldownEvents.Reduce::class.java, EventPriority.MONITOR) { e ->
-            if (e.isCancelled) return@registerBukkitListener
-            val cooldownMap = skillCooldownMap.getOrPut(e.player.uniqueId) { mutableMapOf() }
-            cooldownMap[e.skill.key]?.update(e.player)
-        }
-
-        registerBukkitListener(OrryxPlayerSkillBindKeyEvent::class.java, EventPriority.MONITOR) { e ->
-            if (e.isCancelled) return@registerBukkitListener
-            bukkitSkillHudMap[e.player.uniqueId]?.forEach {
-                it.value.update()
-            }
-        }
-
-        registerBukkitListener(OrryxPlayerSkillUnBindKeyEvent::class.java, EventPriority.MONITOR) { e ->
-            if (e.isCancelled) return@registerBukkitListener
-            bukkitSkillHudMap[e.player.uniqueId]?.forEach {
-                it.value.update()
-            }
-        }
-
         registerBukkitListener(PlayerQuitEvent::class.java) { e ->
             bukkitSkillHudMap.remove(e.player.uniqueId)?.forEach {
                 it.value.close()
             }
-            skillCooldownMap.remove(e.player.uniqueId)
         }
 
         registerBukkitListener(InventoryClickEvent::class.java) { e ->

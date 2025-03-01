@@ -1,14 +1,12 @@
 package org.gitee.orryx.core.kether.actions
 
 import org.gitee.orryx.core.kether.ScriptManager.scriptParser
+import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.presets.SelectorPresetsLoaderManager
 import org.gitee.orryx.core.wiki.Action
 import org.gitee.orryx.core.wiki.Type
-import org.gitee.orryx.utils.ORRYX_NAMESPACE
-import org.gitee.orryx.utils.nextTheyContainer
-import org.gitee.orryx.utils.readContainer
-import org.gitee.orryx.utils.runSubScript
+import org.gitee.orryx.utils.*
 import taboolib.common.platform.function.submitAsync
 import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*
@@ -59,13 +57,13 @@ object SelectorActions {
                 run(they).str { they ->
                     var time = 0
                     val task = submitAsync(period = 5) {
-                        if (time * 5 >= timeout) {
-                            cancel()
-                        }
+                        if (time * 5 >= timeout) cancel()
                         StringParser(they).showAFrame(script())
-                        time ++
+                        time++
                     }
-                    addClosable(AutoCloseable { task.cancel() })
+                    when(val param = script().getParameter()) {
+                        is SkillParameter -> param.player.addCloseable(script(), param.skill!!) { task.cancel() }
+                    }
                 }
             }
         }

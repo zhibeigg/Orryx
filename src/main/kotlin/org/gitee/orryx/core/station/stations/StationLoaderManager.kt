@@ -33,8 +33,8 @@ import taboolib.module.kether.printKetherErrorMessage
 @Awake
 object StationLoaderManager: ClassVisitor(1) {
 
-    private val triggers by lazy { mutableMapOf<String, IStationTrigger<*>>() }
-    private val stationMap by lazy { mutableMapOf<String, IStation>() }
+    private val triggers by lazy { hashMapOf<String, IStationTrigger<*>>() }
+    private val stationMap by lazy { hashMapOf<String, IStation>() }
     private val listenerList by lazy { mutableListOf<ProxyListener>() }
 
     override fun getLifeCycle(): LifeCycle {

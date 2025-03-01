@@ -19,7 +19,7 @@ abstract class AbstractDamageEvent(
     var type: DamageType
 ) : BukkitProxyEvent() {
 
-    val data = mutableMapOf<String, Any>()
+    val data by lazy { mutableMapOf<String, Any>() }
 
     val damage: Double
         get() = when {

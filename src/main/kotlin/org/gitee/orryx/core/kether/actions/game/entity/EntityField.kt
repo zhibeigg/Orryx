@@ -70,7 +70,6 @@ enum class EntityField(val get: IEntity.() -> Any?) {
 
     companion object {
 
-        @OptIn(ExperimentalStdlibApi::class)
         fun fields(): List<String> {
             return entries.map { it.name.lowercase(Locale.getDefault()) }
         }

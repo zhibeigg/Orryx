@@ -121,7 +121,7 @@ object LarkSuite {
 
     private suspend fun createDocumentBlocks(documentId: String, chain: Chain<*>) {
         val group = ScriptManager.wikiActions.values.groupBy { it.group }
-        debug(group.mapValues { it.value.map { it.name } })
+        debug(group.mapValues { it.value.map { action -> action.name } })
         createPs(documentId, chain)
         group.forEach { (g, u) ->
             createGroup(g, u, documentId, chain)

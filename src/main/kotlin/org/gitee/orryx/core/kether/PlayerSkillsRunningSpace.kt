@@ -5,7 +5,7 @@ import taboolib.module.kether.ScriptContext
 
 class PlayerSkillsRunningSpace(val player: Player) {
 
-    private val skillRunningSpaceMap = mutableMapOf<String, SkillRunningSpace>()
+    private val skillRunningSpaceMap by lazy { hashMapOf<String, SkillRunningSpace>() }
 
     fun invoke(context: ScriptContext, ketherScript: KetherScript, skill: String) {
         val runningSpace = skillRunningSpaceMap[skill]
@@ -24,6 +24,10 @@ class PlayerSkillsRunningSpace(val player: Player) {
                 skillRunningSpaceMap.remove(skill)
             }
         }
+    }
+
+    fun addCloseable(context: ScriptContext, skill: String, closeable: AutoCloseable) {
+        skillRunningSpaceMap[skill]?.addCloseable(context, closeable)
     }
 
     fun terminateAll() {

@@ -43,6 +43,7 @@ object PluginMessageHandler {
         data object AimResponse : PacketType(4)
         data object Flicker : PacketType(5)
         data object PressAimRequest : PacketType(6)
+        data object MouseRequest : PacketType(7)
     }
 
     @Awake(LifeCycle.ENABLE)
@@ -203,6 +204,17 @@ object PluginMessageHandler {
             writeUTF(player.uniqueId.toString())
             writeLong(duration)
             writeFloat(alpha)
+        }
+    }
+
+    /**
+     * 设置鼠标状态
+     * @param player 玩家
+     * @param show 是否呼出
+     */
+    fun applyMouseCursor(player: Player, show: Boolean) {
+        sendDataPacket(player, PacketType.MouseRequest) {
+            writeBoolean(show)
         }
     }
 

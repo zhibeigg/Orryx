@@ -1,11 +1,15 @@
 package org.gitee.orryx.core.kether.actions
 
 import org.gitee.orryx.core.kether.ScriptManager.combinationParser
+import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.station.pipe.PipeBuilder
 import org.gitee.orryx.core.wiki.Action
 import org.gitee.orryx.core.wiki.Type
+import org.gitee.orryx.utils.addCloseable
+import org.gitee.orryx.utils.getParameter
 import taboolib.module.kether.KetherParser
 import taboolib.module.kether.run
+import taboolib.module.kether.script
 import java.util.*
 
 object PipeActions {
@@ -71,7 +75,9 @@ object PipeActions {
                     }
                 }
                 val task = pipe.build()
-                addClosable(AutoCloseable { task.broke() })
+                when(val param = script().getParameter()) {
+                    is SkillParameter -> param.player.addCloseable(script(), param.skill!!) { task.broke() }
+                }
                 task.result
             }
         }

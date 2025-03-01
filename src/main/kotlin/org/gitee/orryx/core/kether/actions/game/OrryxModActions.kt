@@ -62,4 +62,23 @@ object OrryxModActions {
         }
     }
 
+    @KetherParser(["mouse"], namespace = ORRYX_NAMESPACE, shared = true)
+    private fun actionMouse() = combinationParser(
+        Action.new("Orryx Mod额外功能", "设置是否呼出鼠标", "mouse", true)
+            .description("设置是否呼出鼠标")
+            .addEntry("是否呼出", Type.BOOLEAN, false)
+            .addContainerEntry(optional = true, default = "@self")
+    ) {
+        it.group(
+            bool(),
+            theyContainer(true)
+        ).apply(it) { show, container ->
+            now {
+                container.orElse(self()).forEachInstance<PlayerTarget> { player ->
+                    PluginMessageHandler.applyMouseCursor(player.getSource(), show)
+                }
+            }
+        }
+    }
+
 }

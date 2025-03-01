@@ -1,0 +1,74 @@
+OrryxSkillHUD:
+  options:
+    startY: "center"
+    width: "%OrryxSkillHUD_background_width%"
+    height: "%OrryxSkillHUD_background_height%"
+    drag:
+      locationX: "0"
+      locationY: "0"
+      width: "%OrryxSkillHUD_canvas$background-left_width%+%OrryxSkillHUD_canvas$background-center_width%+%OrryxSkillHUD_canvas$background-right_width%"
+      height: "%OrryxSkillHUD_canvas$background-left_height%"
+  canvas:
+    type: canvas
+    width: "%OrryxSkillHUD_canvas$background-left_width%+%OrryxSkillHUD_canvas$background-center_width%+%OrryxSkillHUD_canvas$background-right_width%"
+    height: "%OrryxSkillHUD_canvas$background-left_height%"
+    layout:
+      type: FLOW
+      gapX: "0"
+      gapY: "0"
+    relativeParts:
+      background-left:
+        type: texture
+        path: "textures/orryx/url<->https://img.picgo.net/2025/03/01/hud6d926a8d7ba976e0.png"
+        tooltip:
+          - "&c左键&f点击拖动"
+        width: tw1
+        height: th1
+      background-center:
+        type: texture
+        path: "textures/orryx/url<->https://img.picgo.net/2025/03/01/hud52216d64b922a5b3.png"
+        tooltip:
+          - "&c左键&f点击拖动"
+        width: tw1
+        height: th1
+      background-right:
+        type: texture
+        path: "textures/orryx/url<->https://img.picgo.net/2025/03/01/hud49c7f0823d7d08b6.png"
+        tooltip:
+          - "&c左键&f点击拖动"
+        width: tw1
+        height: th1
+  ####################################
+  # 此处为技能绑定背景组件的基础模板，实际上在滚动组件的子画布中
+  skillBindKeyBackground:
+    type: texture
+    path: "textures/orryx/url<->https://img.picgo.net/2025/02/28/2f6899ecb93b6ed58ea69e1a0eb9e4df0ecf6ba62cbffdf6.png"
+    width: tw1
+    height: th1
+    enable: false
+  # 此处为技能绑定按键组件的基础模板，实际上在滚动组件的子画布中
+  skillBindKey:
+    type: label
+    align: "center"
+    scale: '1'
+    locationX: "11.5"
+    locationY: "19.5"
+    enable: false
+  # 此处为技能绑定图标组件的基础模板，实际上在滚动组件的子画布中
+  skillBindKeyIcon:
+    type: texture
+    locationX: "2"
+    locationY: "2"
+    path: "textures/orryx/skills/{skill}.png"
+    width: 18
+    height: 18
+    enable: false
+  ####################################
+  skillBindCanvas:
+    type: canvas
+    locationX: "6"
+    locationY: "10"
+    layout:
+      type: FLOW
+      gapX: "5"
+      gapY: "0"

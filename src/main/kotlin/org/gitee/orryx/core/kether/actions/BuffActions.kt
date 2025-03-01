@@ -24,8 +24,8 @@ import kotlin.collections.set
 
 object BuffActions {
 
-    private val buffMap = mutableMapOf<String, Buff>()
-    private val playerBuffMap = mutableMapOf<UUID, MutableMap<String, PlayerBuff>>()
+    private val buffMap by lazy { hashMapOf<String, Buff>() }
+    private val playerBuffMap by lazy { hashMapOf<UUID, MutableMap<String, PlayerBuff>>() }
 
     class Buff(val key: String, description: List<String>) {
 
@@ -73,7 +73,7 @@ object BuffActions {
         val buff = buffMap[name] ?: return
         playerBuffMap.putIfAbsent(
             player.uniqueId,
-            mutableMapOf(name to PlayerBuff(player, buff, timeout).register() as PlayerBuff)
+            hashMapOf(name to PlayerBuff(player, buff, timeout).register() as PlayerBuff)
         )
         if (DragonCorePlugin.isEnabled) {
             sendBuffDragonCore(player, buff, timeout)

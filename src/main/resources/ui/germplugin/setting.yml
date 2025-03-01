@@ -1,2 +1,7 @@
 # 组合键衔接时间(毫秒)，0的话要同时按下
 keyTime: 100
+# 是否需要按顺序按下组合键
+KeySort: false
+# 按下时触发技能还是抬起时触发
+# press/release
+ActionType: release

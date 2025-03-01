@@ -7,16 +7,21 @@ DescriptionSplit: "&0→"
 Group:
   - "爆发"
   - "持久"
+# ！修改后需要重启
 # 缓存管理器：redis/memory
 # redis需要安装RedisChannel插件
 CacheManager: "memory"
 # 多少Tick自然恢复法力值一次
 ManaReginTick: 20
+# 是否取消饱食度
+disableHunger: false
 UI:
-  #bukkit/germplugin/dragoncore
+  # ！修改后需要重启
+  # bukkit/germplugin/dragoncore
   use: "bukkit"
 # 持久存储数据库
 Database:
+  # ！修改后需要重启
   # SQLLITE,MYSQL
   use: SQLLITE
   sql:

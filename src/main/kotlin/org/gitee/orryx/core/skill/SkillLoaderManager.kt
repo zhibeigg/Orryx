@@ -17,7 +17,7 @@ import taboolib.module.kether.printKetherErrorMessage
 
 object SkillLoaderManager {
 
-    private val skillMap by lazy { mutableMapOf<String, ISkill>() }
+    private val skillMap by lazy { hashMapOf<String, ISkill>() }
 
     internal fun getSkillLoader(key: String): ISkill? {
         return skillMap[key]

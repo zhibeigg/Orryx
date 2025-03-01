@@ -220,3 +220,7 @@ internal fun ScriptContext.vector(key: String, def: IVector? = null): IVector? {
         else -> def
     }
 }
+
+internal fun Player.addCloseable(context: ScriptContext, skill: String, autoCloseable: AutoCloseable) {
+    ScriptManager.runningScriptsMap[uniqueId]?.addCloseable(context, skill, autoCloseable)
+}

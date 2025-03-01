@@ -9,7 +9,7 @@ import java.util.*
 
 object PlayerProfileManager {
 
-    private val playerProfileMap by lazy { mutableMapOf<UUID, IPlayerProfile>() }
+    private val playerProfileMap by lazy { HashMap<UUID, IPlayerProfile>() }
 
     @SubscribeEvent
     private fun quit(e: PlayerQuitEvent) {
@@ -20,11 +20,11 @@ object PlayerProfileManager {
         playerProfileMap[uniqueId]?.let { return it }
         playerData()?.let { PlayerProfile(this, it.job, it.point, it.flags.mapNotNull { (key, value) ->
             value.toFlag()?.let { key to it }
-        }.toMap(mutableMapOf())) }?.let {
+        }.toMap(HashMap())) }?.let {
             playerProfileMap[uniqueId] = it
             return it
         }
-        PlayerProfile(this, null, 0, mutableMapOf()).let {
+        PlayerProfile(this, null, 0, HashMap()).let {
             playerProfileMap[uniqueId] = it
             return it
         }

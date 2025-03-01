@@ -24,7 +24,7 @@ class EntityBuilder {
 
     companion object {
 
-        val taskMap by lazy { mutableMapOf<UUID, PlatformExecutor.PlatformTask>() }
+        val taskMap by lazy { hashMapOf<UUID, PlatformExecutor.PlatformTask>() }
 
     }
 

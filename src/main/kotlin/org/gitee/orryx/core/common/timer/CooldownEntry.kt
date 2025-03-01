@@ -1,4 +1,4 @@
-package org.gitee.orryx.core.common
+package org.gitee.orryx.core.common.timer
 
 class CooldownEntry(
     val tag: String,
@@ -12,6 +12,9 @@ class CooldownEntry(
 
     val countdown: Long
         get() = (remaining + timeStamp - System.currentTimeMillis()).coerceAtLeast(0)
+
+    val overStamp: Long
+        get() = timeStamp + remaining
 
     val isReady: Boolean
         get() = countdown <= 0

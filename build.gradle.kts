@@ -163,14 +163,39 @@ publishing {
     }
 }
 
-tasks.dokkaHtml.configure {
-    // 导出的文档目录路径
-    outputDirectory.set(File("${build}/doc"))
+tasks.dokkaHtml {
+    // 配置输出目录
+    outputDirectory.set(file("${build}/doc"))
+    // 配置模块名称
+    moduleName.set("Orryx")
+    // 禁用自动生成文档链接
+    suppressObviousFunctions.set(false)
     dokkaSourceSets {
         named("main") {
-            configureEach {
-                platform.set(org.jetbrains.dokka.Platform.jvm)
-                jdkVersion.set(8)
+            // 配置源代码链接（GitHub）
+            sourceLink {
+                localDirectory.set(file("src/main/kotlin"))
+                remoteUrl.set(uri("https://github.com/zhibeigg/Orryx/tree/master/src/main/kotlin").toURL())
+                remoteLineSuffix.set("#L")
+            }
+            // 添加外部文档链接（如 JDK）
+            externalDocumentationLink {
+                url.set(uri("https://docs.oracle.com/javase/8/docs/api/").toURL())
+                packageListUrl.set(uri("https://docs.oracle.com/javase/8/docs/api/package-list").toURL())
+            }
+        }
+        configureEach {
+            // 包含/排除包
+            includeNonPublic.set(true)
+            skipDeprecated.set(true)
+            reportUndocumented.set(true)
+
+            platform.set(org.jetbrains.dokka.Platform.jvm)
+            jdkVersion.set(8)
+
+            perPackageOption {
+                matchingRegex.set(".*internal.*")
+                suppress.set(true) // 隐藏 internal API
             }
         }
     }

@@ -14,7 +14,7 @@ object SelectorPresetsLoaderManager {
     lateinit var selectors: ConfigFile
         private set
 
-    private val selectorPresets by lazy { mutableMapOf<String, PresetsLoader>() }
+    private val selectorPresets by lazy { hashMapOf<String, PresetsLoader>() }
 
     internal fun getSelectorPreset(key: String): PresetsLoader? {
         return selectorPresets[key]

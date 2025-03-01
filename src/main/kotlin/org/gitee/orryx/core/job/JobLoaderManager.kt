@@ -10,7 +10,7 @@ import taboolib.module.configuration.Configuration
 
 object JobLoaderManager {
 
-    private val jobLoaderMap by lazy { mutableMapOf<String, IJob>() }
+    private val jobLoaderMap by lazy { hashMapOf<String, IJob>() }
 
     internal fun getJobLoader(job: String): IJob? {
         return jobLoaderMap[job]

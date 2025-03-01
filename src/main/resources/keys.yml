@@ -1,5 +1,6 @@
 # 原版可使用MC1,MC2,MC3,MC4,MC5,MC6,MC7,MC8,MC9
 # 代表1-9格的快捷键
+# 萌芽只需要写KEY_后面的按键名，大小写不敏感
 Keys:
   R:
     sort: 0
@@ -13,3 +14,5 @@ Keys:
     sort: 4
   V:
     sort: 5
+  G+F:
+    sort: 6

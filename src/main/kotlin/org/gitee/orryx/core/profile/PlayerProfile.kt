@@ -3,6 +3,7 @@ package org.gitee.orryx.core.profile
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.events.player.OrryxPlayerPointEvents
 import org.gitee.orryx.api.events.player.job.OrryxPlayerJobChangeEvent
+import org.gitee.orryx.core.GameManager
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.dao.cache.ICacheManager
 import org.gitee.orryx.dao.pojo.PlayerData
@@ -109,7 +110,7 @@ class PlayerProfile(override val player: Player, private var privateJob: String?
 
     override fun save(async: Boolean) {
         val data = createDaoData()
-        if (async) {
+        if (async && !GameManager.shutdown) {
             submitAsync {
                 IStorageManager.INSTANCE.savePlayerData(player.uniqueId, data)
                 ICacheManager.INSTANCE.savePlayerData(player.uniqueId, data, false)

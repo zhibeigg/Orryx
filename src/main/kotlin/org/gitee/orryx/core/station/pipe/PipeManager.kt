@@ -13,8 +13,8 @@ import java.util.*
 
 object PipeManager: ClassVisitor(1) {
 
-    private val triggers = mutableMapOf<String, IPipeTrigger<*>>()
-    private val pipeTaskMap = mutableMapOf<UUID, IPipeTask>()
+    private val triggers by lazy { hashMapOf<String, IPipeTrigger<*>>() }
+    private val pipeTaskMap by lazy { hashMapOf<UUID, IPipeTask>() }
 
     override fun getLifeCycle(): LifeCycle {
         return LifeCycle.ENABLE

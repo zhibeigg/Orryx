@@ -10,7 +10,7 @@ import taboolib.module.configuration.Configuration
 
 object ExperienceLoaderManager {
 
-    private val experienceLoaderMap by lazy { mutableMapOf<String, ExperienceLoader>() }
+    private val experienceLoaderMap by lazy { hashMapOf<String, ExperienceLoader>() }
 
     internal fun getExperience(key: String): IExperience? {
         return experienceLoaderMap[key]

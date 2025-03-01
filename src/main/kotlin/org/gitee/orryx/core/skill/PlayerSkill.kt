@@ -3,6 +3,7 @@ package org.gitee.orryx.core.skill
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillCastEvents
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillLevelEvents
+import org.gitee.orryx.core.GameManager
 import org.gitee.orryx.core.common.timer.SkillTimer
 import org.gitee.orryx.core.kether.parameter.IParameter
 import org.gitee.orryx.core.kether.parameter.SkillParameter
@@ -120,7 +121,7 @@ class PlayerSkill(
 
     override fun save(async: Boolean) {
         val data = createDaoData()
-        if (async) {
+        if (async && !GameManager.shutdown) {
             submitAsync {
                 IStorageManager.INSTANCE.savePlayerSkill(player.uniqueId, data)
                 ICacheManager.INSTANCE.savePlayerSkill(player.uniqueId, data, false)

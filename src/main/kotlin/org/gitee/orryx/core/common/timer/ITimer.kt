@@ -1,6 +1,5 @@
 package org.gitee.orryx.core.common.timer
 
-import org.gitee.orryx.core.common.CooldownEntry
 import org.gitee.orryx.core.kether.parameter.IParameter
 import taboolib.common.platform.ProxyCommandSender
 
@@ -59,5 +58,12 @@ interface ITimer {
      * @return 缓存的子计时器
      * */
     fun getCooldownMap(sender: ProxyCommandSender): MutableMap<String, CooldownEntry>
+
+    /**
+     * 获取缓存
+     * @param sender 计时者
+     * @return 缓存的子计时器
+     * */
+    fun getCooldownEntry(sender: ProxyCommandSender, tag: String): CooldownEntry?
 
 }

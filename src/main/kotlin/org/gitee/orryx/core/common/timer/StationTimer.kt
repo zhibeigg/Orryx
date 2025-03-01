@@ -2,7 +2,6 @@ package org.gitee.orryx.core.common.timer
 
 import org.bukkit.entity.Player
 import org.bukkit.event.player.PlayerQuitEvent
-import org.gitee.orryx.core.common.CooldownEntry
 import org.gitee.orryx.core.kether.parameter.IParameter
 import org.gitee.orryx.core.kether.parameter.StationParameter
 import org.gitee.orryx.utils.getBaffle
@@ -12,7 +11,7 @@ import java.util.*
 
 object StationTimer: ITimer {
 
-    private val playerCooldowns = mutableMapOf<UUID, MutableMap<String, CooldownEntry>>()
+    private val playerCooldowns by lazy { hashMapOf<UUID, MutableMap<String, CooldownEntry>>() }
 
     override fun reset(sender: ProxyCommandSender, parameter: IParameter): Long {
         require(parameter is StationParameter) { "Invalid parameter type" }
@@ -51,7 +50,11 @@ object StationTimer: ITimer {
 
     override fun getCooldownMap(sender: ProxyCommandSender): MutableMap<String, CooldownEntry> {
         val playerId = sender.castSafely<Player>()?.uniqueId ?: throw IllegalArgumentException("Sender must be a Player")
-        return playerCooldowns.computeIfAbsent(playerId) { mutableMapOf() }
+        return playerCooldowns.getOrPut(playerId) { hashMapOf() }
+    }
+
+    override fun getCooldownEntry(sender: ProxyCommandSender, tag: String): CooldownEntry? {
+        return getCooldownMap(sender)[tag]
     }
 
     @SubscribeEvent

@@ -11,11 +11,6 @@ OrryxSkillUI:
     keyDos:
       keyDown@E:
         - "open<->null"
-    openDos: |-
-      update<->cursor@locationX@x-%OrryxSkillUI_options_startX%-%OrryxSkillUI_cursor_width%/2
-      update<->cursor@locationY@y-%OrryxSkillUI_options_startY%-%OrryxSkillUI_cursor_height%/2
-      delay<->1
-      goto<->1
   background:
     type: texture
     path: "textures/orryx/url<->https://img.picgo.net/2025/02/28/947fe7c089bd15a65eba1e4be4221ee2db9ed94cfcd24b2c.png"
@@ -28,6 +23,9 @@ OrryxSkillUI:
     width: 18
     height: 18
     enable: false
+    tickDos: |-
+      update<->cursor@locationX@x-%OrryxSkillUI_options_startX%-%OrryxSkillUI_cursor_width%/2
+      update<->cursor@locationY@y-%OrryxSkillUI_options_startY%-%OrryxSkillUI_cursor_height%/2
   skillName:
     type: label
     align: "center"
@@ -49,6 +47,7 @@ OrryxSkillUI:
     hoverPath: 'textures/orryx/url<->https://img.picgo.net/2025/02/28/2f6899ecb93b6ed58ea69e1a0eb9e4df0ecf6ba62cbffdf6.png'
     width: tw1
     height: th1
+    swallow: false
     enable: false
   # 此处为技能绑定按键组件的基础模板，实际上在滚动组件的子画布中
   skillBindKey:
@@ -60,11 +59,10 @@ OrryxSkillUI:
     enable: false
   # 此处为技能绑定图标组件的基础模板，实际上在滚动组件的子画布中
   skillBindKeyIcon:
-    type: button
+    type: texture
     locationX: "2"
     locationY: "2"
-    defaultPath: "textures/orryx/skills/{skill}.png"
-    hoverpath: "textures/orryx/skills/{skill}.png"
+    path: "textures/orryx/skills/{skill}.png"
     width: 18
     height: 18
     enable: false
@@ -76,6 +74,7 @@ OrryxSkillUI:
     hoverpath: "textures/orryx/url<->https://img.picgo.net/2025/02/28/hoverf103c56cb5c27439.png"
     width: tw1
     height: th1
+    swallow: false
     enable: false
   # 此处为技能图标组件的基础模板，实际上在滚动组件的子画布中
   skillIcon:
@@ -86,6 +85,15 @@ OrryxSkillUI:
     hoverpath: "textures/orryx/skills/{skill}.png"
     width: 18
     height: 18
+    swallow: false
+    enable: false
+  # 此处为技能名组件的基础模板，实际上在滚动组件的子画布中
+  skillListName:
+    type: label
+    align: center
+    scale: '1'
+    locationX: "70"
+    locationY: "12.5"
     enable: false
   ####################################
   skillScroll:

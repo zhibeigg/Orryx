@@ -6,6 +6,7 @@ import org.gitee.orryx.api.events.player.job.OrryxPlayerJobExperienceEvents
 import org.gitee.orryx.api.events.player.job.OrryxPlayerJobLevelEvents
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillBindKeyEvent
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillUnBindKeyEvent
+import org.gitee.orryx.core.GameManager
 import org.gitee.orryx.core.experience.ExperienceLoaderManager
 import org.gitee.orryx.core.experience.IExperience
 import org.gitee.orryx.core.job.ExperienceResult.*
@@ -149,7 +150,7 @@ class PlayerJob(
     override fun setBindKey(skill: IPlayerSkill, group: IGroup, bindKey: IBindKey): Boolean {
         val event = OrryxPlayerSkillBindKeyEvent(player, skill, group, bindKey)
         return if (event.call()) {
-            privateBindKeyOfGroup.getOrPut(event.group) { mutableMapOf() }.apply {
+            privateBindKeyOfGroup.getOrPut(event.group) { hashMapOf() }.apply {
                 replaceAll { _, u ->
                     if (u == skill.key) {
                         null
@@ -185,7 +186,7 @@ class PlayerJob(
 
     override fun save(async: Boolean) {
         val data = createDaoData()
-        if (async) {
+        if (async && !GameManager.shutdown) {
             submitAsync {
                 IStorageManager.INSTANCE.savePlayerJob(player.uniqueId, data)
                 ICacheManager.INSTANCE.savePlayerJob(player.uniqueId, data, false)
