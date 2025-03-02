@@ -37,6 +37,11 @@ class Action(val group: String, val name: String, val key: String, val sharded: 
         return this
     }
 
+    fun addJob(type: Type = Type.STRING, description: String = "获取的玩家职业", optional: Boolean = false, default: String? = null, head: String? = "job"): Action {
+        entries += Entry(description, type, optional, default, head)
+        return this
+    }
+
     fun description(description: String): Action {
         this.description = description
         return this

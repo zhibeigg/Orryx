@@ -23,8 +23,11 @@ interface ICacheManager {
 
         private val lazy by lazy { type }
 
-        internal val INSTANCE: ICacheManager by lazy {
-            when(lazy) {
+        internal lateinit var INSTANCE: ICacheManager
+
+        @Awake(LifeCycle.ENABLE)
+        private fun loadCache() {
+            INSTANCE = when(lazy) {
                 "MEMORY", "CODE" -> {
                     info(("&e┣&7已选择代码内部缓存 &a√").colored())
                     MemoryManager()

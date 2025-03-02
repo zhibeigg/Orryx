@@ -15,6 +15,8 @@ import org.gitee.orryx.core.ui.germplugin.GermPluginSkillHud.Companion.germSkill
 import org.gitee.orryx.core.ui.germplugin.GermPluginUIManager
 import org.gitee.orryx.utils.DragonCorePlugin
 import org.gitee.orryx.utils.GermPluginPlugin
+import taboolib.common.LifeCycle
+import taboolib.common.platform.Awake
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.adaptPlayer
@@ -103,8 +105,11 @@ interface IUIManager {
         private val type
             get() = OrryxAPI.config.getString("UI.use", "bukkit")!!.uppercase()
 
-        internal val INSTANCE: IUIManager =
-            when (type) {
+        internal lateinit var INSTANCE: IUIManager
+
+        @Awake(LifeCycle.ENABLE)
+        private fun awake() {
+            INSTANCE = when (type) {
                 "BUKKIT" -> {
                     info(("&e┣&7已选择原版UI &a√").colored())
                     BukkitUIManager()
@@ -129,6 +134,7 @@ interface IUIManager {
                 }
                 else -> error("未知的UI类型: $type")
             }
+        }
 
         @Reload(1)
         private fun reload() {

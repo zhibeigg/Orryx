@@ -1,5 +1,6 @@
 package org.gitee.orryx.core.message
 
+import com.germ.germplugin.api.GermPacketAPI
 import com.google.common.io.ByteArrayDataInput
 import com.google.common.io.ByteArrayDataOutput
 import com.google.common.io.ByteStreams
@@ -15,6 +16,7 @@ import org.bukkit.plugin.messaging.PluginMessageListener
 import org.gitee.orryx.compat.dragoncore.DragonCoreCustomPacketSender
 import org.gitee.orryx.core.profile.IPlayerKeySetting
 import org.gitee.orryx.utils.DragonCorePlugin
+import org.gitee.orryx.utils.GermPluginPlugin
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.Ghost
@@ -213,8 +215,12 @@ object PluginMessageHandler {
      * @param show 是否呼出
      */
     fun applyMouseCursor(player: Player, show: Boolean) {
-        sendDataPacket(player, PacketType.MouseRequest) {
-            writeBoolean(show)
+        if (GermPluginPlugin.isEnabled) {
+            GermPacketAPI.setPlayerFocus(player, show)
+        } else {
+            sendDataPacket(player, PacketType.MouseRequest) {
+                writeBoolean(show)
+            }
         }
     }
 

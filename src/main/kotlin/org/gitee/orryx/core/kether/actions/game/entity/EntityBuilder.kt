@@ -18,15 +18,9 @@ import taboolib.common.platform.function.submit
 import taboolib.common.platform.service.PlatformExecutor
 import taboolib.module.nms.spawnEntity
 import taboolib.platform.util.setMeta
-import java.util.*
+import java.util.concurrent.CompletableFuture
 
 class EntityBuilder {
-
-    companion object {
-
-        val taskMap by lazy { hashMapOf<UUID, PlatformExecutor.PlatformTask>() }
-
-    }
 
     private var name = ""
     private var type: EntityType = EntityType.ARMOR_STAND
@@ -36,7 +30,9 @@ class EntityBuilder {
     private var health: Double = 0.0
     private var gravity: Boolean = true
     private var vector: IVector? = null
-    private lateinit var location: Location
+
+    val removed = CompletableFuture<Boolean>()
+    lateinit var task: PlatformExecutor.PlatformTask
 
     fun name(name: String): EntityBuilder {
         this.name = name
@@ -50,11 +46,6 @@ class EntityBuilder {
 
     fun private(isPrivate: Boolean): EntityBuilder {
         this.isPrivate = isPrivate
-        return this
-    }
-
-    fun location(location: Location): EntityBuilder {
-        this.location = location
         return this
     }
 
@@ -78,53 +69,62 @@ class EntityBuilder {
         return this
     }
 
-    fun build(player: Player? = null, isAdy: Boolean = false): IEntity {
+    fun build(locations: List<Location>, player: Player? = null, isAdy: Boolean = false): List<IEntity> {
         if (!isPrimaryThread) error("请勿在异步线程中生成实体")
-        val entity = if (isAdy) {
+        val entities = if (isAdy) {
             if (AdyeshachPlugin.isEnabled) {
-                createAdyEntity(player)
+                createAdyEntity(locations, player)
             } else {
                 error("未发现 Adyeshach 无法生成Ady实体")
             }
         } else {
-            createBukkitEntity()
+            createBukkitEntity(locations)
         }
         if (timeout > 0) {
-            taskMap[entity.uniqueId] = submit(delay = timeout) {
-                if (entity.isValid) {
-                    entity.remove()
+            task = submit(delay = timeout) {
+                entities.forEach { entity ->
+                    if (entity.isValid) {
+                        entity.remove()
+                    }
                 }
-                taskMap.remove(entity.uniqueId)
+                removed.complete(true)
             }
         }
-        return entity
+        return entities
     }
 
-    private fun createAdyEntity(player: Player?): AbstractAdyeshachEntity {
-        val instance = if (isPrivate) {
-            Adyeshach.api().getPrivateEntityManager(player ?: error("生成私有实体必须指定玩家"), ManagerType.TEMPORARY).create(EntityTypes.valueOf(type.name), location) {
-                it.setTag("source", "Orryx")
-                it.setNoGravity(!gravity)
-                vector?.bukkit()?.let { vector -> it.setVelocity(vector) }
+    private fun createAdyEntity(locations: List<Location>, player: Player?): List<AbstractAdyeshachEntity> {
+        return locations.map { location ->
+            val instance = if (isPrivate) {
+                Adyeshach.api()
+                    .getPrivateEntityManager(player ?: error("生成私有实体必须指定玩家"), ManagerType.TEMPORARY)
+                    .create(EntityTypes.valueOf(type.name), location) {
+                        it.setTag("source", "Orryx")
+                        it.setNoGravity(!gravity)
+                        vector?.bukkit()?.let { vector -> it.setVelocity(vector) }
+                    }
+            } else {
+                Adyeshach.api().getPublicEntityManager(ManagerType.TEMPORARY)
+                    .create(EntityTypes.valueOf(type.name), location) {
+                        it.setTag("source", "Orryx")
+                        it.setNoGravity(!gravity)
+                        vector?.bukkit()?.let { vector -> it.setVelocity(vector) }
+                    }
             }
-        } else {
-            Adyeshach.api().getPublicEntityManager(ManagerType.TEMPORARY).create(EntityTypes.valueOf(type.name), location) {
-                it.setTag("source", "Orryx")
-                it.setNoGravity(!gravity)
-                vector?.bukkit()?.let { vector -> it.setVelocity(vector) }
-            }
+            AbstractAdyeshachEntity(instance)
         }
-        return AbstractAdyeshachEntity(instance)
     }
 
-    private fun createBukkitEntity(): AbstractBukkitEntity {
-        val entity = location.spawnEntity(EntityType.valueOf(type.name).entityClass ?: error("当前版本不支持此实体类型 ${type.name}")) { entity ->
-            entity.setMeta("source", "Orryx")
-            if (health > 0) { (entity as? LivingEntity)?.health = health }
-            entity.setGravity(gravity)
-            vector?.bukkit()?.let { entity.velocity = it }
+    private fun createBukkitEntity(locations: List<Location>): List<AbstractBukkitEntity> {
+        return locations.map { location ->
+            val entity = location.spawnEntity(EntityType.valueOf(type.name).entityClass ?: error("当前版本不支持此实体类型 ${type.name}")) { entity ->
+                entity.setMeta("source", "Orryx")
+                if (health > 0) { (entity as? LivingEntity)?.health = health }
+                entity.setGravity(gravity)
+                vector?.bukkit()?.let { entity.velocity = it }
+            }
+            AbstractBukkitEntity(entity)
         }
-        return AbstractBukkitEntity(entity)
     }
 
 }

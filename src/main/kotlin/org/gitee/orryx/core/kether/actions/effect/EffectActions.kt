@@ -1,8 +1,8 @@
 package org.gitee.orryx.core.kether.actions.effect
 
 import org.gitee.orryx.core.container.Container
+import org.gitee.orryx.core.kether.ScriptManager.addOrryxCloseable
 import org.gitee.orryx.core.kether.ScriptManager.scriptParser
-import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.core.targets.ITargetLocation
@@ -386,8 +386,8 @@ object EffectActions {
                                         viewers
                                     )
                                     spawner.start()
-                                    when(val param = script().getParameter()) {
-                                        is SkillParameter -> param.player.addCloseable(script(), param.skill!!) { spawner.stop() }
+                                    addOrryxCloseable(spawner.future) {
+                                        spawner.stop()
                                     }
                                     future.complete(spawner)
                                 }

@@ -20,16 +20,16 @@ class KetherScript(val skill: String, override val script: Script): IKetherScrip
     }
 
     override fun runActions(skillParameter: SkillParameter, map: Map<String, Any>?) {
-        val playerSkillsRunningSpace =
-            ScriptManager.runningScriptsMap.getOrPut(skillParameter.player.uniqueId) { PlayerSkillsRunningSpace(skillParameter.player) }
+        val playerRunningSpace =
+            ScriptManager.runningSkillScriptsMap.getOrPut(skillParameter.player.uniqueId) { PlayerRunningSpace(skillParameter.player) }
 
         var context: ScriptContext? = null
         ScriptManager.runScript(adaptPlayer(skillParameter.player), skillParameter, script) {
-            playerSkillsRunningSpace.invoke(this, this@KetherScript, skill)
+            playerRunningSpace.invoke(this, skill)
             map?.let { extend(it) }
             context = this
-        }.thenRun {
-            playerSkillsRunningSpace.release(context!!, skill)
+        }.whenComplete { _, _ ->
+            playerRunningSpace.release(context!!, skill)
         }
     }
 

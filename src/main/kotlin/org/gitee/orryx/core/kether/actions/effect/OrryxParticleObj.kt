@@ -12,10 +12,12 @@ import taboolib.common5.cdouble
 import taboolib.module.effect.ParticleObj
 import taboolib.module.effect.Playable
 import taboolib.module.effect.shape.*
+import java.util.concurrent.CompletableFuture
 
 class OrryxParticleObj(var effectOrigin: EffectOrigin, val obj: ParticleObj, val spawner: EffectSpawner) {
 
-    private var task: PlatformExecutor.PlatformTask? = null
+    var task: PlatformExecutor.PlatformTask? = null
+    val future = CompletableFuture<Boolean>()
 
     fun start() {
         obj.spawner = spawner
@@ -39,6 +41,7 @@ class OrryxParticleObj(var effectOrigin: EffectOrigin, val obj: ParticleObj, val
                 task = null
                 cancel()
                 obj.turnOffTask()
+                future.complete(true)
             }
             if (delay % spawner.tick == 0L) {
                 when(obj) {
@@ -67,6 +70,7 @@ class OrryxParticleObj(var effectOrigin: EffectOrigin, val obj: ParticleObj, val
         task?.cancel()
         task = null
         obj.turnOffTask()
+        future.complete(true)
     }
 
     private fun syncArc() {

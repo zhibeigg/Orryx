@@ -5,6 +5,8 @@ import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.dao.pojo.PlayerData
 import org.gitee.orryx.dao.pojo.PlayerJob
 import org.gitee.orryx.dao.pojo.PlayerSkill
+import taboolib.common.LifeCycle
+import taboolib.common.platform.Awake
 import taboolib.common.platform.function.info
 import taboolib.module.chat.colored
 import java.util.*
@@ -18,8 +20,11 @@ interface IStorageManager {
 
         private val lazy: String by lazy { type }
 
-        internal val INSTANCE: IStorageManager by lazy {
-            when(lazy) {
+        internal lateinit var INSTANCE: IStorageManager
+
+        @Awake(LifeCycle.ENABLE)
+        private fun enable() {
+            INSTANCE = when(lazy) {
                 "SQLLITE", "SQL_LITE" -> {
                     info(("&e┣&7已选择SqlLite存储 &a√").colored())
                     SqlLiteManager()

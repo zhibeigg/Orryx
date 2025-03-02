@@ -17,8 +17,15 @@ import taboolib.module.effect.shape.NStar
 import taboolib.module.effect.shape.OctagonalStar
 import taboolib.module.effect.shape.Pyramid
 import taboolib.module.effect.shape.Ray.RayStopType
+import java.util.concurrent.CompletableFuture
 
 class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick: Long = 1, val mode: SpawnerType = SpawnerType.PLAY, val origins: IContainer, val viewers: IContainer): ParticleSpawner {
+
+    private var complete = 0
+    val future = CompletableFuture<Boolean>()
+
+    private val isAllComplete
+        get() = complete == effects.size
 
     private val effects =
         origins.mapInstance<ITargetLocation<*>, OrryxParticleObj> {
@@ -28,6 +35,12 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
     fun start() {
         effects.forEach { effect ->
             effect.start()
+            effect.future.thenRun {
+                complete++
+                if (isAllComplete) {
+                    future.complete(true)
+                }
+            }
         }
     }
 

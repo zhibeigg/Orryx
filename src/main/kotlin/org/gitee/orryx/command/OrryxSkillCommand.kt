@@ -47,7 +47,7 @@ object OrryxSkillCommand {
                     exec<ProxyCommandSender> {
                         val player = ctx.bukkitPlayer() ?: return@exec
                         val skill = SkillLoaderManager.getSkillLoader(ctx["skill"]) as ICastSkill
-                        skill.castSkill(player, SkillParameter(skill.key, player, ctx["level"].cint))
+                        skill.castSkill(player, SkillParameter(skill.key, player, ctx["level"].cint), false)
                     }
                 }
             }

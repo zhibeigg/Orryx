@@ -79,11 +79,12 @@ open class GermPluginSkillHud(override val viewer: Player, override val owner: P
 
                 val cooldown = skillCooldownMap[owner.uniqueId]?.get(skill.key)
                 bindKeyCooldown.tickDos = listOf(
-                    "update<->${skillBindCanvas.indexName}\$${canvas.indexName}\$${bindKeyCooldown.indexName}@height@${bindKeyIcon.height}*max(${cooldown?.getOverStamp(owner) ?: 0}-%time_now%),0)/${cooldown?.max ?: 1}"
+                    "update<->${skillBindCanvas.indexName}\$${canvas.indexName}\$${bindKeyCooldown.indexName}@height@${bindKeyIcon.height}*(max(${cooldown?.getOverStamp(owner) ?: 0}-%time_now%,0)/${cooldown?.max ?: 1})",
+                    "update<->${skillBindCanvas.indexName}\$${canvas.indexName}\$${bindKeyCooldown.indexName}@locationY@${bindKeyCooldown.locationY}+${bindKeyIcon.height}*(1-(max(${cooldown?.getOverStamp(owner) ?: 0}-%time_now%,0)/${cooldown?.max ?: 1}))"
                 )
                 bindKeyCooldown.enable = true
 
-                bindKeyCooldownLabel.setText("%countdown2_${cooldown?.getOverStamp(owner) ?: 0}%")
+                bindKeyCooldownLabel.setText("&c%countdown2_${cooldown?.getOverStamp(owner) ?: 0}%")
                 bindKeyCooldownLabel.enable = "notStr(%countdown2_${cooldown?.getOverStamp(owner) ?: 0}%,0.0s)"
             }
 

@@ -32,19 +32,22 @@ object GameManager {
     @SubscribeEvent(EventPriority.MONITOR)
     private fun onServerCommand(e: ServerCommandEvent) {
         if (e.command.equals("stop", ignoreCase = true)) {
-            // 在此处执行关闭前的自定义逻辑
-            info("&e┣&7检测到关闭服务器的命令 Orryx开始关闭流程".colored())
-            IManaManager.closeThread()
-            info("&e┣&7Mana线程已关闭 &a√".colored())
-            shutdown = true
-            info("&e┣&7Storage禁止异步 &a√".colored())
-            ScriptManager.terminateAll()
-            info("&e┣&7终止所有玩家技能 &a√".colored())
-            info("&e┣&7延迟2Tick后关闭服务器 &a√".colored())
             e.isCancelled = true
-            submit(delay = 2) {
-                Bukkit.getServer().shutdown()
-            }
+            shutdownServer()
+        }
+    }
+
+    fun shutdownServer() {
+        info("&e┣&7检测到关闭服务器的命令 Orryx开始关闭流程".colored())
+        IManaManager.closeThread()
+        info("&e┣&7Mana线程已关闭 &a√".colored())
+        shutdown = true
+        info("&e┣&7Storage禁止异步 &a√".colored())
+        ScriptManager.terminateAllSkills()
+        info("&e┣&7终止所有玩家技能 &a√".colored())
+        info("&e┣&7延迟2Tick后关闭服务器 &a√".colored())
+        submit(delay = 2) {
+            Bukkit.getServer().shutdown()
         }
     }
 

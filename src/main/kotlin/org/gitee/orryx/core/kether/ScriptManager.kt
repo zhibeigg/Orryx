@@ -8,6 +8,7 @@ import org.gitee.orryx.utils.PARAMETER
 import org.gitee.orryx.utils.getBytes
 import org.gitee.orryx.utils.orryxEnvironmentNamespaces
 import taboolib.common.platform.ProxyCommandSender
+import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.library.kether.Parser.*
 import taboolib.library.kether.QuestAction
@@ -16,22 +17,54 @@ import taboolib.module.kether.*
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.LinkedBlockingDeque
 
 object ScriptManager {
 
-    val runningScriptsMap by lazy { hashMapOf<UUID, PlayerSkillsRunningSpace>() }
+    val runningSkillScriptsMap by lazy { hashMapOf<UUID, PlayerRunningSpace>() }
+    val runningStationScriptsMap by lazy { hashMapOf<UUID, PlayerRunningSpace>() }
+
     val wikiActions by lazy { hashMapOf<String, org.gitee.orryx.core.wiki.Action>() }
     private val scriptMap by lazy { ConcurrentHashMap<String, Script>() }
+    private val closeableMap by lazy { hashMapOf<String, LinkedBlockingDeque<AutoCloseable>>() }
 
-    fun terminateAll() {
-        runningScriptsMap.forEach {
+    fun terminateAllSkills() {
+        runningSkillScriptsMap.forEach {
+            it.value.terminateAll()
+        }
+    }
+    fun terminateAllStation() {
+        runningStationScriptsMap.forEach {
             it.value.terminateAll()
         }
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(EventPriority.MONITOR)
     private fun quit(e: PlayerQuitEvent) {
-        runningScriptsMap.remove(e.player.uniqueId)
+        runningSkillScriptsMap.remove(e.player.uniqueId)?.terminateAll()
+        runningStationScriptsMap.remove(e.player.uniqueId)?.terminateAll()
+    }
+
+    internal fun cleanUp(id: String) {
+        val closeable = closeableMap.remove(id) ?: return
+        while (closeable.isNotEmpty()) {
+            try {
+                closeable.pollFirst().close()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun ScriptFrame.addOrryxCloseable(future: CompletableFuture<*>, closeable: AutoCloseable) {
+        script().addCloseable(closeable)
+        future.whenComplete { _, _ ->
+            closeableMap.remove(script().id)
+        }
+    }
+
+    private fun ScriptContext.addCloseable(closeable: AutoCloseable) {
+        closeableMap.getOrPut(id) { LinkedBlockingDeque() }.put(closeable)
     }
 
     @Reload(weight = 2)
@@ -97,6 +130,5 @@ object ScriptManager {
         val parser = build(builder(ParserHolder, instance()))
         return ScriptActionParser { parser.resolve<T>(this) }
     }
-
 
 }

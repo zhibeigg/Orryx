@@ -117,29 +117,34 @@ OrryxSkillUI:
     scrollableV: 'auto'
     scrolledV: '0'
     layout:
-      type: FLOW
+      type: FLOW_V
       gapX: "0"
       gapY: "5"
   ####################################
   skillBindKeyScroll:
     type: scroll
     width: '%OrryxSkillUI_background_width%-157'
-    height: '%OrryxSkillUI_background_height%-237'
-    locationX: '138'
+    height: '%OrryxSkillUI_background_height%-233'
+    locationX: '136'
     locationY: '228'
     relative: true
+    scrollDraggable: true
+    invalidV: true
     sliderH:
       type: button
       defaultPath: 'textures/orryx/url<->https://img.picgo.net/2025/02/28/ff496e6b578d2841426de01f8937a3ea3b96ccbf54068985.png'
       hoverPath: 'textures/orryx/url<->https://img.picgo.net/2025/02/28/hover6b0669dff55e108b.png'
       width: "tw1"
       height: "th1"
-    locationHX: '100'
-    locationHY: '100'
-    widthH: '200'
+    locationHX: '5'
+    locationHY: '22'
+    widthH: '220'
     heightH: '20'
+    scrollableH: 'auto'
+    scrolledH: '0'
     invalidH: false
     layout:
-      type: FLOW
+      type: FLOW_V
       gapX: "20"
       gapY: "0"
+      nowrap: false

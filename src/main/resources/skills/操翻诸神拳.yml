@@ -14,7 +14,7 @@ Options:
     - "陨灭大荒"
     - "*玩家等级{{ orryx level }}"
     - "玩家等级{{ orryx level }}"
-    - "技能等级{{ params level }}"
+    - "技能等级{{ parm level }}"
   # 是否需要解锁
   IsLocked: false
   # 初始等级

@@ -1,15 +1,18 @@
 package org.gitee.orryx.core.kether.actions.game.entity
 
+import org.bukkit.Location
 import org.bukkit.entity.EntityType
 import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
 import org.gitee.orryx.api.adapters.vector.AbstractVector
 import org.gitee.orryx.core.container.Container
-import org.gitee.orryx.core.kether.parameter.SkillParameter
+import org.gitee.orryx.core.kether.ScriptManager.addOrryxCloseable
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.core.wiki.Action
 import org.gitee.orryx.core.wiki.Type
 import org.gitee.orryx.utils.*
+import taboolib.common.platform.function.isPrimaryThread
+import taboolib.common.platform.function.submit
 import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*
 import java.util.*
@@ -57,23 +60,37 @@ object EntityActions {
                             run(gravity).bool { gravity ->
                                 run(timeout).long { timeout ->
                                     containerOrSelf(they) {
+                                        val builder =
+                                            EntityBuilder()
+                                                .name(name)
+                                                .type(EntityType.valueOf(type))
+                                                .health(health)
+                                                .vector(vector)
+                                                .gravity(gravity)
+                                                .timeout(timeout)
                                         val container = Container(
-                                            it.mapNotNullInstance<ITargetLocation<*>, AbstractBukkitEntity> { target ->
-                                                EntityBuilder()
-                                                    .name(name)
-                                                    .type(EntityType.valueOf(type))
-                                                    .health(health)
-                                                    .vector(vector)
-                                                    .gravity(gravity)
-                                                    .timeout(timeout)
-                                                    .location(target.location)
-                                                    .build() as AbstractBukkitEntity
-                                            }.toMutableSet()
+                                            builder.build(it.mapNotNullInstance<ITargetLocation<*>, Location> { target ->
+                                                target.location
+                                            }).mapTo(
+                                                mutableSetOf()
+                                            ) { entity ->
+                                                entity as AbstractBukkitEntity
+                                            }
                                         )
-                                        when(val param = script().getParameter()) {
-                                            is SkillParameter -> param.player.addCloseable(script(), param.skill!!) {
+                                        addOrryxCloseable(builder.removed) {
+                                            fun clean() {
+                                                builder.task.cancel()
                                                 container.forEachInstance<ITargetEntity<*>> { target ->
-                                                    target.entity.remove()
+                                                    if (target.entity.isValid) {
+                                                        target.entity.remove()
+                                                    }
+                                                }
+                                            }
+                                            if (isPrimaryThread) {
+                                                clean()
+                                            } else {
+                                                submit {
+                                                    clean()
                                                 }
                                             }
                                         }

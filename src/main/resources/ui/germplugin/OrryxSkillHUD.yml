@@ -63,6 +63,23 @@ OrryxSkillHUD:
     width: 18
     height: 18
     enable: false
+  skillBindKeyCooldown:
+    type: color
+    locationX: "2"
+    locationY: "2"
+    locationZ: "10"
+    width: 18
+    height: 18
+    color: 0x8AFFFFFF
+    enable: false
+  skillBindKeyCooldownLabel:
+    type: label
+    align: "center"
+    scale: '1'
+    locationX: "11.5"
+    locationY: "7"
+    locationZ: "11"
+    enable: false
   ####################################
   skillBindCanvas:
     type: canvas

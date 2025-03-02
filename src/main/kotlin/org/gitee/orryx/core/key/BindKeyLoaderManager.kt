@@ -22,12 +22,13 @@ object BindKeyLoaderManager {
 
     @Reload(1)
     @Awake(LifeCycle.ENABLE)
+    @Suppress("Unchecked_cast")
     private fun reload() {
         keys.reload()
         bindKeyLoaderMap = keys.getConfigurationSection("Keys")?.getKeys(false)?.associate {
             it to BindKeyLoader(it, keys.getConfigurationSection("Keys.$it")!!)
         } ?: emptyMap()
-        keysRegister(bindKeyLoaderMap.keys)
+        keysRegister(bindKeyLoaderMap.values as Collection<BindKeyLoader>)
         groupMap = (OrryxAPI.config.getStringList("Group") + DEFAULT).associateWith { Group(it) }
         info("&e┣&7Groups loaded &e${groupMap.size} &a√".colored())
         info("&e┣&7BindKeys loaded &e${bindKeyLoaderMap.size} &a√".colored())

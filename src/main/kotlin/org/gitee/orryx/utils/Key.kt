@@ -6,17 +6,22 @@ import eos.moe.dragoncore.api.CoreAPI
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.common.keyregister.IKeyRegister
 import org.gitee.orryx.core.common.keyregister.KeyRegisterManager
+import org.gitee.orryx.core.key.BindKeyLoader
 import org.gitee.orryx.core.ui.IUIManager
 
-fun keysRegister(keys: Collection<String>) {
+fun keysRegister(keys: Collection<BindKeyLoader>) {
     if (DragonCorePlugin.isEnabled) {
-        keys.forEach { key ->
-            CoreAPI.registerKey(key.lowercase())
+        keys.forEach { bindKey ->
+            bindKey.keys.forEach { key ->
+                CoreAPI.registerKey(key.lowercase())
+            }
         }
     }
     if (GermPluginPlugin.isEnabled) {
-        keys.forEach { key ->
-            GermKeyAPI.registerKey(KeyType.valueOf("KEY_$key".uppercase()))
+        keys.forEach { bindKey ->
+            bindKey.keys.forEach { key ->
+                GermKeyAPI.registerKey(KeyType.valueOf("KEY_$key".uppercase()))
+            }
         }
     }
 }
