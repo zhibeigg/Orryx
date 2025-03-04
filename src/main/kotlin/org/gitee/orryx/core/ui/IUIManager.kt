@@ -91,13 +91,13 @@ interface IUIManager {
         }
 
         @SubscribeEvent(EventPriority.MONITOR)
-        private fun bind(e: OrryxPlayerSkillBindKeyEvent) {
+        private fun bind(e: OrryxPlayerSkillBindKeyEvent.Post) {
             if (e.isCancelled) return
             updateAll(e.player)
         }
 
         @SubscribeEvent(EventPriority.MONITOR)
-        private fun unbind(e: OrryxPlayerSkillUnBindKeyEvent) {
+        private fun unbind(e: OrryxPlayerSkillUnBindKeyEvent.Post) {
             if (e.isCancelled) return
             updateAll(e.player)
         }
@@ -170,5 +170,10 @@ interface IUIManager {
      * @return 技能HUD[ISkillHud]
      * */
     fun getSkillHUD(viewer: Player): ISkillHud?
+
+    /**
+     * 重载
+     * */
+    fun reload()
 
 }

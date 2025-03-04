@@ -37,10 +37,12 @@ class ManaMangerDefault: IManaManager {
         if (mana < 0) return takeMana(player, -mana)
         val profile = player.orryxProfile()
         val job = player.job() ?: return ManaResult.NO_JOB
-        val event = OrryxPlayerManaEvents.Up(player, profile, mana)
+        val event = OrryxPlayerManaEvents.Up.Pre(player, profile, mana)
         return if (event.call()) {
             profile.setFlag(MANA_FLAG, (profile.getFlag(MANA_FLAG)?.value.cdouble + event.mana).coerceAtLeast(0.0).coerceAtMost(job.getMaxMana()).flag(true))
-            profile.save(true)
+            profile.save(true) {
+                OrryxPlayerManaEvents.Up.Post(player, profile, event.mana)
+            }
             ManaResult.SUCCESS
         } else {
             ManaResult.CANCELLED
@@ -51,11 +53,13 @@ class ManaMangerDefault: IManaManager {
         if (mana < 0) return giveMana(player, -mana)
         val profile = player.orryxProfile()
         val job = player.job() ?: return ManaResult.NO_JOB
-        val event = OrryxPlayerManaEvents.Down(player, profile, mana)
+        val event = OrryxPlayerManaEvents.Down.Pre(player, profile, mana)
         return if (event.call()) {
             val less = profile.getFlag(MANA_FLAG)?.value.cdouble - event.mana
             profile.setFlag(MANA_FLAG, less.coerceAtLeast(0.0).coerceAtMost(job.getMaxMana()).flag(true))
-            profile.save(true)
+            profile.save(true) {
+                OrryxPlayerManaEvents.Down.Post(player, profile, event.mana)
+            }
             if (less >= 0) {
                 ManaResult.SUCCESS
             } else {
@@ -85,8 +89,13 @@ class ManaMangerDefault: IManaManager {
         val profile = player.orryxProfile()
         val job = player.job()
         val mana = job?.getReginMana() ?: return 0.0
-        profile.setFlag(MANA_FLAG, (profile.getFlag(MANA_FLAG)?.value.cdouble + mana).coerceAtMost(job.getMaxMana()).flag(true))
-        profile.save(true)
+        val event = OrryxPlayerManaEvents.Regin.Pre(player, profile, mana)
+        if (event.call()) {
+            profile.setFlag(MANA_FLAG, (profile.getFlag(MANA_FLAG)?.value.cdouble + mana).coerceAtMost(job.getMaxMana()).flag(true))
+            profile.save(true) {
+                OrryxPlayerManaEvents.Regin.Post(player, profile, event.reginMana).call()
+            }
+        }
         return mana
     }
 
@@ -95,9 +104,16 @@ class ManaMangerDefault: IManaManager {
         val job = player.job()
         val mana = job?.getMaxMana() ?: return 0.0
         val add = mana - profile.getFlag(MANA_FLAG)?.value.cdouble
-        profile.setFlag(MANA_FLAG, mana.flag(true))
-        profile.save(true)
-        return add
+        val event = OrryxPlayerManaEvents.Heal.Pre(player, profile, add)
+        return if (event.call()) {
+            profile.setFlag(MANA_FLAG, mana.flag(true))
+            profile.save(true) {
+                OrryxPlayerManaEvents.Heal.Post(player, profile, event.healMana).call()
+            }
+            add
+        } else {
+            0.0
+        }
     }
 
 }

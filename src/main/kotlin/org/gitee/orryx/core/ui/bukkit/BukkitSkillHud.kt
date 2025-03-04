@@ -49,6 +49,7 @@ open class BukkitSkillHud(override val viewer: Player, override val owner: Playe
 
     override fun open() {
         remove()
+        viewer.inventory.heldItemSlot = slotIndex.firstOrNull { getBindKey("MC" + (it + 1)) == null } ?: 0
         bukkitSkillHudMap.getOrPut(owner.uniqueId) { hashMapOf() }[viewer.uniqueId] = this
         update()
     }

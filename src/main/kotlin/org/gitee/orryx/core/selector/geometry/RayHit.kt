@@ -19,8 +19,7 @@ import java.util.stream.Collectors
  */
 object RayHit: ISelectorGeometry {
 
-    override val keys: Array<String>
-        get() = arrayOf("rayhit")
+    override val keys = arrayOf("rayhit")
 
     override fun getTargets(context: ScriptContext, parameter: StringParser.Entry): List<ITarget<*>> {
         val origin = context.getParameter().origin ?: return emptyList()

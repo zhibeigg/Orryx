@@ -1,3 +1,5 @@
+# 是否进服自动打开技能Hud
+JoinOpenHud: true
 SkillUI:
   title: "技能界面"
   Skills:

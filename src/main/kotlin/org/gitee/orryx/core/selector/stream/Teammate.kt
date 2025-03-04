@@ -19,8 +19,7 @@ import taboolib.module.kether.ScriptContext
 @Plugin("DungeonPlus")
 object Teammate: ISelectorStream {
 
-    override val keys: Array<String>
-        get() = arrayOf("teammate")
+    override val keys = arrayOf("teammate")
 
     override fun joinContainer(
         container: IContainer,

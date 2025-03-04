@@ -19,8 +19,7 @@ import taboolib.module.kether.ScriptContext
  * */
 object World: ISelectorStream {
 
-    override val keys: Array<String>
-        get() = arrayOf("world")
+    override val keys = arrayOf("world")
 
     override fun joinContainer(
         container: IContainer,

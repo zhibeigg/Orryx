@@ -25,8 +25,7 @@ import kotlin.math.sqrt
  */
 object Annular : ISelectorGeometry {
 
-    override val keys: Array<String>
-        get() = arrayOf("annular")
+    override val keys = arrayOf("annular")
 
     override fun getTargets(context: ScriptContext, parameter: StringParser.Entry): List<ITarget<*>> {
         val origin = context.getParameter().origin ?: return emptyList()

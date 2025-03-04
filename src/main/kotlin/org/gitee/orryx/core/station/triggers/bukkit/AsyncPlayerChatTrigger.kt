@@ -8,7 +8,7 @@ object AsyncPlayerChatTrigger: AbstractEventTrigger<AsyncPlayerChatEvent>() {
 
     override val event: String = "Async Player Chat"
 
-    override val clazz: Class<AsyncPlayerChatEvent>
+    override val clazz
         get() = AsyncPlayerChatEvent::class.java
 
     override fun onCheck(pipeTask: IPipeTask, event: AsyncPlayerChatEvent, map: Map<String, Any?>): Boolean {

@@ -9,26 +9,19 @@ class StationLoader(override val key: String, val configuration: Configuration):
 
     val options by lazy { configuration.getConfigurationSection("Options") ?: error("中转站${key}位于${configuration.file}未书写Options") }
 
-    override val event: String
-        get() = options.getString("Event") ?: error("中转站${key}位于${configuration.file}未书写Event")
+    override val event: String = options.getString("Event") ?: error("中转站${key}位于${configuration.file}未书写Event")
 
-    override val baffleAction: String?
-        get() = options.getString("BaffleAction")
+    override val baffleAction: String? = options.getString("BaffleAction")
 
-    override val weight: Int
-        get() = options.getInt("Weight", 0)
+    override val weight: Int = options.getInt("Weight", 0)
 
-    override val priority: EventPriority
-        get() = EventPriority.valueOf(options.getString("Priority", "NORMAL")!!.uppercase())
+    override val priority: EventPriority = EventPriority.valueOf(options.getString("Priority", "NORMAL")!!.uppercase())
 
-    override val ignoreCancelled: Boolean
-        get() = options.getBoolean("IgnoreCancelled", false)
+    override val ignoreCancelled: Boolean = options.getBoolean("IgnoreCancelled", false)
 
-    override val variables
-        get() = options.getMap("Variables").mapKeys { it.key.uppercase() }
+    override val variables = options.getMap("Variables").mapKeys { it.key.uppercase() }
 
-    override val actions: String
-        get() = configuration.getString("Actions") ?: error("中转站${key}位于${configuration.file}未书写Actions")
+    override val actions: String = configuration.getString("Actions") ?: error("中转站${key}位于${configuration.file}未书写Actions")
 
     override val script: Script? = StationLoaderManager.loadScript(this)
 

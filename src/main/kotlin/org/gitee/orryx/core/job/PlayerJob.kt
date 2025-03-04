@@ -1,7 +1,10 @@
 package org.gitee.orryx.core.job
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.bukkit.entity.Player
-import org.gitee.orryx.api.events.player.OrryxPlayerChangeGroupEvent
+import org.gitee.orryx.api.events.player.OrryxPlayerChangeGroupEvents
 import org.gitee.orryx.api.events.player.job.OrryxPlayerJobExperienceEvents
 import org.gitee.orryx.api.events.player.job.OrryxPlayerJobLevelEvents
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillBindKeyEvent
@@ -18,8 +21,8 @@ import org.gitee.orryx.dao.cache.ICacheManager
 import org.gitee.orryx.dao.pojo.PlayerJob
 import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.utils.*
-import taboolib.common.platform.function.submitAsync
 import taboolib.common5.cdouble
+import taboolib.expansion.AsyncDispatcher
 import taboolib.module.kether.orNull
 
 class PlayerJob(
@@ -30,8 +33,7 @@ class PlayerJob(
     private val privateBindKeyOfGroup: MutableMap<IGroup, MutableMap<IBindKey, String?>>
 ): IPlayerJob {
 
-    override val job: IJob
-        get() = JobLoaderManager.getJobLoader(key)!!
+    override val job: IJob by lazy { JobLoaderManager.getJobLoader(key)!! }
 
     override val bindKeyOfGroup: Map<IGroup, Map<IBindKey, String?>>
         get() = privateBindKeyOfGroup
@@ -73,11 +75,12 @@ class PlayerJob(
         return if (event.call()) {
             val before = level
             privateExperience = (privateExperience + event.upExperience.coerceAtLeast(0)).coerceAtMost(getExperience().maxExp(player))
-            val changeLevel = level - before
-            if (changeLevel > 0) {
-                OrryxPlayerJobLevelEvents.Up(player, this, changeLevel).call()
+            save(true) {
+                val changeLevel = level - before
+                if (changeLevel > 0) {
+                    OrryxPlayerJobLevelEvents.Up(player, this, changeLevel).call()
+                }
             }
-            save(true)
             SUCCESS
         } else {
             CANCELLED
@@ -90,11 +93,12 @@ class PlayerJob(
         return if (event.call()) {
             val before = level
             privateExperience = (privateExperience - event.downExperience.coerceAtLeast(0)).coerceAtLeast(0)
-            val changeLevel = before - level
-            if (changeLevel > 0) {
-                OrryxPlayerJobLevelEvents.Down(player, this, changeLevel).call()
+            save(true) {
+                val changeLevel = before - level
+                if (changeLevel > 0) {
+                    OrryxPlayerJobLevelEvents.Down(player, this, changeLevel).call()
+                }
             }
-            save(true)
             SUCCESS
         } else {
             CANCELLED
@@ -137,10 +141,12 @@ class PlayerJob(
 
     override fun setGroup(group: String): Boolean {
         val iGroup = BindKeyLoaderManager.getGroup(group) ?: return false
-        val event = OrryxPlayerChangeGroupEvent(player, this, iGroup)
+        val event = OrryxPlayerChangeGroupEvents.Pre(player, this, iGroup)
         return if (event.call()) {
             privateGroup = event.group.key
-            save(true)
+            save(true) {
+                OrryxPlayerChangeGroupEvents.Post(player, this, event.group).call()
+            }
             true
         } else {
             false
@@ -148,7 +154,7 @@ class PlayerJob(
     }
 
     override fun setBindKey(skill: IPlayerSkill, group: IGroup, bindKey: IBindKey): Boolean {
-        val event = OrryxPlayerSkillBindKeyEvent(player, skill, group, bindKey)
+        val event = OrryxPlayerSkillBindKeyEvent.Pre(player, skill, group, bindKey)
         return if (event.call()) {
             privateBindKeyOfGroup.getOrPut(event.group) { hashMapOf() }.apply {
                 replaceAll { _, u ->
@@ -158,9 +164,11 @@ class PlayerJob(
                         u
                     }
                 }
-                set(bindKey, skill.key)
+                set(event.bindKey, skill.key)
             }
-            save(true)
+            save(true) {
+                OrryxPlayerSkillBindKeyEvent.Post(player, skill, event.group, event.bindKey).call()
+            }
             true
         } else {
             false
@@ -168,7 +176,7 @@ class PlayerJob(
     }
 
     override fun unBindKey(skill: IPlayerSkill, group: IGroup): Boolean {
-        val event = OrryxPlayerSkillUnBindKeyEvent(player, skill, group)
+        val event = OrryxPlayerSkillUnBindKeyEvent.Pre(player, skill, group)
         return if (event.call()) {
             privateBindKeyOfGroup[event.group]?.replaceAll { _, u ->
                 if (u == skill.key) {
@@ -177,23 +185,30 @@ class PlayerJob(
                     u
                 }
             }
-            save(true)
+            save(true) {
+                OrryxPlayerSkillUnBindKeyEvent.Post(player, skill, event.group).call()
+            }
             true
         } else {
             false
         }
     }
 
-    override fun save(async: Boolean) {
+    override fun save(async: Boolean, callback: () -> Unit) {
         val data = createDaoData()
         if (async && !GameManager.shutdown) {
-            submitAsync {
-                IStorageManager.INSTANCE.savePlayerJob(player.uniqueId, data)
-                ICacheManager.INSTANCE.savePlayerJob(player.uniqueId, data, false)
+            CoroutineScope(AsyncDispatcher).launch {
+                withContext(AsyncDispatcher) {
+                    IStorageManager.INSTANCE.savePlayerJob(player.uniqueId, data)
+                    ICacheManager.INSTANCE.savePlayerJob(player.uniqueId, data, false)
+                }
+            }.invokeOnCompletion {
+                callback()
             }
         } else {
             IStorageManager.INSTANCE.savePlayerJob(player.uniqueId, data)
             ICacheManager.INSTANCE.savePlayerJob(player.uniqueId, data, false)
+            callback()
         }
     }
 

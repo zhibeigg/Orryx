@@ -5,6 +5,7 @@ import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.kether.ScriptManager.parseScript
 import org.gitee.orryx.core.kether.ScriptManager.runScript
 import org.gitee.orryx.core.kether.parameter.SkillParameter
+import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.utils.getFormatAtPosition
 import org.gitee.orryx.utils.reader
 import taboolib.common.platform.ProxyCommandSender
@@ -16,8 +17,12 @@ class Description(val description: List<String>) {
 
     companion object {
 
-        private val descriptionSplit: String
-            get() = OrryxAPI.config.getString("DescriptionSplit", "&7→")!!
+        private var descriptionSplit: String = OrryxAPI.config.getString("DescriptionSplit", "&7→")!!
+
+        @Reload(weight = 2)
+        private fun reload() {
+            descriptionSplit = OrryxAPI.config.getString("DescriptionSplit", "&7→")!!
+        }
 
     }
 

@@ -6,8 +6,8 @@ import taboolib.module.configuration.Configuration
 import taboolib.module.kether.Script
 
 class DirectSkill(
-    override val key: String,
-    override val configuration: Configuration
+    key: String,
+    configuration: Configuration
 ) : AbstractCastSkillLoader(key, configuration) {
 
     override val type = DIRECT

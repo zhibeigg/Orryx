@@ -1,17 +1,21 @@
 package org.gitee.orryx.core.profile
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.events.player.OrryxPlayerPointEvents
-import org.gitee.orryx.api.events.player.job.OrryxPlayerJobChangeEvent
+import org.gitee.orryx.api.events.player.job.OrryxPlayerJobChangeEvents
 import org.gitee.orryx.core.GameManager
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.dao.cache.ICacheManager
 import org.gitee.orryx.dao.pojo.PlayerData
 import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.utils.toSerializable
-import taboolib.common.platform.function.submitAsync
+import taboolib.expansion.AsyncDispatcher
+import java.util.concurrent.ConcurrentMap
 
-class PlayerProfile(override val player: Player, private var privateJob: String?, private var privatePoint: Int, private val privateFlags: MutableMap<String, IFlag>): IPlayerProfile {
+class PlayerProfile(override val player: Player, private var privateJob: String?, private var privatePoint: Int, private val privateFlags: ConcurrentMap<String, IFlag>): IPlayerProfile {
 
     override val flags: Map<String, IFlag>
         get() = privateFlags
@@ -74,19 +78,23 @@ class PlayerProfile(override val player: Player, private var privateJob: String?
 
     override fun givePoint(point: Int) {
         if (point < 0) return takePoint(-point)
-        val event = OrryxPlayerPointEvents.Down(player, this, point)
+        val event = OrryxPlayerPointEvents.Up.Pre(player, this, point)
         if (event.call()) {
             privatePoint = (privatePoint + event.point).coerceAtLeast(0)
-            save(true)
+            save(true) {
+                OrryxPlayerPointEvents.Up.Post(player, this, event.point)
+            }
         }
     }
 
     override fun takePoint(point: Int) {
         if (point < 0) return givePoint(-point)
-        val event = OrryxPlayerPointEvents.Down(player, this, point)
+        val event = OrryxPlayerPointEvents.Down.Pre(player, this, point)
         if (event.call()) {
             privatePoint = (privatePoint - event.point).coerceAtLeast(0)
-            save(true)
+            save(true) {
+                OrryxPlayerPointEvents.Down.Post(player, this, event.point)
+            }
         }
     }
 
@@ -98,9 +106,11 @@ class PlayerProfile(override val player: Player, private var privateJob: String?
     }
 
     override fun setJob(job: IPlayerJob) {
-        if (OrryxPlayerJobChangeEvent(player, job).call()) {
+        if (OrryxPlayerJobChangeEvents.Pre(player, job).call()) {
             privateJob = job.key
-            job.save(true)
+            job.save(true) {
+                OrryxPlayerJobChangeEvents.Post(player, job).call()
+            }
         }
     }
 
@@ -108,16 +118,21 @@ class PlayerProfile(override val player: Player, private var privateJob: String?
         return PlayerData(player.uniqueId, job, point, privateFlags.filter { it.value.isPersistence }.mapValues { it.value.toSerializable() })
     }
 
-    override fun save(async: Boolean) {
+    override fun save(async: Boolean, callback: () -> Unit) {
         val data = createDaoData()
         if (async && !GameManager.shutdown) {
-            submitAsync {
-                IStorageManager.INSTANCE.savePlayerData(player.uniqueId, data)
-                ICacheManager.INSTANCE.savePlayerData(player.uniqueId, data, false)
+            CoroutineScope(AsyncDispatcher).launch {
+                withContext(AsyncDispatcher) {
+                    IStorageManager.INSTANCE.savePlayerData(player.uniqueId, data)
+                    ICacheManager.INSTANCE.savePlayerData(player.uniqueId, data, false)
+                }
+            }.invokeOnCompletion {
+                callback()
             }
         } else {
             IStorageManager.INSTANCE.savePlayerData(player.uniqueId, data)
             ICacheManager.INSTANCE.savePlayerData(player.uniqueId, data, false)
+            callback()
         }
     }
 

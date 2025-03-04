@@ -18,8 +18,7 @@ import taboolib.module.kether.ScriptContext
  */
 object Rectangle: ISelectorGeometry {
 
-    override val keys: Array<String>
-        get() = arrayOf("rec", "rectangle")
+    override val keys = arrayOf("rec", "rectangle")
 
     override fun getTargets(context: ScriptContext, parameter: StringParser.Entry): List<ITarget<*>> {
         val origin = context.getParameter().origin ?: return emptyList()

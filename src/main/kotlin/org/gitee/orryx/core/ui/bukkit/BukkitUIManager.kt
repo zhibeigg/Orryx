@@ -26,6 +26,7 @@ import taboolib.module.database.Database
 class BukkitUIManager: IUIManager {
 
     init {
+        BukkitSkillUI.ui = BukkitSkillUI.Companion.UI(IUIManager.INSTANCE.config.getConfigurationSection("SkillUI")!!)
         val task = submit(period = 5) {
             bukkitSkillHudMap.forEach {
                 it.value.forEach { map ->
@@ -88,13 +89,20 @@ class BukkitUIManager: IUIManager {
         }
 
         registerBukkitListener(PlayerJoinEvent::class.java) { e ->
-            e.player.inventory.heldItemSlot = slotIndex.firstOrNull { getBindKey("MC" + (it + 1)) == null } ?: 0
-            BukkitSkillHud(e.player, e.player).open()
+            if (setting.joinOpenHud) {
+                BukkitSkillHud(e.player, e.player).open()
+            }
         }
-
     }
 
     override val config: Configuration = loadFromFile("ui/bukkit/setting.yml")
+    private var setting = Setting(config)
+
+    class Setting(config: Configuration) {
+
+        val joinOpenHud: Boolean = config.getBoolean("JoinOpenHud", true)
+
+    }
 
     override fun createSkillUI(viewer: Player, owner: Player): ISkillUI {
         return BukkitSkillUI(viewer, owner)
@@ -106,6 +114,11 @@ class BukkitUIManager: IUIManager {
 
     override fun getSkillHUD(viewer: Player): ISkillHud? {
         return getViewerHud(viewer)
+    }
+
+    override fun reload() {
+        config.reload()
+        setting = Setting(config)
     }
 
 }

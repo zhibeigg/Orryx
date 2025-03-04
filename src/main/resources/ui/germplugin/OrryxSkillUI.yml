@@ -90,10 +90,21 @@ OrryxSkillUI:
   # 此处为技能名组件的基础模板，实际上在滚动组件的子画布中
   skillListName:
     type: label
-    align: center
+    align: left
     scale: '1'
-    locationX: "70"
+    locationX: "35"
     locationY: "12.5"
+    enable: false
+  # 此处为技能名组件的基础模板，实际上在滚动组件的子画布中
+  skillLevelUp:
+    type: button
+    locationX: "90"
+    locationY: "10"
+    defaultPath: "textures/orryx/url<->https://img.picgo.net/2025/03/03/9d455ba98712b7c53c56cfd1dfe8f4113058d2a02bf0c6f4.png"
+    hoverpath: "textures/orryx/url<->https://img.picgo.net/2025/03/03/hover2af8da071795053f.png"
+    width: tw1
+    height: th1
+    swallow: true
     enable: false
   ####################################
   skillScroll:
@@ -128,17 +139,17 @@ OrryxSkillUI:
     locationX: '136'
     locationY: '228'
     relative: true
-    scrollDraggable: true
+    scrollDraggable: false
     invalidV: true
     sliderH:
       type: button
-      defaultPath: 'textures/orryx/url<->https://img.picgo.net/2025/02/28/ff496e6b578d2841426de01f8937a3ea3b96ccbf54068985.png'
-      hoverPath: 'textures/orryx/url<->https://img.picgo.net/2025/02/28/hover6b0669dff55e108b.png'
+      defaultPath: 'textures/orryx/url<->https://img.picgo.net/2025/03/04/0166229c58fdcfd832375f11858f7cafe1e82abce33db343.png'
+      hoverPath: 'textures/orryx/url<->https://img.picgo.net/2025/03/04/hover73ec7523913e1689.png'
       width: "tw1"
       height: "th1"
     locationHX: '5'
     locationHY: '22'
-    widthH: '220'
+    widthH: '217'
     heightH: '20'
     scrollableH: 'auto'
     scrolledH: '0'

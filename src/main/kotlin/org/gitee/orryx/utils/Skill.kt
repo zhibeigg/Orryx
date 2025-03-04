@@ -63,6 +63,7 @@ internal fun SkillParameter.runCustomAction(action: String, map: Map<String, Any
 }
 
 fun IPlayerSkill.up(): SkillLevelResult {
+    if (level == skill.maxLevel) return SkillLevelResult.MAX
     val from = level
     val to = level+1
     return if(upLevelCheck(from, to)) {

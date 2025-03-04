@@ -2,6 +2,7 @@ package org.gitee.orryx.core.skill
 
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.kether.parameter.IParameter
+import org.gitee.orryx.utils.EMPTY_FUNCTION
 
 interface IPlayerSkill {
 
@@ -100,7 +101,8 @@ interface IPlayerSkill {
     /**
      * 保存数据
      * @param async 是否异步
+     * @param callback 完成回调
      * */
-    fun save(async: Boolean = true)
+    fun save(async: Boolean = true, callback: () -> Unit = EMPTY_FUNCTION)
 
 }

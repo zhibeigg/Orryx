@@ -21,8 +21,7 @@ import taboolib.module.kether.ScriptContext
  * */
 object Direct: ISelectorStream {
 
-    override val keys: Array<String>
-        get() = arrayOf("amount")
+    override val keys = arrayOf("amount")
 
     override fun joinContainer(container: IContainer, context: ScriptContext, parameter: StringParser.Entry) {
         val vector = parameter.read<String>(0, "a")

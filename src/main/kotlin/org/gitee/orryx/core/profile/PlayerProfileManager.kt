@@ -6,6 +6,7 @@ import org.gitee.orryx.utils.playerData
 import org.gitee.orryx.utils.toFlag
 import taboolib.common.platform.event.SubscribeEvent
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 object PlayerProfileManager {
 
@@ -18,15 +19,15 @@ object PlayerProfileManager {
 
     fun Player.orryxProfile(): IPlayerProfile {
         playerProfileMap[uniqueId]?.let { return it }
-        playerData()?.let { PlayerProfile(this, it.job, it.point, it.flags.mapNotNull { (key, value) ->
-            value.toFlag()?.let { key to it }
-        }.toMap(HashMap())) }?.let {
+        return playerData()?.let {
+            val list = it.flags.mapNotNull { (key, value) ->
+                value.toFlag()?.let { flag -> key to flag }
+            }
+            PlayerProfile(this, it.job, it.point, list.toMap(ConcurrentHashMap(list.size)))
+        }?.also {
             playerProfileMap[uniqueId] = it
-            return it
-        }
-        PlayerProfile(this, null, 0, HashMap()).let {
+        } ?: PlayerProfile(this, null, 0, ConcurrentHashMap()).also {
             playerProfileMap[uniqueId] = it
-            return it
         }
     }
 

@@ -39,6 +39,7 @@ object ReloadAPI: IReloadAPI, ClassVisitor(1) {
         if (event.call()) {
             info("&e┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".colored())
             OrryxAPI.config.reload()
+            debug = OrryxAPI.config.getBoolean("Debug")
             val extensions = event.getFunctions()
             val weights = (methodList.map { it.weight } + extensions.map { it.weight }).distinct()
             weights.sorted().forEach { weight ->

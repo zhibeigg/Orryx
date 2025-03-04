@@ -14,6 +14,12 @@ class DragonCoreSkillHud(override val viewer: Player, override val owner: Player
          */
         internal val dragonSkillHudMap by lazy { hashMapOf<UUID, MutableMap<UUID, DragonCoreSkillHud>>() }
 
+        fun getViewerHud(player: Player): DragonCoreSkillHud? {
+            return dragonSkillHudMap.firstNotNullOfOrNull {
+                it.value[player.uniqueId]
+            }
+        }
+
     }
 
     override fun update() {

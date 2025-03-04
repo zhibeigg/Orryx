@@ -7,7 +7,7 @@ import org.gitee.orryx.core.reload.Reload
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.ProxyCommandSender
-import taboolib.common.platform.function.submit
+import taboolib.common.platform.function.submitAsync
 import taboolib.common.platform.service.PlatformExecutor
 import taboolib.platform.util.onlinePlayers
 
@@ -19,14 +19,14 @@ interface IManaManager {
 
         private var thread: PlatformExecutor.PlatformTask? = null
 
-        private val reginTick: Long
-            get() = OrryxAPI.config.getLong("ManaReginTick", 20)
+        private var reginTick: Long = OrryxAPI.config.getLong("ManaReginTick", 20)
 
         @Reload(2)
         @Awake(LifeCycle.ENABLE)
         private fun init() {
+            reginTick = OrryxAPI.config.getLong("ManaReginTick", 20)
             thread?.cancel()
-            thread = submit(period = reginTick) {
+            thread = submitAsync(period = reginTick) {
                 onlinePlayers.forEach {
                     INSTANCE.reginMana(it)
                 }

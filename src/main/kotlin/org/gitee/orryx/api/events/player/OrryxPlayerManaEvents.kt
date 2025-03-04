@@ -6,8 +6,48 @@ import taboolib.platform.type.BukkitProxyEvent
 
 class OrryxPlayerManaEvents {
 
-    class Up(val player: Player, val profile: IPlayerProfile, var mana: Double): BukkitProxyEvent()
+    class Up {
 
-    class Down(val player: Player, val profile: IPlayerProfile, var mana: Double): BukkitProxyEvent()
+        class Pre(val player: Player, val profile: IPlayerProfile, var mana: Double): BukkitProxyEvent()
+
+        class Post(val player: Player, val profile: IPlayerProfile, val mana: Double): BukkitProxyEvent() {
+            override val allowCancelled: Boolean
+                get() = false
+        }
+
+    }
+
+    class Down {
+
+        class Pre(val player: Player, val profile: IPlayerProfile, var mana: Double): BukkitProxyEvent()
+
+        class Post(val player: Player, val profile: IPlayerProfile, val mana: Double): BukkitProxyEvent() {
+            override val allowCancelled: Boolean
+                get() = false
+        }
+
+    }
+
+    class Regin {
+
+        class Pre(val player: Player, val profile: IPlayerProfile, var reginMana: Double): BukkitProxyEvent()
+
+        class Post(val player: Player, val profile: IPlayerProfile, val reginMana: Double): BukkitProxyEvent() {
+            override val allowCancelled: Boolean
+                get() = false
+        }
+
+    }
+
+    class Heal {
+
+        class Pre(val player: Player, val profile: IPlayerProfile, var healMana: Double): BukkitProxyEvent()
+
+        class Post(val player: Player, val profile: IPlayerProfile, val healMana: Double): BukkitProxyEvent() {
+            override val allowCancelled: Boolean
+                get() = false
+        }
+
+    }
 
 }

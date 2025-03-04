@@ -6,4 +6,13 @@ import org.gitee.orryx.core.key.IGroup
 import org.gitee.orryx.core.skill.IPlayerSkill
 import taboolib.platform.type.BukkitProxyEvent
 
-class OrryxPlayerSkillBindKeyEvent(val player: Player, val skill: IPlayerSkill, var group: IGroup, var bindKey: IBindKey): BukkitProxyEvent()
+class OrryxPlayerSkillBindKeyEvent {
+
+    class Pre(val player: Player, val skill: IPlayerSkill, var group: IGroup, var bindKey: IBindKey): BukkitProxyEvent()
+
+    class Post(val player: Player, val skill: IPlayerSkill, val group: IGroup, val bindKey: IBindKey): BukkitProxyEvent() {
+        override val allowCancelled: Boolean
+            get() = false
+    }
+
+}

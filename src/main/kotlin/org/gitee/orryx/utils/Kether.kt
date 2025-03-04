@@ -27,7 +27,9 @@ import java.util.concurrent.CompletableFuture
 
 const val ORRYX_NAMESPACE = "Orryx"
 
-val orryxEnvironmentNamespaces = listOf("kether", ORRYX_NAMESPACE)
+val orryxEnvironmentNamespaces = listOf(ORRYX_NAMESPACE, "kether")
+
+val EMPTY_FUNCTION = {}
 
 internal fun getBytes(actions: String): ByteArray {
     val s = if (actions.startsWith("def ")) actions else "def main = { $actions }"

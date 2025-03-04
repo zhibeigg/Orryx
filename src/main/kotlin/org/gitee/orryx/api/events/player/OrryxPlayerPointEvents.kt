@@ -6,8 +6,26 @@ import taboolib.platform.type.BukkitProxyEvent
 
 class OrryxPlayerPointEvents {
 
-    class Up(val player: Player, val profile: IPlayerProfile, var point: Int): BukkitProxyEvent()
+    class Up {
 
-    class Down(val player: Player, val profile: IPlayerProfile, var point: Int): BukkitProxyEvent()
+        class Pre(val player: Player, val profile: IPlayerProfile, var point: Int): BukkitProxyEvent()
+
+        class Post(val player: Player, val profile: IPlayerProfile, val point: Int): BukkitProxyEvent() {
+            override val allowCancelled: Boolean
+                get() = false
+        }
+
+    }
+
+    class Down {
+
+        class Pre(val player: Player, val profile: IPlayerProfile, var point: Int): BukkitProxyEvent()
+
+        class Post(val player: Player, val profile: IPlayerProfile, val point: Int): BukkitProxyEvent() {
+            override val allowCancelled: Boolean
+                get() = false
+        }
+
+    }
 
 }

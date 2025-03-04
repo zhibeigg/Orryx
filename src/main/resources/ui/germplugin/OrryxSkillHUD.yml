@@ -3,11 +3,13 @@ OrryxSkillHUD:
     startY: "center"
     width: "%OrryxSkillHUD_background_width%"
     height: "%OrryxSkillHUD_background_height%"
+    openDos: |-
+      updateOption<->OrryxSkillHUD@dragWidth@%OrryxSkillHUD_canvas$background-left_width%+%OrryxSkillHUD_canvas$background-center_width%+%OrryxSkillHUD_canvas$background-right_width%
+      updateOption<->OrryxSkillHUD@dragHeight@%OrryxSkillHUD_canvas$background-left_height%
     drag:
       locationX: "0"
       locationY: "0"
-      width: "%OrryxSkillHUD_canvas$background-left_width%+%OrryxSkillHUD_canvas$background-center_width%+%OrryxSkillHUD_canvas$background-right_width%"
-      height: "%OrryxSkillHUD_canvas$background-left_height%"
+      save: true
   canvas:
     type: canvas
     width: "%OrryxSkillHUD_canvas$background-left_width%+%OrryxSkillHUD_canvas$background-center_width%+%OrryxSkillHUD_canvas$background-right_width%"
@@ -22,6 +24,7 @@ OrryxSkillHUD:
         path: "textures/orryx/url<->https://img.picgo.net/2025/03/01/hud6d926a8d7ba976e0.png"
         tooltip:
           - "&c左键&f点击拖动"
+          - "&c右键&f旋转"
         width: tw1
         height: th1
       background-center:
@@ -29,6 +32,7 @@ OrryxSkillHUD:
         path: "textures/orryx/url<->https://img.picgo.net/2025/03/01/hud52216d64b922a5b3.png"
         tooltip:
           - "&c左键&f点击拖动"
+          - "&c右键&f旋转"
         width: tw1
         height: th1
       background-right:
@@ -36,6 +40,7 @@ OrryxSkillHUD:
         path: "textures/orryx/url<->https://img.picgo.net/2025/03/01/hud49c7f0823d7d08b6.png"
         tooltip:
           - "&c左键&f点击拖动"
+          - "&c右键&f旋转"
         width: tw1
         height: th1
   ####################################

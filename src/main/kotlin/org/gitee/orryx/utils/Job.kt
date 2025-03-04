@@ -23,9 +23,8 @@ fun IPlayerJob.clearAllLevelAndBackPoint(): Boolean {
 }
 
 fun IPlayerJob.getBindSkills(): Map<IBindKey, IPlayerSkill?> {
-    return bindKeyOfGroup[BindKeyLoaderManager.getGroup(group)]?.mapValues {
-        it.value?.let { skill -> player.getSkill(skill) }
-    } ?: emptyMap()
+    val map = bindKeyOfGroup[BindKeyLoaderManager.getGroup(group)] ?: return emptyMap()
+    return bindKeys().associateWith { map[it]?.let { skill -> player.getSkill(job.key, skill) } }
 }
 
 fun <T> Player.job(function: (IPlayerJob) -> T): T? {

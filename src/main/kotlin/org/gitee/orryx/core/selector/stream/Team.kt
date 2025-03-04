@@ -20,8 +20,7 @@ import taboolib.module.kether.ScriptContext
 @Plugin("DungeonPlus")
 object Team: ISelectorStream {
 
-    override val keys: Array<String>
-        get() = arrayOf("team")
+    override val keys = arrayOf("team")
 
     override fun joinContainer(container: IContainer, context: ScriptContext, parameter: StringParser.Entry) {
         val teamPlayers = DungeonPlus.teamManager.getTeam(context.bukkitPlayer())?.getPlayers(PlayerStateType.ONLINE) ?: return

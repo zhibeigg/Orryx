@@ -28,6 +28,8 @@ object OrryxPlugin : Plugin() {
      * "org.joml:joml:1.10.7"
      *
      * "com.larksuite.oapi:oapi-sdk:2.4.7"
+     *
+     * "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0"
      * */
     @Awake(LifeCycle.CONST)
     private fun load() {
@@ -47,6 +49,7 @@ object OrryxPlugin : Plugin() {
             load("com.github.ben-manes.caffeine", "caffeine", "2.9.3")
             load("org.joml", "joml", "1.10.7")
             load("com.larksuite.oapi", "oapi-sdk", "2.4.7")
+            load("org.jetbrains.kotlinx", "kotlinx-coroutines-core", "1.8.0")
         } catch (e: Exception) {
             throw RuntimeException(e)
         }

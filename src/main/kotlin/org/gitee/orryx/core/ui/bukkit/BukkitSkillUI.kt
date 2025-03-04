@@ -3,12 +3,14 @@ package org.gitee.orryx.core.ui.bukkit
 import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
 import org.gitee.orryx.core.job.IPlayerJob
+import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.core.ui.AbstractSkillUI
 import org.gitee.orryx.core.ui.IUIManager
 import org.gitee.orryx.utils.*
 import taboolib.common5.cdouble
 import taboolib.common5.cint
+import taboolib.library.configuration.ConfigurationSection
 import taboolib.library.xseries.XMaterial
 import taboolib.module.ui.buildMenu
 import taboolib.module.ui.openMenu
@@ -21,44 +23,42 @@ open class BukkitSkillUI(override val viewer: Player, override val owner: Player
 
     companion object {
 
-        private val configurationSection
-            get() = IUIManager.INSTANCE.config.getConfigurationSection("SkillUI")!!
+        internal lateinit var ui: UI
 
-        val title
-            get() = configurationSection.getString("title", "技能界面")!!
+        class UI(configurationSection: ConfigurationSection) {
 
-        val skills
-            get() = Item("Skills")
+            val title = configurationSection.getString("title", "技能界面")!!
 
-        val bindSkills
-            get() = Item("BindSkills")
+            val skills = Item(configurationSection, "Skills")
 
-        val space
-            get() = Item("Space")
+            val bindSkills = Item(configurationSection, "BindSkills")
 
-        val previous
-            get() = Item("Previous")
+            val space = Item(configurationSection, "Space")
 
-        val next
-            get() = Item("Next")
+            val previous = Item(configurationSection, "Previous")
 
-        class Item(private val key: String) {
+            val next = Item(configurationSection, "Next")
 
-            val name
-                get() = configurationSection.getString("$key.Name", "")
+            class Item(configurationSection: ConfigurationSection, key: String) {
 
-            val lore
-                get() = configurationSection.getStringList("$key.Lore")
+                val name = configurationSection.getString("$key.Name", "")
 
-            val amount
-                get() = configurationSection.getInt("$key.Amount", 1)
+                val lore = configurationSection.getStringList("$key.Lore")
 
-            val xMaterial: XMaterial?
-                get() = configurationSection.getString("$key.XMaterial")?.let { XMaterial.matchXMaterial(it).getOrNull() }
+                val amount = configurationSection.getInt("$key.Amount", 1)
 
-            val slots
-                get() = configurationSection.getIntegerList("$key.Slots")
+                val xMaterial: XMaterial? = configurationSection.getString("$key.XMaterial")?.let { XMaterial.matchXMaterial(it).getOrNull() }
 
+                val slots = configurationSection.getIntegerList("$key.Slots")
+
+            }
+
+        }
+
+        @Reload(weight = 2)
+        private fun reload() {
+            if (IUIManager.INSTANCE !is BukkitUIManager) return
+            ui = UI(IUIManager.INSTANCE.config.getConfigurationSection("SkillUI")!!)
         }
 
     }
@@ -77,31 +77,31 @@ open class BukkitSkillUI(override val viewer: Player, override val owner: Player
     }
 
     protected open fun build(job: IPlayerJob): Inventory {
-        return buildMenu<PageableChestImpl<IPlayerSkill>>(title) {
+        return buildMenu<PageableChestImpl<IPlayerSkill>>(ui.title) {
             rows(6)
             handLocked(false)
             menuLocked(true)
 
-            slots(skills.slots)
+            slots(ui.skills.slots)
             elements { owner.getSkills() }
 
-            space.slots.forEach {
+            ui.space.slots.forEach {
                 set(it) {
-                    buildItem(space.xMaterial ?: XMaterial.GRAY_STAINED_GLASS_PANE) {
-                        name = space.name
-                        lore += space.lore
-                        amount = space.amount
+                    buildItem(ui.space.xMaterial ?: XMaterial.GRAY_STAINED_GLASS_PANE) {
+                        name = ui.space.name
+                        lore += ui.space.lore
+                        amount = ui.space.amount
                         hideAll()
                         colored()
                     }
                 }
             }
 
-            previous.slots.forEach {
+            ui.previous.slots.forEach {
                 setPreviousPage(it) { _, _ ->
-                    buildItem(previous.xMaterial ?: XMaterial.PAPER) {
-                        name = previous.name
-                        lore += previous.lore
+                    buildItem(ui.previous.xMaterial ?: XMaterial.PAPER) {
+                        name = ui.previous.name
+                        lore += ui.previous.lore
                         amount = page + 1
                         hideAll()
                         colored()
@@ -109,11 +109,11 @@ open class BukkitSkillUI(override val viewer: Player, override val owner: Player
                 }
             }
 
-            next.slots.forEach {
+            ui.next.slots.forEach {
                 setNextPage(it) { _, _ ->
-                    buildItem(next.xMaterial ?: XMaterial.PAPER) {
-                        name = next.name
-                        lore += next.lore
+                    buildItem(ui.next.xMaterial ?: XMaterial.PAPER) {
+                        name = ui.next.name
+                        lore += ui.next.lore
                         amount = ceil(elementsCache.size.cdouble / menuSlots.size.cdouble).cint
                         hideAll()
                         colored()
@@ -124,7 +124,7 @@ open class BukkitSkillUI(override val viewer: Player, override val owner: Player
             val bindSkillMap = job.getBindSkills()
             bindKeys().forEachIndexed { index, iBindKey ->
                 bindSkillMap[iBindKey]?.apply {
-                    set(bindSkills.slots[index]) {
+                    set(ui.bindSkills.slots[index]) {
                         buildItem(XMaterial.matchXMaterial(skill.xMaterial).orElse(XMaterial.BLAZE_ROD)) {
                             name = getIcon()
                             lore += getDescriptionComparison()
@@ -137,7 +137,7 @@ open class BukkitSkillUI(override val viewer: Player, override val owner: Player
                         }
                     }
                 } ?: run {
-                    set(bindSkills.slots[index]) {
+                    set(ui.bindSkills.slots[index]) {
                         buildItem(XMaterial.BARRIER) {
                             name = "空技能槽"
                             lore += "&a| &c左键&f将技能绑定在此格子"
@@ -171,8 +171,8 @@ open class BukkitSkillUI(override val viewer: Player, override val owner: Player
                     viewer.setItemOnCursor(null)
                     cursorSkill = null
                 }
-                if (event.rawSlot in bindSkills.slots && isWrite) {
-                    val index = bindSkills.slots.indexOf(event.rawSlot)
+                if (event.rawSlot in ui.bindSkills.slots && isWrite) {
+                    val index = ui.bindSkills.slots.indexOf(event.rawSlot)
                     val bindKeys = bindKeys()
                     if (bindKeys.lastIndex < index) return@onClick
                     when {
@@ -212,7 +212,7 @@ open class BukkitSkillUI(override val viewer: Player, override val owner: Player
         bindKeys().forEachIndexed { index, iBindKey ->
             bindSkillMap[iBindKey]?.apply {
                 inventory.setItem(
-                    bindSkills.slots[index],
+                    ui.bindSkills.slots[index],
                     buildItem(XMaterial.matchXMaterial(skill.xMaterial).orElse(XMaterial.BLAZE_ROD)) {
                         name = getIcon()
                         lore += getDescriptionComparison()
@@ -226,7 +226,7 @@ open class BukkitSkillUI(override val viewer: Player, override val owner: Player
                 )
             } ?: run {
                 inventory.setItem(
-                    bindSkills.slots[index],
+                    ui.bindSkills.slots[index],
                     buildItem(XMaterial.BARRIER) {
                         name = "空技能槽"
                         lore += "&a| &c左键&f将技能绑定在此格子"

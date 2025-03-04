@@ -7,25 +7,18 @@ class JobLoader(override val key: String, val configuration: Configuration): IJo
 
     private val options by lazy { configuration.getConfigurationSection("Options") ?: error("职业${key}位于${configuration.file}未书写Options键") }
 
-    override val name: String
-        get() = (options.getString("Name") ?: key).colored()
+    override val name: String = (options.getString("Name") ?: key).colored()
 
-    override val skills: List<String>
-        get() = options.getStringList("Skills")
+    override val skills: List<String> = options.getStringList("Skills")
 
-    override val attributes: List<String>
-        get() = options.getStringList("Attributes")
+    override val attributes: List<String> = options.getStringList("Attributes")
 
-    override val maxManaActions: String
-        get() = options.getString("MaxManaActions", "0")!!
+    override val maxManaActions: String = options.getString("MaxManaActions", "0")!!
 
-    override val regainManaActions: String
-        get() = options.getString("RegainManaActions", "0")!!
+    override val regainManaActions: String = options.getString("RegainManaActions", "0")!!
 
-    override val upgradePointActions: String
-        get() = options.getString("UpgradePointActions", "0")!!
+    override val upgradePointActions: String = options.getString("UpgradePointActions", "0")!!
 
-    override val experience: String
-        get() = options.getString("Experience", "default")!!
+    override val experience: String = options.getString("Experience", "default")!!
 
 }
