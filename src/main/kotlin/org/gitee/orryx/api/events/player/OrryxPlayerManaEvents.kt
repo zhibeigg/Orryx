@@ -28,6 +28,9 @@ class OrryxPlayerManaEvents {
 
     }
 
+    /**
+     * 此事件可能为异步，注意检测线程安全问题
+     * */
     class Regin {
 
         class Pre(val player: Player, val profile: IPlayerProfile, var reginMana: Double): BukkitProxyEvent()

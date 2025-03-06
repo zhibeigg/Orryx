@@ -29,7 +29,7 @@ class PlayerProfile(override val player: Player, private var privateJob: String?
     //霸体过期时间
     private var superBody: Long = 0
 
-    override fun setFlag(flagName: String, flag: IFlag) {
+    override fun setFlag(flagName: String, flag: IFlag, save: Boolean) {
         privateFlags[flagName] = flag
         if (flag.isPersistence) {
             save(true)
@@ -38,16 +38,20 @@ class PlayerProfile(override val player: Player, private var privateJob: String?
 
     override fun getFlag(flagName: String): IFlag? {
         privateFlags.asSequence().filter { it.value.isTimeout() }.forEach { (key, _) -> privateFlags.remove(key) }
-        save(true)
         return privateFlags[flagName]
     }
 
-    override fun removeFlag(flagName: String): IFlag? {
-        return privateFlags.remove(flagName)
+    override fun removeFlag(flagName: String, save: Boolean): IFlag? {
+        val flag = privateFlags.remove(flagName) ?: return null
+        if (flag.isPersistence) {
+            save(true)
+        }
+        return flag
     }
 
     override fun clearFlags() {
         privateFlags.clear()
+        save(true)
     }
 
     override fun isSuperBody(): Boolean {

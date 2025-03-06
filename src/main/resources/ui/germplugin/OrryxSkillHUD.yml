@@ -1,19 +1,22 @@
 OrryxSkillHUD:
   options:
     startY: "center"
-    width: "%OrryxSkillHUD_background_width%"
-    height: "%OrryxSkillHUD_background_height%"
     openDos: |-
-      updateOption<->OrryxSkillHUD@dragWidth@%OrryxSkillHUD_canvas$background-left_width%+%OrryxSkillHUD_canvas$background-center_width%+%OrryxSkillHUD_canvas$background-right_width%
-      updateOption<->OrryxSkillHUD@dragHeight@%OrryxSkillHUD_canvas$background-left_height%
+      updateOption<->OrryxSkillHUD@dragWidth@%OrryxSkillHUD_canvasH$background-left_width%+%OrryxSkillHUD_canvasH$background-center_width%+%OrryxSkillHUD_canvasH$background-right_width%
+      updateOption<->OrryxSkillHUD@dragHeight@%OrryxSkillHUD_canvasH$background-left_height%
     drag:
       locationX: "0"
       locationY: "0"
       save: true
-  canvas:
+  checkButton:
+    type: button
+    locationX: "0"
+    locationY: "0"
+    swallow: false
+  canvasH:
     type: canvas
-    width: "%OrryxSkillHUD_canvas$background-left_width%+%OrryxSkillHUD_canvas$background-center_width%+%OrryxSkillHUD_canvas$background-right_width%"
-    height: "%OrryxSkillHUD_canvas$background-left_height%"
+    width: "%OrryxSkillHUD_canvasH$background-left_width%+%OrryxSkillHUD_canvasH$background-center_width%+%OrryxSkillHUD_canvasH$background-right_width%"
+    height: "%OrryxSkillHUD_canvasH$background-left_height%"
     layout:
       type: FLOW
       gapX: "0"
@@ -45,14 +48,14 @@ OrryxSkillHUD:
         height: th1
   ####################################
   # 此处为技能绑定背景组件的基础模板，实际上在滚动组件的子画布中
-  skillBindKeyBackground:
+  skillBindKeyBackgroundH:
     type: texture
     path: "textures/orryx/url<->https://img.picgo.net/2025/02/28/2f6899ecb93b6ed58ea69e1a0eb9e4df0ecf6ba62cbffdf6.png"
     width: tw1
     height: th1
     enable: false
   # 此处为技能绑定按键组件的基础模板，实际上在滚动组件的子画布中
-  skillBindKey:
+  skillBindKeyH:
     type: label
     align: "center"
     scale: '1'
@@ -60,7 +63,7 @@ OrryxSkillHUD:
     locationY: "19.5"
     enable: false
   # 此处为技能绑定图标组件的基础模板，实际上在滚动组件的子画布中
-  skillBindKeyIcon:
+  skillBindKeyIconH:
     type: texture
     locationX: "2"
     locationY: "2"
@@ -68,7 +71,7 @@ OrryxSkillHUD:
     width: 18
     height: 18
     enable: false
-  skillBindKeyCooldown:
+  skillBindKeyCooldownH:
     type: color
     locationX: "2"
     locationY: "2"
@@ -77,7 +80,7 @@ OrryxSkillHUD:
     height: 18
     color: 0x8AFFFFFF
     enable: false
-  skillBindKeyCooldownLabel:
+  skillBindKeyCooldownLabelH:
     type: label
     align: "center"
     scale: '1'
@@ -86,7 +89,7 @@ OrryxSkillHUD:
     locationZ: "11"
     enable: false
   ####################################
-  skillBindCanvas:
+  skillBindCanvasH:
     type: canvas
     locationX: "6"
     locationY: "10"
@@ -94,3 +97,95 @@ OrryxSkillHUD:
       type: FLOW
       gapX: "5"
       gapY: "0"
+  ####################################
+  ####################################
+  ####################################
+  canvasV:
+    type: canvas
+    width: "%OrryxSkillHUD_canvasV$background-up_width%"
+    height: "%OrryxSkillHUD_canvasV$background-up_height%+%OrryxSkillHUD_canvasV$background-center_height%+%OrryxSkillHUD_canvasV$background-down_height%"
+    enable: false
+    layout:
+      type: FLOW_V
+      gapX: "0"
+      gapY: "0"
+    relativeParts:
+      background-up:
+        type: texture
+        path: "textures/orryx/url<->https://img.picgo.net/2025/03/04/hudd6a841ea5e239055.png"
+        tooltip:
+          - "&c左键&f点击拖动"
+          - "&c右键&f旋转"
+        width: tw1
+        height: th1
+      background-center:
+        type: texture
+        path: "textures/orryx/url<->https://img.picgo.net/2025/03/04/hud61275e9c19fac7d9.png"
+        tooltip:
+          - "&c左键&f点击拖动"
+          - "&c右键&f旋转"
+        width: tw1
+        height: th1
+      background-down:
+        type: texture
+        path: "textures/orryx/url<->https://img.picgo.net/2025/03/04/huddad5a413a08ca1b3.png"
+        tooltip:
+          - "&c左键&f点击拖动"
+          - "&c右键&f旋转"
+        width: tw1
+        height: th1
+  ####################################
+  # 此处为技能绑定背景组件的基础模板，实际上在滚动组件的子画布中
+  skillBindKeyBackgroundV:
+    type: texture
+    path: "textures/orryx/url<->https://img.picgo.net/2025/03/04/7767aeb643e89629a426b9abf61feb83dbdebf6a9a1deb95.png"
+    locationX: "4"
+    locationY: "-4"
+    width: tw1
+    height: th1
+    enable: false
+  # 此处为技能绑定按键组件的基础模板，实际上在滚动组件的子画布中
+  skillBindKeyV:
+    type: label
+    align: "left"
+    scale: '1'
+    locationX: "26.5"
+    locationY: "3"
+    locationZ: "10"
+    enable: false
+  # 此处为技能绑定图标组件的基础模板，实际上在滚动组件的子画布中
+  skillBindKeyIconV:
+    type: texture
+    locationX: "6"
+    locationY: "-2"
+    path: "textures/orryx/skills/{skill}.png"
+    width: 18
+    height: 18
+    enable: false
+  skillBindKeyCooldownV:
+    type: color
+    locationX: "6"
+    locationY: "-2"
+    locationZ: "10"
+    width: 18
+    height: 18
+    color: 0x8AFFFFFF
+    enable: false
+  skillBindKeyCooldownLabelV:
+    type: label
+    align: "center"
+    scale: '1'
+    locationX: "15.5"
+    locationY: "3"
+    locationZ: "11"
+    enable: false
+  ####################################
+  skillBindCanvasV:
+    type: canvas
+    locationX: "6"
+    locationY: "10"
+    enable: false
+    layout:
+      type: FLOW_V
+      gapX: "0"
+      gapY: "5"

@@ -6,6 +6,7 @@ import org.gitee.orryx.utils.toLocation
 import org.joml.Matrix3d
 import org.joml.Vector3d
 import taboolib.common.platform.function.submit
+import taboolib.common.platform.function.submitAsync
 import taboolib.common.platform.service.PlatformExecutor
 import taboolib.common.util.Location
 import taboolib.common5.cdouble
@@ -17,7 +18,7 @@ import java.util.concurrent.CompletableFuture
 class OrryxParticleObj(var effectOrigin: EffectOrigin, val obj: ParticleObj, val spawner: EffectSpawner) {
 
     var task: PlatformExecutor.PlatformTask? = null
-    val future = CompletableFuture<Boolean>()
+    val future = CompletableFuture<Void>()
 
     fun start() {
         obj.spawner = spawner
@@ -30,19 +31,16 @@ class OrryxParticleObj(var effectOrigin: EffectOrigin, val obj: ParticleObj, val
             } else {
                 obj.alwaysShowAsync()
             }
-            createTask()
+            submit(delay = 2) {
+                createTask()
+            }
         }
     }
 
     private fun createTask() {
         var delay = 0L
-        task = submit(period = 1) {
-            if (delay >= spawner.duration) {
-                task = null
-                cancel()
-                obj.turnOffTask()
-                future.complete(true)
-            }
+        task = submitAsync(period = 1) {
+            if (delay >= spawner.duration) stop()
             if (delay % spawner.tick == 0L) {
                 when(obj) {
                     is Arc -> syncArc()
@@ -70,7 +68,9 @@ class OrryxParticleObj(var effectOrigin: EffectOrigin, val obj: ParticleObj, val
         task?.cancel()
         task = null
         obj.turnOffTask()
-        future.complete(true)
+        submit(delay = 1) {
+            future.complete(null)
+        }
     }
 
     private fun syncArc() {

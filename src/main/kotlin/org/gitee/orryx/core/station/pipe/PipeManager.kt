@@ -52,7 +52,7 @@ object PipeManager: ClassVisitor(1) {
                     if (trigger.event in next.brokeTriggers && trigger.onCheck(next, event, emptyMap())) {
                         trigger.onJoin(event, emptyMap())
                         next.scriptContext?.let { trigger.onStart(it, event, emptyMap()) }
-                        next.broke().thenRun {
+                        next.broke().whenComplete { _, _ ->
                             next.scriptContext?.let { trigger.onEnd(it, event, emptyMap()) }
                         }
                     }

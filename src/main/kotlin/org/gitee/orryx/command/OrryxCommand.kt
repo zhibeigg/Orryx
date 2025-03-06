@@ -1,15 +1,16 @@
 package org.gitee.orryx.command
 
+import org.bukkit.Bukkit
 import org.bukkit.command.ConsoleCommandSender
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.GameManager
-import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.reload.ReloadAPI
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.command.CommandBody
 import taboolib.common.platform.command.CommandHeader
 import taboolib.common.platform.command.mainCommand
 import taboolib.common.platform.command.subCommandExec
+import taboolib.common.platform.function.info
 import taboolib.expansion.createHelper
 
 @CommandHeader("Orryx", ["or"], "Orryx技能插件主指令", permission = "Orryx.Command.Main", permissionMessage = "你没有权限使用此指令")
@@ -46,7 +47,9 @@ object OrryxCommand {
 
     @CommandBody
     val test = subCommandExec<Player> {
-        ScriptManager.runningSkillScriptsMap[sender.uniqueId]?.terminate("test")
+        Bukkit.getScheduler().pendingTasks.forEach {
+            info("${it.owner.name} ${it.isSync} ${it.taskId}")
+        }
     }
 
     @CommandBody

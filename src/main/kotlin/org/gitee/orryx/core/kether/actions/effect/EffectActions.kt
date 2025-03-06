@@ -385,10 +385,10 @@ object EffectActions {
                                         origins,
                                         viewers
                                     )
-                                    spawner.start()
                                     addOrryxCloseable(spawner.future) {
                                         spawner.stop()
                                     }
+                                    spawner.start()
                                     future.complete(spawner)
                                 }
                             }
@@ -405,7 +405,7 @@ object EffectActions {
         return actionFuture { future ->
             run(effect).effect { effect ->
                 script()["@effect"] = effect
-                run(function).thenRun {
+                run(function).whenComplete { _, _ ->
                     script()["@effect"] = null
                     future.complete(effect)
                 }
@@ -428,7 +428,7 @@ object EffectActions {
         return actionFuture { future ->
             val effect = EffectBuilder()
             script()["@effect"] = effect
-            run(function).thenRun {
+            run(function).whenComplete { _, _ ->
                 script()["@effect"] = null
                 future.complete(effect)
             }
@@ -442,7 +442,7 @@ object EffectActions {
             val effect = EffectBuilder()
             script()["@effect"] = effect
             run(key).str { key ->
-                run(function).thenRun {
+                run(function).whenComplete { _, _ ->
                     script()["@effect"] = null
                     script()[key] = effect
                     future.complete(effect)

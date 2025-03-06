@@ -10,7 +10,6 @@ import org.serverct.ersha.api.event.AttrEntityDamageEvent
 import taboolib.common.platform.Ghost
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
-import taboolib.common.platform.function.submit
 
 object ProxyDamageManager {
 
@@ -21,9 +20,7 @@ object ProxyDamageManager {
         val event = OrryxDamageEvents.Pre(e.damager, e.entity, e.damage, e, transfer(e.cause))
         if (event.call()) {
             e.damage = event.damage
-            submit {
-                OrryxDamageEvents.Post(e.damager, e.entity, e.damage, e, transfer(e.cause)).call()
-            }
+            OrryxDamageEvents.Post(e.damager, e.entity, e.damage, e, transfer(e.cause)).call()
         } else {
             e.isCancelled = true
         }

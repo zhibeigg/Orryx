@@ -34,6 +34,12 @@ class EntityBuilder {
     val removed = CompletableFuture<Boolean>()
     lateinit var task: PlatformExecutor.PlatformTask
 
+    init {
+        removed.whenComplete { _, _ ->
+            task.cancel()
+        }
+    }
+
     fun name(name: String): EntityBuilder {
         this.name = name
         return this

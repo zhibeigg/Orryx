@@ -37,15 +37,17 @@ interface IPlayerProfile {
      * 设置flag
      * @param flagName flag的键名
      * @param flag flag
+     * @param save 是否检测是否持久并保存
      * */
-    fun setFlag(flagName: String, flag: IFlag)
+    fun setFlag(flagName: String, flag: IFlag, save: Boolean = true)
 
     /**
      * 移除flag
      * @param flagName flag的键名
+     * @param save 是否检测是否持久并保存
      * @return 移除的flag
      * */
-    fun removeFlag(flagName: String): IFlag?
+    fun removeFlag(flagName: String, save: Boolean = true): IFlag?
 
     /**
      * 清除flag

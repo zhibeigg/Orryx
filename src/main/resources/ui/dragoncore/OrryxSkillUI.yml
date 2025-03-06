@@ -1,0 +1,201 @@
+allowEscClose: false
+through: true
+
+Functions:
+  keyPress: |-
+    if(方法.取当前按下键 == 'ESCAPE' || 方法.取当前按下键 == 'E') {
+      方法.异步执行方法('动画2');
+    };
+  open: |-
+    全局变量.界面大小 = 0.8;
+    界面变量.选中技能 = "none";
+    方法.播放声音;
+    方法.异步执行方法('动画1');
+  close: |-
+    方法.播放声音;
+  动画1: |-
+    背景_texture.alpha=0;
+    loop(10,{
+      全局变量.界面大小 = 全局变量.界面大小+0.02;
+      背景_texture.alpha = 背景_texture.alpha+0.1;
+      方法.延时(10);
+    });
+  动画2: |-
+    loop(10,{
+      背景_texture.alpha = 背景_texture.alpha-0.1;
+      方法.延时(10);
+    });
+    方法.关闭界面;
+  updatePlaceholder: |-
+    if(局部变量.args.0 == 'Orryx_owner') {
+      界面变量.owner = 局部变量.args.1;
+    };
+    if(局部变量.args.0 == 'Orryx_job') {
+      界面变量.职业 = 局部变量.args.1;
+    };
+    if(局部变量.args.0 == 'Orryx_point') {
+      界面变量.技能点 = 局部变量.args.1;
+    };
+    if(局部变量.args.0 == 'Orryx_group') {
+      界面变量.技能组 = 局部变量.args.1;
+    };
+    if(局部变量.args.0 == 'Orryx_bind_keys') {
+      界面变量.绑定按键列表 = 方法.分割(局部变量.args.1, '<br>');
+    };
+    if(局部变量.args.0 == 'Orryx_bind_skills') {
+      界面变量.绑定技能列表 = 方法.分割(局部变量.args.1, '<br>');
+    };
+    if(局部变量.args.0 == 'Orryx_skills') {
+      if(局部变量.args.1 == '') {
+        return;
+      };
+      界面变量.技能key列表 = 方法.分割(局部变量.args.1, '<br>');
+      for_each(局部变量.key, 局部变量.index, 界面变量.技能key列表, {
+        局部变量.组件1 = 方法.新建组件('技能背景_' & 方法.到整数(局部变量.index) & '_texture', '技能背景');
+        局部变量.组件2 = 方法.新建组件('技能名_' & 方法.到整数(局部变量.index) & '_label', '技能名');
+        局部变量.组件3 = 方法.新建组件('技能贴图_' & 方法.到整数(局部变量.index) & '_texture', '技能贴图');
+        局部变量.组件4 = 方法.新建组件('等级框_' & 方法.到整数(局部变量.index) & '_texture', '等级框');
+        局部变量.组件5 = 方法.新建组件('等级_' & 方法.到整数(局部变量.index) & '_label', '等级');
+        局部变量.组件6 = 方法.新建组件('升级框_' & 方法.到整数(局部变量.index) & '_texture', '升级框');
+    
+        局部变量.组件1.index = 方法.到整数(局部变量.index);
+        局部变量.组件2.index = 方法.到整数(局部变量.index);
+        局部变量.组件3.index = 方法.到整数(局部变量.index);
+        局部变量.组件4.index = 方法.到整数(局部变量.index);
+        局部变量.组件5.index = 方法.到整数(局部变量.index);
+        局部变量.组件6.index = 方法.到整数(局部变量.index);
+    
+        方法.添加组件(局部变量.组件1);
+        方法.添加组件(局部变量.组件2);
+        方法.添加组件(局部变量.组件3);
+        方法.添加组件(局部变量.组件4);
+        方法.添加组件(局部变量.组件5);
+        方法.添加组件(局部变量.组件6);
+      });
+    };
+    if(局部变量.args.0 == 'Orryx_skills_name') {
+      界面变量.技能名列表 = 方法.分割(局部变量.args.1, '<br>');
+    };
+    if(局部变量.args.0 == 'Orryx_skills_level') {
+      界面变量.技能等级列表 = 方法.分割(局部变量.args.1, '<br>');
+    };
+    if(局部变量.args.0 == 'Orryx_skills_maxLevel') {
+      界面变量.技能最大等级列表 = 方法.分割(局部变量.args.1, '<br>');
+    };
+    if(局部变量.args.0 == 'Orryx_skills_locked') {
+      界面变量.技能锁定列表 = 方法.分割(局部变量.args.1, '<br>');
+    };
+    if(局部变量.args.0 == 'Orryx_skills_point') {
+      界面变量.技能点列表 = 方法.分割(局部变量.args.1, '<br>');
+    };
+    if(局部变量.args.0 == 'Orryx_description') {
+      界面变量.description = 局部变量.args.1;
+    };
+背景_texture:
+  x: "(w-背景_texture.width)/2"
+  y: "(h-背景_texture.height)/2"
+  width: "方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 0)*全局变量.界面大小"
+  height: "方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 1)*全局变量.界面大小"
+  texture: "https://img.picgo.net/2025/02/28/947fe7c089bd15a65eba1e4be4221ee2db9ed94cfcd24b2c.png"
+  alpha: "1"
+  visible: true
+技能名_label:
+  x: "背景_texture.x+260*全局变量.界面大小"
+  y: "背景_texture.y+15*全局变量.界面大小"
+  alpha: "背景_texture.alpha"
+  scale: "全局变量.界面大小*2"
+  center: true
+  texts: |-
+    if(界面变量.选中技能 == 'none') {
+      return "";
+    } else {
+      return 方法.取成员(界面变量.技能名列表, 界面变量.选中技能);
+    };
+技能介绍_label:
+  x: "背景_texture.x+145*全局变量.界面大小"
+  y: "背景_texture.y+40*全局变量.界面大小"
+  alpha: "背景_texture.alpha"
+  scale: "全局变量.界面大小"
+  center: false
+  texts: |-
+    if(界面变量.选中技能 == 'none') {
+      return "";
+    } else {
+      return 界面变量.description;
+    };
+####################
+技能背景:
+  x: "背景_texture.x+10*全局变量.界面大小"
+  y: "背景_texture.y+(10+(方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 1)+5)*局部变量.当前组件.index)*全局变量.界面大小"
+  index: "0"
+  width: "方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 0)*全局变量.界面大小"
+  height: "方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 1)*全局变量.界面大小"
+  limitX: "局部变量.当前组件.x"
+  limitY: "背景_texture.y+10*全局变量.界面大小"
+  limitWidth: "局部变量.当前组件.width+1"
+  limitHeight: "192*全局变量.界面大小"
+  texture: "https://img.picgo.net/2025/02/28/c8c8dfdc6a5d8cc69349bd72bfd14e0ef5773f84ca53ac80.png"
+  textureHovered: "https://img.picgo.net/2025/02/28/hoverf103c56cb5c27439.png"
+  alpha: "背景_texture.alpha"
+  visible: "背景_texture.visible"
+  actions:
+    click: |-
+      方法.播放声音;
+      if(界面变量.选中技能 != 局部变量.当前组件.index) {
+        界面变量.选中技能 = 局部变量.当前组件.index;
+        方法.发包('OrryxSelectSkill', 界面变量.owner, 方法.取成员(界面变量.技能key列表, 局部变量.当前组件.index));
+      };
+技能名:
+  x: "方法.取组件值(方法.合并文本('技能背景_' & 局部变量.当前组件.index & '_texture'),'x')+35*全局变量.界面大小"
+  y: "方法.取组件值(方法.合并文本('技能背景_' & 局部变量.当前组件.index & '_texture'),'y')+11*全局变量.界面大小"
+  index: "0"
+  scale: "全局变量.界面大小"
+  alpha: "背景_texture.alpha"
+  texts: "方法.取成员(界面变量.技能名列表, 局部变量.当前组件.index)"
+  visible: "方法.取组件值(方法.合并文本('技能背景_' & 局部变量.当前组件.index & '_texture'),'visible')"
+技能贴图:
+  x: "方法.取组件值(方法.合并文本('技能背景_' & 局部变量.当前组件.index & '_texture'),'x')+7*全局变量.界面大小"
+  y: "方法.取组件值(方法.合并文本('技能背景_' & 局部变量.当前组件.index & '_texture'),'y')+7*全局变量.界面大小"
+  index: "0"
+  width: "18*全局变量.界面大小"
+  height: "18*全局变量.界面大小"
+  texture: "方法.合并文本('icon/技能/', 方法.取成员(界面变量.技能key列表, 局部变量.当前组件.index), '.png')"
+  alpha: "背景_texture.alpha"
+  visible: "方法.取组件值(方法.合并文本('技能背景_' & 局部变量.当前组件.index & '_texture'),'visible')"
+等级:
+  x: "方法.取组件值(方法.合并文本('技能背景_' & 局部变量.当前组件.index & '_texture'),'x')+58*全局变量.界面大小"
+  y: "方法.取组件值(方法.合并文本('技能背景_' & 局部变量.当前组件.index & '_texture'),'y')+20*全局变量.界面大小"
+  index: "0"
+  scale: "全局变量.界面大小"
+  alpha: "背景_texture.alpha"
+  visible: "方法.取组件值(方法.合并文本('技能背景_' & 局部变量.当前组件.index & '_texture'),'visible')"
+  texts: "方法.合并文本('&0[&e', 方法.取成员(界面变量.技能等级列表, 局部变量.当前组件.index), '&0/&e', 方法.取成员(界面变量.技能最大等级列表, 局部变量.当前组件.index), '&0]')"
+  center: true
+升级框:
+  x: "方法.取组件值(方法.合并文本('技能背景_' & 局部变量.当前组件.index & '_texture'),'x')+90*全局变量.界面大小"
+  y: "方法.取组件值(方法.合并文本('技能背景_' & 局部变量.当前组件.index & '_texture'),'y')+10*全局变量.界面大小"
+  index: "0"
+  width: "方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 0)*全局变量.界面大小"
+  height: "方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 1)*全局变量.界面大小"
+  texture: "https://img.picgo.net/2025/03/03/9d455ba98712b7c53c56cfd1dfe8f4113058d2a02bf0c6f4.png"
+  textureHovered: "https://img.picgo.net/2025/03/03/hover2af8da071795053f.png"
+  tip:
+    - "方法.合并文本('&a右键!升级 &f消耗技能点 &e', 方法.取成员(界面变量.技能点列表, 局部变量.当前组件.index))"
+    - "方法.合并文本('&f总技能点 &e', 界面变量.技能点)"
+  alpha: "背景_texture.alpha"
+  visible: "方法.取组件值(方法.合并文本('技能背景_' & 局部变量.当前组件.index & '_texture'),'visible')"
+  actions:
+    click: |-
+      方法.播放声音;
+      方法.发包('OrryxUpgradeSkill', 界面变量.owner, 方法.取成员(界面变量.技能key列表, 局部变量.当前组件.index));
+#######################
+滚轮_texture:
+  x: "背景_texture.x+125*全局变量.界面大小"
+  y: "背景_texture.y+15*全局变量.界面大小"
+  z: "100"
+  width: "方法.取成员(方法.取图片宽高(滚轮_texture.texture), 0)*全局变量.界面大小"
+  height: "方法.取成员(方法.取图片宽高(滚轮_texture.texture), 1)*全局变量.界面大小"
+  maxDistanceY: "192*全局变量.界面大小"
+  texture: "https://img.picgo.net/2025/02/28/ff496e6b578d2841426de01f8937a3ea3b96ccbf54068985.png"
+  textureHovered: "https://img.picgo.net/2025/02/28/hover6b0669dff55e108b.png"
+  alpha: "背景_texture.alpha"

@@ -10,6 +10,7 @@ import org.gitee.orryx.utils.eval
 import org.gitee.orryx.utils.flag
 import org.gitee.orryx.utils.job
 import taboolib.common.platform.ProxyCommandSender
+import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common5.cdouble
 import taboolib.module.kether.orNull
 
@@ -39,8 +40,8 @@ class ManaMangerDefault: IManaManager {
         val job = player.job() ?: return ManaResult.NO_JOB
         val event = OrryxPlayerManaEvents.Up.Pre(player, profile, mana)
         return if (event.call()) {
-            profile.setFlag(MANA_FLAG, (profile.getFlag(MANA_FLAG)?.value.cdouble + event.mana).coerceAtLeast(0.0).coerceAtMost(job.getMaxMana()).flag(true))
-            profile.save(true) {
+            profile.setFlag(MANA_FLAG, (profile.getFlag(MANA_FLAG)?.value.cdouble + event.mana).coerceAtLeast(0.0).coerceAtMost(job.getMaxMana()).flag(true), false)
+            profile.save(isPrimaryThread) {
                 OrryxPlayerManaEvents.Up.Post(player, profile, event.mana)
             }
             ManaResult.SUCCESS
@@ -56,8 +57,8 @@ class ManaMangerDefault: IManaManager {
         val event = OrryxPlayerManaEvents.Down.Pre(player, profile, mana)
         return if (event.call()) {
             val less = profile.getFlag(MANA_FLAG)?.value.cdouble - event.mana
-            profile.setFlag(MANA_FLAG, less.coerceAtLeast(0.0).coerceAtMost(job.getMaxMana()).flag(true))
-            profile.save(true) {
+            profile.setFlag(MANA_FLAG, less.coerceAtLeast(0.0).coerceAtMost(job.getMaxMana()).flag(true), false)
+            profile.save(isPrimaryThread) {
                 OrryxPlayerManaEvents.Down.Post(player, profile, event.mana)
             }
             if (less >= 0) {
@@ -91,8 +92,8 @@ class ManaMangerDefault: IManaManager {
         val mana = job?.getReginMana() ?: return 0.0
         val event = OrryxPlayerManaEvents.Regin.Pre(player, profile, mana)
         if (event.call()) {
-            profile.setFlag(MANA_FLAG, (profile.getFlag(MANA_FLAG)?.value.cdouble + mana).coerceAtMost(job.getMaxMana()).flag(true))
-            profile.save(true) {
+            profile.setFlag(MANA_FLAG, (profile.getFlag(MANA_FLAG)?.value.cdouble + mana).coerceAtMost(job.getMaxMana()).flag(true), false)
+            profile.save(isPrimaryThread) {
                 OrryxPlayerManaEvents.Regin.Post(player, profile, event.reginMana).call()
             }
         }
@@ -106,8 +107,8 @@ class ManaMangerDefault: IManaManager {
         val add = mana - profile.getFlag(MANA_FLAG)?.value.cdouble
         val event = OrryxPlayerManaEvents.Heal.Pre(player, profile, add)
         return if (event.call()) {
-            profile.setFlag(MANA_FLAG, mana.flag(true))
-            profile.save(true) {
+            profile.setFlag(MANA_FLAG, mana.flag(true), false)
+            profile.save(isPrimaryThread) {
                 OrryxPlayerManaEvents.Heal.Post(player, profile, event.healMana).call()
             }
             add

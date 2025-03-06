@@ -17,7 +17,6 @@ object Actions {
                     f.complete(null)
                 }
                 addOrryxCloseable(f) { task.cancel() }
-                addClosable(AutoCloseable { task.cancel() })
             }
         }
     }

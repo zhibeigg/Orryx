@@ -2,7 +2,6 @@ package org.gitee.orryx.core.kether
 
 import org.gitee.orryx.api.events.OrryxScriptTerminateEvent
 import taboolib.module.kether.ScriptContext
-import taboolib.module.kether.ScriptService
 
 class RunningSpace(val tag: String) {
 
@@ -24,8 +23,9 @@ class RunningSpace(val tag: String) {
         if (OrryxScriptTerminateEvent.Pre(this).call()) {
             runningScriptContexts.forEach {
                 val id = it.value.id
-                ScriptService.terminateQuest(it.value)
+                //此处顺序不可变
                 ScriptManager.cleanUp(id)
+                it.value.terminate()
             }
             OrryxScriptTerminateEvent.Post(this).call()
             runningScriptContexts.clear()

@@ -17,7 +17,7 @@ import taboolib.module.kether.*
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.LinkedBlockingDeque
+import java.util.concurrent.ConcurrentMap
 
 object ScriptManager {
 
@@ -26,7 +26,7 @@ object ScriptManager {
 
     val wikiActions by lazy { hashMapOf<String, org.gitee.orryx.core.wiki.Action>() }
     private val scriptMap by lazy { ConcurrentHashMap<String, Script>() }
-    private val closeableMap by lazy { hashMapOf<String, LinkedBlockingDeque<AutoCloseable>>() }
+    private val closeableMap by lazy { hashMapOf<String, ConcurrentMap<UUID, AutoCloseable>>() }
 
     fun terminateAllSkills() {
         runningSkillScriptsMap.forEach {
@@ -47,9 +47,11 @@ object ScriptManager {
 
     internal fun cleanUp(id: String) {
         val closeable = closeableMap.remove(id) ?: return
-        while (closeable.isNotEmpty()) {
+        val iterator = closeable.iterator()
+        while (iterator.hasNext()) {
+            val next = iterator.next()
             try {
-                closeable.pollFirst().close()
+                next.value.close()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -57,14 +59,23 @@ object ScriptManager {
     }
 
     fun ScriptFrame.addOrryxCloseable(future: CompletableFuture<*>, closeable: AutoCloseable) {
-        script().addCloseable(closeable)
+        val uuid = UUID.randomUUID()
+        script().addCloseable(uuid, closeable)
         future.whenComplete { _, _ ->
-            closeableMap.remove(script().id)
+            closeableMap[script().id]?.apply {
+                if (isNotEmpty()) {
+                    remove(uuid)
+                }
+            }
         }
     }
 
-    private fun ScriptContext.addCloseable(closeable: AutoCloseable) {
-        closeableMap.getOrPut(id) { LinkedBlockingDeque() }.put(closeable)
+    private fun ScriptContext.addCloseable(uuid: UUID, closeable: AutoCloseable) {
+        closeableMap.getOrPut(id) { ConcurrentHashMap() }[uuid] = closeable
+    }
+
+    fun ScriptContext.removeCloseable() {
+        closeableMap.remove(id)
     }
 
     @Reload(weight = 2)

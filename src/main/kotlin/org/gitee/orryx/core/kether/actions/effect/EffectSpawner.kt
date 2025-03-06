@@ -1,5 +1,8 @@
 package org.gitee.orryx.core.kether.actions.effect
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.container.IContainer
 import org.gitee.orryx.core.kether.actions.effect.EffectType.*
@@ -12,6 +15,7 @@ import taboolib.common.platform.ProxyParticle
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common.util.Location
 import taboolib.common5.cdouble
+import taboolib.expansion.AsyncDispatcher
 import taboolib.module.effect.*
 import taboolib.module.effect.shape.NStar
 import taboolib.module.effect.shape.OctagonalStar
@@ -21,11 +25,7 @@ import java.util.concurrent.CompletableFuture
 
 class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick: Long = 1, val mode: SpawnerType = SpawnerType.PLAY, val origins: IContainer, val viewers: IContainer): ParticleSpawner {
 
-    private var complete = 0
-    val future = CompletableFuture<Boolean>()
-
-    private val isAllComplete
-        get() = complete == effects.size
+    val future = CompletableFuture<Void>()
 
     private val effects =
         origins.mapInstance<ITargetLocation<*>, OrryxParticleObj> {
@@ -33,14 +33,15 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
         }
 
     fun start() {
-        effects.forEach { effect ->
-            effect.start()
-            effect.future.thenRun {
-                complete++
-                if (isAllComplete) {
-                    future.complete(true)
+        CoroutineScope(AsyncDispatcher).launch {
+            effects.forEach { effect ->
+                withContext(AsyncDispatcher) {
+                    effect.start()
+                    effect.future.join()
                 }
             }
+        }.invokeOnCompletion {
+            future.complete(null)
         }
     }
 

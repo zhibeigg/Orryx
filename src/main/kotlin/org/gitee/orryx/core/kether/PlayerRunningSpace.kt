@@ -1,6 +1,7 @@
 package org.gitee.orryx.core.kether
 
 import org.bukkit.entity.Player
+import org.gitee.orryx.core.kether.ScriptManager.removeCloseable
 import taboolib.module.kether.ScriptContext
 
 class PlayerRunningSpace(val player: Player) {
@@ -18,6 +19,7 @@ class PlayerRunningSpace(val player: Player) {
                 runningSpaceMap.remove(tag)
             }
         }
+        context.removeCloseable()
     }
 
     fun terminateAll() {

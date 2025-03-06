@@ -135,7 +135,7 @@ object StationLoaderManager: ClassVisitor(1) {
             context = this
             onStart(this, event, map)
             playerRunningSpace?.invoke(context, station.key)
-        }.thenRun {
+        }.whenComplete { _, _ ->
             onEnd(context, event, map)
             playerRunningSpace?.release(context, station.key)
         }
