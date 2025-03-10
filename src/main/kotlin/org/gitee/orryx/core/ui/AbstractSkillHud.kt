@@ -7,6 +7,7 @@ import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.key.IGroup
 import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.utils.job
+import java.util.concurrent.CompletableFuture
 
 abstract class AbstractSkillHud(override val viewer: Player, override val owner: Player): ISkillHud {
 
@@ -20,10 +21,10 @@ abstract class AbstractSkillHud(override val viewer: Player, override val owner:
         return SkillTimer.getCountdown(skill.player, skill.key)
     }
 
-    override fun setGroup(group: IGroup): Boolean {
+    override fun setGroup(group: IGroup): CompletableFuture<Boolean> {
         return owner.job {
             it.setGroup(group.key)
-        } ?: false
+        } ?: CompletableFuture.completedFuture(false)
     }
 
 }

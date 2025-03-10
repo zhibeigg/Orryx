@@ -9,17 +9,27 @@ import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.profile.PlayerProfileManager.orryxProfile
 import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.dao.cache.ICacheManager
+import taboolib.common.platform.function.isPrimaryThread
+import java.util.concurrent.CompletableFuture
 
-fun IPlayerJob.clearAllLevelAndBackPoint(): Boolean {
+fun IPlayerJob.clearAllLevelAndBackPoint(): CompletableFuture<Boolean> {
     val event = OrryxClearAllSkillLevelAndBackPointEvent(player, this)
-    return if (event.call()) {
+    val future = CompletableFuture<Boolean>()
+    if (event.call()) {
+        var size = 0
         job.skills.forEach {
-            player.getSkill(job.key, it)?.clearLevelAndBackPoint()
+            size++
+            player.getSkill(job.key, it)?.clearLevelAndBackPoint()?.whenComplete { _, _ ->
+                size -= 1
+                if (size == 0) {
+                    future.complete(true)
+                }
+            }
         }
-        true
     } else {
-        false
+        future.complete(false)
     }
+    return future
 }
 
 fun IPlayerJob.getBindSkills(): Map<IBindKey, IPlayerSkill?> {
@@ -39,7 +49,11 @@ fun Player.job(): IPlayerJob? {
 }
 
 fun Player.job(job: String): IPlayerJob {
-    return ICacheManager.INSTANCE.getPlayerJob(uniqueId, job)?.let { PlayerJob(this, it.job, it.experience, it.group, bindKeyOfGroupToMutableMap(it.bindKeyOfGroup)) } ?: defaultJob(job).apply { save(true) }
+    return ICacheManager.INSTANCE.getPlayerJob(uniqueId, job)?.let {
+        PlayerJob(this, it.job, it.experience, it.group, bindKeyOfGroupToMutableMap(it.bindKeyOfGroup))
+    } ?: defaultJob(job).apply {
+        save(isPrimaryThread)
+    }
 }
 
 private fun Player.defaultJob(job: String) = PlayerJob(this, job, 0, DEFAULT, hashMapOf())

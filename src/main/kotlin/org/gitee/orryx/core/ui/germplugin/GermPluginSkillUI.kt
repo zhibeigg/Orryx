@@ -28,12 +28,11 @@ open class GermPluginSkillUI(override val viewer: Player, override val owner: Pl
     }
 
     override fun open() {
-        job = owner.job() ?: return
-        build(job).openGui(viewer)
+        build(job ?: return).openGui(viewer)
     }
 
     override fun update() {
-        job.getBindSkills().forEach {
+        job?.getBindSkills()?.forEach {
             val bindKeyIcon = screen
                     .pickPart<GermGuiScroll>("skillBindKeyScroll")
                     .pickPart<GermGuiCanvas>("skillBindKey-canvas-${it.key.key}")
@@ -47,7 +46,9 @@ open class GermPluginSkillUI(override val viewer: Player, override val owner: Pl
         }
     }
 
-    private lateinit var job: IPlayerJob
+    private val job: IPlayerJob?
+        get() = owner.job()
+
     private lateinit var path: String
 
     protected open var cursorSkill: IPlayerSkill? = null
@@ -128,24 +129,30 @@ open class GermPluginSkillUI(override val viewer: Player, override val owner: Pl
 
             bindKeyBackground.callback(GermGuiButton.EventType.LEFT_CLICK) { _, _ ->
                 if (cursorSkill != null) {
-                    if (bindSkill(job, cursorSkill!!.key, job.group, it.key)) {
-                        update()
-                        cursorSkill = null
-                        cursor.enable = false
+                    bindSkill(job, cursorSkill!!.key, job.group, it.key).thenAccept { success ->
+                        if (success) {
+                            update()
+                            cursorSkill = null
+                            cursor.enable = false
+                        }
                     }
                 }
             }
             bindKeyBackground.callback(GermGuiButton.EventType.RIGHT_CLICK) { _, _ ->
                 if (cursorSkill != null) {
-                    if (bindSkill(job, cursorSkill!!.key, job.group, it.key)) {
-                        update()
-                        cursorSkill = null
-                        cursor.enable = false
+                    bindSkill(job, cursorSkill!!.key, job.group, it.key).thenAccept { success ->
+                        if (success) {
+                            update()
+                            cursorSkill = null
+                            cursor.enable = false
+                        }
                     }
                 } else {
                     val skill = job.getBindSkills()[it] ?: return@callback
-                    if (unBindSkill(job, skill.key, job.group)) {
-                        bindKeyIcon.enable = false
+                    unBindSkill(job, skill.key, job.group).thenAccept { success ->
+                        if (success) {
+                            bindKeyIcon.enable = false
+                        }
                     }
                 }
             }

@@ -1,9 +1,8 @@
 package org.gitee.orryx.core.skill
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.bukkit.entity.Player
+import org.gitee.orryx.api.OrryxAPI.saveScope
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillCastEvents
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillLevelEvents
 import org.gitee.orryx.core.GameManager
@@ -18,10 +17,11 @@ import org.gitee.orryx.dao.pojo.PlayerSkill
 import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.utils.castSkill
 import org.gitee.orryx.utils.runCustomAction
+import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common5.cbool
 import taboolib.common5.cint
-import taboolib.expansion.AsyncDispatcher
 import taboolib.module.kether.orNull
+import java.util.concurrent.CompletableFuture
 
 class PlayerSkill(
     override val player: Player,
@@ -83,45 +83,49 @@ class PlayerSkill(
         return point to (player.orryxProfile().point >= point)
     }
 
-    override fun upLevel(level: Int): SkillLevelResult {
+    override fun upLevel(level: Int): CompletableFuture<SkillLevelResult> {
         if (level < 0) return downLevel(-level)
         val event = OrryxPlayerSkillLevelEvents.Up.Pre(player, this, level)
-        return if (event.call()) {
+        val future = CompletableFuture<SkillLevelResult>()
+        if (event.call()) {
             var result = SkillLevelResult.SUCCESS
             if (event.upLevel <= 0) error("升级等级必须>0")
             if (privateLevel + event.upLevel > skill.maxLevel) result = SkillLevelResult.MIN
             privateLevel = (privateLevel + event.upLevel).coerceAtMost(skill.maxLevel)
-            save(true) {
+            save(isPrimaryThread) {
                 OrryxPlayerSkillLevelEvents.Up.Post(player, this, event.upLevel)
+                future.complete(result)
             }
-            result
         } else {
-            SkillLevelResult.CANCELLED
+            future.complete(SkillLevelResult.CANCELLED)
         }
+        return future
     }
 
-    override fun downLevel(level: Int): SkillLevelResult {
+    override fun downLevel(level: Int): CompletableFuture<SkillLevelResult> {
         if (level < 0) return upLevel(-level)
         val event = OrryxPlayerSkillLevelEvents.Down.Pre(player, this, level)
-        return if (event.call()) {
+        val future = CompletableFuture<SkillLevelResult>()
+        if (event.call()) {
             var result = SkillLevelResult.SUCCESS
             if (event.downLevel <= 0) error("降级等级必须>0")
             if (privateLevel - event.downLevel < skill.minLevel) result = SkillLevelResult.MIN
             privateLevel = (privateLevel - event.downLevel).coerceAtLeast(skill.minLevel)
-            save(true) {
+            save(isPrimaryThread) {
                 OrryxPlayerSkillLevelEvents.Down.Pre(player, this, event.downLevel).call()
+                future.complete(result)
             }
-            result
         } else {
-            SkillLevelResult.CANCELLED
+            future.complete(SkillLevelResult.CANCELLED)
         }
+        return future
     }
 
-    override fun setLevel(level: Int): SkillLevelResult {
+    override fun setLevel(level: Int): CompletableFuture<SkillLevelResult> {
         return when {
             level > this.level -> upLevel(level - this.level)
             level < this.level -> downLevel(this.level - level)
-            else -> SkillLevelResult.SAME
+            else -> CompletableFuture.completedFuture(SkillLevelResult.SAME)
         }
     }
 
@@ -132,11 +136,9 @@ class PlayerSkill(
     override fun save(async: Boolean, callback: () -> Unit) {
         val data = createDaoData()
         if (async && !GameManager.shutdown) {
-            CoroutineScope(AsyncDispatcher).launch {
-                withContext(AsyncDispatcher) {
-                    IStorageManager.INSTANCE.savePlayerSkill(player.uniqueId, data)
-                    ICacheManager.INSTANCE.savePlayerSkill(player.uniqueId, data, false)
-                }
+            saveScope.launch {
+                IStorageManager.INSTANCE.savePlayerSkill(player.uniqueId, data)
+                ICacheManager.INSTANCE.savePlayerSkill(player.uniqueId, data, false)
             }.invokeOnCompletion {
                 callback()
             }

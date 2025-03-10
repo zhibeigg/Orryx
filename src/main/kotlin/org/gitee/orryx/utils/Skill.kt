@@ -18,6 +18,7 @@ import org.gitee.orryx.core.skill.skills.PressingAimSkill
 import org.gitee.orryx.core.skill.skills.PressingSkill
 import org.gitee.orryx.dao.cache.ICacheManager
 import taboolib.common.platform.function.adaptPlayer
+import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common5.cdouble
 import taboolib.common5.clong
 import taboolib.module.kether.extend
@@ -62,24 +63,26 @@ internal fun SkillParameter.runCustomAction(action: String, map: Map<String, Any
     }
 }
 
-fun IPlayerSkill.up(): SkillLevelResult {
-    if (level == skill.maxLevel) return SkillLevelResult.MAX
+fun IPlayerSkill.up(): CompletableFuture<SkillLevelResult> {
+    if (level == skill.maxLevel) return CompletableFuture.completedFuture(SkillLevelResult.MAX)
     val from = level
     val to = level+1
     return if(upLevelCheck(from, to)) {
         val pointCheck = upgradePointCheck(from, to)
         if (pointCheck.second) {
             val result = upLevel(1)
-            if (result == SkillLevelResult.SUCCESS) {
-                player.orryxProfile().takePoint(pointCheck.first)
-                upLevelSuccess(from, level)
+            result.thenApply {
+                if (it == SkillLevelResult.SUCCESS) {
+                    player.orryxProfile().takePoint(pointCheck.first)
+                    upLevelSuccess(from, level)
+                }
+                it
             }
-            result
         } else {
-            SkillLevelResult.POINT
+            CompletableFuture.completedFuture(SkillLevelResult.POINT)
         }
     } else {
-        SkillLevelResult.CHECK
+        CompletableFuture.completedFuture(SkillLevelResult.CHECK)
     }
 }
 
@@ -98,7 +101,9 @@ internal fun Player.getSkill(job: String, skill: String, create: Boolean = false
     return ICacheManager.INSTANCE.getPlayerSkill(uniqueId, job, skill)?.let {
         PlayerSkill(this, skill, job, it.level, if (it.locked && !skillLoader.isLocked) false else it.locked)
     } ?: if (create) {
-        PlayerSkill(this, skill, job, skillLoader.minLevel, skillLoader.isLocked).apply { save(true) }
+        PlayerSkill(this, skill, job, skillLoader.minLevel, skillLoader.isLocked).apply {
+            save(isPrimaryThread)
+        }
     } else {
         null
     }
@@ -201,17 +206,19 @@ fun CastResult.isSuccess(): Boolean {
     return this == CastResult.SUCCESS
 }
 
-fun IPlayerSkill.clearLevelAndBackPoint(): Boolean {
-    if (level == skill.minLevel) return false
+fun IPlayerSkill.clearLevelAndBackPoint(): CompletableFuture<Boolean> {
+    if (level == skill.minLevel) return CompletableFuture.completedFuture(false)
     val event = OrryxClearSkillLevelAndBackPointEvent(player, this)
     return if (event.call()) {
         player.orryxProfile().givePoint(upgradePointCheck(skill.minLevel, level).first)
-        clearLevel() == SkillLevelResult.SUCCESS
+        clearLevel().thenApply {
+            it == SkillLevelResult.SUCCESS
+        }
     } else {
-        false
+        CompletableFuture.completedFuture(false)
     }
 }
 
-fun IPlayerSkill.clearLevel(): SkillLevelResult {
+fun IPlayerSkill.clearLevel(): CompletableFuture<SkillLevelResult> {
     return setLevel(skill.minLevel)
 }

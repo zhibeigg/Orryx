@@ -177,18 +177,22 @@ open class BukkitSkillUI(override val viewer: Player, override val owner: Player
                     if (bindKeys.lastIndex < index) return@onClick
                     when {
                         event.clickEvent().isLeftClick && cursorSkill != null -> {
-                            if (bindSkill(job, cursorSkill!!.skill.key, job.group, bindKeys[index].key)) {
-                                update()
-                                viewer.setItemOnCursor(null)
-                                cursorSkill = null
+                            bindSkill(job, cursorSkill!!.skill.key, job.group, bindKeys[index].key).thenAccept { success ->
+                                if (success) {
+                                    update()
+                                    viewer.setItemOnCursor(null)
+                                    cursorSkill = null
+                                }
                             }
                         }
                         event.clickEvent().isRightClick -> {
                             owner.getGroupSkills(job.group)[bindKeys[index]]?.let {
-                                if (unBindSkill(job, it, job.group)) {
-                                    update()
-                                    viewer.setItemOnCursor(null)
-                                    cursorSkill = null
+                                unBindSkill(job, it, job.group).thenAccept { success ->
+                                    if (success) {
+                                        update()
+                                        viewer.setItemOnCursor(null)
+                                        cursorSkill = null
+                                    }
                                 }
                             }
                         }

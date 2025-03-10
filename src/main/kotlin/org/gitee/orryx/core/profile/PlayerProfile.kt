@@ -1,9 +1,8 @@
 package org.gitee.orryx.core.profile
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.bukkit.entity.Player
+import org.gitee.orryx.api.OrryxAPI.saveScope
 import org.gitee.orryx.api.events.player.OrryxPlayerPointEvents
 import org.gitee.orryx.api.events.player.job.OrryxPlayerJobChangeEvents
 import org.gitee.orryx.core.GameManager
@@ -12,7 +11,7 @@ import org.gitee.orryx.dao.cache.ICacheManager
 import org.gitee.orryx.dao.pojo.PlayerData
 import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.utils.toSerializable
-import taboolib.expansion.AsyncDispatcher
+import taboolib.common.platform.function.isPrimaryThread
 import java.util.concurrent.ConcurrentMap
 
 class PlayerProfile(override val player: Player, private var privateJob: String?, private var privatePoint: Int, private val privateFlags: ConcurrentMap<String, IFlag>): IPlayerProfile {
@@ -32,7 +31,7 @@ class PlayerProfile(override val player: Player, private var privateJob: String?
     override fun setFlag(flagName: String, flag: IFlag, save: Boolean) {
         privateFlags[flagName] = flag
         if (flag.isPersistence) {
-            save(true)
+            save(isPrimaryThread)
         }
     }
 
@@ -44,14 +43,14 @@ class PlayerProfile(override val player: Player, private var privateJob: String?
     override fun removeFlag(flagName: String, save: Boolean): IFlag? {
         val flag = privateFlags.remove(flagName) ?: return null
         if (flag.isPersistence) {
-            save(true)
+            save(isPrimaryThread)
         }
         return flag
     }
 
     override fun clearFlags() {
         privateFlags.clear()
-        save(true)
+        save(isPrimaryThread)
     }
 
     override fun isSuperBody(): Boolean {
@@ -85,7 +84,7 @@ class PlayerProfile(override val player: Player, private var privateJob: String?
         val event = OrryxPlayerPointEvents.Up.Pre(player, this, point)
         if (event.call()) {
             privatePoint = (privatePoint + event.point).coerceAtLeast(0)
-            save(true) {
+            save(isPrimaryThread) {
                 OrryxPlayerPointEvents.Up.Post(player, this, event.point)
             }
         }
@@ -96,7 +95,7 @@ class PlayerProfile(override val player: Player, private var privateJob: String?
         val event = OrryxPlayerPointEvents.Down.Pre(player, this, point)
         if (event.call()) {
             privatePoint = (privatePoint - event.point).coerceAtLeast(0)
-            save(true) {
+            save(isPrimaryThread) {
                 OrryxPlayerPointEvents.Down.Post(player, this, event.point)
             }
         }
@@ -112,7 +111,7 @@ class PlayerProfile(override val player: Player, private var privateJob: String?
     override fun setJob(job: IPlayerJob) {
         if (OrryxPlayerJobChangeEvents.Pre(player, job).call()) {
             privateJob = job.key
-            job.save(true) {
+            job.save(isPrimaryThread) {
                 OrryxPlayerJobChangeEvents.Post(player, job).call()
             }
         }
@@ -125,11 +124,9 @@ class PlayerProfile(override val player: Player, private var privateJob: String?
     override fun save(async: Boolean, callback: () -> Unit) {
         val data = createDaoData()
         if (async && !GameManager.shutdown) {
-            CoroutineScope(AsyncDispatcher).launch {
-                withContext(AsyncDispatcher) {
-                    IStorageManager.INSTANCE.savePlayerData(player.uniqueId, data)
-                    ICacheManager.INSTANCE.savePlayerData(player.uniqueId, data, false)
-                }
+            saveScope.launch {
+                IStorageManager.INSTANCE.savePlayerData(player.uniqueId, data)
+                ICacheManager.INSTANCE.savePlayerData(player.uniqueId, data, false)
             }.invokeOnCompletion {
                 callback()
             }

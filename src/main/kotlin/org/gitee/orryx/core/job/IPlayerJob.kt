@@ -6,6 +6,7 @@ import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.key.IGroup
 import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.utils.EMPTY_FUNCTION
+import java.util.concurrent.CompletableFuture
 
 interface IPlayerJob {
 
@@ -61,42 +62,42 @@ interface IPlayerJob {
      * @param experience 经验值
      * @return 结果
      * */
-    fun giveExperience(experience: Int): ExperienceResult
+    fun giveExperience(experience: Int): CompletableFuture<ExperienceResult>
 
     /**
      * 失去经验值
      * @param experience 经验值
      * @return 结果
      * */
-    fun takeExperience(experience: Int): ExperienceResult
+    fun takeExperience(experience: Int): CompletableFuture<ExperienceResult>
 
     /**
      * 设置经验值
      * @param experience 经验值
      * @return 结果
      * */
-    fun setExperience(experience: Int): ExperienceResult
+    fun setExperience(experience: Int): CompletableFuture<ExperienceResult>
 
     /**
      * 获得等级
      * @param level 等级
      * @return 结果
      * */
-    fun giveLevel(level: Int): LevelResult
+    fun giveLevel(level: Int): CompletableFuture<LevelResult>
 
     /**
      * 失去等级
      * @param level 等级
      * @return 结果
      * */
-    fun takeLevel(level: Int): LevelResult
+    fun takeLevel(level: Int): CompletableFuture<LevelResult>
 
     /**
      * 设置等级
      * @param level 等级
      * @return 结果
      * */
-    fun setLevel(level: Int): LevelResult
+    fun setLevel(level: Int): CompletableFuture<LevelResult>
 
     /**
      * 获得经验计算器
@@ -121,7 +122,7 @@ interface IPlayerJob {
      * @param group 已注册的技能组
      * @return 是否成功
      * */
-    fun setGroup(group: String): Boolean
+    fun setGroup(group: String): CompletableFuture<Boolean>
 
     /**
      * 设置技能绑定按键
@@ -130,7 +131,7 @@ interface IPlayerJob {
      * @param bindKey 绑定按键
      * @return 是否成功
      * */
-    fun setBindKey(skill: IPlayerSkill, group: IGroup, bindKey: IBindKey): Boolean
+    fun setBindKey(skill: IPlayerSkill, group: IGroup, bindKey: IBindKey): CompletableFuture<Boolean>
 
     /**
      * 取消技能绑定按键
@@ -138,7 +139,7 @@ interface IPlayerJob {
      * @param group 技能组
      * @return 是否成功
      * */
-    fun unBindKey(skill: IPlayerSkill, group: IGroup): Boolean
+    fun unBindKey(skill: IPlayerSkill, group: IGroup): CompletableFuture<Boolean>
 
     /**
      * 保存数据

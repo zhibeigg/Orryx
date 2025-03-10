@@ -3,6 +3,8 @@ package org.gitee.orryx.core.skill
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.kether.parameter.IParameter
 import org.gitee.orryx.utils.EMPTY_FUNCTION
+import taboolib.common.platform.function.isPrimaryThread
+import java.util.concurrent.CompletableFuture
 
 interface IPlayerSkill {
 
@@ -80,29 +82,29 @@ interface IPlayerSkill {
     /**
      * 升级技能
      * @param level 等级
-     * @return 是否成功
+     * @return [SkillLevelResult]
      * */
-    fun upLevel(level: Int): SkillLevelResult
+    fun upLevel(level: Int): CompletableFuture<SkillLevelResult>
 
     /**
      * 降级技能
      * @param level 等级
-     * @return 是否成功
+     * @return [SkillLevelResult]
      * */
-    fun downLevel(level: Int): SkillLevelResult
+    fun downLevel(level: Int): CompletableFuture<SkillLevelResult>
 
     /**
      * 设置技能等级
      * @param level 等级
-     * @return 是否成功
+     * @return [SkillLevelResult]
      * */
-    fun setLevel(level: Int): SkillLevelResult
+    fun setLevel(level: Int): CompletableFuture<SkillLevelResult>
 
     /**
      * 保存数据
      * @param async 是否异步
      * @param callback 完成回调
      * */
-    fun save(async: Boolean = true, callback: () -> Unit = EMPTY_FUNCTION)
+    fun save(async: Boolean = isPrimaryThread, callback: () -> Unit = EMPTY_FUNCTION)
 
 }

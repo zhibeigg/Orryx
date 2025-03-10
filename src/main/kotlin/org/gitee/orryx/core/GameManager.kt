@@ -1,9 +1,11 @@
 package org.gitee.orryx.core
 
+import kotlinx.coroutines.cancel
 import org.bukkit.Bukkit
 import org.bukkit.event.entity.FoodLevelChangeEvent
 import org.bukkit.event.server.ServerCommandEvent
 import org.gitee.orryx.api.OrryxAPI
+import org.gitee.orryx.api.OrryxAPI.saveScope
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.mana.IManaManager
 import taboolib.common.platform.event.EventPriority
@@ -45,6 +47,8 @@ object GameManager {
         info("&e┣&7Storage禁止异步 &a√".colored())
         ScriptManager.terminateAllSkills()
         info("&e┣&7终止所有玩家技能 &a√".colored())
+        saveScope.cancel()
+        info("&e┣&7协程域终止 &a√".colored())
         info("&e┣&7延迟2Tick后关闭服务器 &a√".colored())
         submit(delay = 2) {
             Bukkit.getServer().shutdown()

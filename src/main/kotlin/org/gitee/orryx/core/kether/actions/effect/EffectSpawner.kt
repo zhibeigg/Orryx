@@ -1,8 +1,9 @@
 package org.gitee.orryx.core.kether.actions.effect
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.container.IContainer
 import org.gitee.orryx.core.kether.actions.effect.EffectType.*
@@ -34,12 +35,12 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
 
     fun start() {
         CoroutineScope(AsyncDispatcher).launch {
-            effects.forEach { effect ->
-                withContext(AsyncDispatcher) {
+            effects.map { effect ->
+                async {
                     effect.start()
                     effect.future.join()
                 }
-            }
+            }.awaitAll()
         }.invokeOnCompletion {
             future.complete(null)
         }

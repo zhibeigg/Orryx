@@ -41,7 +41,7 @@ class DragonCoreSkillUI(override val viewer: Player, override val owner: Player)
                 "Orryx_point" to owner.orryxProfile().point.toString(),
                 "Orryx_group" to job.group,
                 "Orryx_bind_keys" to keys.joinToString("<br>") { it.key },
-                "Orryx_bind_skills" to keys.joinToString("<br>") { it.key },
+                "Orryx_bind_skills" to keys.joinToString("<br>") { bindSkills[it]?.key ?: "none" },
                 "Orryx_skills" to skills.joinToString("<br>") { it.key },
                 "Orryx_skills_name" to skills.joinToString("<br>") { it.skill.name },
                 "Orryx_skills_level" to skills.joinToString("<br>") { it.level.toString() },
@@ -64,14 +64,15 @@ class DragonCoreSkillUI(override val viewer: Player, override val owner: Player)
                     BindKeyLoaderManager.getGroup(group)?.let { group ->
                         BindKeyLoaderManager.getBindKey(bindKey)?.let { bindKey ->
                             owner.getSkill(skill)?.let { skill ->
-                                job.setBindKey(skill, group, bindKey)
+                                job.setBindKey(skill, group, bindKey).thenRun {
+                                    update(viewer, owner)
+                                    IUIManager.INSTANCE.getSkillHUD(viewer)?.apply {
+                                        update()
+                                    }
+                                }
                             }
                         }
                     }
-                }
-                update(viewer, owner)
-                IUIManager.INSTANCE.getSkillHUD(viewer)?.apply {
-                    update()
                 }
             }
         }
@@ -81,13 +82,14 @@ class DragonCoreSkillUI(override val viewer: Player, override val owner: Player)
                 owner.job { job ->
                     BindKeyLoaderManager.getGroup(group)?.let { group ->
                         owner.getSkill(skill)?.let { skill ->
-                            job.unBindKey(skill, group)
+                            job.unBindKey(skill, group).thenRun {
+                                update(viewer, owner)
+                                IUIManager.INSTANCE.getSkillHUD(viewer)?.apply {
+                                    update()
+                                }
+                            }
                         }
                     }
-                }
-                update(viewer, owner)
-                IUIManager.INSTANCE.getSkillHUD(viewer)?.apply {
-                    update()
                 }
             }
         }
@@ -95,8 +97,11 @@ class DragonCoreSkillUI(override val viewer: Player, override val owner: Player)
         fun upgrade(viewer: Player, owner: Player, skill: String) {
             if (viewer == owner || viewer.isOp) {
                 owner.skill(skill) {
-                    if (it.up() == SkillLevelResult.SUCCESS) {
-                        update(owner, owner)
+                    it.up().thenAccept { result ->
+                        if (result == SkillLevelResult.SUCCESS) {
+                            update(viewer, owner)
+                            sendDescription(viewer, owner, skill)
+                        }
                     }
                 }
             }

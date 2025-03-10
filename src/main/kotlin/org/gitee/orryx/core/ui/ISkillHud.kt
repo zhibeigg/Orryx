@@ -4,6 +4,7 @@ import org.bukkit.entity.Player
 import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.key.IGroup
 import org.gitee.orryx.core.skill.IPlayerSkill
+import java.util.concurrent.CompletableFuture
 
 interface ISkillHud {
 
@@ -37,7 +38,7 @@ interface ISkillHud {
      * @param group 技能组
      * @return 是否设置成功
      * */
-    fun setGroup(group: IGroup): Boolean
+    fun setGroup(group: IGroup): CompletableFuture<Boolean>
 
     /**
      * 获取展示的技能
