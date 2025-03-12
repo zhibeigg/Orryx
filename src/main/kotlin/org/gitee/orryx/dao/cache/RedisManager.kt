@@ -3,9 +3,9 @@ package org.gitee.orryx.dao.cache
 import com.gitee.redischannel.RedisChannelPlugin
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.gitee.orryx.dao.pojo.PlayerData
-import org.gitee.orryx.dao.pojo.PlayerJob
-import org.gitee.orryx.dao.pojo.PlayerSkill
+import org.gitee.orryx.dao.pojo.PlayerJobPO
+import org.gitee.orryx.dao.pojo.PlayerProfilePO
+import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.utils.playerDataTag
 import org.gitee.orryx.utils.playerJobDataTag
@@ -16,21 +16,21 @@ class RedisManager: ICacheManager {
 
     private val api by lazy { RedisChannelPlugin.api }
 
-    override fun getPlayerData(player: UUID): PlayerData? {
+    override fun getPlayerData(player: UUID): PlayerProfilePO? {
         val tag = playerDataTag(player)
-        var playerData = api.get(playerDataTag(player))?.let { Json.decodeFromString<PlayerData>(it) }
-        if (playerData == null) {
-            playerData = IStorageManager.INSTANCE.getPlayerData(player)
-            playerData?.let { savePlayerData(player, it, true) }
+        var playerProfilePO = api.get(playerDataTag(player))?.let { Json.decodeFromString<PlayerProfilePO>(it) }
+        if (playerProfilePO == null) {
+            playerProfilePO = IStorageManager.INSTANCE.getPlayerData(player)
+            playerProfilePO?.let { savePlayerData(player, it, true) }
         } else {
             api.refreshExpire(tag, 900, true)
         }
-        return playerData
+        return playerProfilePO
     }
 
-    override fun getPlayerJob(player: UUID, job: String): PlayerJob? {
+    override fun getPlayerJob(player: UUID, job: String): PlayerJobPO? {
         val tag = playerJobDataTag(player, job)
-        var jobData = api.get(playerJobDataTag(player, job))?.let { Json.decodeFromString<PlayerJob>(it) }
+        var jobData = api.get(playerJobDataTag(player, job))?.let { Json.decodeFromString<PlayerJobPO>(it) }
         if (jobData == null) {
             jobData = IStorageManager.INSTANCE.getPlayerJob(player, job)
             jobData?.let { savePlayerJob(player, it, true) }
@@ -40,9 +40,9 @@ class RedisManager: ICacheManager {
         return jobData
     }
 
-    override fun getPlayerSkill(player: UUID, job: String, skill: String): PlayerSkill? {
+    override fun getPlayerSkill(player: UUID, job: String, skill: String): PlayerSkillPO? {
         val tag = playerJobSkillDataTag(player, job, skill)
-        var skillData = api.get(tag)?.let { Json.decodeFromString<PlayerSkill>(it) }
+        var skillData = api.get(tag)?.let { Json.decodeFromString<PlayerSkillPO>(it) }
         if (skillData == null) {
             skillData = IStorageManager.INSTANCE.getPlayerSkill(player, job, skill)
             skillData?.let { savePlayerSkill(player, it, true) }
@@ -52,16 +52,16 @@ class RedisManager: ICacheManager {
         return skillData
     }
 
-    override fun savePlayerData(player: UUID, playerData: PlayerData, async: Boolean) {
-        api.set(playerDataTag(player), Json.encodeToString(playerData), 900, async)
+    override fun savePlayerData(player: UUID, playerProfilePO: PlayerProfilePO, async: Boolean) {
+        api.set(playerDataTag(player), Json.encodeToString(playerProfilePO), 900, async)
     }
 
-    override fun savePlayerJob(player: UUID, playerJob: PlayerJob, async: Boolean) {
-        api.set(playerJobDataTag(player, playerJob.job), Json.encodeToString(playerJob), 900, async)
+    override fun savePlayerJob(player: UUID, playerJobPO: PlayerJobPO, async: Boolean) {
+        api.set(playerJobDataTag(player, playerJobPO.job), Json.encodeToString(playerJobPO), 900, async)
     }
 
-    override fun savePlayerSkill(player: UUID, playerSkill: PlayerSkill, async: Boolean) {
-        api.set(playerJobSkillDataTag(player, playerSkill.job, playerSkill.skill), Json.encodeToString(playerSkill), 600, async)
+    override fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO, async: Boolean) {
+        api.set(playerJobSkillDataTag(player, playerSkillPO.job, playerSkillPO.skill), Json.encodeToString(playerSkillPO), 600, async)
     }
 
     override fun removePlayerData(player: UUID, async: Boolean) {

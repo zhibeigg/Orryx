@@ -1,6 +1,7 @@
 package org.gitee.orryx.core.ui
 
 import org.bukkit.entity.Player
+import org.bukkit.event.player.PlayerQuitEvent
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillBindKeyEvent
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillCooldownEvents
@@ -100,6 +101,11 @@ interface IUIManager {
         private fun unbind(e: OrryxPlayerSkillUnBindKeyEvent.Post) {
             if (e.isCancelled) return
             updateAll(e.player)
+        }
+
+        @SubscribeEvent
+        private fun quit(e: PlayerQuitEvent) {
+            skillCooldownMap.remove(e.player.uniqueId)
         }
 
         private val type

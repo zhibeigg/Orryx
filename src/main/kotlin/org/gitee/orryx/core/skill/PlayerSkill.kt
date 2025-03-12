@@ -13,7 +13,7 @@ import org.gitee.orryx.core.mana.IManaManager
 import org.gitee.orryx.core.profile.PlayerProfileManager.orryxProfile
 import org.gitee.orryx.core.skill.skills.PassiveSkill
 import org.gitee.orryx.dao.cache.ICacheManager
-import org.gitee.orryx.dao.pojo.PlayerSkill
+import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.utils.castSkill
 import org.gitee.orryx.utils.runCustomAction
@@ -129,8 +129,8 @@ class PlayerSkill(
         }
     }
 
-    private fun createDaoData(): PlayerSkill {
-        return PlayerSkill(player.uniqueId, job, key, locked, level)
+    private fun createDaoData(): PlayerSkillPO {
+        return PlayerSkillPO(player.uniqueId, job, key, locked, level)
     }
 
     override fun save(async: Boolean, callback: () -> Unit) {

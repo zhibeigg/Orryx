@@ -3,9 +3,9 @@ package org.gitee.orryx.dao.storage
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.gitee.orryx.api.OrryxAPI
-import org.gitee.orryx.dao.pojo.PlayerData
-import org.gitee.orryx.dao.pojo.PlayerJob
-import org.gitee.orryx.dao.pojo.PlayerSkill
+import org.gitee.orryx.dao.pojo.PlayerProfilePO
+import org.gitee.orryx.dao.pojo.PlayerJobPO
+import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.utils.*
 import taboolib.module.database.ColumnOptionSQL
 import taboolib.module.database.ColumnTypeSQL
@@ -49,12 +49,12 @@ class MySqlManager: IStorageManager {
         skillsTable.createTable(dataSource)
     }
 
-    override fun getPlayerData(player: UUID): PlayerData? {
+    override fun getPlayerData(player: UUID): PlayerProfilePO? {
         return playerTable.select(dataSource) {
             where { UUID eq player.toString() }
             rows(JOB, POINT, FLAGS)
         }.firstOrNull {
-            PlayerData(
+            PlayerProfilePO(
                 player,
                 getString(JOB),
                 getInt(POINT),
@@ -63,52 +63,52 @@ class MySqlManager: IStorageManager {
         }
     }
 
-    override fun getPlayerJob(player: UUID, job: String): PlayerJob? {
+    override fun getPlayerJob(player: UUID, job: String): PlayerJobPO? {
         return jobsTable.select(dataSource) {
             where { UUID eq player.toString() and ( JOB eq job ) }
             rows(EXPERIENCE, GROUP, BIND_KEY_OF_GROUP)
         }.firstOrNull {
-            PlayerJob(player, job, getInt(EXPERIENCE), getString(GROUP), Json.decodeFromString(getString(BIND_KEY_OF_GROUP)))
+            PlayerJobPO(player, job, getInt(EXPERIENCE), getString(GROUP), Json.decodeFromString(getString(BIND_KEY_OF_GROUP)))
         }
     }
 
-    override fun getPlayerSkill(player: UUID, job: String, skill: String): PlayerSkill? {
+    override fun getPlayerSkill(player: UUID, job: String, skill: String): PlayerSkillPO? {
         return skillsTable.select(dataSource) {
             where { UUID eq player.toString() and ( JOB eq job ) and ( SKILL eq skill ) }
             rows(LOCKED, LEVEL)
         }.firstOrNull {
-            PlayerSkill(player, job, skill, getBoolean(LOCKED), getInt(LEVEL))
+            PlayerSkillPO(player, job, skill, getBoolean(LOCKED), getInt(LEVEL))
         }
     }
 
-    override fun savePlayerData(player: UUID, playerData: PlayerData) {
+    override fun savePlayerData(player: UUID, playerProfilePO: PlayerProfilePO) {
         playerTable.insert(dataSource, UUID, JOB, POINT, FLAGS) {
             onDuplicateKeyUpdate {
-                update(POINT, playerData.point)
-                update(FLAGS, Json.encodeToString(playerData.flags))
+                update(POINT, playerProfilePO.point)
+                update(FLAGS, Json.encodeToString(playerProfilePO.flags))
             }
-            value(player.toString(), playerData.job, playerData.point, Json.encodeToString(playerData.flags))
+            value(player.toString(), playerProfilePO.job, playerProfilePO.point, Json.encodeToString(playerProfilePO.flags))
         }
     }
 
-    override fun savePlayerJob(player: UUID, playerJob: PlayerJob) {
+    override fun savePlayerJob(player: UUID, playerJobPO: PlayerJobPO) {
         jobsTable.insert(dataSource, UUID, JOB, EXPERIENCE, GROUP, BIND_KEY_OF_GROUP) {
             onDuplicateKeyUpdate {
-                update(EXPERIENCE, playerJob.experience)
-                update(GROUP, playerJob.group)
-                update(BIND_KEY_OF_GROUP, Json.encodeToString(playerJob.bindKeyOfGroup))
+                update(EXPERIENCE, playerJobPO.experience)
+                update(GROUP, playerJobPO.group)
+                update(BIND_KEY_OF_GROUP, Json.encodeToString(playerJobPO.bindKeyOfGroup))
             }
-            value(player.toString(), playerJob.job, playerJob.experience, playerJob.group, Json.encodeToString(playerJob.bindKeyOfGroup))
+            value(player.toString(), playerJobPO.job, playerJobPO.experience, playerJobPO.group, Json.encodeToString(playerJobPO.bindKeyOfGroup))
         }
     }
 
-    override fun savePlayerSkill(player: UUID, playerSkill: PlayerSkill) {
+    override fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO) {
         skillsTable.insert(dataSource, UUID, JOB, SKILL, LOCKED, LEVEL) {
             onDuplicateKeyUpdate {
-                update(LOCKED, playerSkill.locked)
-                update(LEVEL, playerSkill.level)
+                update(LOCKED, playerSkillPO.locked)
+                update(LEVEL, playerSkillPO.level)
             }
-            value(player.toString(), playerSkill.job, playerSkill.skill, playerSkill.locked, playerSkill.level)
+            value(player.toString(), playerSkillPO.job, playerSkillPO.skill, playerSkillPO.locked, playerSkillPO.level)
         }
     }
 

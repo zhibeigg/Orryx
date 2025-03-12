@@ -6,13 +6,16 @@ import org.bukkit.entity.Player
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.core.ui.AbstractSkillHud
 import org.gitee.orryx.core.ui.IUIManager
+import org.gitee.orryx.core.ui.IUIManager.Companion.skillCooldownMap
 import org.gitee.orryx.core.ui.germplugin.GermPluginSkillHud
+import org.gitee.orryx.utils.getBindSkills
+import org.gitee.orryx.utils.job
 import taboolib.common.platform.function.getDataFolder
 import taboolib.platform.util.onlinePlayers
 import java.io.File
 import java.util.*
 
-class DragonCoreSkillHud(override val viewer: Player, override val owner: Player): AbstractSkillHud(viewer, owner) {
+open class DragonCoreSkillHud(override val viewer: Player, override val owner: Player): AbstractSkillHud(viewer, owner) {
 
     companion object {
 
@@ -41,15 +44,40 @@ class DragonCoreSkillHud(override val viewer: Player, override val owner: Player
     }
 
     override fun update() {
-        TODO("Not yet implemented")
+        val job = owner.job() ?: return
+        val bindSkills = job.getBindSkills()
+        val keys = bindSkills.keys.sortedBy { it.sort }
+        PacketSender.sendSyncPlaceholder(viewer, mapOf(
+            "Orryx_bind_keys" to keys.joinToString("<br>") { it.key },
+            "Orryx_bind_skills" to keys.joinToString("<br>") { bindSkills[it]?.key ?: "none" },
+            "Orryx_bind_cooldowns" to keys.joinToString("<br>") { bindSkills[it]?.key?.let { skill -> skillCooldownMap[owner.uniqueId]?.get(skill)?.getOverStamp(owner) }.toString() }
+        ))
     }
 
     override fun open() {
-        TODO("Not yet implemented")
+        remove(true)
+        PacketSender.sendOpenHud(viewer, "OrryxSkillHUD")
+        update()
+        dragonSkillHudMap.getOrPut(owner.uniqueId) { hashMapOf() }[viewer.uniqueId] = this
     }
 
     override fun close() {
-        TODO("Not yet implemented")
+        remove(true)
+    }
+
+    protected open fun remove(close: Boolean = true) {
+        dragonSkillHudMap.forEach {
+            val iterator = it.value.iterator()
+            while (iterator.hasNext()) {
+                val next = iterator.next()
+                if (next.key == viewer.uniqueId) {
+                    iterator.remove()
+                    if (close) {
+                        PacketSender.sendRunFunction(next.value.viewer, "OrryxSkillHUD", "方法.关闭界面;", false)
+                    }
+                }
+            }
+        }
     }
 
 }

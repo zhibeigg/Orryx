@@ -233,8 +233,7 @@ open class GermPluginSkillHud(override val viewer: Player, override val owner: P
     }
 
     override fun close() {
-        remove()
-        screen.close()
+        remove(true)
     }
 
     protected open fun remove(close: Boolean = true) {

@@ -5,7 +5,7 @@ import org.gitee.orryx.dao.serializer.UUIDSerializer
 import java.util.*
 
 @Serializable
-data class PlayerSkill(
+data class PlayerSkillPO(
     @Serializable(with = UUIDSerializer::class)
     val player: UUID,
     val job: String,

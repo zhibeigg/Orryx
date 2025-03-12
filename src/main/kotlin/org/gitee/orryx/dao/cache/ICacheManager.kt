@@ -3,9 +3,9 @@ package org.gitee.orryx.dao.cache
 import com.github.benmanes.caffeine.cache.stats.CacheStats
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.reload.Reload
-import org.gitee.orryx.dao.pojo.PlayerData
-import org.gitee.orryx.dao.pojo.PlayerJob
-import org.gitee.orryx.dao.pojo.PlayerSkill
+import org.gitee.orryx.dao.pojo.PlayerJobPO
+import org.gitee.orryx.dao.pojo.PlayerProfilePO
+import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.utils.RedisChannelPlugin
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
@@ -58,9 +58,9 @@ interface ICacheManager {
             fun printStats(name: String, stats: CacheStats) {
                 info("&e┣&f缓存：$name &c命中率：${(stats.hitRate()*100).format(2)} % &c加载平均时间：${stats.averageLoadPenalty()/1000000} ms".colored())
             }
-            printStats("玩家", instance.playerDataCache.stats())
-            printStats("职业", instance.playerJobCache.stats())
-            printStats("技能", instance.playerSkillCache.stats())
+            printStats("玩家", instance.playerProfilePOCache.stats())
+            printStats("职业", instance.playerJobPOCache.stats())
+            printStats("技能", instance.playerSkillPOCache.stats())
         }
 
     }
@@ -72,7 +72,7 @@ interface ICacheManager {
      * @param player 玩家的UUID
      * @return 玩家数据
      * */
-    fun getPlayerData(player: UUID): PlayerData?
+    fun getPlayerData(player: UUID): PlayerProfilePO?
 
     /**
      * 从缓存获取职业数据
@@ -82,7 +82,7 @@ interface ICacheManager {
      * @param job 获取的职业
      * @return 职业数据
      * */
-    fun getPlayerJob(player: UUID, job: String): PlayerJob?
+    fun getPlayerJob(player: UUID, job: String): PlayerJobPO?
 
     /**
      * 从缓存获取技能数据
@@ -93,31 +93,31 @@ interface ICacheManager {
      * @param skill 获取的技能
      * @return 技能数据
      * */
-    fun getPlayerSkill(player: UUID, job: String, skill: String): PlayerSkill?
+    fun getPlayerSkill(player: UUID, job: String, skill: String): PlayerSkillPO?
 
     /**
      * 保存玩家数据到缓存
      * @param player 玩家的UUID
-     * @param playerData 玩家数据
+     * @param playerProfilePO 玩家数据
      * @param async 是否异步
      * */
-    fun savePlayerData(player: UUID, playerData: PlayerData, async: Boolean)
+    fun savePlayerData(player: UUID, playerProfilePO: PlayerProfilePO, async: Boolean)
 
     /**
      * 保存职业数据到缓存
      * @param player 玩家的UUID
-     * @param playerJob 职业数据
+     * @param playerJobPO 职业数据
      * @param async 是否异步
      * */
-    fun savePlayerJob(player: UUID, playerJob: PlayerJob, async: Boolean)
+    fun savePlayerJob(player: UUID, playerJobPO: PlayerJobPO, async: Boolean)
 
     /**
      * 保存技能数据到缓存
      * @param player 玩家的UUID
-     * @param playerSkill 技能数据
+     * @param playerSkillPO 技能数据
      * @param async 是否异步
      * */
-    fun savePlayerSkill(player: UUID, playerSkill: PlayerSkill, async: Boolean)
+    fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO, async: Boolean)
 
     /**
      * 删除缓存中的玩家数据

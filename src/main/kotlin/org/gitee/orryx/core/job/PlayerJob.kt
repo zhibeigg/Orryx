@@ -17,7 +17,7 @@ import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.key.IGroup
 import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.dao.cache.ICacheManager
-import org.gitee.orryx.dao.pojo.PlayerJob
+import org.gitee.orryx.dao.pojo.PlayerJobPO
 import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.utils.*
 import taboolib.common.platform.function.isPrimaryThread
@@ -53,8 +53,8 @@ class PlayerJob(
     override val maxExperienceOfLevel: Int
         get() = getExperience().getExperienceOfLevel(player, experience)
 
-    private fun createDaoData(): PlayerJob {
-        return PlayerJob(player.uniqueId, key, experience, group, bindKeyOfGroupToMap(bindKeyOfGroup))
+    private fun createDaoData(): PlayerJobPO {
+        return PlayerJobPO(player.uniqueId, key, experience, group, bindKeyOfGroupToMap(bindKeyOfGroup))
     }
 
     override fun getExperience(): IExperience {

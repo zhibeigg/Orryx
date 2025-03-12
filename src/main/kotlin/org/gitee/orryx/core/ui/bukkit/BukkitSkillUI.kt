@@ -69,11 +69,11 @@ open class BukkitSkillUI(override val viewer: Player, override val owner: Player
         get() = viewer == owner || viewer.isOp
 
     protected open lateinit var inventory: Inventory
-    private lateinit var job: IPlayerJob
+    private val job: IPlayerJob?
+        get() = owner.job()
 
     override fun open() {
-        job = owner.job() ?: return
-        viewer.openMenu(build(job).also { inventory = it })
+        viewer.openMenu(build(job ?: return).also { inventory = it })
     }
 
     protected open fun build(job: IPlayerJob): Inventory {
@@ -212,7 +212,7 @@ open class BukkitSkillUI(override val viewer: Player, override val owner: Player
     }
 
     override fun update() {
-        val bindSkillMap = job.getBindSkills()
+        val bindSkillMap = (job ?: return).getBindSkills()
         bindKeys().forEachIndexed { index, iBindKey ->
             bindSkillMap[iBindKey]?.apply {
                 inventory.setItem(

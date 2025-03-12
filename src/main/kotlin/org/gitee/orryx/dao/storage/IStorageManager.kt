@@ -2,9 +2,9 @@ package org.gitee.orryx.dao.storage
 
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.reload.Reload
-import org.gitee.orryx.dao.pojo.PlayerData
-import org.gitee.orryx.dao.pojo.PlayerJob
-import org.gitee.orryx.dao.pojo.PlayerSkill
+import org.gitee.orryx.dao.pojo.PlayerProfilePO
+import org.gitee.orryx.dao.pojo.PlayerJobPO
+import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.function.info
@@ -51,7 +51,7 @@ interface IStorageManager {
      * @param player 玩家的UUID
      * @return 玩家数据
      * */
-    fun getPlayerData(player: UUID): PlayerData?
+    fun getPlayerData(player: UUID): PlayerProfilePO?
 
     /**
      * 从数据库获取职业数据
@@ -59,7 +59,7 @@ interface IStorageManager {
      * @param job 获取的职业
      * @return 职业数据
      * */
-    fun getPlayerJob(player: UUID, job: String): PlayerJob?
+    fun getPlayerJob(player: UUID, job: String): PlayerJobPO?
 
     /**
      * 从数据库获取技能数据
@@ -68,27 +68,27 @@ interface IStorageManager {
      * @param skill 获取的技能
      * @return 技能数据
      * */
-    fun getPlayerSkill(player: UUID, job: String, skill: String): PlayerSkill?
+    fun getPlayerSkill(player: UUID, job: String, skill: String): PlayerSkillPO?
 
     /**
      * 保存玩家数据到数据库
      * @param player 玩家的UUID
-     * @param playerData 玩家数据
+     * @param playerProfilePO 玩家数据
      * */
-    fun savePlayerData(player: UUID, playerData: PlayerData)
+    fun savePlayerData(player: UUID, playerProfilePO: PlayerProfilePO)
 
     /**
      * 保存职业数据到数据库
      * @param player 玩家的UUID
-     * @param playerJob 职业数据
+     * @param playerJobPO 职业数据
      * */
-    fun savePlayerJob(player: UUID, playerJob: PlayerJob)
+    fun savePlayerJob(player: UUID, playerJobPO: PlayerJobPO)
 
     /**
      * 保存技能数据到数据库
      * @param player 玩家的UUID
-     * @param playerSkill 技能数据
+     * @param playerSkillPO 技能数据
      * */
-    fun savePlayerSkill(player: UUID, playerSkill: PlayerSkill)
+    fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO)
 
 }

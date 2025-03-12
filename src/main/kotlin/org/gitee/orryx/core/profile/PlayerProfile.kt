@@ -8,7 +8,7 @@ import org.gitee.orryx.api.events.player.job.OrryxPlayerJobChangeEvents
 import org.gitee.orryx.core.GameManager
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.dao.cache.ICacheManager
-import org.gitee.orryx.dao.pojo.PlayerData
+import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.utils.toSerializable
 import taboolib.common.platform.function.isPrimaryThread
@@ -117,8 +117,8 @@ class PlayerProfile(override val player: Player, private var privateJob: String?
         }
     }
 
-    private fun createDaoData(): PlayerData {
-        return PlayerData(player.uniqueId, job, point, privateFlags.filter { it.value.isPersistence }.mapValues { it.value.toSerializable() })
+    private fun createDaoData(): PlayerProfilePO {
+        return PlayerProfilePO(player.uniqueId, job, point, privateFlags.filter { it.value.isPersistence }.mapValues { it.value.toSerializable() })
     }
 
     override fun save(async: Boolean, callback: () -> Unit) {
