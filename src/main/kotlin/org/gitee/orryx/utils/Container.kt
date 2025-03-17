@@ -12,6 +12,7 @@ import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.targets.ITarget
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.module.kether.ScriptContext
+import taboolib.platform.util.onlinePlayers
 import java.util.*
 
 /**
@@ -125,8 +126,14 @@ internal fun Any?.readContainer(context: ScriptContext): IContainer? = when {
 internal fun IContainer?.orElse(default: IContainer): IContainer = this ?: default
 
 /**
- * 创建世界玩家容器（性能优化版）
+ * 创建世界玩家容器
  */
 fun worldPlayerWorldContainer(world: World): IContainer {
     return Container(world.players.mapTo(LinkedHashSet(), Player::toTarget))
 }
+
+/**
+ * 创建服务器玩家容器
+ */
+val serverPlayerContainer: IContainer
+    get() = Container(onlinePlayers.mapTo(LinkedHashSet(), Player::toTarget))

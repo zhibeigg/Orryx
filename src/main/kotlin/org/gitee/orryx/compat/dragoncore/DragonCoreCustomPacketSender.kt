@@ -33,6 +33,14 @@ object DragonCoreCustomPacketSender : PacketSender() {
         }
     }
 
+    fun setEntityModelItemAnimation(player: Player, entity: UUID, animation: String, speed: Float) {
+        sendPluginMessage(player, 102) { buffer: PacketBuffer ->
+            buffer.writeUniqueId(entity)
+            buffer.writeString(animation)
+            buffer.writeFloat(speed)
+        }
+    }
+
     fun sendKeyRegister(player: Player) {
         val list = IPlayerKeySetting.INSTANCE.let { listOf(it.aimConfirmKey(player), it.aimCancelKey(player)) }
         sendPluginMessage(player, 14) { buffer: PacketBuffer ->

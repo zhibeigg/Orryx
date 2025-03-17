@@ -16,6 +16,7 @@ import org.gitee.orryx.utils.raytrace.SpigotWorld
 import org.joml.Matrix3dc
 import org.joml.Vector3d
 import org.joml.Vector3dc
+import taboolib.common5.cdouble
 import taboolib.module.effect.math.Matrix
 
 
@@ -105,6 +106,15 @@ fun IVector.bukkit() = Vector(joml.x, joml.y, joml.z)
 fun IVector.taboo() = taboolib.common.util.Vector(joml.x, joml.y, joml.z)
 
 fun IVector.joml() = joml
+
+fun String.parseVector(): AbstractVector {
+    val list = split(",")
+    return kotlin.runCatching {
+        AbstractVector(list[0].cdouble, list[1].cdouble, list[2].cdouble)
+    }.getOrNull() ?: AbstractVector()
+}
+
+fun IVector.dragonString() = "${x()},${y()},${z()}"
 
 fun Matrix3dc.taboo() = Matrix(
     arrayOf(

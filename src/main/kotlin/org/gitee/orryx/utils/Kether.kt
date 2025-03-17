@@ -146,6 +146,7 @@ fun <T> CompletableFuture<Any?>.vector(then: (IVector) -> T): CompletableFuture<
                 is Vector -> Vector3d(vector.x, vector.y, vector.z).abstract()
                 is Vector3d -> vector.abstract()
                 is ITargetLocation<*> -> AbstractVector(vector.location)
+                is String -> AbstractVector()
                 else -> AbstractVector()
             }
         )
