@@ -33,8 +33,7 @@ object SelectorInit: ClassVisitor(1) {
                         }
                         selectors.add(instance)
                         if (instance is WikiSelector) {
-                            val wiki = instance.wiki
-                            ScriptManager.wikiSelectors[wiki.name] = wiki
+                            ScriptManager.wikiSelectors += instance.wiki
                         }
                     }
                 }

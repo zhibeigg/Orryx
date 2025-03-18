@@ -1,0 +1,238 @@
+through: true
+Functions:
+  open: |-
+    界面变量.横纵 = 0;
+    全局变量.界面大小 = 0.8;
+    方法.异步执行方法('动画1');
+  动画1: |-
+    背景_up_texture.alpha=0;
+    loop(10,{
+      全局变量.界面大小 = 全局变量.界面大小+0.02;
+      背景_up_texture.alpha = 背景_up_texture.alpha+0.1;
+      方法.延时(10);
+    });
+  updatePlaceholder: |-
+    if(局部变量.args.0 == 'Orryx_bind_keys') {
+      界面变量.绑定按键列表 = 方法.分割(局部变量.args.1, '<br>');
+      for_each(局部变量.key, 局部变量.index, 界面变量.绑定按键列表, {
+        局部变量.组件1 = 方法.新建组件('绑定技能背景_' & 方法.到整数(局部变量.index) & '_texture', '绑定技能背景');
+        局部变量.组件2 = 方法.新建组件('按键名_' & 方法.到整数(局部变量.index) & '_label', '按键名');
+        局部变量.组件3 = 方法.新建组件('绑定贴图_' & 方法.到整数(局部变量.index) & '_texture', '绑定贴图');
+        局部变量.组件4 = 方法.新建组件('冷却遮罩_' & 方法.到整数(局部变量.index) & '_texture', '冷却遮罩');
+        局部变量.组件5 = 方法.新建组件('冷却数字_' & 方法.到整数(局部变量.index) & '_label', '冷却数字');
+    
+        局部变量.组件1.index = 方法.到整数(局部变量.index);
+        局部变量.组件2.index = 方法.到整数(局部变量.index);
+        局部变量.组件3.index = 方法.到整数(局部变量.index);
+        局部变量.组件4.index = 方法.到整数(局部变量.index);
+        局部变量.组件5.index = 方法.到整数(局部变量.index);
+    
+        方法.添加组件(局部变量.组件1);
+        方法.添加组件(局部变量.组件2);
+        方法.添加组件(局部变量.组件3);
+        方法.添加组件(局部变量.组件4);
+        方法.添加组件(局部变量.组件5);
+      });
+    };
+    if(局部变量.args.0 == 'Orryx_bind_skills') {
+      界面变量.绑定技能列表 = 方法.分割(局部变量.args.1, '<br>');
+    };
+    if(局部变量.args.0 == 'Orryx_bind_cooldowns') {
+      界面变量.绑定冷却列表 = 方法.分割(局部变量.args.1, '<br>');
+      for_each(局部变量.cooldown, 局部变量.index, 界面变量.绑定冷却列表, {
+        方法.设置组件值('冷却遮罩_' & 方法.到整数(局部变量.index) & '_texture', 'timeout', 方法.MAX(0, 局部变量.cooldown-方法.取当前时间))
+      });
+    };
+背景_up_texture:
+  x: "check_texture.x+check_texture.distanceX"
+  y: "check_texture.y+check_texture.distanceY"
+  width: "方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 0)*全局变量.界面大小"
+  height: "方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 1)*全局变量.界面大小"
+  texture: |-
+    if(界面变量.横纵 == 0) {
+      return "https://img.picgo.net/2025/03/04/hudd6a841ea5e239055.png";
+    } else {
+      return "https://img.picgo.net/2025/03/01/hud6d926a8d7ba976e0.png";
+    };
+  alpha: "1"
+  visible: true
+背景_center_texture:
+  x: |-
+    if(界面变量.横纵 == 0) {
+      return 背景_up_texture.x;
+    } else {
+      return 背景_up_texture.x+背景_up_texture.width;
+    };
+  y: |-
+    if(界面变量.横纵 == 0) {
+      return 背景_up_texture.y+背景_up_texture.height;
+    } else {
+      return 背景_up_texture.y;
+    };
+  width: |-
+    if(界面变量.横纵 == 0) {
+      return 方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 0)*全局变量.界面大小;
+    } else {
+      return (方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 0)+方法.取成员数(界面变量.绑定按键列表)*30)*全局变量.界面大小;
+    };
+  height: |-
+    if(界面变量.横纵 == 0) {
+      return (方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 1)+方法.取成员数(界面变量.绑定按键列表)*30)*全局变量.界面大小;
+    } else {
+      return 方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 1)*全局变量.界面大小;
+    };
+  texture: |-
+    if(界面变量.横纵 == 0) {
+      return "https://img.picgo.net/2025/03/04/hud61275e9c19fac7d9.png";
+    } else {
+      return "https://img.picgo.net/2025/03/01/hud52216d64b922a5b3.png";
+    };
+  alpha: 背景_up_texture.alpha
+  visible: 背景_up_texture.visible
+背景_down_texture:
+  x: |-
+    if(界面变量.横纵 == 0) {
+      return 背景_up_texture.x;
+    } else {
+      return 背景_center_texture.x+背景_center_texture.width;
+    };
+  y: |-
+    if(界面变量.横纵 == 0) {
+      return 背景_center_texture.y+背景_center_texture.height;
+    } else {
+      return 背景_up_texture.y;
+    };
+  width: "方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 0)*全局变量.界面大小"
+  height: "方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 1)*全局变量.界面大小"
+  texture: |-
+    if(界面变量.横纵 == 0) {
+      return "https://img.picgo.net/2025/03/04/huddad5a413a08ca1b3.png";
+    } else {
+      return "https://img.picgo.net/2025/03/01/hud49c7f0823d7d08b6.png";
+    };
+  alpha: 背景_up_texture.alpha
+  visible: 背景_up_texture.visible
+check_texture:
+  x: "0"
+  y: |-
+    if(界面变量.横纵 == 0) {
+      return (h-背景_up_texture.height-背景_center_texture.height-背景_down_texture.height)/2;
+    } else {
+      return (h-背景_up_texture.height)/2;
+    };
+  width: |-
+    if(界面变量.横纵 == 0) {
+      return 背景_up_texture.width;
+    } else {
+      return 背景_up_texture.width+背景_center_texture.width+背景_down_texture.width;
+    };
+  height: |-
+    if(界面变量.横纵 == 0) {
+      return 背景_up_texture.height+背景_center_texture.height+背景_down_texture.height;
+    } else {
+      return 背景_up_texture.height;
+    };
+  minDistanceX: "0"
+  minDistanceY: "-check_texture.y"
+  maxDistanceX: "w-check_texture.width"
+  maxDistanceY: "(h-check_texture.height)/2"
+  texture: "0,0,0,0"
+  tip:
+    - "&c左键&f点击拖动"
+    - "&c右键&f旋转"
+  alpha: 0
+  visible: 背景_up_texture.visible
+  actions:
+    click_right: |-
+      方法.播放声音;
+      if(界面变量.横纵 == 0) {
+        界面变量.横纵 = 1;
+      } else {
+        界面变量.横纵 = 0;
+      };
+#####################
+绑定技能背景:
+  x: |-
+    if(界面变量.横纵 == 0) {
+      return 背景_up_texture.x+10*全局变量.界面大小;
+    } else {
+      return 背景_up_texture.x+(11+局部变量.当前组件.index*(局部变量.当前组件.width+8))*全局变量.界面大小;
+    };
+  y: |-
+    if(界面变量.横纵 == 0) {
+      return 背景_up_texture.y+(11+局部变量.当前组件.index*(局部变量.当前组件.height+8))*全局变量.界面大小;
+    } else {
+      return 背景_up_texture.y+10*全局变量.界面大小;
+    };
+  index: "0"
+  width: "方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 0)*全局变量.界面大小"
+  height: "方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 1)*全局变量.界面大小"
+  texture: |-
+    if(界面变量.横纵 == 0) {
+      return "https://img.picgo.net/2025/03/04/7767aeb643e89629a426b9abf61feb83dbdebf6a9a1deb95.png";
+    } else {
+      return "https://img.picgo.net/2025/02/28/2f6899ecb93b6ed58ea69e1a0eb9e4df0ecf6ba62cbffdf6.png";
+    };
+  alpha: "背景_up_texture.alpha"
+  visible: "背景_up_texture.visible"
+按键名:
+  x: |-
+    if(界面变量.横纵 == 0) {
+      return 方法.取组件值(方法.合并文本('绑定技能背景_' & 局部变量.当前组件.index & '_texture'),'x')+24.5*全局变量.界面大小;
+    } else {
+      return 方法.取组件值(方法.合并文本('绑定技能背景_' & 局部变量.当前组件.index & '_texture'),'x')+11.5*全局变量.界面大小;
+    };
+  y: |-
+    if(界面变量.横纵 == 0) {
+      return 方法.取组件值(方法.合并文本('绑定技能背景_' & 局部变量.当前组件.index & '_texture'),'y')+6.5*全局变量.界面大小;
+    } else {
+      return 方法.取组件值(方法.合并文本('绑定技能背景_' & 局部变量.当前组件.index & '_texture'),'y')+19.5*全局变量.界面大小;
+    };
+  index: "0"
+  scale: "全局变量.界面大小"
+  alpha: "背景_up_texture.alpha"
+  texts: "方法.取成员(界面变量.绑定按键列表, 局部变量.当前组件.index)"
+  visible: "方法.取组件值(方法.合并文本('绑定技能背景_' & 局部变量.当前组件.index & '_texture'),'visible')"
+  center: true
+绑定贴图:
+  x: "方法.取组件值(方法.合并文本('绑定技能背景_' & 局部变量.当前组件.index & '_texture'),'x')+2*全局变量.界面大小"
+  y: "方法.取组件值(方法.合并文本('绑定技能背景_' & 局部变量.当前组件.index & '_texture'),'y')+2*全局变量.界面大小"
+  index: "0"
+  width: "18*全局变量.界面大小"
+  height: "18*全局变量.界面大小"
+  texture: "方法.合并文本('icon/技能/', 方法.取成员(界面变量.绑定技能列表, 局部变量.当前组件.index), '.png')"
+  alpha: "背景_up_texture.alpha"
+  visible: "方法.取组件值(方法.合并文本('绑定技能背景_' & 局部变量.当前组件.index & '_texture'),'visible') && 方法.取成员(界面变量.绑定技能列表, 局部变量.当前组件.index) != 'none'"
+冷却遮罩:
+  x: "方法.取组件值(方法.合并文本('绑定技能背景_' & 局部变量.当前组件.index & '_texture'),'x')+2*全局变量.界面大小"
+  y: "方法.取组件值(方法.合并文本('绑定技能背景_' & 局部变量.当前组件.index & '_texture'),'y')+2*全局变量.界面大小"
+  index: "0"
+  width: "18*全局变量.界面大小"
+  height: "18*全局变量.界面大小"
+  timeout: "0"
+  limitX: "0"
+  limitY: "局部变量.当前组件.y+局部变量.当前组件.height*(1-方法.MAX(0, 方法.取成员(界面变量.绑定冷却列表, 局部变量.当前组件.index)-方法.取当前时间)/局部变量.当前组件.timeout)+1"
+  limitWidth: "w"
+  limitHeight: "局部变量.当前组件.height+1"
+  texture: "200,200,200,200"
+  alpha: "背景_up_texture.alpha"
+  visible: "方法.取组件值(方法.合并文本('绑定技能背景_' & 局部变量.当前组件.index & '_texture'),'visible') && 方法.取成员(界面变量.绑定技能列表, 局部变量.当前组件.index) != 'none'"
+冷却数字:
+  x: |-
+    if(界面变量.横纵 == 0) {
+      return 方法.取组件值(方法.合并文本('绑定技能背景_' & 局部变量.当前组件.index & '_texture'),'x')+11.5*全局变量.界面大小;
+    } else {
+      return 方法.取组件值(方法.合并文本('绑定技能背景_' & 局部变量.当前组件.index & '_texture'),'x')+11.5*全局变量.界面大小;
+    };
+  y: |-
+    if(界面变量.横纵 == 0) {
+      return 方法.取组件值(方法.合并文本('绑定技能背景_' & 局部变量.当前组件.index & '_texture'),'y')+6.5*全局变量.界面大小;
+    } else {
+      return 方法.取组件值(方法.合并文本('绑定技能背景_' & 局部变量.当前组件.index & '_texture'),'y')+19.5*全局变量.界面大小;
+    };
+  index: "0"
+  scale: "全局变量.界面大小"
+  alpha: "背景_up_texture.alpha"
+  texts: "方法.合并文本('&b', 方法.格式数字(方法.MAX(0, 方法.取成员(界面变量.绑定冷却列表, 局部变量.当前组件.index)-方法.取当前时间)/1000, '0.0'), 's')"
+  visible: "方法.MAX(0, 方法.取成员(界面变量.绑定冷却列表, 局部变量.当前组件.index)-方法.取当前时间) > 0"
+  center: true

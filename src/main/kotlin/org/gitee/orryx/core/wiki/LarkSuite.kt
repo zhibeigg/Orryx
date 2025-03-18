@@ -120,8 +120,8 @@ object LarkSuite {
     }
 
     private suspend fun createDocumentBlocks(documentId: String, chain: Chain<*>) {
-        val actionGroup = ScriptManager.wikiActions.values.groupBy { it.group }
-        val selectorsGroup = ScriptManager.wikiSelectors.values.groupBy { it.type }
+        val actionGroup = ScriptManager.wikiActions.groupBy { it.group }
+        val selectorsGroup = ScriptManager.wikiSelectors.groupBy { it.type }
         debug(actionGroup.mapValues { it.value.map { action -> action.name } })
         debug(selectorsGroup.mapValues { it.value.map { selector -> selector.name } })
         createPs(documentId, chain)

@@ -13,7 +13,7 @@ fun keysRegister(keys: Collection<BindKeyLoader>) {
     if (DragonCorePlugin.isEnabled) {
         keys.forEach { bindKey ->
             bindKey.keys.forEach { key ->
-                CoreAPI.registerKey(key.lowercase())
+                CoreAPI.registerKey(key.uppercase())
             }
         }
     }

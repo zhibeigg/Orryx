@@ -248,7 +248,7 @@ class Action(val group: String, val name: String, val key: String, val sharded: 
                                 .headerRow(true)
                                 .columnSize(4)
                                 .rowSize(entries.size + 1)
-                                .columnWidth(arrayOf(100, 200, 60, 400))
+                                .columnWidth(arrayOf(150, 200, 60, 400))
                                 .build()
                         )
                         .build()

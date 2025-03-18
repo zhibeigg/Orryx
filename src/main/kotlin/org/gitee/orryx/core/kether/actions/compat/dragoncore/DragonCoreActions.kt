@@ -3,9 +3,19 @@ package org.gitee.orryx.core.kether.actions.compat.dragoncore
 import eos.moe.armourers.api.DragonAPI
 import eos.moe.armourers.api.PlayerSkinUpdateEvent
 import eos.moe.dragoncore.network.PacketSender
+import ink.ptms.adyeshach.core.Adyeshach
+import ink.ptms.adyeshach.core.entity.EntityTypes
+import org.bukkit.entity.ArmorStand
+import org.bukkit.entity.EntityType
 import org.bukkit.event.player.PlayerQuitEvent
+import org.gitee.orryx.api.adapters.IEntity
+import org.gitee.orryx.api.adapters.entity.AbstractAdyeshachEntity
+import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
 import org.gitee.orryx.compat.dragoncore.DragonCoreCustomPacketSender
 import org.gitee.orryx.core.common.task.SimpleTimeoutTask
+import org.gitee.orryx.core.common.task.SimpleTimeoutTask.Companion.createSimpleTask
+import org.gitee.orryx.core.container.Container
+import org.gitee.orryx.core.kether.ScriptManager.addOrryxCloseable
 import org.gitee.orryx.core.kether.ScriptManager.scriptParser
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.core.targets.PlayerTarget
@@ -14,14 +24,19 @@ import org.gitee.orryx.core.wiki.Type
 import org.gitee.orryx.utils.*
 import taboolib.common.platform.Ghost
 import taboolib.common.platform.event.SubscribeEvent
+import taboolib.common5.cfloat
 import taboolib.common5.util.parseUUID
 import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*
+import taboolib.platform.util.onlinePlayers
+import taboolib.platform.util.setMeta
 import java.util.*
+import java.util.concurrent.CompletableFuture
 
 object DragonCoreActions {
 
     private val armourersMap by lazy { hashMapOf<UUID, MutableList<String>>() }
+    private val effectMap by lazy { hashMapOf<UUID, MutableList<ModelEffect>>() }
 
     @Ghost
     @SubscribeEvent
@@ -124,7 +139,128 @@ object DragonCoreActions {
                 .addEntry("方块标识符", Type.SYMBOL, false, head = "block")
                 .addEntry("动作名", Type.STRING, false)
                 .addEntry("xyz位置", Type.VECTOR, false)
-                .addContainerEntry("可视玩家", true, "@self"),
+                .addContainerEntry("可视玩家", true, "@self", "viewers"),
+            Action.new("DragonCore附属语句", "播放音乐", "dragoncore", true)
+                .description("播放音乐")
+                .addEntry("音乐标识符", Type.SYMBOL, false, head = "sound")
+                .addEntry("发送标识符", Type.SYMBOL, false, head = "send")
+                .addEntry("音乐唯一ID", Type.STRING, false)
+                .addEntry("音乐文件位置", Type.STRING, false)
+                .addEntry("播放类型", Type.STRING, false)
+                .addEntry("播放世界位置向量", Type.VECTOR, true, "可听玩家眼睛位置", "loc")
+                .addEntry("是否循环", Type.BOOLEAN, true, head = "loop", default = "false")
+                .addEntry("声音大小", Type.FLOAT, true, head = "by/with", default = "1.0")
+                .addEntry("声音音调", Type.FLOAT, true, default = "1.0")
+                .addContainerEntry("可听玩家", true, "@self"),
+            Action.new("DragonCore附属语句", "停止播放音乐", "dragoncore", true)
+                .description("停止播放音乐")
+                .addEntry("音乐唯一ID", Type.STRING, false)
+                .addContainerEntry("可听玩家", true, "@self"),
+            Action.new("DragonCore附属语句", "运行龙核GUI方法", "dragoncore", true)
+                .description("运行龙核GUI方法")
+                .addEntry("方法标识符", Type.SYMBOL, false, head = "function/func")
+                .addEntry("gui标识符", Type.SYMBOL, false, head = "gui")
+                .addEntry("gui名字", Type.STRING, false)
+                .addEntry("方法语句", Type.STRING, false)
+                .addContainerEntry("客户端参与执行的玩家", true, "@self"),
+            Action.new("DragonCore附属语句", "运行龙核动作控制器方法", "dragoncore", true)
+                .description("运行龙核动作控制器方法")
+                .addEntry("方法标识符", Type.SYMBOL, false, head = "function/func")
+                .addEntry("动作标识符", Type.SYMBOL, false, head = "animation/ani")
+                .addEntry("执行实体UUID", Type.STRING, false)
+                .addEntry("方法语句", Type.STRING, false)
+                .addContainerEntry("客户端参与执行的玩家", true, "@self"),
+            Action.new("DragonCore附属语句", "运行龙核GUI方法", "dragoncore", true)
+                .description("运行龙核GUI方法")
+                .addEntry("方法标识符", Type.SYMBOL, false, head = "function/func")
+                .addEntry("tag标识符", Type.SYMBOL, false, head = "headtag/tag")
+                .addEntry("执行实体UUID", Type.STRING, false)
+                .addEntry("方法语句", Type.STRING, false)
+                .addContainerEntry("客户端参与执行的玩家", true, "@self"),
+            Action.new("DragonCore附属语句", "打开GUI", "dragoncore", true)
+                .description("打开龙核Gui")
+                .addEntry("gui标识符", Type.SYMBOL, false, head = "gui")
+                .addEntry("gui名字", Type.STRING, false)
+                .addContainerEntry("打开GUI的玩家", true, "@self"),
+            Action.new("DragonCore附属语句", "打开HUD", "dragoncore", true)
+                .description("打开龙核HUD")
+                .addEntry("hud标识符", Type.SYMBOL, false, head = "hud")
+                .addEntry("hud名字", Type.STRING, false)
+                .addContainerEntry("打开HUD的玩家", true, "@self"),
+            Action.new("DragonCore附属语句", "发送同步papi数据", "dragoncore", true)
+                .description("发送同步placeholder数据")
+                .addEntry("placeholder标识符", Type.SYMBOL, false, head = "placeholder/papi")
+                .addEntry("发送标识符", Type.SYMBOL, false, head = "send")
+                .addEntry("存储了的数据的键，用逗号隔开", Type.STRING, false)
+                .addContainerEntry("发送数据的玩家", true, "@self")
+                .example("dragon papi send a,b,c they \"@self\""),
+            Action.new("DragonCore附属语句", "删除papi数据", "dragoncore", true)
+                .description("删除客户端placeholder数据")
+                .addEntry("placeholder标识符", Type.SYMBOL, false, head = "placeholder/papi")
+                .addEntry("删除标识符", Type.SYMBOL, false, head = "delete/remove")
+                .addEntry("删除的键", Type.STRING, false)
+                .addEntry("是否检测startWith键", Type.BOOLEAN, false)
+                .addContainerEntry("删除数据的玩家", true, "@self")
+                .example("dragon papi delete a,b,c they \"@self\""),
+            Action.new("DragonCore附属语句", "设置headTag", "dragoncore", true)
+                .description("设置实体的headTag")
+                .addEntry("headTag标识符", Type.SYMBOL, false, head = "headtag/tag")
+                .addEntry("设置标识符", Type.SYMBOL, false, head = "set")
+                .addEntry("设置的实体uuid", Type.STRING, false)
+                .addEntry("匹配名", Type.STRING, false)
+                .addContainerEntry("可视玩家", true, "@self", "viewers"),
+            Action.new("DragonCore附属语句", "移除headTag", "dragoncore", true)
+                .description("移除实体的headTag")
+                .addEntry("headTag标识符", Type.SYMBOL, false, head = "headtag/tag")
+                .addEntry("移除标识符", Type.SYMBOL, false, head = "remove")
+                .addEntry("移除的实体uuid", Type.STRING, false)
+                .addContainerEntry("可视玩家", true, "@self", "viewers"),
+            Action.new("DragonCore附属语句", "设置实体模型", "dragoncore", true)
+                .description("设置实体模型")
+                .addEntry("模型标识符", Type.SYMBOL, false, head = "model")
+                .addEntry("设置标识符", Type.SYMBOL, false, head = "set")
+                .addEntry("设置的实体uuid", Type.STRING, false)
+                .addEntry("匹配名", Type.STRING, false)
+                .addContainerEntry("可视玩家", true, "@self", "viewers"),
+            Action.new("DragonCore附属语句", "移除实体模型", "dragoncore", true)
+                .description("移除实体模型")
+                .addEntry("模型标识符", Type.SYMBOL, false, head = "model")
+                .addEntry("移除标识符", Type.SYMBOL, false, head = "remove")
+                .addEntry("移除的实体uuid", Type.STRING, false)
+                .addContainerEntry("可视玩家", true, "@self", "viewers"),
+            Action.new("DragonCore附属语句", "设置视角", "dragoncore", true)
+                .description("设置第几人称视角")
+                .addEntry("视角标识符", Type.SYMBOL, false, head = "view")
+                .addEntry("视角(1,2,3)", Type.INT, false)
+                .addContainerEntry("设置人称的玩家", true, "@self"),
+            Action.new("DragonCore附属语句", "设置windows窗口标题", "dragoncore", true)
+                .description("设置windows窗口标题")
+                .addEntry("窗口title标识符", Type.SYMBOL, false, head = "title")
+                .addEntry("标题", Type.STRING, false)
+                .addContainerEntry("设置标题的玩家", true, "@self"),
+            Action.new("DragonCore附属语句", "虚拟绑定实体位置", "dragoncore", true)
+                .description("虚拟绑定实体位置")
+                .addEntry("绑定标识符", Type.SYMBOL, false, head = "bindEntity/bind")
+                .addEntry("被绑定的实体UUID", Type.STRING, false)
+                .addEntry("绑定到的实体UUID", Type.STRING, false)
+                .addEntry("偏移向量", Type.VECTOR, false)
+                .addEntry("是否绑定yaw角", Type.BOOLEAN, false)
+                .addEntry("是否绑定pitch角", Type.BOOLEAN, false)
+                .addContainerEntry("可视玩家", true, "@self", "viewers"),
+            Action.new("DragonCore附属语句", "实体模型特效绑定", "dragoncore", true)
+                .description("实体模型特效绑定")
+                .addEntry("实体模型标识符", Type.SYMBOL, false, head = "modelEffect")
+                .addEntry("创建标识符", Type.SYMBOL, false, head = "create")
+                .addEntry("实体唯一ID", Type.STRING, false)
+                .addEntry("模型匹配名", Type.STRING, false)
+                .addEntry("延迟消失时间", Type.LONG, false)
+                .addContainerEntry("绑定实体", true, "@self"),
+            Action.new("DragonCore附属语句", "实体模型特效移除", "dragoncore", true)
+                .description("实体模型特效移除")
+                .addEntry("实体模型标识符", Type.SYMBOL, false, head = "modelEffect")
+                .addEntry("移除标识符", Type.SYMBOL, false, head = "remove")
+                .addEntry("实体唯一ID", Type.STRING, false)
+                .addContainerEntry("绑定的实体", true, "@self"),
         )
     ) {
         it.switch {
@@ -151,7 +287,52 @@ object DragonCoreActions {
                 }
             }
             case("sound") {
-                TODO()
+                when (it.expects("send", "stop")) {
+                    "send" -> sendSound(it)
+                    "stop" -> stopSound(it)
+                    else -> error("龙核sound书写错误")
+                }
+            }
+            case("function", "func") {
+                when (it.expects("gui", "animation", "ani", "headtag", "tag")) {
+                    "gui" -> sendFunction(it)
+                    "animation", "ani" -> sendAnimationFunction(it)
+                    "headtag", "tag" -> sendTagFunction(it)
+                    else -> error("龙核function书写错误")
+                }
+            }
+            case("gui") { openGui(it) }
+            case("hud") { openHud(it) }
+            case("papi", "placeholder") {
+                when (it.expects("send", "delete", "remove")) {
+                    "send" -> sendSyncPlaceholder(it)
+                    "delete", "remove" -> deletePlaceholderCache(it)
+                    else -> error("龙核placeholder书写错误")
+                }
+            }
+            case("headtag", "tag") {
+                when (it.expects("set", "remove")) {
+                    "set" -> setHeadTag(it)
+                    "remove" -> removeHeadTag(it)
+                    else -> error("龙核headtag书写错误")
+                }
+            }
+            case("model") {
+                when (it.expects("set", "remove")) {
+                    "set" -> setEntityModel(it)
+                    "remove" -> removeEntityModel(it)
+                    else -> error("龙核module书写错误")
+                }
+            }
+            case("view") { setView(it) }
+            case("title") { setWindowTitle(it) }
+            case("bindEntity", "bind") { bindEntityLocation(it) }
+            case("modelEffect") {
+                when (it.expects("create", "remove")) {
+                    "create" -> createModelEffect(it)
+                    "remove" -> removeModelEffect(it)
+                    else -> error("龙核modelEffect书写错误")
+                }
             }
         }
     }
@@ -404,12 +585,12 @@ object DragonCoreActions {
     private fun setBlockAnimation(reader: QuestReader): ScriptAction<Any?> {
         val animation = reader.nextParsedAction()
         val xyz = reader.nextParsedAction()
-        val players = reader.nextTheyContainerOrNull()
+        val viewers = reader.nextHeadActionOrNull(arrayOf("viewers"))
 
         return actionNow {
             run(animation).str { animation ->
                 run(xyz).vector { xyz ->
-                    containerOrSelf(players) { players ->
+                    containerOrSelf(viewers) { players ->
                         players.forEachInstance<PlayerTarget> { player ->
                             PacketSender.setBlockAnimation(player.getSource(), xyz.x().toInt(), xyz.y().toInt(), xyz.z().toInt(), animation)
                         }
@@ -417,6 +598,432 @@ object DragonCoreActions {
                 }
             }
         }
+    }
+
+    private fun sendSound(reader: QuestReader): ScriptAction<Any?> {
+        val soundKey = reader.nextParsedAction()
+        val soundFile = reader.nextParsedAction()
+        val category = reader.nextParsedAction()
+        val vector = reader.nextHeadActionOrNull(arrayOf("loc"))
+        val loop = reader.nextHeadAction("loop", false)
+        val (volume, pitch) = try {
+            reader.mark()
+            reader.expects("by", "with")
+            reader.nextParsedAction() to reader.nextParsedAction()
+        } catch (e: Exception) {
+            reader.reset()
+            null to null
+        }
+        val players = reader.nextTheyContainerOrNull()
+
+        return actionNow {
+            run(soundKey).str { soundKey ->
+                run(soundFile).str { soundFile ->
+                    run(category).str { category ->
+                        run(loop).bool { loop ->
+                            run(volume ?: literalAction(1.0)).float { volume ->
+                                run(pitch ?: literalAction(1.0)).float { pitch ->
+                                    containerOrSelf(players) {
+                                        if (vector == null) {
+                                            it.forEachInstance<PlayerTarget> { player ->
+                                                PacketSender.sendPlaySound(
+                                                    player.getSource(),
+                                                    soundKey,
+                                                    soundFile,
+                                                    category.lowercase(),
+                                                    volume,
+                                                    pitch,
+                                                    loop,
+                                                    player.location.x.cfloat,
+                                                    player.location.y.cfloat,
+                                                    player.location.z.cfloat
+                                                )
+                                            }
+                                        } else {
+                                            run(vector).vector { vector ->
+                                                it.forEachInstance<PlayerTarget> { player ->
+                                                    PacketSender.sendPlaySound(
+                                                        player.getSource(),
+                                                        soundKey,
+                                                        soundFile,
+                                                        category.lowercase(),
+                                                        volume,
+                                                        pitch,
+                                                        loop,
+                                                        vector.x().cfloat,
+                                                        vector.y().cfloat,
+                                                        vector.z().cfloat
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun stopSound(reader: QuestReader): ScriptAction<Any?> {
+        val soundKey = reader.nextParsedAction()
+        val players = reader.nextTheyContainerOrNull()
+
+        return actionNow {
+            run(soundKey).str { soundKey ->
+                containerOrSelf(players) {
+                    it.forEachInstance<PlayerTarget> { player ->
+                        PacketSender.sendStopSound(player.getSource(), soundKey)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun openGui(reader: QuestReader): ScriptAction<Any?> {
+        val guiName = reader.nextParsedAction()
+        val players = reader.nextTheyContainerOrNull()
+
+        return actionNow {
+            run(guiName).str { guiName ->
+                containerOrSelf(players) {
+                    it.forEachInstance<PlayerTarget> { player ->
+                        PacketSender.sendOpenGui(player.getSource(), guiName)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun openHud(reader: QuestReader): ScriptAction<Any?> {
+        val guiName = reader.nextParsedAction()
+        val players = reader.nextTheyContainerOrNull()
+
+        return actionNow {
+            run(guiName).str { guiName ->
+                containerOrSelf(players) {
+                    it.forEachInstance<PlayerTarget> { player ->
+                        PacketSender.sendOpenHud(player.getSource(), guiName)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun sendSyncPlaceholder(reader: QuestReader): ScriptAction<Any?> {
+        val keys = reader.nextParsedAction()
+        val players = reader.nextTheyContainerOrNull()
+
+        return actionNow {
+            run(keys).str { keys ->
+                containerOrSelf(players) {
+                    it.forEachInstance<PlayerTarget> { player ->
+                        PacketSender.sendSyncPlaceholder(player.getSource(), keys.split(",").associateWith { key -> script().get<String>(key) })
+                    }
+                }
+            }
+        }
+    }
+
+    private fun deletePlaceholderCache(reader: QuestReader): ScriptAction<Any?> {
+        val key = reader.nextParsedAction()
+        val isStartWith = reader.nextParsedAction()
+        val players = reader.nextTheyContainerOrNull()
+
+        return actionNow {
+            run(key).str { key ->
+                run(isStartWith).bool { isStartWith ->
+                    containerOrSelf(players) {
+                        it.forEachInstance<PlayerTarget> { player ->
+                            PacketSender.sendDeletePlaceholderCache(player.getSource(), key, isStartWith)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun sendFunction(reader: QuestReader): ScriptAction<Any?> {
+        val guiName = reader.nextParsedAction()
+        val function = reader.nextParsedAction()
+        val async = reader.nextParsedAction()
+        val players = reader.nextTheyContainerOrNull()
+
+        return actionNow {
+            run(guiName).str { guiName ->
+                run(function).str { function ->
+                    run(async).bool { async ->
+                        containerOrSelf(players) {
+                            it.forEachInstance<PlayerTarget> { player ->
+                                PacketSender.sendRunFunction(player.getSource(), guiName, function, async)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun sendAnimationFunction(reader: QuestReader): ScriptAction<Any?> {
+        val uuid = reader.nextParsedAction()
+        val function = reader.nextParsedAction()
+        val players = reader.nextTheyContainerOrNull()
+
+        return actionNow {
+            run(uuid).str { uuid ->
+                run(function).str { function ->
+                    containerOrSelf(players) {
+                        it.forEachInstance<PlayerTarget> { player ->
+                            PacketSender.runEntityAnimationFunction(player.getSource(), uuid.parseUUID(), function)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun sendTagFunction(reader: QuestReader): ScriptAction<Any?> {
+        val uuid = reader.nextParsedAction()
+        val function = reader.nextParsedAction()
+        val players = reader.nextTheyContainerOrNull()
+
+        return actionNow {
+            run(uuid).str { uuid ->
+                run(function).str { function ->
+                    containerOrSelf(players) {
+                        it.forEachInstance<PlayerTarget> { player ->
+                            PacketSender.runEntityTagFunction(player.getSource(), uuid.parseUUID(), function)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun setHeadTag(reader: QuestReader): ScriptAction<Any?> {
+        val uuid = reader.nextParsedAction()
+        val name = reader.nextParsedAction()
+        val viewers = reader.nextHeadActionOrNull(arrayOf("viewers"))
+
+        return actionNow {
+            run(uuid).str { uuid ->
+                run(name).str { name ->
+                    containerOrSelf(viewers) {
+                        it.forEachInstance<PlayerTarget> { player ->
+                            PacketSender.setEntityHeadTag(player.getSource(), uuid.parseUUID(), name)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun removeHeadTag(reader: QuestReader): ScriptAction<Any?> {
+        val uuid = reader.nextParsedAction()
+        val viewers = reader.nextHeadActionOrNull(arrayOf("viewers"))
+
+        return actionNow {
+            run(uuid).str { uuid ->
+                containerOrSelf(viewers) {
+                    it.forEachInstance<PlayerTarget> { player ->
+                        PacketSender.setEntityHeadTag(player.getSource(), uuid.parseUUID(), null)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun setEntityModel(reader: QuestReader): ScriptAction<Any?> {
+        val uuid = reader.nextParsedAction()
+        val name = reader.nextParsedAction()
+        val viewers = reader.nextHeadActionOrNull(arrayOf("viewers"))
+
+        return actionNow {
+            run(uuid).str { uuid ->
+                run(name).str { name ->
+                    containerOrSelf(viewers) {
+                        it.forEachInstance<PlayerTarget> { player ->
+                            PacketSender.setEntityModel(player.getSource(), uuid.parseUUID(), name)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun removeEntityModel(reader: QuestReader): ScriptAction<Any?> {
+        val uuid = reader.nextParsedAction()
+        val viewers = reader.nextHeadActionOrNull(arrayOf("viewers"))
+
+        return actionNow {
+            run(uuid).str { uuid ->
+                containerOrSelf(viewers) {
+                    it.forEachInstance<PlayerTarget> { player ->
+                        PacketSender.setEntityModel(player.getSource(), uuid.parseUUID(), null)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun setView(reader: QuestReader): ScriptAction<Any?> {
+        val view = reader.nextParsedAction()
+        val viewers = reader.nextTheyContainerOrNull()
+
+        return actionNow {
+            run(view).int { view ->
+                containerOrSelf(viewers) {
+                    it.forEachInstance<PlayerTarget> { player ->
+                        PacketSender.setThirdPersonView(player.getSource(), view)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun setWindowTitle(reader: QuestReader): ScriptAction<Any?> {
+        val title = reader.nextParsedAction()
+        val viewers = reader.nextTheyContainerOrNull()
+
+        return actionNow {
+            run(title).str { title ->
+                containerOrSelf(viewers) {
+                    it.forEachInstance<PlayerTarget> { player ->
+                        PacketSender.setWindowTitle(player.getSource(), title)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun bindEntityLocation(reader: QuestReader): ScriptAction<Any?> {
+        val uuid = reader.nextParsedAction()
+        val owner = reader.nextParsedAction()
+        val vector = reader.nextParsedAction()
+        val bindYaw = reader.nextParsedAction()
+        val bindPitch = reader.nextParsedAction()
+        val viewers = reader.nextHeadActionOrNull(arrayOf("viewers"))
+
+        return actionNow {
+            run(uuid).str { uuid ->
+                run(owner).str { owner ->
+                    run(vector).vector { vector ->
+                        run(bindYaw).bool { yaw ->
+                            run(bindPitch).bool { pitch ->
+                                containerOrSelf(viewers) {
+                                    it.forEachInstance<PlayerTarget> { player ->
+                                        PacketSender.sendEntityLocationBind(player.getSource(), uuid.parseUUID(), owner.parseUUID(), vector.x().cfloat, vector.y().cfloat, vector.z().cfloat, yaw, pitch)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun createModelEffect(reader: QuestReader): ScriptAction<Any?> {
+        val key = reader.nextParsedAction()
+        val model = reader.nextParsedAction()
+        val timeout = reader.nextParsedAction()
+        val they = reader.nextTheyContainerOrNull()
+
+        return actionFuture { future ->
+            run(key).str { key ->
+                run(model).str { model ->
+                    run(timeout).long { timeout ->
+                        containerOrSelf(they) {container ->
+                            val f = CompletableFuture<Void>()
+                            var size = 0
+                            val list = container.mapInstance<ITargetEntity<*>, ModelEffect> { target ->
+                                sendModelEffect(target.entity, key, model, timeout)
+                            }
+
+                            list.forEach { modelEffect ->
+                                modelEffect.simpleTimeoutTask.future.whenComplete { _, _ ->
+                                    size++
+                                    if (size >= list.size) f.complete(null)
+                                }
+                            }
+
+                            addOrryxCloseable(f) {
+                                list.forEach { modelEffect0 ->
+                                    effectMap[modelEffect0.owner]?.removeIf { modelEffect1 ->
+                                        modelEffect0 == modelEffect1
+                                    }
+                                    modelEffect0.entity.entity.remove()
+                                }
+                            }
+                            future.complete(Container(list.mapTo(mutableSetOf()) { modelEffect -> modelEffect.entity }))
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun removeModelEffect(reader: QuestReader): ScriptAction<Any?> {
+        val key = reader.nextParsedAction()
+        val they = reader.nextTheyContainerOrNull()
+
+        return actionNow {
+            run(key).str { key ->
+                containerOrSelf(they) {container ->
+                    container.forEachInstance<ITargetEntity<*>> { target ->
+                        val iterator = effectMap[target.entity.uniqueId]?.iterator() ?: return@forEachInstance
+                        while (iterator.hasNext()) {
+                            val modelEffect = iterator.next()
+                            if (modelEffect.entity.entity.customName == key) {
+                                SimpleTimeoutTask.cancel(modelEffect.simpleTimeoutTask)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    class ModelEffect(val owner: UUID, val entity: ITargetEntity<*>) {
+        lateinit var simpleTimeoutTask: SimpleTimeoutTask
+    }
+
+    private fun sendModelEffect(entity: IEntity, key: String, model: String, timeout: Long): ModelEffect {
+        val effect: ITargetEntity<*> = when(entity) {
+            is AbstractBukkitEntity -> {
+                val effectEntity = entity.world.spawnEntity(entity.location, EntityType.ARMOR_STAND) as ArmorStand
+                effectEntity.customName = key
+                effectEntity.setMeta(IGNORE_HIT, true)
+                effectEntity.setGravity(false)
+                effectEntity.isSmall = true
+                effectEntity.isSilent = true
+                effectEntity.isInvulnerable = true
+                effectEntity.isMarker = true
+                entity.getSource().addPassenger(effectEntity)
+                AbstractBukkitEntity(effectEntity)
+            }
+            is AbstractAdyeshachEntity -> {
+                val instance = Adyeshach.api().getPublicEntityManager().create(EntityTypes.ARMOR_STAND, entity.location)
+                AbstractAdyeshachEntity(instance)
+            }
+            else -> error("使用了不支持modelEffect的实体类型")
+        }
+        onlinePlayers.forEach { player ->
+            PacketSender.setEntityModel(player, entity.uniqueId, model)
+            PacketSender.sendEntityLocationBind(player, effect.entity.uniqueId, entity.uniqueId, 0.0f, 0.0f, 0.0f, true, true)
+        }
+        val modelEffect = ModelEffect(entity.uniqueId, effect)
+        modelEffect.simpleTimeoutTask = createSimpleTask(timeout) {
+            effectMap[entity.uniqueId]?.remove(modelEffect)
+            if (effectMap[entity.uniqueId]?.isEmpty() == true) {
+                effectMap.remove(entity.uniqueId)
+            }
+            entity.remove()
+        }
+        effectMap.getOrPut(entity.uniqueId) { mutableListOf() }.add(modelEffect)
+        return modelEffect
     }
 
 }

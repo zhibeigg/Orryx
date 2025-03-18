@@ -43,10 +43,12 @@ class DragonCoreUIManager: IUIManager {
         DragonCoreSkillUI.skillUIConfiguration = YamlConfiguration.loadConfiguration(File(getDataFolder(), "ui/dragoncore/OrryxSkillUI.yml"))
 
         registerBukkitListener(KeyPressEvent::class.java) { e ->
+            if (e.isCancelled) return@registerBukkitListener
             e.player.keyPress(e.key, setting.castType === IKeyRegister.ActionType.PRESS)
         }
 
         registerBukkitListener(KeyReleaseEvent::class.java) { e ->
+            if (e.isCancelled) return@registerBukkitListener
             e.player.keyRelease(e.key, setting.castType === IKeyRegister.ActionType.RELEASE)
         }
 

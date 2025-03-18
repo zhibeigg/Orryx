@@ -4,10 +4,11 @@ import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.function.submit
 import taboolib.common.platform.service.PlatformExecutor
+import java.util.concurrent.CompletableFuture
 
 open class SimpleTimeoutTask(val tick: Long, open val closed: () -> Unit = EMPTY) {
 
-    var isClosed = false
+    var future = CompletableFuture<Void>()
 
     lateinit var task: PlatformExecutor.PlatformTask
 
@@ -29,8 +30,8 @@ open class SimpleTimeoutTask(val tick: Long, open val closed: () -> Unit = EMPTY
             cache -= simpleTask
             simpleTask.task.cancel()
             // 如果已经结束了
-            if (simpleTask.isClosed) return
-            simpleTask.isClosed = true
+            if (simpleTask.future.isDone) return
+            simpleTask.future.complete(null)
             simpleTask.closed()
         }
 
@@ -42,8 +43,8 @@ open class SimpleTimeoutTask(val tick: Long, open val closed: () -> Unit = EMPTY
             return this
         }
 
-        fun createSimpleTask(tick: Long, closed: () -> Unit) {
-            SimpleTimeoutTask(tick, closed).register()
+        fun createSimpleTask(tick: Long, closed: () -> Unit): SimpleTimeoutTask {
+            return SimpleTimeoutTask(tick, closed).register()
         }
 
     }
