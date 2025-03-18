@@ -25,6 +25,8 @@ object ScriptManager {
     val runningStationScriptsMap by lazy { hashMapOf<UUID, PlayerRunningSpace>() }
 
     val wikiActions by lazy { hashMapOf<String, org.gitee.orryx.core.wiki.Action>() }
+    val wikiSelectors by lazy { hashMapOf<String, org.gitee.orryx.core.wiki.Selector>() }
+
     private val scriptMap by lazy { ConcurrentHashMap<String, Script>() }
     private val closeableMap by lazy { hashMapOf<String, ConcurrentMap<UUID, AutoCloseable>>() }
 

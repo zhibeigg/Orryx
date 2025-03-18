@@ -5,7 +5,7 @@ import org.gitee.orryx.core.targets.ITarget
 import taboolib.common.util.Location
 import taboolib.module.kether.ScriptContext
 
-interface ISelectorGeometry: ISelector {
+interface ISelectorGeometry: ISelector, WikiSelector {
 
     /**
      * 获得目标

@@ -3,21 +3,24 @@ package org.gitee.orryx.core.selector.stream
 import org.gitee.orryx.core.container.IContainer
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.ISelectorStream
+import org.gitee.orryx.core.wiki.Selector
+import org.gitee.orryx.core.wiki.SelectorType
+import org.gitee.orryx.core.wiki.Type
 import org.gitee.orryx.utils.bukkitPlayer
 import org.gitee.orryx.utils.read
 import org.gitee.orryx.utils.toTarget
 import taboolib.module.kether.ScriptContext
 
-/**
- * Sender的当前位置
- * ```
- * @current e
- * @current l
- * ```
- * */
 object Current: ISelectorStream {
 
     override val keys = arrayOf("current")
+
+    override val wiki: Selector
+        get() = Selector.new("Sender当前位置", Server.keys, SelectorType.STREAM)
+            .addExample("@current e")
+            .addExample("@current l")
+            .addParm(Type.SYMBOL, "位置模式，l代表脚底，e代表眼睛", "l")
+            .description("Sender的当前位置")
 
     override fun joinContainer(
         container: IContainer,

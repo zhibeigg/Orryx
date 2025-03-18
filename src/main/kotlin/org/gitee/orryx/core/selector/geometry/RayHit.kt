@@ -4,7 +4,11 @@ import org.bukkit.Location
 import org.bukkit.entity.Entity
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.ISelectorGeometry
+import org.gitee.orryx.core.selector.stream.Server
 import org.gitee.orryx.core.targets.ITarget
+import org.gitee.orryx.core.wiki.Selector
+import org.gitee.orryx.core.wiki.SelectorType
+import org.gitee.orryx.core.wiki.Type
 import org.gitee.orryx.utils.*
 import org.joml.RayAabIntersection
 import org.joml.Vector3d
@@ -13,13 +17,16 @@ import taboolib.common5.cfloat
 import taboolib.module.kether.ScriptContext
 import java.util.stream.Collectors
 
-/**
- * 选中向量穿过的所有实体
- * @rayhit vector distance
- */
 object RayHit: ISelectorGeometry {
 
     override val keys = arrayOf("rayhit")
+
+    override val wiki: Selector
+        get() = Selector.new("射线实体", Server.keys, SelectorType.GEOMETRY)
+            .addExample("@rayhit a 10")
+            .addParm(Type.STRING, "存储方向向量的键名", "a")
+            .addParm(Type.DOUBLE, "长度", "0.0")
+            .description("选中向量穿过的所有实体")
 
     override fun getTargets(context: ScriptContext, parameter: StringParser.Entry): List<ITarget<*>> {
         val origin = context.getParameter().origin ?: return emptyList()

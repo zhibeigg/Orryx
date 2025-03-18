@@ -5,21 +5,24 @@ import org.gitee.orryx.core.container.IContainer
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.ISelectorStream
 import org.gitee.orryx.core.targets.ITargetLocation
+import org.gitee.orryx.core.wiki.Selector
+import org.gitee.orryx.core.wiki.SelectorType
+import org.gitee.orryx.core.wiki.Type
 import org.gitee.orryx.utils.bukkitPlayer
 import org.gitee.orryx.utils.read
 import org.gitee.orryx.utils.toTarget
 import taboolib.module.kether.ScriptContext
 
-/**
- * 添加/剔除世界成员
- * ```
- * @world sender/指定世界
- * !@world sender/指定世界
- * ```
- * */
 object World: ISelectorStream {
 
     override val keys = arrayOf("world")
+
+    override val wiki: Selector
+        get() = Selector.new("添加/剔除世界目标", Server.keys, SelectorType.STREAM)
+            .addExample("@world sender/指定世界")
+            .addExample("!@world sender/指定世界")
+            .addParm(Type.STRING, "指定世界或者sender世界", "sender")
+            .description("添加/剔除世界成员")
 
     override fun joinContainer(
         container: IContainer,

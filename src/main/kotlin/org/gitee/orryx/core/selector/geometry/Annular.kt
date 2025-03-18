@@ -5,7 +5,11 @@ import org.bukkit.entity.LivingEntity
 import org.bukkit.util.Vector
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.ISelectorGeometry
+import org.gitee.orryx.core.selector.stream.Server
 import org.gitee.orryx.core.targets.ITarget
+import org.gitee.orryx.core.wiki.Selector
+import org.gitee.orryx.core.wiki.SelectorType
+import org.gitee.orryx.core.wiki.Type
 import org.gitee.orryx.utils.getParameter
 import org.gitee.orryx.utils.isInRound
 import org.gitee.orryx.utils.read
@@ -16,16 +20,17 @@ import taboolib.module.kether.ScriptContext
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-/**
- * 选中根据原点来定义的环状实体
- * ```
- * @annular 2 3 5
- * @annular min max high
- * ```
- */
 object Annular : ISelectorGeometry {
 
     override val keys = arrayOf("annular")
+
+    override val wiki: Selector
+        get() = Selector.new("环状选取", Server.keys, SelectorType.GEOMETRY)
+            .addExample("@annular 2 3 5")
+            .addParm(Type.DOUBLE, "最小半径", "0.0")
+            .addParm(Type.DOUBLE, "最大半径", "0.0")
+            .addParm(Type.DOUBLE, "高度", "0.0")
+            .description("选中根据原点来定义的环状实体")
 
     override fun getTargets(context: ScriptContext, parameter: StringParser.Entry): List<ITarget<*>> {
         val origin = context.getParameter().origin ?: return emptyList()

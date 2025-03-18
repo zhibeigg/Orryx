@@ -4,20 +4,21 @@ import org.gitee.orryx.core.container.IContainer
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.ISelectorStream
 import org.gitee.orryx.core.targets.ITargetEntity
+import org.gitee.orryx.core.wiki.Selector
+import org.gitee.orryx.core.wiki.SelectorType
 import org.gitee.orryx.utils.bukkitPlayer
 import org.gitee.orryx.utils.toTarget
 import taboolib.module.kether.ScriptContext
 
-/**
- * Sender转化为玩家
- * ```
- * @self
- * !@self
- * ```
- * */
 object Self: ISelectorStream {
 
     override val keys = arrayOf("self")
+
+    override val wiki: Selector
+        get() = Selector.new("sender玩家", Server.keys, SelectorType.STREAM)
+            .addExample("@self")
+            .addExample("!@self")
+            .description("Sender转化为玩家")
 
     override fun joinContainer(
         container: IContainer,

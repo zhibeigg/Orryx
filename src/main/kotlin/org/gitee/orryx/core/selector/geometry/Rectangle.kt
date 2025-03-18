@@ -3,22 +3,30 @@ package org.gitee.orryx.core.selector.geometry
 import org.gitee.orryx.api.adapters.vector.AbstractVector
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.ISelectorGeometry
+import org.gitee.orryx.core.selector.stream.Server
 import org.gitee.orryx.core.targets.ITarget
+import org.gitee.orryx.core.wiki.Selector
+import org.gitee.orryx.core.wiki.SelectorType
+import org.gitee.orryx.core.wiki.Type
 import org.gitee.orryx.utils.*
 import org.joml.Vector3d
 import taboolib.module.effect.createCube
 import taboolib.module.kether.ScriptContext
 
-/**
- * 选中视角方向的给定长宽高碰撞箱接触的实体
- * ```
- * @rectangle long wide high forward offsetY pitch
- * @rec long wide high forward offsetY pitch
- * ```
- */
 object Rectangle: ISelectorGeometry {
 
     override val keys = arrayOf("rec", "rectangle")
+
+    override val wiki: Selector
+        get() = Selector.new("碰撞箱", Server.keys, SelectorType.GEOMETRY)
+            .addExample("@rectangle 2 2 2 2 1 true")
+            .addParm(Type.DOUBLE, "长度", "0.0")
+            .addParm(Type.DOUBLE, "宽度", "0.0")
+            .addParm(Type.DOUBLE, "高度", "0.0")
+            .addParm(Type.DOUBLE, "前方偏移", "0.0")
+            .addParm(Type.DOUBLE, "上方偏移", "0.0")
+            .addParm(Type.BOOLEAN, "是否随俯仰角改变", "false")
+            .description("选中视角方向的给定长宽高碰撞箱接触的实体")
 
     override fun getTargets(context: ScriptContext, parameter: StringParser.Entry): List<ITarget<*>> {
         val origin = context.getParameter().origin ?: return emptyList()

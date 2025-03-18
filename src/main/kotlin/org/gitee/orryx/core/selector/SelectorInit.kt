@@ -1,6 +1,7 @@
 package org.gitee.orryx.core.selector
 
 import org.bukkit.Bukkit
+import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.station.Plugin
 import org.gitee.orryx.utils.debug
 import taboolib.common.LifeCycle
@@ -31,6 +32,10 @@ object SelectorInit: ClassVisitor(1) {
                             debug("&e┣&7Selector loaded &e${instance.keys.map { it }} &a√")
                         }
                         selectors.add(instance)
+                        if (instance is WikiSelector) {
+                            val wiki = instance.wiki
+                            ScriptManager.wikiSelectors[wiki.name] = wiki
+                        }
                     }
                 }
             }

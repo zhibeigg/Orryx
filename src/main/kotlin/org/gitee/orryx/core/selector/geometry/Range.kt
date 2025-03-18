@@ -3,7 +3,11 @@ package org.gitee.orryx.core.selector.geometry
 import org.bukkit.entity.LivingEntity
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.ISelectorGeometry
+import org.gitee.orryx.core.selector.stream.Server
 import org.gitee.orryx.core.targets.ITarget
+import org.gitee.orryx.core.wiki.Selector
+import org.gitee.orryx.core.wiki.SelectorType
+import org.gitee.orryx.core.wiki.Type
 import org.gitee.orryx.utils.getEntityAABB
 import org.gitee.orryx.utils.getParameter
 import org.gitee.orryx.utils.read
@@ -14,13 +18,15 @@ import taboolib.common5.cfloat
 import taboolib.module.effect.createSphere
 import taboolib.module.kether.ScriptContext
 
-/**
- * 球形范围内
- * @range 10
- */
 object Range: ISelectorGeometry {
 
     override val keys = arrayOf("range")
+
+    override val wiki: Selector
+        get() = Selector.new("球形范围", Server.keys, SelectorType.GEOMETRY)
+            .addExample("@range 10")
+            .addParm(Type.DOUBLE, "半径", "10.0")
+            .description("球形范围内的所有实体")
 
     override fun getTargets(context: ScriptContext, parameter: StringParser.Entry): List<ITarget<*>> {
         val origin = context.getParameter().origin ?: return emptyList()

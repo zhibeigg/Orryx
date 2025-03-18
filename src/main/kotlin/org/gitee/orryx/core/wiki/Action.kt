@@ -6,7 +6,7 @@ import com.lark.oapi.service.docx.v1.enums.CalloutCalloutBorderColorEnum
 import com.lark.oapi.service.docx.v1.enums.TextStyleAlignEnum
 import com.lark.oapi.service.docx.v1.model.*
 
-class Action(val group: String, val name: String, val key: String, val sharded: Boolean, val entries: MutableList<Entry> = mutableListOf(), var description: String = "", var example: String = "") {
+class Action(val group: String, val name: String, val key: String, val sharded: Boolean, val entries: MutableList<Entry> = mutableListOf(), var description: String = "", var example: String = ""): WikiBlock {
 
     class Entry(val description: String, val type: Type, val optional: Boolean, val default: String? = null, val head: String? = null)
 
@@ -62,7 +62,7 @@ class Action(val group: String, val name: String, val key: String, val sharded: 
         return "$key $name"
     }
 
-    fun createBlocks(): Pair<List<Block>, List<String>> {
+    override fun createBlocks(): Pair<List<Block>, List<String>> {
         val list = mutableListOf<Block>()
         val id = mutableListOf<String>()
         fun text(text: String, isHead: Boolean = false): Array<TextElement> {
@@ -236,24 +236,26 @@ class Action(val group: String, val name: String, val key: String, val sharded: 
             n++
             return ids
         }
-        id += "${name}_entries_table"
-        list += Block.newBuilder()
-            .blockId("${name}_entries_table")
-            .blockType(BlockBlockTypeEnum.TABLE)
-            .table(
-                Table.newBuilder()
-                    .property(
-                        TableProperty.newBuilder()
-                            .headerRow(true)
-                            .columnSize(4)
-                            .rowSize(entries.size + 1)
-                            .columnWidth(arrayOf(100, 200, 60, 400))
-                            .build()
-                    )
-                    .build()
-            )
-            .children((entriesCell(null, true) + entries.flatMap { entriesCell(it, false) }).toTypedArray())
-            .build()
+        if (entries.size > 0) {
+            id += "${name}_entries_table"
+            list += Block.newBuilder()
+                .blockId("${name}_entries_table")
+                .blockType(BlockBlockTypeEnum.TABLE)
+                .table(
+                    Table.newBuilder()
+                        .property(
+                            TableProperty.newBuilder()
+                                .headerRow(true)
+                                .columnSize(4)
+                                .rowSize(entries.size + 1)
+                                .columnWidth(arrayOf(100, 200, 60, 400))
+                                .build()
+                        )
+                        .build()
+                )
+                .children((entriesCell(null, true) + entries.flatMap { entriesCell(it, false) }).toTypedArray())
+                .build()
+        }
         n = 1
         fun resultCell(isHead: Boolean): List<String> {
             val ids = mutableListOf<String>()
@@ -304,23 +306,25 @@ class Action(val group: String, val name: String, val key: String, val sharded: 
             n++
             return ids
         }
-        id += "${name}_result_table"
-        list += Block.newBuilder()
-            .blockId("${name}_result_table")
-            .blockType(BlockBlockTypeEnum.TABLE)
-            .table(Table.newBuilder()
-                .property(
-                    TableProperty.newBuilder()
-                        .headerRow(true)
-                        .columnWidth(arrayOf(150, 400))
-                        .columnSize(2)
-                        .rowSize(2)
-                        .build()
+        if (result != Type.NULL) {
+            id += "${name}_result_table"
+            list += Block.newBuilder()
+                .blockId("${name}_result_table")
+                .blockType(BlockBlockTypeEnum.TABLE)
+                .table(Table.newBuilder()
+                    .property(
+                        TableProperty.newBuilder()
+                            .headerRow(true)
+                            .columnWidth(arrayOf(150, 400))
+                            .columnSize(2)
+                            .rowSize(2)
+                            .build()
+                    )
+                    .build()
                 )
+                .children((resultCell(true) + resultCell(false)).toTypedArray())
                 .build()
-            )
-            .children((resultCell(true) + resultCell(false)).toTypedArray())
-            .build()
+        }
         if (description.isNotBlank()) {
             id += "${name}_quote_1"
             list += Block.newBuilder()

@@ -120,11 +120,17 @@ object LarkSuite {
     }
 
     private suspend fun createDocumentBlocks(documentId: String, chain: Chain<*>) {
-        val group = ScriptManager.wikiActions.values.groupBy { it.group }
-        debug(group.mapValues { it.value.map { action -> action.name } })
+        val actionGroup = ScriptManager.wikiActions.values.groupBy { it.group }
+        val selectorsGroup = ScriptManager.wikiSelectors.values.groupBy { it.type }
+        debug(actionGroup.mapValues { it.value.map { action -> action.name } })
+        debug(selectorsGroup.mapValues { it.value.map { selector -> selector.name } })
         createPs(documentId, chain)
-        group.forEach { (g, u) ->
+        actionGroup.forEach { (g, u) ->
             createGroup(g, u, documentId, chain)
+        }
+        createSelectorHanging(documentId, chain)
+        selectorsGroup.forEach { (g, u) ->
+            createSelectorType(g, u, documentId, chain)
         }
     }
 
@@ -325,7 +331,7 @@ object LarkSuite {
     }
 
     private suspend fun createAction(action: Action, documentId: String, chain: Chain<*>) {
-        chain.wait(1000, DurationType.MILLIS)
+        chain.wait(500, DurationType.MILLIS)
         chain.async {
             val blocks = action.createBlocks()
             val req = CreateDocumentBlockDescendantReq.newBuilder()
@@ -360,6 +366,174 @@ object LarkSuite {
                     )
                 )
                 return@async
+            }
+        }
+    }
+
+    private suspend fun createSelectorHanging(documentId: String, chain: Chain<*>) {
+        chain.async {
+            val req = CreateDocumentBlockChildrenReq.newBuilder()
+                .documentId(documentId)
+                .blockId(documentId)
+                .documentRevisionId(-1)
+                .createDocumentBlockChildrenReqBody(
+                    CreateDocumentBlockChildrenReqBody.newBuilder()
+                        .children(
+                            arrayOf(
+                                Block.newBuilder()
+                                    .blockId("Selector_hanging1")
+                                    .children(arrayOf())
+                                    .blockType(BlockBlockTypeEnum.HEADING1)
+                                    .heading1(
+                                        Text.newBuilder().elements(
+                                            arrayOf(
+                                                TextElement.newBuilder()
+                                                    .textRun(
+                                                        TextRun.newBuilder().content("Selector选择器列表").build()
+                                                    ).build()
+                                            )
+                                        ).build()
+                                    )
+                                    .build()
+                            )
+                        )
+                        .index(-1)
+                        .build()
+                )
+                .build()
+
+            // 发起请求
+            val resp = client.docx().v1().documentBlockChildren().create(
+                req, RequestOptions.newBuilder()
+                    .userAccessToken(getToken() ?: return@async)
+                    .build()
+            )
+
+            // 处理服务端错误
+            if (!resp.success()) {
+                println(
+                    String.format(
+                        "code:%s,msg:%s,reqId:%s, resp:%s",
+                        resp.code,
+                        resp.msg,
+                        resp.requestId,
+                        String(resp.rawResponse.body, UTF_8)
+                    )
+                )
+                return@async
+            }
+        }
+    }
+
+    private suspend fun createSelectorType(type: SelectorType, list: List<Selector>, documentId: String, chain: Chain<*>) {
+        chain.async {
+            val req = CreateDocumentBlockChildrenReq.newBuilder()
+                .documentId(documentId)
+                .blockId(documentId)
+                .documentRevisionId(-1)
+                .createDocumentBlockChildrenReqBody(
+                    CreateDocumentBlockChildrenReqBody.newBuilder()
+                        .children(
+                            arrayOf(
+                                Block.newBuilder()
+                                    .blockId("${type.name}_heading2")
+                                    .children(arrayOf())
+                                    .blockType(BlockBlockTypeEnum.HEADING2)
+                                    .heading2(
+                                        Text.newBuilder().elements(
+                                            arrayOf(
+                                                TextElement.newBuilder()
+                                                    .textRun(
+                                                        TextRun.newBuilder().content(
+                                                            when(type) {
+                                                                SelectorType.STREAM -> "流式选择器"
+                                                                SelectorType.GEOMETRY -> "几何选择器"
+                                                            }
+                                                        ).build()
+                                                    ).build()
+                                            )
+                                        ).build()
+                                    )
+                                    .build()
+                            )
+                        )
+                        .index(-1)
+                        .build()
+                )
+                .build()
+
+            // 发起请求
+            val resp = client.docx().v1().documentBlockChildren().create(
+                req, RequestOptions.newBuilder()
+                    .userAccessToken(getToken() ?: return@async)
+                    .build()
+            )
+
+            // 处理服务端错误
+            if (!resp.success()) {
+                println(
+                    String.format(
+                        "code:%s,msg:%s,reqId:%s, resp:%s",
+                        resp.code,
+                        resp.msg,
+                        resp.requestId,
+                        String(resp.rawResponse.body, UTF_8)
+                    )
+                )
+                return@async
+            }
+            info("&e┣┳&7SelectorType: ${type.name} 创建成功 &a√".colored())
+        }
+        list.forEach {
+            if (list.last() == it) {
+                createSelector(it, documentId, chain, true)
+            } else {
+                createSelector(it, documentId, chain, false)
+            }
+        }
+    }
+
+    private suspend fun createSelector(selector: Selector, documentId: String, chain: Chain<*>, last: Boolean) {
+        chain.wait(500, DurationType.MILLIS)
+        chain.async {
+            val blocks = selector.createBlocks()
+            val req = CreateDocumentBlockDescendantReq.newBuilder()
+                .documentId(documentId)
+                .blockId(documentId)
+                .documentRevisionId(-1)
+                .createDocumentBlockDescendantReqBody(
+                    CreateDocumentBlockDescendantReqBody.newBuilder()
+                        .childrenId(blocks.second.toTypedArray())
+                        .index(-1)
+                        .descendants(blocks.first.toTypedArray())
+                        .build()
+                )
+                .build()
+
+            // 发起请求
+            val resp = client.docx().v1().documentBlockDescendant().create(
+                req, RequestOptions.newBuilder()
+                    .userAccessToken(getToken() ?: return@async)
+                    .build()
+            )
+
+            // 处理服务端错误
+            if (!resp.success()) {
+                println(
+                    String.format(
+                        "code:%s,msg:%s,reqId:%s, resp:%s",
+                        resp.code,
+                        resp.msg,
+                        resp.requestId,
+                        String(resp.rawResponse.body, UTF_8)
+                    )
+                )
+                return@async
+            }
+            if (last) {
+                info("&e┃┗&7Selector: ${selector.name} 创建成功 &a√".colored())
+            } else {
+                info("&e┃┣&7Selector: ${selector.name} 创建成功 &a√".colored())
             }
         }
     }
