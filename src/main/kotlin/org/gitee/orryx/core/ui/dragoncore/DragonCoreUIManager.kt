@@ -59,7 +59,7 @@ class DragonCoreUIManager: IUIManager {
                         PacketSender.sendYaml(e.player, "gui/OrryxSkillUI.yml", DragonCoreSkillUI.skillUIConfiguration)
                         PacketSender.sendYaml(e.player, "gui/OrryxSkillHUD.yml", DragonCoreSkillHud.skillHudConfiguration)
                         if (setting.joinOpenHud) {
-                            PacketSender.sendOpenHud(e.player, "OrryxSkillHUD")
+                            createSkillHUD(e.player, e.player).open()
                         }
                     }
                 }
