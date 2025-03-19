@@ -8,6 +8,8 @@ import com.lark.oapi.service.auth.v3.model.InternalTenantAccessTokenReq
 import com.lark.oapi.service.auth.v3.model.InternalTenantAccessTokenReqBody
 import com.lark.oapi.service.docx.v1.enums.BlockBlockTypeEnum
 import com.lark.oapi.service.docx.v1.model.*
+import com.lark.oapi.service.wiki.v2.model.MoveDocsToWikiSpaceNodeReq
+import com.lark.oapi.service.wiki.v2.model.MoveDocsToWikiSpaceNodeReqBody
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
 import org.gitee.orryx.api.OrryxAPI
@@ -32,8 +34,11 @@ object LarkSuite {
     private val appSecret
         get() = OrryxAPI.config.getString("LarkSuite.AppSecret")
 
-    private val folderToken
-        get() = OrryxAPI.config.getString("LarkSuite.FolderToken")
+    private val parentWikiToken
+        get() = OrryxAPI.config.getString("LarkSuite.ParentWikiToken")
+
+    private val spaceId
+        get() = OrryxAPI.config.getString("LarkSuite.SpaceId")
 
     private val client: Client by lazy {
         Client.newBuilder(appId, appSecret).requestTimeout(30, TimeUnit.MINUTES).build()
@@ -43,12 +48,13 @@ object LarkSuite {
         submitChain {
             info("&e┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━".colored())
             info("&e┣&7新文档$pluginId-$pluginVersion-(自生成) 开始创建".colored())
+
+            val token = getToken(this) ?: return@submitChain
             val documentId = async {
                 // 创建请求对象
                 val req = CreateDocumentReq.newBuilder()
                     .createDocumentReqBody(
                         CreateDocumentReqBody.newBuilder()
-                            .folderToken(folderToken)
                             .title("$pluginId-$pluginVersion-(自生成)")
                             .build()
                     )
@@ -58,7 +64,7 @@ object LarkSuite {
                 val resp = client.docx().v1().document().create(
                     req,
                     RequestOptions.newBuilder()
-                        .userAccessToken(getToken() ?: return@async null)
+                        .userAccessToken(token)
                         .build()
                 )
 
@@ -79,7 +85,10 @@ object LarkSuite {
                 info("&e┣&7空文档 创建成功 &a√".colored())
                 JsonParser().parse(String(resp.rawResponse.body, UTF_8)).asJsonObject["data"].asJsonObject["document"].asJsonObject["document_id"].asString
             }
-            documentId?.let { createDocumentBlocks(it, this) }
+            documentId?.let {
+                move(token, it, this)
+                createDocumentBlocks(token, it, this)
+            }
 
             info("&e┣&7新文档已创建成功 &a√".colored())
             info("&e┣&7访问地址 &fhttps://www.feishu.cn/docx/$documentId".colored())
@@ -87,54 +96,90 @@ object LarkSuite {
         }
     }
 
-    private fun getToken(): String? {
-        // 创建请求对象
-        val req = InternalTenantAccessTokenReq.newBuilder()
-            .internalTenantAccessTokenReqBody(
-                InternalTenantAccessTokenReqBody.newBuilder()
-                    .appId(appId)
-                    .appSecret(appSecret)
+    private suspend fun move(token: String, documentId: String, chain: Chain<*>) {
+        chain.async {
+            val req = MoveDocsToWikiSpaceNodeReq.newBuilder()
+                .spaceId(spaceId)
+                .moveDocsToWikiSpaceNodeReqBody(
+                    MoveDocsToWikiSpaceNodeReqBody.newBuilder()
+                        .parentWikiToken(parentWikiToken)
+                        .objType("docx")
+                        .objToken(documentId)
+                        .build()
+                ).build()
+
+            // 发起请求
+            val resp = client.wiki().v2().spaceNode().moveDocsToWiki(
+                req, RequestOptions.newBuilder()
+                    .userAccessToken(token)
                     .build()
             )
-            .build()
 
-        // 发起请求
-        val resp = client.auth().v3().tenantAccessToken().internal(req)
-
-        // 处理服务端错误
-        if (!resp.success()) {
-            println(
-                String.format(
-                    "code:%s,msg:%s,reqId:%s, resp:%s",
-                    resp.code,
-                    resp.msg,
-                    resp.requestId,
-                    Json.encodeToJsonElement(String(resp.rawResponse.body, UTF_8))
+            // 处理服务端错误
+            if (!resp.success()) {
+                println(
+                    String.format(
+                        "code:%s,msg:%s,reqId:%s, resp:%s",
+                        resp.code, resp.msg, resp.requestId, Jsons.createGSON(true, false).toJson(
+                            JsonParser().parse(
+                                String(resp.rawResponse.body, UTF_8)
+                            )
+                        )
+                    )
                 )
-            )
-            return null
+            }
         }
-
-        val token = JsonParser().parse(String(resp.rawResponse.body, UTF_8)).asJsonObject.get("tenant_access_token").asString
-        return token
     }
 
-    private suspend fun createDocumentBlocks(documentId: String, chain: Chain<*>) {
+    private suspend fun getToken(chain: Chain<*>): String? {
+        return chain.async {
+            // 创建请求对象
+            val req = InternalTenantAccessTokenReq.newBuilder()
+                .internalTenantAccessTokenReqBody(
+                    InternalTenantAccessTokenReqBody.newBuilder()
+                        .appId(appId)
+                        .appSecret(appSecret)
+                        .build()
+                )
+                .build()
+
+            // 发起请求
+            val resp = client.auth().v3().tenantAccessToken().internal(req)
+
+            // 处理服务端错误
+            if (!resp.success()) {
+                println(
+                    String.format(
+                        "code:%s,msg:%s,reqId:%s, resp:%s",
+                        resp.code,
+                        resp.msg,
+                        resp.requestId,
+                        Json.encodeToJsonElement(String(resp.rawResponse.body, UTF_8))
+                    )
+                )
+                return@async null
+            }
+
+            JsonParser().parse(String(resp.rawResponse.body, UTF_8)).asJsonObject.get("tenant_access_token").asString
+        }
+    }
+
+    private suspend fun createDocumentBlocks(token: String, documentId: String, chain: Chain<*>) {
         val actionGroup = ScriptManager.wikiActions.groupBy { it.group }
         val selectorsGroup = ScriptManager.wikiSelectors.groupBy { it.type }
         debug(actionGroup.mapValues { it.value.map { action -> action.name } })
         debug(selectorsGroup.mapValues { it.value.map { selector -> selector.name } })
-        createPs(documentId, chain)
+        createPs(token, documentId, chain)
         actionGroup.forEach { (g, u) ->
-            createGroup(g, u, documentId, chain)
+            createGroup(token, g, u, documentId, chain)
         }
-        createSelectorHanging(documentId, chain)
+        createSelectorHanging(token, documentId, chain)
         selectorsGroup.forEach { (g, u) ->
-            createSelectorType(g, u, documentId, chain)
+            createSelectorType(token, g, u, documentId, chain)
         }
     }
 
-    private suspend fun createPs(documentId: String, chain: Chain<*>) {
+    private suspend fun createPs(token: String, documentId: String, chain: Chain<*>) {
         chain.async {
             val req = CreateDocumentBlockChildrenReq.newBuilder()
                 .documentId(documentId)
@@ -145,7 +190,7 @@ object LarkSuite {
                         .children(
                             arrayOf(
                                 Block.newBuilder()
-                                    .blockId("ps_text")
+                                    .blockId("ps_text_0")
                                     .children(arrayOf())
                                     .blockType(BlockBlockTypeEnum.TEXT)
                                     .text(
@@ -154,6 +199,21 @@ object LarkSuite {
                                                 TextElement.newBuilder()
                                                     .textRun(
                                                         TextRun.newBuilder().content("更多原生Kether语句请查看 https://kether.tabooproject.org/list.html").build()
+                                                    ).build()
+                                            )
+                                        ).build()
+                                    )
+                                    .build(),
+                                Block.newBuilder()
+                                    .blockId("ps_text_1")
+                                    .children(arrayOf())
+                                    .blockType(BlockBlockTypeEnum.TEXT)
+                                    .text(
+                                        Text.newBuilder().elements(
+                                            arrayOf(
+                                                TextElement.newBuilder()
+                                                    .textRun(
+                                                        TextRun.newBuilder().content("[*] 代表可选 <*> 代表必选 () 代表默认值 前缀*代表先导词").build()
                                                     ).build()
                                             )
                                         ).build()
@@ -169,7 +229,7 @@ object LarkSuite {
             // 发起请求
             val resp = client.docx().v1().documentBlockChildren().create(
                 req, RequestOptions.newBuilder()
-                    .userAccessToken(getToken() ?: return@async)
+                    .userAccessToken(token)
                     .build()
             )
 
@@ -189,7 +249,7 @@ object LarkSuite {
         }
     }
 
-    private suspend fun createGroup(group: String, list: List<Action>, documentId: String, chain: Chain<*>) {
+    private suspend fun createGroup(token: String, group: String, list: List<Action>, documentId: String, chain: Chain<*>) {
         val keyGroup = list.groupBy { it.key }
         chain.async {
             val req = CreateDocumentBlockChildrenReq.newBuilder()
@@ -225,7 +285,7 @@ object LarkSuite {
             // 发起请求
             val resp = client.docx().v1().documentBlockChildren().create(
                 req, RequestOptions.newBuilder()
-                    .userAccessToken(getToken() ?: return@async)
+                    .userAccessToken(token)
                     .build()
             )
 
@@ -247,14 +307,14 @@ object LarkSuite {
         val l = keyGroup.toList()
         l.forEach {
             if (l.last() == it) {
-                createKey(it.first, it.second, documentId, chain, l.size > 1, true)
+                createKey(token, it.first, it.second, documentId, chain, l.size > 1, true)
             } else {
-                createKey(it.first, it.second, documentId, chain, l.size > 1, false)
+                createKey(token, it.first, it.second, documentId, chain, l.size > 1, false)
             }
         }
     }
 
-    private suspend fun createKey(key: String, list: List<Action>, documentId: String, chain: Chain<*>, change: Boolean, last: Boolean) {
+    private suspend fun createKey(token: String, key: String, list: List<Action>, documentId: String, chain: Chain<*>, change: Boolean, last: Boolean) {
         chain.async {
             val req = CreateDocumentBlockChildrenReq.newBuilder()
                 .documentId(documentId)
@@ -289,7 +349,7 @@ object LarkSuite {
             // 发起请求
             val resp = client.docx().v1().documentBlockChildren().create(
                 req, RequestOptions.newBuilder()
-                    .userAccessToken(getToken() ?: return@async)
+                    .userAccessToken(token)
                     .build()
             )
 
@@ -313,7 +373,7 @@ object LarkSuite {
             }
         }
         list.forEach {
-            createAction(it, documentId, chain)
+            createAction(token, it, documentId, chain)
             if (change && !last) {
                 if (list.last() == it) {
                     info("&e┃┃┗&7Action: ${it.name} 创建成功 &a√".colored())
@@ -330,7 +390,7 @@ object LarkSuite {
         }
     }
 
-    private suspend fun createAction(action: Action, documentId: String, chain: Chain<*>) {
+    private suspend fun createAction(token: String, action: Action, documentId: String, chain: Chain<*>) {
         chain.wait(500, DurationType.MILLIS)
         chain.async {
             val blocks = action.createBlocks()
@@ -350,7 +410,7 @@ object LarkSuite {
             // 发起请求
             val resp = client.docx().v1().documentBlockDescendant().create(
                 req, RequestOptions.newBuilder()
-                    .userAccessToken(getToken() ?: return@async)
+                    .userAccessToken(token)
                     .build()
             )
 
@@ -370,7 +430,7 @@ object LarkSuite {
         }
     }
 
-    private suspend fun createSelectorHanging(documentId: String, chain: Chain<*>) {
+    private suspend fun createSelectorHanging(token: String, documentId: String, chain: Chain<*>) {
         chain.async {
             val req = CreateDocumentBlockChildrenReq.newBuilder()
                 .documentId(documentId)
@@ -405,7 +465,7 @@ object LarkSuite {
             // 发起请求
             val resp = client.docx().v1().documentBlockChildren().create(
                 req, RequestOptions.newBuilder()
-                    .userAccessToken(getToken() ?: return@async)
+                    .userAccessToken(token)
                     .build()
             )
 
@@ -425,7 +485,7 @@ object LarkSuite {
         }
     }
 
-    private suspend fun createSelectorType(type: SelectorType, list: List<Selector>, documentId: String, chain: Chain<*>) {
+    private suspend fun createSelectorType(token: String, type: SelectorType, list: List<Selector>, documentId: String, chain: Chain<*>) {
         chain.async {
             val req = CreateDocumentBlockChildrenReq.newBuilder()
                 .documentId(documentId)
@@ -465,7 +525,7 @@ object LarkSuite {
             // 发起请求
             val resp = client.docx().v1().documentBlockChildren().create(
                 req, RequestOptions.newBuilder()
-                    .userAccessToken(getToken() ?: return@async)
+                    .userAccessToken(token)
                     .build()
             )
 
@@ -486,14 +546,14 @@ object LarkSuite {
         }
         list.forEach {
             if (list.last() == it) {
-                createSelector(it, documentId, chain, true)
+                createSelector(token, it, documentId, chain, true)
             } else {
-                createSelector(it, documentId, chain, false)
+                createSelector(token, it, documentId, chain, false)
             }
         }
     }
 
-    private suspend fun createSelector(selector: Selector, documentId: String, chain: Chain<*>, last: Boolean) {
+    private suspend fun createSelector(token: String, selector: Selector, documentId: String, chain: Chain<*>, last: Boolean) {
         chain.wait(500, DurationType.MILLIS)
         chain.async {
             val blocks = selector.createBlocks()
@@ -513,7 +573,7 @@ object LarkSuite {
             // 发起请求
             val resp = client.docx().v1().documentBlockDescendant().create(
                 req, RequestOptions.newBuilder()
-                    .userAccessToken(getToken() ?: return@async)
+                    .userAccessToken(token)
                     .build()
             )
 

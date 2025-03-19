@@ -26,7 +26,7 @@ object BindKeyLoaderManager {
     private fun reload() {
         keys.reload()
         bindKeyLoaderMap = keys.getConfigurationSection("Keys")?.getKeys(false)?.associate {
-            it to BindKeyLoader(it, keys.getConfigurationSection("Keys.$it")!!)
+            it.uppercase() to BindKeyLoader(it.uppercase(), keys.getConfigurationSection("Keys.$it")!!)
         } ?: emptyMap()
         keysRegister(bindKeyLoaderMap.values as Collection<BindKeyLoader>)
         groupMap = (OrryxAPI.config.getStringList("Group") + DEFAULT).associateWith { Group(it) }

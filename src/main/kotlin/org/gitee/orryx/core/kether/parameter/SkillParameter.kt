@@ -47,6 +47,10 @@ class SkillParameter(val skill: String?, val player: Player, var level: Int = 1)
         }
     }
 
+    override fun getVariable(key: String, default: Any): Any {
+        return lazies[key] ?: lazies.put(key, default) ?: default
+    }
+
     fun manaValue(lazy: Boolean = false): Double {
         return getVariable("MANA", lazy).cdouble
     }

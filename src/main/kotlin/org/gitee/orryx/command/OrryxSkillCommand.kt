@@ -30,7 +30,9 @@ object OrryxSkillCommand {
                             val skill = player.getSkill(job?.key ?: return@exec, ctx["skill"]) ?: return@exec
                             val group = BindKeyLoaderManager.getGroup(ctx["group"]) ?: return@exec
                             val bindKey = BindKeyLoaderManager.getBindKey(ctx["key"]) ?: return@exec
-                            debug("${player.name}指令skill bindKey结果${job.setBindKey(skill, group, bindKey)}")
+                            job.setBindKey(skill, group, bindKey).whenComplete { t, _ ->
+                                debug("${player.name}指令skill bindKey结果${t}")
+                            }
                         }
                     }
                 }

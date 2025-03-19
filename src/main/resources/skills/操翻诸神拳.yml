@@ -54,7 +54,6 @@ Options:
     #释放冷却时间
     Cooldown: 5
 Actions: |-
-  ghost 200 2 0
   # 创建5个粒子的矩阵
   set x to matrix identity
   set y to matrix identity
@@ -156,5 +155,5 @@ Actions: |-
     }
     set dir0 to vector add &dir vector normalize &dir length 2
     damage 1 false they "@rayhit dir0 1 !@self"
-    sleep 0.05s
+    sleep 1
   }

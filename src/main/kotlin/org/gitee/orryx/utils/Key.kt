@@ -13,14 +13,14 @@ fun keysRegister(keys: Collection<BindKeyLoader>) {
     if (DragonCorePlugin.isEnabled) {
         keys.forEach { bindKey ->
             bindKey.keys.forEach { key ->
-                CoreAPI.registerKey(key.uppercase())
+                CoreAPI.registerKey(key)
             }
         }
     }
     if (GermPluginPlugin.isEnabled) {
         keys.forEach { bindKey ->
             bindKey.keys.forEach { key ->
-                GermKeyAPI.registerKey(KeyType.valueOf("KEY_$key".uppercase()))
+                GermKeyAPI.registerKey(KeyType.valueOf("KEY_$key"))
             }
         }
     }
@@ -39,17 +39,21 @@ fun getKeySort(): Boolean {
 }
 
 fun Player.keyPress(key: String, cast: Boolean) {
-    KeyRegisterManager.getKeyRegister(uniqueId)?.keyPress(key)
-    if (cast) checkAndCast(getTimeout(), getActionType(), getKeySort())
+    val up = key.uppercase()
+    KeyRegisterManager.getKeyRegister(uniqueId)?.keyPress(up)
+    if (cast) checkAndCast(up, getTimeout(), getActionType(), getKeySort())
 }
 
 fun Player.keyRelease(key: String, cast: Boolean) {
-    KeyRegisterManager.getKeyRegister(uniqueId)?.keyRelease(key)
-    if (cast) checkAndCast(getTimeout(), getActionType(), getKeySort())
+    val up = key.uppercase()
+    KeyRegisterManager.getKeyRegister(uniqueId)?.keyRelease(up)
+    if (cast) checkAndCast(up, getTimeout(), getActionType(), getKeySort())
 }
 
-fun Player.checkAndCast(timeout: Long, actionType: IKeyRegister. ActionType, sort: Boolean) {
+fun Player.checkAndCast(key: String, timeout: Long, actionType: IKeyRegister. ActionType, sort: Boolean) {
     bindKeys().forEach {
-        it.checkAndCast(this, timeout, actionType, sort)
+        if (it.key.split("+").contains(key)) {
+            it.checkAndCast(this, timeout, actionType, sort)
+        }
     }
 }

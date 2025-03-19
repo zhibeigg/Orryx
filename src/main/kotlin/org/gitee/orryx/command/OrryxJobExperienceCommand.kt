@@ -18,7 +18,9 @@ object OrryxJobExperienceCommand {
             int("experience") {
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
-                    debug("${player.name}指令job experience give结果${player.job()?.giveExperience(ctx["experience"].cint)}")
+                    player.job()?.giveExperience(ctx["experience"].cint)?.whenComplete { t, _ ->
+                        debug("${player.name}指令job experience give结果${t}")
+                    }
                 }
             }
         }
@@ -30,7 +32,9 @@ object OrryxJobExperienceCommand {
             int("experience") {
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
-                    debug("${player.name}指令job experience take结果${player.job()?.takeExperience(ctx["experience"].cint)}")
+                    player.job()?.takeExperience(ctx["experience"].cint)?.whenComplete { t, _ ->
+                        debug("${player.name}指令job experience take结果${t}")
+                    }
                 }
             }
         }
@@ -42,7 +46,9 @@ object OrryxJobExperienceCommand {
             int("experience") {
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
-                    debug("${player.name}指令job experience set结果${player.job()?.setExperience(ctx["experience"].cint)}")
+                    player.job()?.setExperience(ctx["experience"].cint)?.whenComplete { t, _ ->
+                        debug("${player.name}指令job experience set结果${t}")
+                    }
                 }
             }
         }

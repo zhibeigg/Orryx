@@ -60,7 +60,8 @@ taboolib {
             name("DungeonPlus").optional(true)
         }
     }
-    relocate("kotlinx.serialization", "org.gitee.orryx.kotlinx.serialization")
+    relocate("kotlinx.serialization", "org.gitee.orryx.serialization")
+    relocate("org.apache.commons.jexl3", "org.gitee.orryx.jexl3")
     version { taboolib = "6.2.2" }
 }
 
@@ -98,6 +99,7 @@ dependencies {
 
     taboo("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3")
     taboo("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    taboo("org.apache.commons:commons-jexl3:3.4.0")
     compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
     compileOnly("com.github.ben-manes.caffeine:caffeine:2.9.3")
     compileOnly("org.joml:joml:1.10.7")

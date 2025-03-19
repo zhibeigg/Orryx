@@ -34,7 +34,8 @@ Database:
 LarkSuite:
   AppId: ""
   AppSecret: ""
-  FolderToken: ""
+  ParentWikiToken: ""
+  SpaceId: ""
 # AI接入
 OpenAI:
   ApiKey: ""

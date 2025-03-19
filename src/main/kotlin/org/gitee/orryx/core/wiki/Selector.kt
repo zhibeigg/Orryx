@@ -56,7 +56,7 @@ class Selector(val name: String, val keys: Array<String>, val type: SelectorType
             .heading3(Text.newBuilder().elements(text(name)).build())
             .build()
         val line = "@${keys.joinToString("/")} " + entries.joinToString(" ") { entry ->
-            val (start, end) = "<" to ">"
+            val (start, end) = "[" to "]"
             var string = "${start}${entry.type.name}"
             if (entry.default != null) {
                 string += "(${entry.default})"

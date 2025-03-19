@@ -18,7 +18,9 @@ object OrryxJobLevelCommand {
             int("level") {
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
-                    debug("${player.name}指令job level give结果${player.job()?.giveLevel(ctx["level"].cint)}")
+                    player.job()?.giveLevel(ctx["level"].cint)?.whenComplete { t, _ ->
+                        debug("${player.name}指令job level give结果${t}")
+                    }
                 }
             }
         }
@@ -30,7 +32,9 @@ object OrryxJobLevelCommand {
             int("level") {
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
-                    debug("${player.name}指令job level take结果${player.job()?.takeLevel(ctx["level"].cint)}")
+                    player.job()?.takeLevel(ctx["level"].cint)?.whenComplete { t, _ ->
+                        debug("${player.name}指令job level take结果${t}")
+                    }
                 }
             }
         }
@@ -42,7 +46,9 @@ object OrryxJobLevelCommand {
             int("level") {
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
-                    debug("${player.name}指令job level set结果${player.job()?.setLevel(ctx["level"].cint)}")
+                    player.job()?.setLevel(ctx["level"].cint)?.whenComplete { t, _ ->
+                        debug("${player.name}指令job level set结果${t}")
+                    }
                 }
             }
         }

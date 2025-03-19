@@ -170,8 +170,8 @@ object DragonCoreActions {
                 .addEntry("执行实体UUID", Type.STRING, false)
                 .addEntry("方法语句", Type.STRING, false)
                 .addContainerEntry("客户端参与执行的玩家", true, "@self"),
-            Action.new("DragonCore附属语句", "运行龙核GUI方法", "dragoncore", true)
-                .description("运行龙核GUI方法")
+            Action.new("DragonCore附属语句", "运行龙核headTag方法", "dragoncore", true)
+                .description("运行龙核headTag方法")
                 .addEntry("方法标识符", Type.SYMBOL, false, head = "function/func")
                 .addEntry("tag标识符", Type.SYMBOL, false, head = "headtag/tag")
                 .addEntry("执行实体UUID", Type.STRING, false)

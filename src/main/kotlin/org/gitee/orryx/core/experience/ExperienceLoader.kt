@@ -23,7 +23,7 @@ class ExperienceLoader(override val key: String, val configuration: Configuratio
     }
 
     override fun getExperienceOfLevel(sender: ProxyCommandSender, level: Int): Int {
-        if (level !in minLevel+1..maxLevel) return 0
+        if (level !in minLevel..maxLevel) return 0
         return KetherShell.eval(
             experienceEquation,
             ScriptOptions.builder().sender(sender).set("level", level).namespace(orryxEnvironmentNamespaces).build()

@@ -3,4 +3,4 @@ Options:
   Max: 20
   # 带入等级算出每一级所需的经验值
   ExperienceOfLevel:
-    calc dynamic inline "200*{{ &level }}"
+    calc "200*level"

@@ -102,7 +102,7 @@ class Action(val group: String, val name: String, val key: String, val sharded: 
             }
             if (entry.type != Type.SYMBOL) {
                 if (entry.head != null) {
-                    string = entry.head + " " + string
+                    string = "*" + entry.head + " " + string
                 }
                 if (entry.default != null) {
                     string += "(${entry.default})"

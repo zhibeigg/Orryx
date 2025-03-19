@@ -44,6 +44,10 @@ class StationParameter(val stationLoader: String, val sender: ProxyCommandSender
         }
     }
 
+    override fun getVariable(key: String, default: Any): Any {
+        return lazies[key] ?: lazies.put(key, default) ?: default
+    }
+
     override fun toString(): String {
         return "StationParameter{station=$stationLoader, sender=${sender.name}}"
     }

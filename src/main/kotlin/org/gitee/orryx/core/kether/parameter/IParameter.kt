@@ -8,4 +8,6 @@ interface IParameter {
 
     fun getVariable(key: String, lazy: Boolean): Any?
 
+    fun getVariable(key: String, default: Any): Any
+
 }
