@@ -12,7 +12,6 @@ object TestMain {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        var1.tell("123")
     }
 
 }

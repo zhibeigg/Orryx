@@ -18,16 +18,13 @@ object PlayerProfileManager {
     }
 
     fun Player.orryxProfile(): IPlayerProfile {
-        playerProfileMap[uniqueId]?.let { return it }
-        return playerData()?.let {
-            val list = it.flags.mapNotNull { (key, value) ->
-                value.toFlag()?.let { flag -> key to flag }
-            }
-            PlayerProfile(this, it.job, it.point, list.toMap(ConcurrentHashMap(list.size)))
-        }?.also {
-            playerProfileMap[uniqueId] = it
-        } ?: PlayerProfile(this, null, 0, ConcurrentHashMap()).also {
-            playerProfileMap[uniqueId] = it
+        return playerProfileMap.getOrPut(uniqueId) {
+            playerData()?.let {
+                val list = it.flags.mapNotNull { (key, value) ->
+                    value.toFlag()?.let { flag -> key to flag }
+                }
+                PlayerProfile(this, it.job, it.point, list.toMap(ConcurrentHashMap(list.size)))
+            } ?: PlayerProfile(this, null, 0, ConcurrentHashMap())
         }
     }
 

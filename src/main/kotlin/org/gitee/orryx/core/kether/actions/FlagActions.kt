@@ -1,9 +1,8 @@
 package org.gitee.orryx.core.kether.actions
 
-import org.bukkit.entity.Player
 import org.gitee.orryx.core.kether.ScriptManager.scriptParser
 import org.gitee.orryx.core.profile.PlayerProfileManager.orryxProfile
-import org.gitee.orryx.core.targets.ITargetEntity
+import org.gitee.orryx.core.targets.PlayerTarget
 import org.gitee.orryx.core.wiki.Action
 import org.gitee.orryx.core.wiki.Type
 import org.gitee.orryx.utils.*
@@ -26,8 +25,8 @@ object FlagActions {
                 .addEntry("创建占位符", Type.SYMBOL, false, head = "create/to")
                 .addEntry("键名", Type.STRING, false)
                 .addEntry("数据", Type.ANY, false)
-                .addEntry("是否持久化", Type.BOOLEAN, default = "false", head = "pst")
-                .addEntry("存活时长，默认永久", Type.LONG, default = "0", head = "timeout")
+                .addEntry("是否持久化，默认false", Type.BOOLEAN, true, default = "false", head = "pst")
+                .addEntry("存活时长，默认永久", Type.LONG, true, default = "0", head = "timeout")
                 .addContainerEntry("创建的玩家", true, "@self")
                 .result("数据", Type.ANY),
             Action.new("Flag数据标签", "删除数据标签", "flag", true)
@@ -79,11 +78,11 @@ object FlagActions {
 
     private fun get(reader: QuestReader): ScriptAction<Any?> {
         val key = reader.nextParsedAction()
-        val they = reader.nextTheyContainerOrSelf()
+        val they = reader.nextTheyContainerOrNull()
         return actionFuture { future ->
             run(key).str { key ->
-                container(they, self()) {
-                    future.complete(it.firstInstance<ITargetEntity<Player>>().getSource().orryxProfile().getFlag(key))
+                containerOrSelf(they) {
+                    future.complete(it.firstInstance<PlayerTarget>().getSource().orryxProfile().getFlag(key)?.value)
                 }
             }
         }
@@ -94,14 +93,14 @@ object FlagActions {
         val value = reader.nextParsedAction()
         val persistence = reader.nextHeadAction("pst", false)
         val timeout = reader.nextHeadAction("timeout", 0)
-        val they = reader.nextTheyContainerOrSelf()
+        val they = reader.nextTheyContainerOrNull()
         return actionFuture { future ->
             run(key).str { key ->
                 run(value).thenAccept { value ->
                     run(persistence).bool { persistence ->
                         run(timeout).long { timeout ->
-                            container(they, self()) {
-                                it.forEachInstance<ITargetEntity<Player>> {
+                            containerOrSelf(they) {
+                                it.forEachInstance<PlayerTarget> {
                                     value?.flag(persistence, timeout)?.let { it1 -> it.getSource().orryxProfile().setFlag(key, it1) }
                                 }
                                 future.complete(value)
@@ -115,21 +114,21 @@ object FlagActions {
 
     private fun remove(reader: QuestReader): ScriptAction<Any?> {
         val key = reader.nextParsedAction()
-        val they = reader.nextTheyContainerOrSelf()
+        val they = reader.nextTheyContainerOrNull()
         return actionFuture { future ->
             run(key).str { key ->
-                container(they, self()) {
-                    future.complete(it.firstInstance<ITargetEntity<Player>>().getSource().orryxProfile().removeFlag(key))
+                containerOrSelf(they) {
+                    future.complete(it.firstInstance<PlayerTarget>().getSource().orryxProfile().removeFlag(key))
                 }
             }
         }
     }
 
     private fun clear(reader: QuestReader): ScriptAction<Any?> {
-        val they = reader.nextTheyContainerOrSelf()
+        val they = reader.nextTheyContainerOrNull()
         return actionNow {
-            container(they, self()) {
-                it.forEachInstance<ITargetEntity<Player>> { target ->
+            containerOrSelf(they) {
+                it.forEachInstance<PlayerTarget> { target ->
                     target.getSource().orryxProfile().clearFlags()
                 }
             }
@@ -138,11 +137,11 @@ object FlagActions {
 
     private fun survival(reader: QuestReader): ScriptAction<Any?> {
         val key = reader.nextParsedAction()
-        val they = reader.nextTheyContainerOrSelf()
+        val they = reader.nextTheyContainerOrNull()
         return actionFuture { future ->
             run(key).str { key ->
-                container(they, self()) {
-                    future.complete(it.firstInstance<ITargetEntity<Player>>().getSource().orryxProfile().getFlag(key)?.timestamp?.let { timestamp ->
+                containerOrSelf(they) {
+                    future.complete(it.firstInstance<PlayerTarget>().getSource().orryxProfile().getFlag(key)?.timestamp?.let { timestamp ->
                         System.currentTimeMillis() - timestamp
                     } ?: 0)
                 }
@@ -152,11 +151,11 @@ object FlagActions {
 
     private fun countdown(reader: QuestReader): ScriptAction<Any?> {
         val key = reader.nextParsedAction()
-        val they = reader.nextTheyContainerOrSelf()
+        val they = reader.nextTheyContainerOrNull()
         return actionFuture { future ->
             run(key).str { key ->
                 container(they, self()) {
-                    val flag = it.firstInstance<ITargetEntity<Player>>().getSource().orryxProfile().getFlag(key)
+                    val flag = it.firstInstance<PlayerTarget>().getSource().orryxProfile().getFlag(key)
                     future.complete(flag?.let {
                         flag.timestamp + flag.timeout - System.currentTimeMillis()
                     } ?: 0)

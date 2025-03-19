@@ -223,7 +223,8 @@ object MathActions {
     private fun actionPow() = combinationParser(
         Action.new("Math数学运算", "计算幂函数", "pow", true)
             .description("计算幂函数")
-            .addEntry("值", Type.DOUBLE, false)
+            .addEntry("底", Type.DOUBLE, false)
+            .addEntry("幂", Type.DOUBLE, false)
             .result("幂函数值", Type.DOUBLE)
     ) {
         it.group(

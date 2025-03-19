@@ -97,7 +97,7 @@ object BuffActions {
     }
 
     fun hasBuff(player: Player, buff: String): Boolean {
-        return playerBuffMap[player.uniqueId]?.containsKey(buff) == true
+        return (playerBuffMap[player.uniqueId]?.containsKey(buff) == true)
     }
 
     //龙核
@@ -182,11 +182,11 @@ object BuffActions {
             }
             case("has") {
                 val buff = it.nextParsedAction()
-                val container = it.nextTheyContainer()
-                actionFuture {
+                val container = it.nextTheyContainerOrNull()
+                actionFuture { future ->
                     run(buff).str { buff ->
                         containerOrSelf(container) { container ->
-                            it.complete(container.all<PlayerTarget> { player ->
+                            future.complete(container.all<PlayerTarget> { player ->
                                 hasBuff(player.getSource(), buff)
                             })
                         }

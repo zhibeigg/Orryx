@@ -1,7 +1,6 @@
 package org.gitee.orryx.core.kether.actions
 
 import org.gitee.orryx.core.kether.ScriptManager.combinationParser
-import org.gitee.orryx.core.kether.actions.ContextActions.Method.*
 import org.gitee.orryx.core.kether.parameter.IParameter
 import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.kether.parameter.StationParameter
@@ -54,7 +53,7 @@ object ContextActions {
                 val parameter = script().getParameter()
                 val method = Method.entries.find { method ->
                     symbol?.lowercase() in method.symbols
-                } ?: NONE
+                } ?: Method.NONE
                 val future = CompletableFuture<Any>()
                 val value = action?.let { run(action).orNull() }
                     future.complete(
@@ -92,10 +91,10 @@ object ContextActions {
                 when(key) {
                     "ORIGIN" -> {
                         when(method) {
-                            INCREASE -> origin
-                            DECREASE -> origin
-                            MODIFY -> value.readContainer(context)?.firstInstanceOrNull<ITargetLocation<*>>()?.let { origin = it }
-                            NONE -> origin
+                            Method.INCREASE -> origin
+                            Method.DECREASE -> origin
+                            Method.MODIFY -> value.readContainer(context)?.firstInstanceOrNull<ITargetLocation<*>>()?.let { origin = it }
+                            Method.NONE -> origin
                         }
                     }
                     else -> null
@@ -106,10 +105,6 @@ object ContextActions {
 
     enum class ParmType {
         SKILL, STATION, ALL;
-    }
-
-    enum class Method(vararg val symbols: String) {
-        INCREASE("add"), DECREASE("sub"), MODIFY("set", "to"), NONE;
     }
 
 }

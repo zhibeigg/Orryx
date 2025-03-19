@@ -23,6 +23,9 @@ object SelectorInit: ClassVisitor(1) {
             if (ISelector::class.java.isAssignableFrom(clazzClass)) {
                 clazz.getInstance().let { instance ->
                     if (instance is ISelector) {
+                        if (instance is WikiSelector) {
+                            ScriptManager.wikiSelectors += instance.wiki
+                        }
                         clazz.getAnnotationIfPresent(Plugin::class.java)?.let { annotation ->
                             val pluginEnabled =
                                 Bukkit.getPluginManager().isPluginEnabled(annotation.property<String>("plugin")!!)
@@ -32,9 +35,6 @@ object SelectorInit: ClassVisitor(1) {
                             debug("&e┣&7Selector loaded &e${instance.keys.map { it }} &a√")
                         }
                         selectors.add(instance)
-                        if (instance is WikiSelector) {
-                            ScriptManager.wikiSelectors += instance.wiki
-                        }
                     }
                 }
             }

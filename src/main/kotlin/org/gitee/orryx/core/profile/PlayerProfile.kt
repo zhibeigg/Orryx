@@ -30,19 +30,25 @@ class PlayerProfile(override val player: Player, private var privateJob: String?
 
     override fun setFlag(flagName: String, flag: IFlag, save: Boolean) {
         privateFlags[flagName] = flag
-        if (flag.isPersistence) {
+        if (save && flag.isPersistence) {
             save(isPrimaryThread)
         }
     }
 
     override fun getFlag(flagName: String): IFlag? {
-        privateFlags.asSequence().filter { it.value.isTimeout() }.forEach { (key, _) -> privateFlags.remove(key) }
+        val iterator = privateFlags.iterator()
+        while (iterator.hasNext()) {
+            val value = iterator.next()
+            if (value.value.isTimeout()) {
+                iterator.remove()
+            }
+        }
         return privateFlags[flagName]
     }
 
     override fun removeFlag(flagName: String, save: Boolean): IFlag? {
         val flag = privateFlags.remove(flagName) ?: return null
-        if (flag.isPersistence) {
+        if (save && flag.isPersistence) {
             save(isPrimaryThread)
         }
         return flag

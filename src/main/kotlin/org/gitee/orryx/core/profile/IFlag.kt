@@ -11,7 +11,7 @@ sealed interface IFlag {
     val timeout: Long
 
     fun isTimeout(): Boolean {
-        return timeout + timestamp < System.currentTimeMillis()
+        return  timeout != 0L && timeout + timestamp < System.currentTimeMillis()
     }
 
 }

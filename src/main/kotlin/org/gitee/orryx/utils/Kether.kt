@@ -4,6 +4,7 @@ import org.bukkit.entity.Player
 import org.bukkit.util.Vector
 import org.gitee.orryx.api.adapters.IVector
 import org.gitee.orryx.api.adapters.vector.AbstractVector
+import org.gitee.orryx.core.container.Container
 import org.gitee.orryx.core.container.IContainer
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.kether.actions.effect.EffectBuilder
@@ -116,6 +117,11 @@ internal fun <T> ScriptFrame.container(container: ParsedAction<*>?, def: IContai
     }
 }
 
+internal fun <T> ScriptFrame.container(container: ParsedAction<*>, func: (ScriptFrame.(container: IContainer) -> T)): CompletableFuture<T> {
+    return run(container).thenApply {
+        func(it.readContainer(script()).orElse(Container()))
+    }
+}
 
 internal fun <T> ScriptFrame.containerOrSelf(container: ParsedAction<*>?, func: (ScriptFrame.(container: IContainer) -> T)): CompletableFuture<T> {
     return container(container, self(), func)
@@ -240,4 +246,8 @@ fun ScriptFrame.skillCaster(func: Player.() -> CompletableFuture<Any?>): Complet
             script().bukkitPlayer().func()
         }
     }
+}
+
+enum class Method(vararg val symbols: String) {
+    INCREASE("add", "+"), DECREASE("sub", "-"), MODIFY("set", "to", "="), NONE;
 }
