@@ -173,7 +173,7 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean
             val aimRadius = parameter.runCustomAction(skill.aimRadiusAction).orNull().cdouble
             val aimSize = parameter.runCustomAction(skill.aimSizeAction).orNull().cdouble
             PluginMessageHandler.requestAiming(player, key, DEFAULT_PICTURE, aimSize, aimRadius) { aimInfo ->
-                aimInfo.getOrNull()?.let {
+                aimInfo.onSuccess {
                     if (it.skillId == skill.key) {
                         parameter.origin = it.location.toTarget()
                         if (consume) {

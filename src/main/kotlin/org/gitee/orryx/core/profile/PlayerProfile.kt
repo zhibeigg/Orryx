@@ -1,6 +1,8 @@
 package org.gitee.orryx.core.profile
 
 import kotlinx.coroutines.launch
+import org.bukkit.attribute.Attribute
+import org.bukkit.attribute.AttributeModifier
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.OrryxAPI.saveScope
 import org.gitee.orryx.api.events.player.OrryxPlayerPointEvents
@@ -25,8 +27,11 @@ class PlayerProfile(override val player: Player, private var privateJob: String?
     override val point: Int
         get() = privatePoint
 
+    private val superBodyModifier: AttributeModifier by lazy { AttributeModifier("Orryx@SuperBody", 99999.0, AttributeModifier.Operation.ADD_NUMBER) }
+
     //霸体过期时间
     private var superBody: Long = 0
+    private var change = false
 
     override fun setFlag(flagName: String, flag: IFlag, save: Boolean) {
         privateFlags[flagName] = flag
@@ -65,15 +70,18 @@ class PlayerProfile(override val player: Player, private var privateJob: String?
 
     override fun setSuperBody(timeout: Long) {
         superBody = System.currentTimeMillis() + timeout
+        updateSuperBody()
     }
 
     override fun cancelSuperBody() {
         superBody = 0
+        updateSuperBody()
     }
 
     override fun addSuperBody(timeout: Long) {
         if (isSuperBody()) {
             superBody += timeout
+            updateSuperBody()
         } else {
             setSuperBody(timeout)
         }
@@ -82,6 +90,20 @@ class PlayerProfile(override val player: Player, private var privateJob: String?
     override fun reduceSuperBody(timeout: Long) {
         if (isSuperBody()) {
             superBody = (superBody - timeout).coerceAtLeast(0)
+            updateSuperBody()
+        }
+    }
+
+    override fun updateSuperBody() {
+        when {
+            !isSuperBody() && change -> {
+                player.getAttribute(Attribute.GENERIC_ATTACK_KNOCKBACK)?.removeModifier(superBodyModifier)
+                change = false
+            }
+            isSuperBody() && !change -> {
+                player.getAttribute(Attribute.GENERIC_ATTACK_KNOCKBACK)?.addModifier(superBodyModifier)
+                change = true
+            }
         }
     }
 

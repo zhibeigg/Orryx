@@ -1,6 +1,8 @@
 package org.gitee.orryx.core.message
 
 import com.germ.germplugin.api.GermPacketAPI
+import com.germ.germplugin.api.KeyType
+import com.germ.germplugin.api.event.GermKeyDownEvent
 import com.google.common.io.ByteArrayDataInput
 import com.google.common.io.ByteArrayDataOutput
 import com.google.common.io.ByteStreams
@@ -59,13 +61,25 @@ object PluginMessageHandler {
     /* 事件处理 */
     @SubscribeEvent
     private fun onPlayerQuit(e: PlayerQuitEvent) {
-        cleanupRequest(e.player, isCancelled = true)
+        cleanupRequest(e.player)
     }
 
     @Ghost
     @SubscribeEvent(priority = EventPriority.LOWEST)
     private fun onKeyPress(e: KeyPressEvent) {
-        when (e.key) {
+        if (e.isCancelled) return
+        when (e.key.uppercase()) {
+            IPlayerKeySetting.INSTANCE.aimConfirmKey(e.player) -> handleConfirmation(e.player, true)
+            IPlayerKeySetting.INSTANCE.aimCancelKey(e.player) -> handleConfirmation(e.player, false)
+            else -> return
+        }.also { e.isCancelled = true }
+    }
+
+    @Ghost
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    private fun onKeyPress(e: GermKeyDownEvent) {
+        if (e.isCancelled) return
+        when (e.keyType.simpleKey.uppercase()) {
             IPlayerKeySetting.INSTANCE.aimConfirmKey(e.player) -> handleConfirmation(e.player, true)
             IPlayerKeySetting.INSTANCE.aimCancelKey(e.player) -> handleConfirmation(e.player, false)
             else -> return
@@ -74,16 +88,20 @@ object PluginMessageHandler {
 
     @SubscribeEvent
     private fun onPlayerInteract(e: PlayerInteractEvent) {
-        if (DragonCorePlugin.isEnabled) return
+        if (DragonCorePlugin.isEnabled || GermPluginPlugin.isEnabled) return
         when (e.action) {
-            Action.LEFT_CLICK_AIR, Action.LEFT_CLICK_BLOCK -> handleConfirmation(e.player, false)
-            Action.RIGHT_CLICK_AIR, Action.RIGHT_CLICK_BLOCK -> handleConfirmation(e.player, true)
+            Action.LEFT_CLICK_AIR, Action.LEFT_CLICK_BLOCK -> handleConfirmation(e.player, true)
+            Action.RIGHT_CLICK_AIR, Action.RIGHT_CLICK_BLOCK -> handleConfirmation(e.player, false)
             else -> return
         }.also { e.isCancelled = true }
     }
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     private fun onPlayerJoin(e: PlayerJoinEvent) {
+        if (GermPluginPlugin.isEnabled) {
+            GermPacketAPI.sendKeyRegister(e.player, KeyType.valueOf("KEY_${IPlayerKeySetting.INSTANCE.aimConfirmKey(e.player)}").keyId)
+            GermPacketAPI.sendKeyRegister(e.player, KeyType.valueOf("KEY_${IPlayerKeySetting.INSTANCE.aimCancelKey(e.player)}").keyId)
+        }
         if (DragonCorePlugin.isEnabled) {
             try {
                 DragonCoreCustomPacketSender.sendKeyRegister(e.player)
@@ -119,7 +137,13 @@ object PluginMessageHandler {
             pendingRequests[player.uniqueId] = radius to this
             whenComplete { result, ex ->
                 submit { // 切换到主线程执行回调
-                    callback(ex?.let { Result.failure(it) } ?: Result.success(result))
+                    callback(
+                        if (ex == null) {
+                            Result.success(result)
+                        } else {
+                            Result.failure(ex)
+                        }
+                    )
                 }
             }
         }
@@ -162,7 +186,13 @@ object PluginMessageHandler {
             pendingRequests[player.uniqueId] = radius to this
             whenComplete { result, ex ->
                 submit { // 切换到主线程执行回调
-                    callback(ex?.let { Result.failure(it) } ?: Result.success(result))
+                    callback(
+                        if (ex == null) {
+                            Result.success(result)
+                        } else {
+                            Result.failure(ex)
+                        }
+                    )
                 }
             }
         }
@@ -230,12 +260,12 @@ object PluginMessageHandler {
         sendDataPacket(player, PacketType.AimConfirm) {
             writeBoolean(isConfirmed)
         }
-        if (!isConfirmed) cleanupRequest(player, true)
+        if (!isConfirmed) cleanupRequest(player)
     }
 
-    private fun cleanupRequest(player: Player, isCancelled: Boolean) {
+    private fun cleanupRequest(player: Player) {
         pendingRequests.remove(player.uniqueId)?.apply {
-            if (isCancelled) second.completeExceptionally(PlayerCancelledException())
+            second.completeExceptionally(PlayerCancelledException())
         }
     }
 
@@ -280,7 +310,7 @@ object PluginMessageHandler {
                 val skillId = input.readUTF()
                 val location = readLocation(player, input)
 
-                if (location.distance(player.location) <= ((pendingRequests[player.uniqueId]?.first ?: 0.0) + 1.0)) {
+                if (location.distance(player.location) <= ((pendingRequests[player.uniqueId]?.first ?: 0.0) + 5.0)) {
                     pendingRequests.remove(player.uniqueId)?.second?.complete(AimInfo(player, location, skillId))
                 } else {
                     pendingRequests.remove(player.uniqueId)
@@ -307,7 +337,11 @@ object PluginMessageHandler {
         val location: Location,
         val skillId: String?,
         val timestamp: Long = System.currentTimeMillis()
-    )
+    ) {
+        override fun toString(): String {
+            return "AimInfo(player=$player, location=$location, skillId=$skillId, timestamp=$timestamp)"
+        }
+    }
 
     /* 异常体系 */
     class UnsupportedVersionException : IllegalStateException("此功能仅支持 1.12.2 版本")

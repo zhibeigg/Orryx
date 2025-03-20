@@ -14,12 +14,12 @@ object PlayerProfileActions {
     private fun superBody() = combinationParser(
         Action.new("Orryx Profile玩家信息", "设置霸体状态", "superBody", true)
             .description("设置霸体状态")
-            .addEntry("设置方法set/to,add/+,reduce/-,cancel/stop", Type.SYMBOL, false)
+            .addEntry("设置方法set/to,add/+,reduce/-,cancel/stop", Type.STRING, false)
             .addEntry("霸体时长", Type.LONG, false)
             .addContainerEntry(optional = true, default = "@self")
     ) {
         it.group(
-            symbol(),
+            text(),
             long(),
             theyContainer(true)
         ).apply(it) { type, timeout, container ->

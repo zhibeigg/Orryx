@@ -46,16 +46,15 @@ object ContextActions {
     ) {
         it.group(
             text(),
-            symbol().option(),
-            action().option()
-        ).apply(it) { key, symbol, action ->
+            symbol().and(action()).option()
+        ).apply(it) { key, symbolAndValue ->
             future {
                 val parameter = script().getParameter()
-                val method = Method.entries.find { method ->
-                    symbol?.lowercase() in method.symbols
+                val method = Method.entries.firstOrNull { method ->
+                    symbolAndValue?.first?.lowercase() in method.symbols
                 } ?: Method.NONE
                 val future = CompletableFuture<Any>()
-                val value = action?.let { run(action).orNull() }
+                val value = symbolAndValue?.second?.let { value -> run(value).orNull() }
                     future.complete(
                         when(val pkey = key.uppercase()) {
                             "SKILL" -> parameter.parseParm(pkey, ParmType.SKILL, method, value, script())
@@ -73,7 +72,7 @@ object ContextActions {
     private fun IParameter.parseParm(key: String, type: ParmType, method: Method, value: Any?, context: ScriptContext): Any? {
         return when(type) {
             ParmType.SKILL -> {
-                this as SkillParameter
+                if (this !is SkillParameter) return null
                 when(key) {
                     "SKILL" -> skill
                     "LEVEL" -> level
@@ -81,7 +80,7 @@ object ContextActions {
                 }
             }
             ParmType.STATION -> {
-                this as StationParameter
+                if (this !is StationParameter) return null
                 when(key) {
                     "STATION" -> stationLoader
                     else -> null

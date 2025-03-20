@@ -5,7 +5,7 @@ Options:
   Attributes:
     - "物理攻击: +{{ orryx level }}"
   RegainManaActions: |-
-    profile level
+    orryx level
   MaxManaActions: |-
     math add [ orryx level 5 ]
   UpgradePointActions: |-

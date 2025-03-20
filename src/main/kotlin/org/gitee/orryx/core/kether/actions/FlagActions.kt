@@ -54,24 +54,12 @@ object FlagActions {
         )
     ) {
         it.switch {
-            case("get") {
-                get(it)
-            }
-            case("create") {
-                create(it)
-            }
-            case("remove") {
-                remove(it)
-            }
-            case("clear") {
-                clear(it)
-            }
-            case("survival") {
-                survival(it)
-            }
-            case("countdown") {
-                countdown(it)
-            }
+            case("get") { get(it) }
+            case("create", "to") { create(it) }
+            case("remove", "delete") { remove(it) }
+            case("clear") { clear(it) }
+            case("survival") { survival(it) }
+            case("countdown") { countdown(it) }
             other { get(it) }
         }
     }
@@ -79,6 +67,7 @@ object FlagActions {
     private fun get(reader: QuestReader): ScriptAction<Any?> {
         val key = reader.nextParsedAction()
         val they = reader.nextTheyContainerOrNull()
+
         return actionFuture { future ->
             run(key).str { key ->
                 containerOrSelf(they) {
@@ -94,6 +83,7 @@ object FlagActions {
         val persistence = reader.nextHeadAction("pst", false)
         val timeout = reader.nextHeadAction("timeout", 0)
         val they = reader.nextTheyContainerOrNull()
+
         return actionFuture { future ->
             run(key).str { key ->
                 run(value).thenAccept { value ->
@@ -101,7 +91,7 @@ object FlagActions {
                         run(timeout).long { timeout ->
                             containerOrSelf(they) {
                                 it.forEachInstance<PlayerTarget> {
-                                    value?.flag(persistence, timeout)?.let { it1 -> it.getSource().orryxProfile().setFlag(key, it1) }
+                                    value?.flag(persistence, timeout*50)?.let { it1 -> it.getSource().orryxProfile().setFlag(key, it1) }
                                 }
                                 future.complete(value)
                             }
@@ -115,6 +105,7 @@ object FlagActions {
     private fun remove(reader: QuestReader): ScriptAction<Any?> {
         val key = reader.nextParsedAction()
         val they = reader.nextTheyContainerOrNull()
+
         return actionFuture { future ->
             run(key).str { key ->
                 containerOrSelf(they) {
@@ -126,6 +117,7 @@ object FlagActions {
 
     private fun clear(reader: QuestReader): ScriptAction<Any?> {
         val they = reader.nextTheyContainerOrNull()
+
         return actionNow {
             containerOrSelf(they) {
                 it.forEachInstance<PlayerTarget> { target ->
@@ -138,12 +130,17 @@ object FlagActions {
     private fun survival(reader: QuestReader): ScriptAction<Any?> {
         val key = reader.nextParsedAction()
         val they = reader.nextTheyContainerOrNull()
+
         return actionFuture { future ->
             run(key).str { key ->
                 containerOrSelf(they) {
-                    future.complete(it.firstInstance<PlayerTarget>().getSource().orryxProfile().getFlag(key)?.timestamp?.let { timestamp ->
-                        System.currentTimeMillis() - timestamp
-                    } ?: 0)
+                    val flag = it.firstInstance<PlayerTarget>().getSource().orryxProfile().getFlag(key)
+
+                    future.complete(
+                        flag?.let {
+                            (System.currentTimeMillis() - flag.timestamp)/50
+                        } ?: 0
+                    )
                 }
             }
         }
@@ -152,13 +149,17 @@ object FlagActions {
     private fun countdown(reader: QuestReader): ScriptAction<Any?> {
         val key = reader.nextParsedAction()
         val they = reader.nextTheyContainerOrNull()
+
         return actionFuture { future ->
             run(key).str { key ->
-                container(they, self()) {
+                containerOrSelf(they) {
                     val flag = it.firstInstance<PlayerTarget>().getSource().orryxProfile().getFlag(key)
-                    future.complete(flag?.let {
-                        flag.timestamp + flag.timeout - System.currentTimeMillis()
-                    } ?: 0)
+
+                    future.complete(
+                        flag?.let {
+                            (flag.timestamp + flag.timeout - System.currentTimeMillis())/50
+                        } ?: 0
+                    )
                 }
             }
         }

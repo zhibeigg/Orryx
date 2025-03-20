@@ -17,7 +17,7 @@ object EventActions {
             Action.new("Station专属语句", "设置事件是否取消", "event")
                 .description("设置当前Station监听到的事件是否取消")
                 .addEntry("取消标识符", Type.SYMBOL, false, head = "cancelled")
-                .addEntry("是否取消", Type.BOOLEAN, true)
+                .addEntry("是否取消", Type.BOOLEAN, false)
         )
     ) {
         it.switch {

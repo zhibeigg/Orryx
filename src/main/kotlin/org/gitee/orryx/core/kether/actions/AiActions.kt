@@ -44,7 +44,7 @@ object AiActions {
 
     @KetherParser(["aiChat"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun aiChat() = combinationParser(
-        Action.new("AI智能", "模拟Npc对话", "npc", true)
+        Action.new("AI智能", "模拟Npc对话", "aiChat", true)
             .description("模拟Npc对话，不同Npc人设请在npc.yml中配置，等待直到AI返回内容")
             .addEntry("模拟的npc", Type.STRING)
             .addEntry("对话信息", Type.STRING)

@@ -84,6 +84,11 @@ interface IPlayerProfile {
     fun reduceSuperBody(timeout: Long)
 
     /**
+     * 更新霸体
+     */
+    fun updateSuperBody()
+
+    /**
      * 给予玩家技能点
      * @param point 技能点
      */

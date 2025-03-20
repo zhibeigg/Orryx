@@ -83,7 +83,7 @@ inline fun <reified T : ITarget<*>> IContainer.firstInstance(): T {
  * 获取第一个指定类型目标（可为空）
  */
 inline fun <reified T : ITarget<*>> IContainer.firstInstanceOrNull(): T? {
-    return targets.find { it is T } as? T
+    return targets.firstOrNull { it is T } as T?
 }
 
 /**
