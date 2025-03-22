@@ -7,7 +7,6 @@ import org.gitee.orryx.core.selector.presets.SelectorPresetsLoaderManager
 import org.gitee.orryx.core.wiki.Action
 import org.gitee.orryx.core.wiki.Type
 import org.gitee.orryx.utils.ORRYX_NAMESPACE
-import org.gitee.orryx.utils.nextTheyContainer
 import org.gitee.orryx.utils.readContainer
 import org.gitee.orryx.utils.runSubScript
 import taboolib.common.platform.function.submitAsync
@@ -27,7 +26,7 @@ object SelectorActions {
                 .description("用粒子显示包含的几何Selector的选区")
                 .addEntry("显示占位符", Type.SYMBOL, head = "show")
                 .addEntry("显示时长", Type.LONG)
-                .addEntry("显示的选择器", Type.STRING, false, head = "they")
+                .addEntry("显示的选择器（只支持几何选择器）", Type.STRING, false, head = "they")
         )
     ) {
         it.switch {
@@ -54,7 +53,8 @@ object SelectorActions {
 
     private fun show(reader: QuestReader): ScriptAction<Any?> {
         val timeout = reader.nextParsedAction()
-        val they = reader.nextTheyContainer()
+        reader.expects("they")
+        val they = reader.nextParsedAction()
         return actionFuture { future ->
             run(timeout).long { timeout ->
                 run(they).str { they ->

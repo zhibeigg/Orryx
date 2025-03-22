@@ -76,8 +76,8 @@ object ScriptManager {
         closeableMap.getOrPut(id) { ConcurrentHashMap() }[uuid] = closeable
     }
 
-    fun ScriptContext.removeCloseable() {
-        closeableMap.remove(id)
+    internal fun ScriptContext.removeCloseable(): ConcurrentMap<UUID, AutoCloseable>? {
+        return closeableMap.remove(id)
     }
 
     @Reload(weight = 2)

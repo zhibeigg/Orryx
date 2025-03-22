@@ -20,9 +20,9 @@ open class SimpleTimeoutTask(val tick: Long, open val closed: () -> Unit = EMPTY
 
         @Awake(LifeCycle.DISABLE)
         fun unregisterAll() {
-            cache.forEach {
-                // 未执行任务
-                cancel(it)
+            val iterator = cache.iterator()
+            while (iterator.hasNext()) {
+                cancel(iterator.next())
             }
         }
 

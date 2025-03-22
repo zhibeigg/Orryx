@@ -18,7 +18,9 @@ object OrryxJobExperienceCommand {
             int("experience") {
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
-                    player.job()?.giveExperience(ctx["experience"].cint)?.whenComplete { t, _ ->
+                    val job = player.job() ?: return@exec
+                    job.giveExperience(ctx["experience"].cint).whenComplete { t, _ ->
+                        sender.sendMessage("玩家${player.name} 职业${job.key}获取经验成功")
                         debug("${player.name}指令job experience give结果${t}")
                     }
                 }
@@ -32,7 +34,9 @@ object OrryxJobExperienceCommand {
             int("experience") {
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
-                    player.job()?.takeExperience(ctx["experience"].cint)?.whenComplete { t, _ ->
+                    val job = player.job() ?: return@exec
+                    job.takeExperience(ctx["experience"].cint).whenComplete { t, _ ->
+                        sender.sendMessage("玩家${player.name} 职业${job.key}减少经验成功")
                         debug("${player.name}指令job experience take结果${t}")
                     }
                 }
@@ -46,7 +50,9 @@ object OrryxJobExperienceCommand {
             int("experience") {
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
-                    player.job()?.setExperience(ctx["experience"].cint)?.whenComplete { t, _ ->
+                    val job = player.job() ?: return@exec
+                    job.setExperience(ctx["experience"].cint).whenComplete { t, _ ->
+                        sender.sendMessage("玩家${player.name} 职业${job.key}设置经验成功")
                         debug("${player.name}指令job experience set结果${t}")
                     }
                 }

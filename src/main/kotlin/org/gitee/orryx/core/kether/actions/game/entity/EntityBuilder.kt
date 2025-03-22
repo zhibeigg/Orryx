@@ -13,6 +13,7 @@ import org.gitee.orryx.api.adapters.entity.AbstractAdyeshachEntity
 import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
 import org.gitee.orryx.utils.AdyeshachPlugin
 import org.gitee.orryx.utils.bukkit
+import taboolib.common.platform.function.info
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common.platform.function.submit
 import taboolib.common.platform.service.PlatformExecutor
@@ -75,11 +76,11 @@ class EntityBuilder {
         return this
     }
 
-    fun build(locations: List<Location>, player: Player? = null, isAdy: Boolean = false): List<IEntity> {
+    fun build(locations: List<Location>, players: List<Player> = emptyList(), isAdy: Boolean = false): List<IEntity> {
         if (!isPrimaryThread) error("请勿在异步线程中生成实体")
         val entities = if (isAdy) {
             if (AdyeshachPlugin.isEnabled) {
-                createAdyEntity(locations, player)
+                createAdyEntity(locations, players)
             } else {
                 error("未发现 Adyeshach 无法生成Ady实体")
             }
@@ -99,21 +100,25 @@ class EntityBuilder {
         return entities
     }
 
-    private fun createAdyEntity(locations: List<Location>, player: Player?): List<AbstractAdyeshachEntity> {
+    private fun createAdyEntity(locations: List<Location>, players: List<Player>): List<AbstractAdyeshachEntity> {
+        val type = EntityTypes.valueOf(type.name)
         return locations.map { location ->
+            info("ady $location")
             val instance = if (isPrivate) {
                 Adyeshach.api()
-                    .getPrivateEntityManager(player ?: error("生成私有实体必须指定玩家"), ManagerType.TEMPORARY)
-                    .create(EntityTypes.valueOf(type.name), location) {
+                    .getPrivateEntityManager(players.firstOrNull() ?: error("生成私有实体必须指定玩家"), ManagerType.TEMPORARY)
+                    .create(type, location) {
                         it.setTag("source", "Orryx")
                         it.setNoGravity(!gravity)
                         vector?.bukkit()?.let { vector -> it.setVelocity(vector) }
                     }
             } else {
                 Adyeshach.api().getPublicEntityManager(ManagerType.TEMPORARY)
-                    .create(EntityTypes.valueOf(type.name), location) {
+                    .create(type, location) {
                         it.setTag("source", "Orryx")
                         it.setNoGravity(!gravity)
+                        it.clearViewer()
+                        players.forEach { player -> it.addViewer(player) }
                         vector?.bukkit()?.let { vector -> it.setVelocity(vector) }
                     }
             }

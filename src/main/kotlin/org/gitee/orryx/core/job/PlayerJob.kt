@@ -4,6 +4,7 @@ import kotlinx.coroutines.launch
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.OrryxAPI.saveScope
 import org.gitee.orryx.api.events.player.OrryxPlayerChangeGroupEvents
+import org.gitee.orryx.api.events.player.job.OrryxPlayerJobClearEvents
 import org.gitee.orryx.api.events.player.job.OrryxPlayerJobExperienceEvents
 import org.gitee.orryx.api.events.player.job.OrryxPlayerJobLevelEvents
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillBindKeyEvent
@@ -203,6 +204,38 @@ class PlayerJob(
             save(isPrimaryThread) {
                 OrryxPlayerSkillUnBindKeyEvent.Post(player, skill, event.group).call()
                 future.complete(true)
+            }
+        } else {
+            future.complete(false)
+        }
+        return future
+    }
+
+    override fun clear(): CompletableFuture<Boolean> {
+        val event = OrryxPlayerJobClearEvents.Pre(player, this)
+        val future = CompletableFuture<Boolean>()
+        future.thenApply {
+            if (it) OrryxPlayerJobClearEvents.Post(player, this).call()
+        }
+        if (event.call()) {
+            privateBindKeyOfGroup.clear()
+            privateExperience = 0
+            privateGroup = DEFAULT
+            var var1 = 0
+            val list = job.skills.mapNotNull { player.getSkill(it) }
+            list.forEach {
+                it.clear().whenComplete { _, _ ->
+                    var1++
+                    if (var1 > list.size) {
+                        future.complete(true)
+                    }
+                }
+            }
+            save(isPrimaryThread) {
+                var1++
+                if (var1 > list.size) {
+                    future.complete(true)
+                }
             }
         } else {
             future.complete(false)

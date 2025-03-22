@@ -5,7 +5,7 @@ import eos.moe.armourers.api.PlayerSkinUpdateEvent
 import eos.moe.dragoncore.network.PacketSender
 import ink.ptms.adyeshach.core.Adyeshach
 import ink.ptms.adyeshach.core.entity.EntityTypes
-import org.bukkit.entity.ArmorStand
+import org.bukkit.craftbukkit.v1_12_R1.entity.CraftArmorStand
 import org.bukkit.entity.EntityType
 import org.bukkit.event.player.PlayerQuitEvent
 import org.gitee.orryx.api.adapters.IEntity
@@ -13,7 +13,6 @@ import org.gitee.orryx.api.adapters.entity.AbstractAdyeshachEntity
 import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
 import org.gitee.orryx.compat.dragoncore.DragonCoreCustomPacketSender
 import org.gitee.orryx.core.common.task.SimpleTimeoutTask
-import org.gitee.orryx.core.common.task.SimpleTimeoutTask.Companion.createSimpleTask
 import org.gitee.orryx.core.container.Container
 import org.gitee.orryx.core.kether.ScriptManager.addOrryxCloseable
 import org.gitee.orryx.core.kether.ScriptManager.scriptParser
@@ -248,13 +247,14 @@ object DragonCoreActions {
                 .addEntry("是否绑定pitch角", Type.BOOLEAN, false)
                 .addContainerEntry("可视玩家", true, "@self", "viewers"),
             Action.new("DragonCore附属语句", "实体模型特效绑定", "dragoncore", true)
-                .description("实体模型特效绑定")
+                .description("实体模型特效绑定，脚本运行时间必须大于延迟消失时间，若提前停止将会直接回收实体")
                 .addEntry("实体模型标识符", Type.SYMBOL, false, head = "modelEffect")
                 .addEntry("创建标识符", Type.SYMBOL, false, head = "create")
                 .addEntry("实体唯一ID", Type.STRING, false)
                 .addEntry("模型匹配名", Type.STRING, false)
                 .addEntry("延迟消失时间", Type.LONG, false)
-                .addContainerEntry("绑定实体", true, "@self"),
+                .addContainerEntry("绑定实体", true, "@self")
+                .result("绑定的实体容器", Type.CONTAINER),
             Action.new("DragonCore附属语句", "实体模型特效移除", "dragoncore", true)
                 .description("实体模型特效移除")
                 .addEntry("实体模型标识符", Type.SYMBOL, false, head = "modelEffect")
@@ -992,16 +992,15 @@ object DragonCoreActions {
 
     private fun sendModelEffect(entity: IEntity, key: String, model: String, timeout: Long): ModelEffect {
         val effect: ITargetEntity<*> = when(entity) {
-            is AbstractBukkitEntity -> {
-                val effectEntity = entity.world.spawnEntity(entity.location, EntityType.ARMOR_STAND) as ArmorStand
+            is AbstractBukkitEntity, is PlayerTarget-> {
+                val effectEntity = entity.world.spawnEntity(entity.location, EntityType.ARMOR_STAND) as CraftArmorStand
                 effectEntity.customName = key
                 effectEntity.setMeta(IGNORE_HIT, true)
                 effectEntity.setGravity(false)
-                effectEntity.isSmall = true
                 effectEntity.isSilent = true
                 effectEntity.isInvulnerable = true
                 effectEntity.isMarker = true
-                entity.getSource().addPassenger(effectEntity)
+                entity.getBukkitEntity()?.addPassenger(effectEntity)
                 AbstractBukkitEntity(effectEntity)
             }
             is AbstractAdyeshachEntity -> {
@@ -1011,18 +1010,18 @@ object DragonCoreActions {
             else -> error("使用了不支持modelEffect的实体类型")
         }
         onlinePlayers.forEach { player ->
-            PacketSender.setEntityModel(player, entity.uniqueId, model)
+            PacketSender.setEntityModel(player, effect.entity.uniqueId, model)
             PacketSender.sendEntityLocationBind(player, effect.entity.uniqueId, entity.uniqueId, 0.0f, 0.0f, 0.0f, true, true)
         }
         val modelEffect = ModelEffect(entity.uniqueId, effect)
-        modelEffect.simpleTimeoutTask = createSimpleTask(timeout) {
+        effectMap.getOrPut(entity.uniqueId) { mutableListOf() }.add(modelEffect)
+        modelEffect.simpleTimeoutTask = SimpleTimeoutTask.createSimpleTask(timeout) {
             effectMap[entity.uniqueId]?.remove(modelEffect)
             if (effectMap[entity.uniqueId]?.isEmpty() == true) {
                 effectMap.remove(entity.uniqueId)
             }
-            entity.remove()
+            effect.entity.remove()
         }
-        effectMap.getOrPut(entity.uniqueId) { mutableListOf() }.add(modelEffect)
         return modelEffect
     }
 

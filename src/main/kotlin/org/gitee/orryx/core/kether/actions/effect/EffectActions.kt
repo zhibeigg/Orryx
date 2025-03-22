@@ -297,7 +297,7 @@ object EffectActions {
     private fun drawVibrationData(reader: QuestReader): ScriptAction<Any?> {
         val origin = reader.nextParsedAction()
         val arrivalTime = reader.nextParsedAction()
-        val destination = reader.nextTheyContainer()
+        val destination = reader.nextTheyContainerOrNull()
         return actionNow {
             container(origin, self()) { origin ->
                 run(arrivalTime).int { arrivalTime ->
@@ -316,7 +316,7 @@ object EffectActions {
     }
 
     private fun drawLocation(reader: QuestReader): ScriptAction<Any?> {
-        val they = reader.nextTheyContainer()
+        val they = reader.nextTheyContainerOrNull()
         return actionNow {
             container(they, Container()) {
                 val effectBuilder = effectBuilder() ?: return@container
@@ -368,7 +368,7 @@ object EffectActions {
         val duration = reader.nextParsedAction()
         val tick = reader.nextParsedAction()
         val mode = reader.nextHeadAction("mode", "show")
-        val they = reader.nextTheyContainer()
+        val they = reader.nextTheyContainerOrNull()
         val viewer = reader.nextHeadActionOrNull(arrayOf("viewer"))
         return actionFuture { future ->
             run(effect).effect { effect ->

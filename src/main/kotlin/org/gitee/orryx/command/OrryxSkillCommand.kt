@@ -31,6 +31,7 @@ object OrryxSkillCommand {
                             val group = BindKeyLoaderManager.getGroup(ctx["group"]) ?: return@exec
                             val bindKey = BindKeyLoaderManager.getBindKey(ctx["key"]) ?: return@exec
                             job.setBindKey(skill, group, bindKey).whenComplete { t, _ ->
+                                sender.sendMessage("玩家${player.name} 绑定按键 result: $t")
                                 debug("${player.name}指令skill bindKey结果${t}")
                             }
                         }
@@ -68,6 +69,25 @@ object OrryxSkillCommand {
                     val player = ctx.bukkitPlayer() ?: return@exec
                     val skill = player.getSkill(player.orryxProfile().job!!, ctx["skill"]) ?: return@exec
                     skill.tryCast()
+                }
+            }
+        }
+    }
+
+    @CommandBody
+    val clear = subCommand {
+        player {
+            dynamic("skill") {
+                suggest {
+                    val player = ctx.bukkitPlayer() ?: return@suggest emptyList()
+                    player.getSkills().map { it.key }
+                }
+                exec<ProxyCommandSender> {
+                    val player = ctx.bukkitPlayer() ?: return@exec
+                    val skill = player.getSkill(player.orryxProfile().job!!, ctx["skill"]) ?: return@exec
+                    skill.clear().whenComplete { _, _ ->
+                        sender.sendMessage("技能${skill.key}已清除")
+                    }
                 }
             }
         }

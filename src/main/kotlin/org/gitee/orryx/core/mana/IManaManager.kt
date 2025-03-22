@@ -10,6 +10,7 @@ import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.submitAsync
 import taboolib.common.platform.service.PlatformExecutor
 import taboolib.platform.util.onlinePlayers
+import java.util.concurrent.CompletableFuture
 
 interface IManaManager {
 
@@ -45,7 +46,7 @@ interface IManaManager {
      * @param mana 法力值
      * @return 结果
      * */
-    fun giveMana(player: Player, mana: Double): ManaResult
+    fun giveMana(player: Player, mana: Double): CompletableFuture<ManaResult>
 
     /**
      * 减少玩家的法力值
@@ -53,7 +54,7 @@ interface IManaManager {
      * @param mana 法力值
      * @return 结果
      * */
-    fun takeMana(player: Player, mana: Double): ManaResult
+    fun takeMana(player: Player, mana: Double): CompletableFuture<ManaResult>
 
     /**
      * 设置玩家的法力值
@@ -61,7 +62,7 @@ interface IManaManager {
      * @param mana 法力值
      * @return 结果
      * */
-    fun setMana(player: Player, mana: Double): ManaResult
+    fun setMana(player: Player, mana: Double): CompletableFuture<ManaResult>
 
     /**
      * 玩家是否有足够的法力值
@@ -106,13 +107,13 @@ interface IManaManager {
      * @param player 玩家
      * @return 恢复的法力值
      * */
-    fun reginMana(player: Player): Double
+    fun reginMana(player: Player): CompletableFuture<Double>
 
     /**
      * 恢复满法力值
      * @param player 玩家
      * @return 恢复的法力值
      * */
-    fun healMana(player: Player): Double
+    fun healMana(player: Player): CompletableFuture<Double>
 
 }

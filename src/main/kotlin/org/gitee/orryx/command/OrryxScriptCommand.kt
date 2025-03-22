@@ -16,6 +16,7 @@ object OrryxScriptCommand {
     val terminateAllSkill = subCommand {
         exec<ProxyCommandSender> {
             ScriptManager.terminateAllSkills()
+            sender.sendMessage("已终止全部技能")
         }
     }
 
@@ -23,6 +24,7 @@ object OrryxScriptCommand {
     val terminateAllStation = subCommand {
         exec<ProxyCommandSender> {
             ScriptManager.terminateAllStation()
+            sender.sendMessage("已终止全部中转站")
         }
     }
 
@@ -32,6 +34,7 @@ object OrryxScriptCommand {
             exec<ProxyCommandSender> {
                 val player = ctx.bukkitPlayer() ?: return@exec
                 ScriptManager.runningSkillScriptsMap[player.uniqueId]?.terminateAll()
+                sender.sendMessage("已终止玩家${player.name}全部技能")
             }
         }
     }
@@ -42,6 +45,7 @@ object OrryxScriptCommand {
             exec<ProxyCommandSender> {
                 val player = ctx.bukkitPlayer() ?: return@exec
                 ScriptManager.runningStationScriptsMap[player.uniqueId]?.terminateAll()
+                sender.sendMessage("已终止玩家${player.name}全部中转站")
             }
         }
     }
@@ -55,6 +59,7 @@ object OrryxScriptCommand {
                     val player = ctx.bukkitPlayer() ?: return@exec
                     val skill = ctx["skill"]
                     ScriptManager.runningSkillScriptsMap[player.uniqueId]?.terminate(skill)
+                    sender.sendMessage("已终止玩家${player.name} 技能 $skill")
                 }
             }
         }
@@ -69,6 +74,7 @@ object OrryxScriptCommand {
                     val player = ctx.bukkitPlayer() ?: return@exec
                     val station = ctx["station"]
                     ScriptManager.runningStationScriptsMap[player.uniqueId]?.terminate(station)
+                    sender.sendMessage("已终止玩家${player.name} 中转站 $station")
                 }
             }
         }

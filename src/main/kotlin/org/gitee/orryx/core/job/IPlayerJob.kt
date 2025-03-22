@@ -142,6 +142,12 @@ interface IPlayerJob {
     fun unBindKey(skill: IPlayerSkill, group: IGroup): CompletableFuture<Boolean>
 
     /**
+     * 清除此职业数据
+     * @return 是否成功
+     * */
+    fun clear(): CompletableFuture<Boolean>
+
+    /**
      * 保存数据
      * @param async 是否异步
      * @param callback 完成回调

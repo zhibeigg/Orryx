@@ -25,6 +25,7 @@ object OrryxSkillLevelCommand {
                         val player = ctx.bukkitPlayer() ?: return@exec
                         val skill = player.getSkill(player.orryxProfile().job!!, ctx["skill"]) ?: return@exec
                         skill.upLevel(ctx["level"].cint).whenComplete { t, _ ->
+                            sender.sendMessage("玩家${player.name} result: $t")
                             debug("${player.name}指令skill level give结果${t}")
                         }
                     }
@@ -47,6 +48,7 @@ object OrryxSkillLevelCommand {
                         val player = ctx.bukkitPlayer() ?: return@exec
                         val skill = player.getSkill(player.orryxProfile().job!!, ctx["skill"]) ?: return@exec
                         skill.downLevel(ctx["level"].cint).whenComplete { t, _ ->
+                            sender.sendMessage("玩家${player.name} result: $t")
                             debug("${player.name}指令skill level take结果${t}")
                         }
                     }
@@ -69,6 +71,7 @@ object OrryxSkillLevelCommand {
                         val player = ctx.bukkitPlayer() ?: return@exec
                         val skill = player.getSkill(player.orryxProfile().job!!, ctx["skill"]) ?: return@exec
                         skill.setLevel(ctx["level"].cint).whenComplete { t, _ ->
+                            sender.sendMessage("玩家${player.name} result: $t")
                             debug("${player.name}指令skill level set结果${t}")
                         }
                     }

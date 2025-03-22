@@ -145,7 +145,7 @@ object BuffActions {
             case("send") {
                 val buff = it.nextParsedAction()
                 val timeout = it.nextParsedAction()
-                val container = it.nextTheyContainer()
+                val container = it.nextTheyContainerOrNull()
                 actionNow {
                     run(buff).str { buff ->
                         run(timeout).long { timeout ->
@@ -161,7 +161,7 @@ object BuffActions {
             case("clear") {
                 val container1 = it.nextTheyContainerOrNull()
                 val buff = it.nextParsedAction()
-                val container2 = it.nextTheyContainer()
+                val container2 = it.nextTheyContainerOrNull()
                 actionNow {
                     if (container1 == null) {
                         run(buff).str { buff ->

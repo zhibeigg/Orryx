@@ -88,13 +88,27 @@ enum class SerializableType(val key: String, val type: KClass<*>) {
     ABSTRACT_ADYESHACH_ENTITY("abstract_adyeshach_entity", AbstractAdyeshachEntity::class) {
         override fun encodeToString(value: Any) = Json.encodeToString((value as AbstractAdyeshachEntity).entityId)
         override fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long) = Adyeshach.api().getEntityFinder().getEntityFromEntityId(Json.decodeFromString(value))?.let { Flag(AbstractAdyeshachEntity(it), isPersistence, timeout) }
+    },
+    Array("array", kotlin.Array::class) {
+        override fun encodeToString(value: Any) = Json.encodeToString((value as kotlin.Array<*>).map {
+            val type = getType(it!!)
+            SerializableFlag(type.key, type.encodeToString(it), true, 0)
+        })
+        override fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long) = Flag((Json.decodeFromString(value) as kotlin.Array<SerializableFlag>).map {
+            it.toFlag()?.value
+        }, isPersistence, timeout)
     };
     abstract fun encodeToString(value: Any): String
     abstract fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long): Flag<*>?
 }
 
 fun IFlag.toSerializable(): SerializableFlag {
-    val serializableType = when (value::class) {
+    val serializableType = getType(value)
+    return SerializableFlag(serializableType.key, serializableType.encodeToString(value), isPersistence, timeout)
+}
+
+fun getType(value: Any): SerializableType {
+    return when (value::class) {
         SerializableType.STRING.type -> SerializableType.STRING
         SerializableType.BOOLEAN.type -> SerializableType.BOOLEAN
         SerializableType.INTEGER.type -> SerializableType.INTEGER
@@ -111,9 +125,9 @@ fun IFlag.toSerializable(): SerializableFlag {
         SerializableType.UUID.type -> SerializableType.UUID
         SerializableType.ABSTRACT_BUKKIT_ENTITY.type -> SerializableType.ABSTRACT_BUKKIT_ENTITY
         SerializableType.ABSTRACT_ADYESHACH_ENTITY.type -> SerializableType.ABSTRACT_ADYESHACH_ENTITY
+        SerializableType.Array.type -> SerializableType.Array
         else -> error("无法序列化${value::class.simpleName}类型 请勿持久化存储")
     }
-    return SerializableFlag(serializableType.key, serializableType.encodeToString(value), isPersistence, timeout)
 }
 
 fun SerializableFlag.toFlag(): IFlag? {
@@ -134,6 +148,7 @@ fun SerializableFlag.toFlag(): IFlag? {
         SerializableType.UUID.key -> SerializableType.UUID
         SerializableType.ABSTRACT_BUKKIT_ENTITY.key -> SerializableType.ABSTRACT_BUKKIT_ENTITY
         SerializableType.ABSTRACT_ADYESHACH_ENTITY.key -> SerializableType.ABSTRACT_ADYESHACH_ENTITY
+        SerializableType.Array.key -> SerializableType.Array
         else -> error("无法反序列化${type}类型")
     }
     return serializableType.decodeFromString(value, isPersistence, timeout)

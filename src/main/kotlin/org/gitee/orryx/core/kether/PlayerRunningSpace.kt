@@ -19,7 +19,7 @@ class PlayerRunningSpace(val player: Player) {
                 runningSpaceMap.remove(tag)
             }
         }
-        context.removeCloseable()
+        ScriptManager.cleanUp(context.id)
     }
 
     fun terminateAll() {

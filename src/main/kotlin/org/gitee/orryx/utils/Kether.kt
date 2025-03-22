@@ -63,16 +63,12 @@ internal fun QuestReader.nextHeadActionOrNull(array: Array<out String>): ParsedA
     }
 }
 
-internal fun QuestReader.nextHeadAction(id: String): ParsedAction<*>? {
+internal fun QuestReader.nextHeadActionOrNull(id: String): ParsedAction<*>? {
     return nextHeadActionOrNull(arrayOf(id))
 }
 
 internal fun QuestReader.nextHeadAction(id: String, def: Any): ParsedAction<*> {
     return nextHeadActionOrNull(arrayOf(id)) ?: literalAction(def)
-}
-
-internal fun QuestReader.nextTheyContainer(): ParsedAction<*> {
-    return this.nextHeadAction("they", "")
 }
 
 internal fun QuestReader.nextTheyContainerOrNull(): ParsedAction<*>? {
@@ -202,7 +198,7 @@ internal fun Player.eval(action: String, map: Map<String, Any>): CompletableFutu
 }
 
 internal fun ProxyCommandSender.eval(action: String, map: Map<String, Any>): CompletableFuture<Any?> {
-    return KetherShell.eval(action, ScriptOptions.builder().sender(this@eval).sandbox(true).namespace(orryxEnvironmentNamespaces).vars(map).build())
+    return KetherShell.eval(action, ScriptOptions.builder().sender(this@eval).sandbox(false).namespace(orryxEnvironmentNamespaces).vars(map).build())
 }
 
 internal fun Player.parse(actions: List<String>, map: Map<String, Any>): List<String> {
@@ -214,11 +210,11 @@ internal fun Player.parse(action: String, map: Map<String, Any>): String {
 }
 
 internal fun ProxyCommandSender.parse(actions: List<String>, map: Map<String, Any>): List<String> {
-    return KetherFunction.parse(actions, ScriptOptions.builder().sender(this@parse).sandbox(true).namespace(orryxEnvironmentNamespaces).vars(map).build())
+    return KetherFunction.parse(actions, ScriptOptions.builder().sender(this@parse).sandbox(false).namespace(orryxEnvironmentNamespaces).vars(map).build())
 }
 
 internal fun ProxyCommandSender.parse(action: String, map: Map<String, Any>): String {
-    return KetherFunction.parse(action, ScriptOptions.builder().sender(this@parse).sandbox(true).namespace(orryxEnvironmentNamespaces).vars(map).build())
+    return KetherFunction.parse(action, ScriptOptions.builder().sender(this@parse).sandbox(false).namespace(orryxEnvironmentNamespaces).vars(map).build())
 }
 
 internal fun ScriptContext.vector(key: String, def: IVector? = null): IVector? {

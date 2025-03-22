@@ -41,7 +41,7 @@ object MoneyActions {
         it.switch {
             case("has") {
                 val money = it.nextParsedAction()
-                val container = it.nextTheyContainer()
+                val container = it.nextTheyContainerOrNull()
                 actionFuture { complete ->
                     run(money).double { money ->
                         containerOrSelf(container) { container ->
@@ -56,7 +56,7 @@ object MoneyActions {
             }
             case("add", "deposit") {
                 val money = it.nextParsedAction()
-                val they = it.nextTheyContainer()
+                val they = it.nextTheyContainerOrNull()
                 actionNow {
                     run(money).double { money ->
                         containerOrSelf(they) {  container ->
@@ -69,7 +69,7 @@ object MoneyActions {
             }
             case("take", "withdraw") {
                 val money = it.nextParsedAction()
-                val they = it.nextTheyContainer()
+                val they = it.nextTheyContainerOrNull()
                 actionNow {
                     run(money).double { money ->
                         containerOrSelf(they) {  container ->
@@ -81,7 +81,7 @@ object MoneyActions {
                 }
             }
             case("get", "look") {
-                val they = it.nextTheyContainer()
+                val they = it.nextTheyContainerOrNull()
                 actionFuture {
                     containerOrSelf(they) { container ->
                         it.complete(container.firstInstanceOrNull<PlayerTarget>()?.getSource()?.getBalance() ?: 0.0)
@@ -89,7 +89,7 @@ object MoneyActions {
                 }
             }
             other {
-                val they = it.nextTheyContainer()
+                val they = it.nextTheyContainerOrNull()
                 actionFuture {
                     containerOrSelf(they) { container ->
                         it.complete(container.firstInstanceOrNull<PlayerTarget>()?.getSource()?.getBalance() ?: 0.0)

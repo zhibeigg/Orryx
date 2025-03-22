@@ -19,7 +19,6 @@ import taboolib.common.platform.function.info
 import taboolib.common.platform.function.pluginId
 import taboolib.common.platform.function.pluginVersion
 import taboolib.expansion.Chain
-import taboolib.expansion.DurationType
 import taboolib.expansion.submitChain
 import taboolib.module.chat.colored
 import java.util.concurrent.TimeUnit
@@ -391,7 +390,6 @@ object LarkSuite {
     }
 
     private suspend fun createAction(token: String, action: Action, documentId: String, chain: Chain<*>) {
-        chain.wait(500, DurationType.MILLIS)
         chain.async {
             val blocks = action.createBlocks()
             val req = CreateDocumentBlockDescendantReq.newBuilder()
@@ -554,7 +552,6 @@ object LarkSuite {
     }
 
     private suspend fun createSelector(token: String, selector: Selector, documentId: String, chain: Chain<*>, last: Boolean) {
-        chain.wait(500, DurationType.MILLIS)
         chain.async {
             val blocks = selector.createBlocks()
             val req = CreateDocumentBlockDescendantReq.newBuilder()

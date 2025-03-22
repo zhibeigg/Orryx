@@ -4,6 +4,7 @@ import kotlinx.coroutines.launch
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.OrryxAPI.saveScope
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillCastEvents
+import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillClearEvents
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillLevelEvents
 import org.gitee.orryx.core.GameManager
 import org.gitee.orryx.core.common.timer.SkillTimer
@@ -131,6 +132,22 @@ class PlayerSkill(
 
     private fun createDaoData(): PlayerSkillPO {
         return PlayerSkillPO(player.uniqueId, job, key, locked, level)
+    }
+
+    override fun clear(): CompletableFuture<Boolean> {
+        val event = OrryxPlayerSkillClearEvents.Pre(player, this)
+        val future = CompletableFuture<Boolean>()
+        if (event.call()) {
+            privateLocked = skill.isLocked
+            privateLevel = skill.minLevel
+            save(isPrimaryThread) {
+                OrryxPlayerSkillClearEvents.Post(player, this).call()
+                future.complete(true)
+            }
+        } else {
+            future.complete(false)
+        }
+        return future
     }
 
     override fun save(async: Boolean, callback: () -> Unit) {

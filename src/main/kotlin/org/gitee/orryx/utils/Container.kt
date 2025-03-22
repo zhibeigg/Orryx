@@ -34,14 +34,14 @@ inline fun <reified T : ITarget<*>> IContainer.get(): List<T> {
  * 检查所有指定类型目标是否满足条件
  */
 inline fun <reified T : ITarget<*>> IContainer.all(predicate: (T) -> Boolean): Boolean {
-    return targets.all { it is T && !predicate(it) }
+    return targets.all { it is T && predicate(it) }
 }
 
 /**
  * 检查所有指定类型目标是否都不满足条件
  */
 inline fun <reified T : ITarget<*>> IContainer.none(predicate: (T) -> Boolean): Boolean {
-    return targets.none { it is T && !predicate(it) }
+    return targets.none { it is T && predicate(it) }
 }
 
 /**

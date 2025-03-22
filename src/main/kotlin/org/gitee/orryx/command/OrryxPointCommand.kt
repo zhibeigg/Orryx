@@ -18,6 +18,7 @@ object OrryxPointCommand {
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
                     player.orryxProfile().givePoint(ctx["point"].cint)
+                    sender.sendMessage("玩家${player.name} 技能点添加成功")
                 }
             }
         }
@@ -30,6 +31,7 @@ object OrryxPointCommand {
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
                     player.orryxProfile().takePoint(ctx["point"].cint)
+                    sender.sendMessage("玩家${player.name} 技能点减少成功")
                 }
             }
         }
@@ -42,6 +44,7 @@ object OrryxPointCommand {
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
                     player.orryxProfile().setPoint(ctx["point"].cint)
+                    sender.sendMessage("玩家${player.name} 技能点设置成功")
                 }
             }
         }

@@ -33,7 +33,7 @@ fun IPlayerJob.clearAllLevelAndBackPoint(): CompletableFuture<Boolean> {
 }
 
 fun IPlayerJob.getBindSkills(): Map<IBindKey, IPlayerSkill?> {
-    val map = bindKeyOfGroup[BindKeyLoaderManager.getGroup(group)] ?: return emptyMap()
+    val map = bindKeyOfGroup[BindKeyLoaderManager.getGroup(group)] ?: return bindKeys().associateWith { null }
     return bindKeys().associateWith { map[it]?.let { skill -> player.getSkill(job.key, skill) } }
 }
 

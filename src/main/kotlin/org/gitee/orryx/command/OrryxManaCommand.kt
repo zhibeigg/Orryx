@@ -19,7 +19,10 @@ object OrryxManaCommand {
                 restrictDouble()
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
-                    debug("${player.name}指令mana give结果${IManaManager.INSTANCE.giveMana(player, ctx["mana"].cdouble)}")
+                    IManaManager.INSTANCE.giveMana(player, ctx["mana"].cdouble).thenApply {
+                        sender.sendMessage("result: $it")
+                        debug("${player.name}指令mana give结果${it}")
+                    }
                 }
             }
         }
@@ -32,7 +35,10 @@ object OrryxManaCommand {
                 restrictDouble()
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
-                    debug("${player.name}指令mana take结果${IManaManager.INSTANCE.takeMana(player, ctx["mana"].cdouble)}")
+                    IManaManager.INSTANCE.takeMana(player, ctx["mana"].cdouble).thenApply {
+                        sender.sendMessage("result: $it")
+                        debug("${player.name}指令mana take结果${it}")
+                    }
                 }
             }
         }
@@ -45,7 +51,10 @@ object OrryxManaCommand {
                 restrictDouble()
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
-                    debug("${player.name}指令mana set结果${IManaManager.INSTANCE.setMana(player, ctx["mana"].cdouble)}")
+                    IManaManager.INSTANCE.setMana(player, ctx["mana"].cdouble).thenApply {
+                        sender.sendMessage("result: $it")
+                        debug("${player.name}指令mana set结果${it}")
+                    }
                 }
             }
         }
@@ -56,7 +65,10 @@ object OrryxManaCommand {
         player {
             exec<ProxyCommandSender> {
                 val player = ctx.bukkitPlayer() ?: return@exec
-                debug("${player.name}指令regin恢复法力${IManaManager.INSTANCE.reginMana(player)}")
+                IManaManager.INSTANCE.reginMana(player).thenApply {
+                    sender.sendMessage("玩家${player.name} 恢复了 $it 点法力")
+                    debug("${player.name}指令regin恢复法力${it}")
+                }
             }
         }
     }
@@ -66,7 +78,10 @@ object OrryxManaCommand {
         player {
             exec<ProxyCommandSender> {
                 val player = ctx.bukkitPlayer() ?: return@exec
-                debug("${player.name}指令heal恢复法力${IManaManager.INSTANCE.healMana(player)}")
+                IManaManager.INSTANCE.healMana(player).thenApply {
+                    sender.sendMessage("玩家${player.name} 恢复了 $it 点法力")
+                    debug("${player.name}指令heal恢复法力${it}")
+                }
             }
         }
     }
