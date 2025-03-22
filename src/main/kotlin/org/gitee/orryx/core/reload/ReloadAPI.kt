@@ -8,6 +8,7 @@ import taboolib.common.LifeCycle
 import taboolib.common.inject.ClassVisitor
 import taboolib.common.platform.Awake
 import taboolib.common.platform.function.info
+import taboolib.common.util.unsafeLazy
 import taboolib.library.reflex.ClassMethod
 import taboolib.library.reflex.ReflexClass
 import taboolib.module.chat.colored
@@ -21,7 +22,7 @@ object ReloadAPI: IReloadAPI, ClassVisitor(1) {
         return LifeCycle.ENABLE
     }
 
-    private val methodList by lazy { mutableListOf<ReloadFunction>() }
+    private val methodList by unsafeLazy { mutableListOf<ReloadFunction>() }
 
     override fun visit(method: ClassMethod, owner: ReflexClass) {
         if (method.isAnnotationPresent(Reload::class.java)) {

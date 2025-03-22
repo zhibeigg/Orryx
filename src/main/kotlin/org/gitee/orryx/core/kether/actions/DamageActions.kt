@@ -9,11 +9,13 @@ import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.core.wiki.Action
 import org.gitee.orryx.core.wiki.Type
 import org.gitee.orryx.utils.*
+import taboolib.common.util.unsafeLazy
 import taboolib.module.kether.KetherParser
+import taboolib.module.kether.script
 
 object DamageActions {
 
-    internal val Default by lazy { DefaultAttributeBridge() }
+    internal val Default by unsafeLazy { DefaultAttributeBridge() }
 
     @KetherParser(["damage"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun damageAction() = combinationParser(
@@ -42,7 +44,8 @@ object DamageActions {
                                 sources.firstInstance<ITargetEntity<LivingEntity>>().getSource(),
                                 entity,
                                 damage,
-                                damageType
+                                damageType,
+                                script()
                             )
                         }
                     }
@@ -53,7 +56,8 @@ object DamageActions {
                                 sources.firstInstance<ITargetEntity<LivingEntity>>().getSource(),
                                 entity,
                                 damage,
-                                damageType
+                                damageType,
+                                script()
                             )
                         }
                     }

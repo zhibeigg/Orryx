@@ -10,6 +10,7 @@ import org.gitee.orryx.core.ui.IUIManager.Companion.skillCooldownMap
 import org.gitee.orryx.utils.*
 import taboolib.common.platform.function.getDataFolder
 import taboolib.common.platform.function.submitAsync
+import taboolib.common.util.unsafeLazy
 import java.io.File
 import java.util.*
 import kotlin.collections.set
@@ -21,7 +22,7 @@ open class GermPluginSkillHud(override val viewer: Player, override val owner: P
         /**
          * owner, viewer, [GermPluginSkillHud]
          */
-        internal val germSkillHudMap by lazy { hashMapOf<UUID, MutableMap<UUID, GermPluginSkillHud>>() }
+        internal val germSkillHudMap by unsafeLazy { hashMapOf<UUID, MutableMap<UUID, GermPluginSkillHud>>() }
 
         fun getViewerHud(player: Player): GermPluginSkillHud? {
             return germSkillHudMap.firstNotNullOfOrNull {

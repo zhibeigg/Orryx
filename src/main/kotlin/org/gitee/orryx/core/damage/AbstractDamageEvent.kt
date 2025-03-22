@@ -9,6 +9,8 @@ import org.gitee.orryx.utils.apEvent
 import org.gitee.orryx.utils.isAttributePlus
 import org.gitee.orryx.utils.isOriginAttribute
 import org.gitee.orryx.utils.oaDamageEvent
+import taboolib.common.util.unsafeLazy
+import taboolib.module.kether.ScriptContext
 import taboolib.platform.type.BukkitProxyEvent
 
 abstract class AbstractDamageEvent(
@@ -16,10 +18,11 @@ abstract class AbstractDamageEvent(
     val victim: Entity,
     private var privateDamage: Double,
     val event: EntityDamageByEntityEvent?,
-    var type: DamageType
+    var type: DamageType,
+    val context: ScriptContext? = null
 ) : BukkitProxyEvent() {
 
-    val data by lazy { mutableMapOf<String, Any>() }
+    val data by unsafeLazy { mutableMapOf<String, Any>() }
 
     val damage: Double
         get() = when {

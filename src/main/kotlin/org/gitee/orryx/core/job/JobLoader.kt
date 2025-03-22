@@ -1,11 +1,12 @@
 package org.gitee.orryx.core.job
 
+import taboolib.common.util.unsafeLazy
 import taboolib.module.chat.colored
 import taboolib.module.configuration.Configuration
 
 class JobLoader(override val key: String, val configuration: Configuration): IJob {
 
-    private val options by lazy { configuration.getConfigurationSection("Options") ?: error("职业${key}位于${configuration.file}未书写Options键") }
+    private val options by unsafeLazy { configuration.getConfigurationSection("Options") ?: error("职业${key}位于${configuration.file}未书写Options键") }
 
     override val name: String = (options.getString("Name") ?: key).colored()
 

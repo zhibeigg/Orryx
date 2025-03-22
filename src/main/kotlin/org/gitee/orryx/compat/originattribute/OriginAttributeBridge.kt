@@ -13,10 +13,12 @@ import org.gitee.orryx.api.events.damage.DamageType
 import org.gitee.orryx.compat.IAttributeBridge
 import org.gitee.orryx.utils.doDamage
 import taboolib.common.platform.Ghost
+import taboolib.common.util.unsafeLazy
+import taboolib.module.kether.ScriptContext
 
 class OriginAttributeBridge: IAttributeBridge {
 
-    private val defaultCause by lazy { DamageCause.ENTITY_ATTACK }
+    private val defaultCause by unsafeLazy { DamageCause.ENTITY_ATTACK }
 
     override fun addAttribute(entity: LivingEntity, key: String, value: List<String>, timeout: Long) {
         val data = Data(timeout)
@@ -28,33 +30,32 @@ class OriginAttributeBridge: IAttributeBridge {
         OriginAttributeAPI.removeExtra(entity.uniqueId, key)
     }
 
-    override fun damage(attacker: LivingEntity, target: LivingEntity, damage: Double, type: DamageType) {
+    override fun damage(attacker: LivingEntity, target: LivingEntity, damage: Double, type: DamageType, context: ScriptContext?) {
         val event = ProxyDamageEvent(EntityDamageByEntityEvent(attacker, target, defaultCause, 0.0))
-        val context = event.createDamageContext()
+        val damageContext = event.createDamageContext()
 
-        context.vigor = damage
-        context.cause = event.customCause
+        damageContext.vigor = damage
+        damageContext.cause = event.customCause
 
         when (type) {
             DamageType.PHYSICS -> {
-                context.addDamage(Damage.physical, damage)
+                damageContext.addDamage(Damage.physical, damage)
             }
             DamageType.MAGIC -> {
-                context.addDamage(Damage.magic, damage)
+                damageContext.addDamage(Damage.magic, damage)
             }
             DamageType.REAL -> {
-                context.addDamage(Damage.real, damage)
+                damageContext.addDamage(Damage.real, damage)
             }
             else -> {
-                context.addDamage(type, damage)
+                damageContext.addDamage(type, damage)
             }
         }
 
-        if (EntityDamageEvent(context, PriorityEnum.PRE).call()) {
-            OriginAttributeAPI.callDamage(context)
-            if (EntityDamageEvent(context, PriorityEnum.POST).call()) {
-                doDamage(attacker, target, DamageCause.CUSTOM, context.totalDamage.coerceAtLeast(0.0))
-            }
+        if (EntityDamageEvent(damageContext, PriorityEnum.PRE).call()) {
+            OriginAttributeAPI.callDamage(damageContext)
+            doDamage(attacker, target, DamageCause.CUSTOM, damageContext.totalDamage.coerceAtLeast(0.0))
+            EntityDamageEvent(damageContext, PriorityEnum.POST).call()
         }
     }
 

@@ -53,11 +53,7 @@ internal fun Location.isInRound(origin: Location, radius: Double): Boolean {
  * @param y 上方
  * @param z 右方
  * */
-internal fun LivingEntity.direction(x: Double, y: Double, z: Double): Vector {
-    val xV = eyeLocation.direction.clone().setY(0).normalize()
-    val zV = xV.clone().crossProduct(Vector(0, 1, 0)).normalize()
-    return Vector(0, 0, 0).add(xV.multiply(x)).add(Vector(0.0, y, 0.0)).add(zV.multiply(z))
-}
+internal fun LivingEntity.direction(x: Double, y: Double, z: Double, pitch: Boolean = false) = eyeLocation.direction.direction(x, y, z, pitch)
 
 /**
  * 获得目标的方向向量
@@ -65,11 +61,7 @@ internal fun LivingEntity.direction(x: Double, y: Double, z: Double): Vector {
  * @param y 上方
  * @param z 右方
  * */
-internal fun ITargetLocation<*>.direction(x: Double, y: Double, z: Double): Vector {
-    val xV = eyeLocation.direction.clone().setY(0).normalize()
-    val zV = xV.clone().crossProduct(Vector(0, 1, 0)).normalize()
-    return Vector(0, 0, 0).add(xV.multiply(x)).add(Vector(0.0, y, 0.0)).add(zV.multiply(z))
-}
+internal fun ITargetLocation<*>.direction(x: Double, y: Double, z: Double, pitch: Boolean = false) = eyeLocation.direction.direction(x, y, z, pitch)
 
 /**
  * 获得目标的方向向量
@@ -77,10 +69,19 @@ internal fun ITargetLocation<*>.direction(x: Double, y: Double, z: Double): Vect
  * @param y 上方
  * @param z 右方
  * */
-internal fun ITargetEntity<*>.direction(x: Double, y: Double, z: Double): Vector {
-    val xV = entity.eyeLocation.direction.clone().setY(0).normalize()
-    val zV = xV.clone().crossProduct(Vector(0, 1, 0)).normalize()
-    return Vector(0, 0, 0).add(xV.multiply(x)).add(Vector(0.0, y, 0.0)).add(zV.multiply(z))
+internal fun ITargetEntity<*>.direction(x: Double, y: Double, z: Double, pitch: Boolean = false) = entity.eyeLocation.direction.direction(x, y, z, pitch)
+
+private fun Vector.direction(x: Double, y: Double, z: Double, pitch: Boolean): Vector {
+    return if (pitch) {
+        val zV = clone().setY(0).normalize().crossProduct(Vector(0, 1, 0)).normalize()
+        val yV = clone().crossProduct(zV).normalize()
+        val xV = zV.crossProduct(yV).normalize()
+        xV.multiply(x).add(zV.multiply(z)).add(yV.multiply(y))
+    } else {
+        val xV = clone().setY(0).normalize()
+        val zV = xV.crossProduct(Vector(0, 1, 0)).normalize()
+        xV.multiply(x).add(Vector(0.0, y, 0.0)).add(zV.multiply(z))
+    }
 }
 
 fun Location.joml() = Vector3d(x, y, z)

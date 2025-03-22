@@ -10,6 +10,7 @@ import org.gitee.orryx.utils.orryxEnvironmentNamespaces
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
+import taboolib.common.util.unsafeLazy
 import taboolib.library.kether.Parser.*
 import taboolib.library.kether.QuestAction
 import taboolib.library.kether.QuestReader
@@ -21,14 +22,14 @@ import java.util.concurrent.ConcurrentMap
 
 object ScriptManager {
 
-    val runningSkillScriptsMap by lazy { hashMapOf<UUID, PlayerRunningSpace>() }
-    val runningStationScriptsMap by lazy { hashMapOf<UUID, PlayerRunningSpace>() }
+    val runningSkillScriptsMap by unsafeLazy { hashMapOf<UUID, PlayerRunningSpace>() }
+    val runningStationScriptsMap by unsafeLazy { hashMapOf<UUID, PlayerRunningSpace>() }
 
-    val wikiActions by lazy { mutableListOf<org.gitee.orryx.core.wiki.Action>() }
-    val wikiSelectors by lazy { mutableListOf<org.gitee.orryx.core.wiki.Selector>() }
+    val wikiActions by unsafeLazy { mutableListOf<org.gitee.orryx.core.wiki.Action>() }
+    val wikiSelectors by unsafeLazy { mutableListOf<org.gitee.orryx.core.wiki.Selector>() }
 
-    private val scriptMap by lazy { ConcurrentHashMap<String, Script>() }
-    private val closeableMap by lazy { hashMapOf<String, ConcurrentMap<UUID, AutoCloseable>>() }
+    private val scriptMap by unsafeLazy { ConcurrentHashMap<String, Script>() }
+    private val closeableMap by unsafeLazy { hashMapOf<String, ConcurrentMap<UUID, AutoCloseable>>() }
 
     fun terminateAllSkills() {
         runningSkillScriptsMap.forEach {

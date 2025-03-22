@@ -7,11 +7,12 @@ import org.gitee.orryx.core.kether.parameter.StationParameter
 import org.gitee.orryx.utils.getBaffle
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.event.SubscribeEvent
+import taboolib.common.util.unsafeLazy
 import java.util.*
 
 object StationTimer: ITimer {
 
-    private val playerCooldowns by lazy { hashMapOf<UUID, MutableMap<String, CooldownEntry>>() }
+    private val playerCooldowns by unsafeLazy { hashMapOf<UUID, MutableMap<String, CooldownEntry>>() }
 
     override fun reset(sender: ProxyCommandSender, parameter: IParameter): Long {
         require(parameter is StationParameter) { "Invalid parameter type" }

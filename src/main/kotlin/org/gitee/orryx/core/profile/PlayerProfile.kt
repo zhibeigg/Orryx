@@ -14,6 +14,7 @@ import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.utils.toSerializable
 import taboolib.common.platform.function.isPrimaryThread
+import taboolib.common.util.unsafeLazy
 import java.util.concurrent.ConcurrentMap
 
 class PlayerProfile(override val player: Player, private var privateJob: String?, private var privatePoint: Int, private val privateFlags: ConcurrentMap<String, IFlag>): IPlayerProfile {
@@ -27,7 +28,7 @@ class PlayerProfile(override val player: Player, private var privateJob: String?
     override val point: Int
         get() = privatePoint
 
-    private val superBodyModifier: AttributeModifier by lazy { AttributeModifier("Orryx@SuperBody", 99999.0, AttributeModifier.Operation.ADD_NUMBER) }
+    private val superBodyModifier: AttributeModifier by unsafeLazy { AttributeModifier("Orryx@SuperBody", 99999.0, AttributeModifier.Operation.ADD_NUMBER) }
 
     //霸体过期时间
     private var superBody: Long = 0

@@ -2,12 +2,13 @@ package org.gitee.orryx.dao.storage
 
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.pojo.PlayerJobPO
+import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.utils.*
 import taboolib.common.io.newFile
 import taboolib.common.platform.function.getDataFolder
+import taboolib.common.util.unsafeLazy
 import taboolib.module.database.ColumnOptionSQLite
 import taboolib.module.database.ColumnTypeSQLite
 import taboolib.module.database.Table
@@ -16,8 +17,8 @@ import java.util.*
 
 class SqlLiteManager: IStorageManager {
 
-    private val host by lazy { newFile(getDataFolder(), "data.db").getHost() }
-    private val dataSource by lazy { host.createDataSource() }
+    private val host by unsafeLazy { newFile(getDataFolder(), "data.db").getHost() }
+    private val dataSource by unsafeLazy { host.createDataSource() }
 
     private val playerTable: Table<*, *> = Table("orryx_player", host) {
         add(UUID) { type(ColumnTypeSQLite.TEXT) { options(ColumnOptionSQLite.PRIMARY_KEY) } }

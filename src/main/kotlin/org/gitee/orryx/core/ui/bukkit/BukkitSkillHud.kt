@@ -9,6 +9,7 @@ import org.gitee.orryx.core.ui.IUIManager.Companion.skillCooldownMap
 import org.gitee.orryx.utils.getBindSkill
 import org.gitee.orryx.utils.getDescriptionComparison
 import org.gitee.orryx.utils.getIcon
+import taboolib.common.util.unsafeLazy
 import taboolib.common5.cdouble
 import taboolib.common5.cint
 import taboolib.library.xseries.XMaterial
@@ -27,7 +28,7 @@ open class BukkitSkillHud(override val viewer: Player, override val owner: Playe
         /**
          * owner, viewer, [BukkitSkillHud]
          */
-        internal val bukkitSkillHudMap by lazy { hashMapOf<UUID, MutableMap<UUID, BukkitSkillHud>>() }
+        internal val bukkitSkillHudMap by unsafeLazy { hashMapOf<UUID, MutableMap<UUID, BukkitSkillHud>>() }
 
         fun getViewerHud(player: Player): BukkitSkillHud? {
             return bukkitSkillHudMap.firstNotNullOfOrNull {

@@ -13,7 +13,6 @@ import org.gitee.orryx.api.adapters.entity.AbstractAdyeshachEntity
 import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
 import org.gitee.orryx.utils.AdyeshachPlugin
 import org.gitee.orryx.utils.bukkit
-import taboolib.common.platform.function.info
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common.platform.function.submit
 import taboolib.common.platform.service.PlatformExecutor
@@ -103,7 +102,6 @@ class EntityBuilder {
     private fun createAdyEntity(locations: List<Location>, players: List<Player>): List<AbstractAdyeshachEntity> {
         val type = EntityTypes.valueOf(type.name)
         return locations.map { location ->
-            info("ady $location")
             val instance = if (isPrivate) {
                 Adyeshach.api()
                     .getPrivateEntityManager(players.firstOrNull() ?: error("生成私有实体必须指定玩家"), ManagerType.TEMPORARY)

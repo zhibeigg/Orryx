@@ -9,6 +9,7 @@ import org.gitee.orryx.utils.bukkitPlayer
 import taboolib.common.platform.ProxyParticle
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common.platform.function.info
+import taboolib.common.util.unsafeLazy
 import taboolib.module.kether.ScriptContext
 
 class StringParser(val value: String) {
@@ -16,7 +17,7 @@ class StringParser(val value: String) {
     class Entry(val reverse: Boolean, val head: String, val body: MutableList<String>)
 
     //"@fuck 123 123 @pvp 1 !@team"
-    val entries by lazy {
+    val entries by unsafeLazy {
         var i = -1
         val entry = mutableListOf<Entry>()
         value.trim().split(" ").forEach {

@@ -26,6 +26,7 @@ import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.submit
 import taboolib.common.platform.function.warning
+import taboolib.common.util.unsafeLazy
 import taboolib.module.nms.MinecraftVersion
 import taboolib.platform.BukkitPlugin
 import java.util.*
@@ -37,7 +38,7 @@ object PluginMessageHandler {
     private const val CHANNEL_NAME = "orryxmod:main"
     private val pendingRequests = ConcurrentHashMap<UUID, Pair<Double, CompletableFuture<AimInfo>>>()
 
-    private val isLegacyVersion by lazy { MinecraftVersion.versionId == 11202 }
+    private val isLegacyVersion by unsafeLazy { MinecraftVersion.versionId == 11202 }
 
     // 协议类型定义
     private sealed class PacketType(val header: Int) {

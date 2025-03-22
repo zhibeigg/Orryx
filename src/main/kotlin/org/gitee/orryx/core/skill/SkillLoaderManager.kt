@@ -9,6 +9,7 @@ import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.function.info
 import taboolib.common.platform.function.warning
+import taboolib.common.util.unsafeLazy
 import taboolib.module.chat.colored
 import taboolib.module.configuration.Configuration
 import taboolib.module.kether.Script
@@ -17,7 +18,7 @@ import taboolib.module.kether.printKetherErrorMessage
 
 object SkillLoaderManager {
 
-    private val skillMap by lazy { hashMapOf<String, ISkill>() }
+    private val skillMap by unsafeLazy { hashMapOf<String, ISkill>() }
 
     internal fun getSkillLoader(key: String): ISkill? {
         return skillMap[key]

@@ -19,6 +19,7 @@ import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.utils.castSkill
 import org.gitee.orryx.utils.runCustomAction
 import taboolib.common.platform.function.isPrimaryThread
+import taboolib.common.util.unsafeLazy
 import taboolib.common5.cbool
 import taboolib.common5.cint
 import taboolib.module.kether.orNull
@@ -38,7 +39,7 @@ class PlayerSkill(
     override val locked: Boolean
         get() = privateLocked
 
-    override val skill: ISkill by lazy { SkillLoaderManager.getSkillLoader(key)!! }
+    override val skill: ISkill by unsafeLazy { SkillLoaderManager.getSkillLoader(key)!! }
 
     override fun cast(parameter: IParameter, consume: Boolean): CastResult {
         if (parameter !is SkillParameter) return CastResult.PARAMETER

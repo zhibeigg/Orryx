@@ -4,6 +4,7 @@ import org.gitee.orryx.core.reload.Reload
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.function.info
+import taboolib.common.util.unsafeLazy
 import taboolib.module.chat.colored
 import taboolib.module.configuration.Config
 import taboolib.module.configuration.ConfigFile
@@ -14,7 +15,7 @@ object SelectorPresetsLoaderManager {
     lateinit var selectors: ConfigFile
         private set
 
-    private val selectorPresets by lazy { hashMapOf<String, PresetsLoader>() }
+    private val selectorPresets by unsafeLazy { hashMapOf<String, PresetsLoader>() }
 
     internal fun getSelectorPreset(key: String): PresetsLoader? {
         return selectorPresets[key]

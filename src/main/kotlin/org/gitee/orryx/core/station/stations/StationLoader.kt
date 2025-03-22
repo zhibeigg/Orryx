@@ -2,12 +2,13 @@ package org.gitee.orryx.core.station.stations
 
 import org.gitee.orryx.utils.getMap
 import taboolib.common.platform.event.EventPriority
+import taboolib.common.util.unsafeLazy
 import taboolib.module.configuration.Configuration
 import taboolib.module.kether.Script
 
 class StationLoader(override val key: String, val configuration: Configuration): IStation {
 
-    val options by lazy { configuration.getConfigurationSection("Options") ?: error("中转站${key}位于${configuration.file}未书写Options") }
+    val options by unsafeLazy { configuration.getConfigurationSection("Options") ?: error("中转站${key}位于${configuration.file}未书写Options") }
 
     override val event: String = options.getString("Event") ?: error("中转站${key}位于${configuration.file}未书写Event")
 

@@ -22,6 +22,7 @@ import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common.platform.function.info
+import taboolib.common.util.unsafeLazy
 import taboolib.common5.cdouble
 import taboolib.module.chat.colored
 import taboolib.module.configuration.Configuration
@@ -34,7 +35,7 @@ interface IUIManager {
         /**
          * owner, skill, [Cooldown]
          */
-        internal val skillCooldownMap by lazy { hashMapOf<UUID, MutableMap<String, Cooldown>>() }
+        internal val skillCooldownMap by unsafeLazy { hashMapOf<UUID, MutableMap<String, Cooldown>>() }
 
         class Cooldown(val skill: String, val max: Long) {
 

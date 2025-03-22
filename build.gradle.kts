@@ -43,6 +43,9 @@ taboolib {
         contributors {
             name("zhibei")
         }
+        links {
+            name("homepage").url("https://www.mcwar.cn/orryx")
+        }
         dependencies {
             name("Adyeshach").optional(true)
             name("DragonCore").optional(true)
@@ -62,19 +65,21 @@ taboolib {
     }
     relocate("kotlinx.serialization", "org.gitee.orryx.serialization")
     relocate("org.apache.commons.jexl3", "org.gitee.orryx.jexl3")
-    version { taboolib = "6.2.2" }
+    relocate("com.github.benmanes.caffeine", "org.gitee.orryx.caffeine")
+    relocate("org.joml", "org.gitee.orryx.joml")
+    relocate("com.larksuite.oapi", "org.gitee.orryx.larksuite.oapi")
+    version {
+        taboolib = "6.2.2"
+        coroutines = "1.8.0"
+    }
 }
 
 repositories {
     mavenCentral()
     maven { url = uri("https://repo.tabooproject.org/repository/releases") }
     maven { url = uri("https://repo.codemc.io/repository/maven-releases/") }
-    maven { url = uri("https://repo.codemc.io/repository/maven-snapshots/") }
     maven { url = uri("https://repo.dmulloy2.net/repository/public/") }
-    maven {
-        url = uri("http://play.mcwar.cn:18888/repository/maven-public/")
-        isAllowInsecureProtocol = true
-    }
+    maven { url = uri("https://www.mcwar.cn/nexus/repository/maven-public/") }
 }
 
 dependencies {
@@ -84,7 +89,7 @@ dependencies {
     compileOnly("ink.ptms:nms-all:1.0.0")
 
     compileOnly("com.gitee.redischannel:RedisChannel:1.1:api")
-    compileOnly("ink.ptms.adyeshach:all:2.0.0-snapshot-36")
+    compileOnly("ink.ptms.adyeshach:plugin:2.0.26")
     compileOnly("com.gitee:DragonCore:2.6.2.9")
     compileOnly("com.germ:germplugin:4.4.1-5")
     compileOnly("com.gitee:MythicMobs:4.11.0")
@@ -97,10 +102,9 @@ dependencies {
     compileOnly("com.github.retrooper:packetevents-spigot:2.7.0")
     compileOnly("com.comphenix.protocol:ProtocolLib:5.3.0")
 
-    taboo("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3")
-    taboo("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    taboo("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3") { isTransitive = false }
+    taboo("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3") { isTransitive = false }
     taboo("org.apache.commons:commons-jexl3:3.4.0")
-    compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
     compileOnly("com.github.ben-manes.caffeine:caffeine:2.9.3")
     compileOnly("org.joml:joml:1.10.7")
     compileOnly("com.larksuite.oapi:oapi-sdk:2.4.7")
@@ -141,8 +145,7 @@ kotlin {
 publishing {
     repositories {
         maven {
-            url = uri("http://play.mcwar.cn:18888/repository/maven-releases/")
-            isAllowInsecureProtocol = true
+            url = uri("https://www.mcwar.cn/nexus/repository/maven-releases/")
             credentials {
                 username = publishUsername
                 password = publishPassword

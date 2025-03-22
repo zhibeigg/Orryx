@@ -5,12 +5,13 @@ import org.gitee.orryx.utils.files
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.function.info
+import taboolib.common.util.unsafeLazy
 import taboolib.module.chat.colored
 import taboolib.module.configuration.Configuration
 
 object ExperienceLoaderManager {
 
-    private val experienceLoaderMap by lazy { hashMapOf<String, ExperienceLoader>() }
+    private val experienceLoaderMap by unsafeLazy { hashMapOf<String, ExperienceLoader>() }
 
     internal fun getExperience(key: String): IExperience? {
         return experienceLoaderMap[key]

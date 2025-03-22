@@ -6,12 +6,14 @@ import org.gitee.orryx.compat.attributeplus.AttributePlusBridge
 import org.gitee.orryx.compat.originattribute.OriginAttributeBridge
 import org.gitee.orryx.utils.AttributePlusPlugin
 import org.gitee.orryx.utils.OriginAttributePlugin
+import taboolib.common.util.unsafeLazy
+import taboolib.module.kether.ScriptContext
 
 interface IAttributeBridge {
 
     companion object {
 
-        val INSTANCE by lazy {
+        val INSTANCE by unsafeLazy {
             when {
                 AttributePlusPlugin.isEnabled -> AttributePlusBridge()
                 OriginAttributePlugin.isEnabled -> OriginAttributeBridge()
@@ -46,7 +48,8 @@ interface IAttributeBridge {
      * @param target 攻击目标
      * @param damage 攻击数值
      * @param type 攻击类型
+     * @param context 产生攻击的上下文
      * */
-    fun damage(attacker: LivingEntity, target: LivingEntity, damage: Double, type: DamageType)
+    fun damage(attacker: LivingEntity, target: LivingEntity, damage: Double, type: DamageType, context: ScriptContext? = null)
 
 }

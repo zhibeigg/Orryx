@@ -10,11 +10,12 @@ import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.utils.playerDataTag
 import org.gitee.orryx.utils.playerJobDataTag
 import org.gitee.orryx.utils.playerJobSkillDataTag
+import taboolib.common.util.unsafeLazy
 import java.util.*
 
 class RedisManager: ICacheManager {
 
-    private val api by lazy { RedisChannelPlugin.api }
+    private val api by unsafeLazy { RedisChannelPlugin.api }
 
     override fun getPlayerData(player: UUID): PlayerProfilePO? {
         val tag = playerDataTag(player)

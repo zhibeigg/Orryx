@@ -5,6 +5,7 @@ import org.gitee.orryx.api.adapters.vector.AbstractVector
 import org.gitee.orryx.core.kether.actions.effect.EffectType.ARC
 import org.joml.Matrix3d
 import taboolib.common.platform.ProxyParticle
+import taboolib.common.util.unsafeLazy
 
 class EffectBuilder {
 
@@ -49,6 +50,6 @@ class EffectBuilder {
     //VibrationData
     var vibrationData: ProxyParticle.VibrationData? = null
 
-    val locations by lazy { mutableListOf<Pair<Int, EffectOrigin>>() }
+    val locations by unsafeLazy { mutableListOf<Pair<Int, EffectOrigin>>() }
 
 }

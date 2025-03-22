@@ -5,6 +5,7 @@ import org.bukkit.World
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.adapters.IEntity
 import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
+import taboolib.common.util.unsafeLazy
 
 class PlayerTarget(private val player: Player) : ITargetEntity<Player>, ITargetLocation<Player>, IEntity by AbstractBukkitEntity(player) {
 
@@ -20,7 +21,7 @@ class PlayerTarget(private val player: Player) : ITargetEntity<Player>, ITargetL
     override val world: World
         get() = player.world
 
-    override val uniqueId by lazy {
+    override val uniqueId by unsafeLazy {
         player.uniqueId
     }
 

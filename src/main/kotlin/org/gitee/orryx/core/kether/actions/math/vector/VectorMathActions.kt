@@ -1,12 +1,15 @@
 package org.gitee.orryx.core.kether.actions.math.vector
 
 import org.bukkit.util.Vector
+import org.gitee.orryx.api.adapters.IVector
 import org.gitee.orryx.api.adapters.vector.AbstractVector
 import org.gitee.orryx.core.kether.ScriptManager.scriptParser
 import org.gitee.orryx.core.wiki.Action
 import org.gitee.orryx.core.wiki.Type
 import org.gitee.orryx.utils.*
 import org.joml.Vector3d
+import taboolib.common.OpenResult
+import taboolib.common5.cdouble
 import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*
 
@@ -347,6 +350,37 @@ object VectorMathActions {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    @KetherProperty(bind = IVector::class)
+    fun propertyVector() = object : ScriptProperty<IVector>("vector.operator") {
+
+        override fun read(instance: IVector, key: String): OpenResult {
+            return when (key) {
+                "x" -> OpenResult.successful(instance.x())
+                "y" -> OpenResult.successful(instance.y())
+                "z" -> OpenResult.successful(instance.z())
+                else -> OpenResult.failed()
+            }
+        }
+
+        override fun write(instance: IVector, key: String, value: Any?): OpenResult {
+            return when (key) {
+                "x" -> {
+                    instance.joml.x = value.cdouble
+                    OpenResult.successful(instance.x())
+                }
+                "y" -> {
+                    instance.joml.y = value.cdouble
+                    OpenResult.successful(instance.y())
+                }
+                "z" -> {
+                    instance.joml.z = value.cdouble
+                    OpenResult.successful(instance.z())
+                }
+                else -> OpenResult.failed()
             }
         }
     }

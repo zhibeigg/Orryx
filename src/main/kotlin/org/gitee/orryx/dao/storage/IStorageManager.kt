@@ -2,12 +2,13 @@ package org.gitee.orryx.dao.storage
 
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.reload.Reload
-import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.pojo.PlayerJobPO
+import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.function.info
+import taboolib.common.util.unsafeLazy
 import taboolib.module.chat.colored
 import java.util.*
 
@@ -18,7 +19,7 @@ interface IStorageManager {
         private val type
             get() = OrryxAPI.config.getString("Database.use", "SQLLITE")!!.uppercase()
 
-        private val lazy: String by lazy { type }
+        private val lazy: String by unsafeLazy { type }
 
         internal lateinit var INSTANCE: IStorageManager
 

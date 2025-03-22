@@ -5,12 +5,13 @@ import org.bukkit.event.player.PlayerQuitEvent
 import org.gitee.orryx.utils.playerData
 import org.gitee.orryx.utils.toFlag
 import taboolib.common.platform.event.SubscribeEvent
+import taboolib.common.util.unsafeLazy
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 object PlayerProfileManager {
 
-    private val playerProfileMap by lazy { HashMap<UUID, IPlayerProfile>() }
+    private val playerProfileMap by unsafeLazy { HashMap<UUID, IPlayerProfile>() }
 
     @SubscribeEvent
     private fun quit(e: PlayerQuitEvent) {

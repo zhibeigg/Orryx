@@ -24,6 +24,7 @@ import taboolib.common.platform.function.info
 import taboolib.common.platform.function.registerBukkitListener
 import taboolib.common.platform.function.unregisterListener
 import taboolib.common.platform.function.warning
+import taboolib.common.util.unsafeLazy
 import taboolib.library.reflex.ReflexClass
 import taboolib.module.chat.colored
 import taboolib.module.configuration.Configuration
@@ -35,9 +36,9 @@ import taboolib.module.kether.printKetherErrorMessage
 @Awake
 object StationLoaderManager: ClassVisitor(1) {
 
-    private val triggers by lazy { hashMapOf<String, IStationTrigger<*>>() }
-    private val stationMap by lazy { hashMapOf<String, IStation>() }
-    private val listenerList by lazy { mutableListOf<ProxyListener>() }
+    private val triggers by unsafeLazy { hashMapOf<String, IStationTrigger<*>>() }
+    private val stationMap by unsafeLazy { hashMapOf<String, IStation>() }
+    private val listenerList by unsafeLazy { mutableListOf<ProxyListener>() }
 
     override fun getLifeCycle(): LifeCycle {
         return LifeCycle.INIT

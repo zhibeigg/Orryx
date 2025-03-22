@@ -4,13 +4,14 @@ import org.gitee.orryx.core.skill.Description
 import org.gitee.orryx.core.skill.ISkill
 import org.gitee.orryx.core.skill.Icon
 import org.gitee.orryx.utils.getMap
+import taboolib.common.util.unsafeLazy
 import taboolib.library.xseries.XMaterial
 import taboolib.module.chat.colored
 import taboolib.module.configuration.Configuration
 
 abstract class AbstractSkillLoader(key: String, open val configuration: Configuration): ISkill {
 
-    protected val options by lazy { configuration.getConfigurationSection("Options") ?: error("技能${key}位于${configuration.file}未书写Options键") }
+    protected val options by unsafeLazy { configuration.getConfigurationSection("Options") ?: error("技能${key}位于${configuration.file}未书写Options键") }
 
     override val name: String = (options.getString("Name") ?: key).colored()
 

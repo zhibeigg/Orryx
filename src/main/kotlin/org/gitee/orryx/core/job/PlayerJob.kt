@@ -22,6 +22,7 @@ import org.gitee.orryx.dao.pojo.PlayerJobPO
 import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.utils.*
 import taboolib.common.platform.function.isPrimaryThread
+import taboolib.common.util.unsafeLazy
 import taboolib.common5.cdouble
 import taboolib.module.kether.orNull
 import java.util.concurrent.CompletableFuture
@@ -34,7 +35,7 @@ class PlayerJob(
     private val privateBindKeyOfGroup: MutableMap<IGroup, MutableMap<IBindKey, String?>>
 ): IPlayerJob {
 
-    override val job: IJob by lazy { JobLoaderManager.getJobLoader(key)!! }
+    override val job: IJob by unsafeLazy { JobLoaderManager.getJobLoader(key)!! }
 
     override val bindKeyOfGroup: Map<IGroup, Map<IBindKey, String?>>
         get() = privateBindKeyOfGroup

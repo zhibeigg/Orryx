@@ -7,6 +7,7 @@ import org.gitee.orryx.api.events.damage.DamageType
 import org.gitee.orryx.api.events.damage.OrryxDamageEvents
 import org.gitee.orryx.utils.doDamage
 import taboolib.common.platform.function.warning
+import taboolib.module.kether.ScriptContext
 
 class DefaultAttributeBridge: IAttributeBridge {
 
@@ -18,12 +19,12 @@ class DefaultAttributeBridge: IAttributeBridge {
         warning("Not Found Attribute Plugin")
     }
 
-    override fun damage(attacker: LivingEntity, target: LivingEntity, damage: Double, type: DamageType) {
+    override fun damage(attacker: LivingEntity, target: LivingEntity, damage: Double, type: DamageType, context: ScriptContext?) {
         val bukkitEvent = EntityDamageByEntityEvent(attacker, target, DamageCause.CUSTOM, damage)
-        val event = OrryxDamageEvents.Pre(attacker, target, damage, bukkitEvent, type)
+        val event = OrryxDamageEvents.Pre(attacker, target, damage, bukkitEvent, type, context)
         if (event.call()) {
             doDamage(event.attacker as? LivingEntity, event.victim as? LivingEntity ?: return, event.event!!.cause, event.damage)
-            OrryxDamageEvents.Post(attacker, target, event.damage, bukkitEvent, event.type).call()
+            OrryxDamageEvents.Post(attacker, target, event.damage, bukkitEvent, event.type, context).call()
         }
     }
 

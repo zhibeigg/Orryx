@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit
 
 object OpenAI {
 
-    private val client: OkHttpClient by lazy { OkHttpClient().newBuilder().build() }
+    private val client: OkHttpClient by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { OkHttpClient().newBuilder().build() }
 
     private val npcChatCache = Caffeine.newBuilder()
         .initialCapacity(20)

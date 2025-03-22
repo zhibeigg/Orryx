@@ -1,10 +1,11 @@
 package org.gitee.orryx.api.events
 
+import taboolib.common.util.unsafeLazy
 import taboolib.platform.type.BukkitProxyEvent
 
 class OrryxPluginReloadEvent: BukkitProxyEvent() {
 
-    private val functions by lazy { mutableListOf<Func>() }
+    private val functions by unsafeLazy { mutableListOf<Func>() }
 
     class Func(val weight: Int, private val function: Runnable) {
         fun run() {

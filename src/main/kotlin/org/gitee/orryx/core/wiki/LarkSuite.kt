@@ -39,7 +39,7 @@ object LarkSuite {
     private val spaceId
         get() = OrryxAPI.config.getString("LarkSuite.SpaceId")
 
-    private val client: Client by lazy {
+    private val client: Client by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         Client.newBuilder(appId, appSecret).requestTimeout(30, TimeUnit.MINUTES).build()
     }
 

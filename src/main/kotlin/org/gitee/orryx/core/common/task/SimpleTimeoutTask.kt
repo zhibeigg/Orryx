@@ -4,6 +4,7 @@ import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.function.submit
 import taboolib.common.platform.service.PlatformExecutor
+import taboolib.common.util.unsafeLazy
 import java.util.concurrent.CompletableFuture
 
 open class SimpleTimeoutTask(val tick: Long, open val closed: () -> Unit = EMPTY) {
@@ -14,7 +15,7 @@ open class SimpleTimeoutTask(val tick: Long, open val closed: () -> Unit = EMPTY
 
     companion object {
 
-        internal val EMPTY by lazy { {} }
+        internal val EMPTY by unsafeLazy { {} }
 
         private val cache = mutableListOf<SimpleTimeoutTask>()
 

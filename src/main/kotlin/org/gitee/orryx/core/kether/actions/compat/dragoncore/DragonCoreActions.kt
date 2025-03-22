@@ -23,6 +23,7 @@ import org.gitee.orryx.core.wiki.Type
 import org.gitee.orryx.utils.*
 import taboolib.common.platform.Ghost
 import taboolib.common.platform.event.SubscribeEvent
+import taboolib.common.util.unsafeLazy
 import taboolib.common5.cfloat
 import taboolib.common5.util.parseUUID
 import taboolib.library.kether.QuestReader
@@ -34,8 +35,8 @@ import java.util.concurrent.CompletableFuture
 
 object DragonCoreActions {
 
-    private val armourersMap by lazy { hashMapOf<UUID, MutableList<String>>() }
-    private val effectMap by lazy { hashMapOf<UUID, MutableList<ModelEffect>>() }
+    private val armourersMap by unsafeLazy { hashMapOf<UUID, MutableList<String>>() }
+    private val effectMap by unsafeLazy { hashMapOf<UUID, MutableList<ModelEffect>>() }
 
     @Ghost
     @SubscribeEvent
@@ -92,7 +93,7 @@ object DragonCoreActions {
             Action.new("DragonCore附属语句", "设置玩家动作", "dragoncore", true)
                 .description("设置玩家动作")
                 .addEntry("动作标识符", Type.SYMBOL, false, head = "animation/ani")
-                .addEntry("设置标识符", Type.SYMBOL, false, head = "set")
+                .addEntry("设置标识符", Type.SYMBOL, false, head = "set/to")
                 .addEntry("玩家标识符", Type.SYMBOL, false, head = "player")
                 .addEntry("动作名", Type.STRING, false)
                 .addEntry("动作速度", Type.FLOAT, false)
@@ -106,7 +107,7 @@ object DragonCoreActions {
             Action.new("DragonCore附属语句", "设置实体动作", "dragoncore", true)
                 .description("设置实体动作")
                 .addEntry("动作标识符", Type.SYMBOL, false, head = "animation/ani")
-                .addEntry("设置标识符", Type.SYMBOL, false, head = "set")
+                .addEntry("设置标识符", Type.SYMBOL, false, head = "set/to")
                 .addEntry("实体标识符", Type.SYMBOL, false, head = "entity")
                 .addEntry("动作名", Type.STRING, false)
                 .addEntry("过渡时间", Type.INT, false)
@@ -204,7 +205,7 @@ object DragonCoreActions {
             Action.new("DragonCore附属语句", "设置headTag", "dragoncore", true)
                 .description("设置实体的headTag")
                 .addEntry("headTag标识符", Type.SYMBOL, false, head = "headtag/tag")
-                .addEntry("设置标识符", Type.SYMBOL, false, head = "set")
+                .addEntry("设置标识符", Type.SYMBOL, false, head = "set/to")
                 .addEntry("设置的实体uuid", Type.STRING, false)
                 .addEntry("匹配名", Type.STRING, false)
                 .addContainerEntry("可视玩家", true, "@self", "viewers"),
@@ -217,7 +218,7 @@ object DragonCoreActions {
             Action.new("DragonCore附属语句", "设置实体模型", "dragoncore", true)
                 .description("设置实体模型")
                 .addEntry("模型标识符", Type.SYMBOL, false, head = "model")
-                .addEntry("设置标识符", Type.SYMBOL, false, head = "set")
+                .addEntry("设置标识符", Type.SYMBOL, false, head = "set/to")
                 .addEntry("设置的实体uuid", Type.STRING, false)
                 .addEntry("匹配名", Type.STRING, false)
                 .addContainerEntry("可视玩家", true, "@self", "viewers"),
@@ -280,8 +281,8 @@ object DragonCoreActions {
                 }
             }
             case("animation", "ani") {
-                when (it.expects("set", "remove")) {
-                    "set" -> setAnimation(it)
+                when (it.expects("set", "to", "remove")) {
+                    "set", "to" -> setAnimation(it)
                     "remove" -> removeAnimation(it)
                     else -> error("龙核animation书写错误")
                 }
@@ -311,15 +312,15 @@ object DragonCoreActions {
                 }
             }
             case("headtag", "tag") {
-                when (it.expects("set", "remove")) {
-                    "set" -> setHeadTag(it)
+                when (it.expects("set", "to", "remove")) {
+                    "set", "to" -> setHeadTag(it)
                     "remove" -> removeHeadTag(it)
                     else -> error("龙核headtag书写错误")
                 }
             }
             case("model") {
-                when (it.expects("set", "remove")) {
-                    "set" -> setEntityModel(it)
+                when (it.expects("set", "to", "remove")) {
+                    "set", "to" -> setEntityModel(it)
                     "remove" -> removeEntityModel(it)
                     else -> error("龙核module书写错误")
                 }

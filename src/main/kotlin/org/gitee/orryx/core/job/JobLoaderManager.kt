@@ -5,12 +5,13 @@ import org.gitee.orryx.utils.files
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.function.info
+import taboolib.common.util.unsafeLazy
 import taboolib.module.chat.colored
 import taboolib.module.configuration.Configuration
 
 object JobLoaderManager {
 
-    private val jobLoaderMap by lazy { hashMapOf<String, IJob>() }
+    private val jobLoaderMap by unsafeLazy { hashMapOf<String, IJob>() }
 
     internal fun getJobLoader(job: String): IJob? {
         return jobLoaderMap[job]

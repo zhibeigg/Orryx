@@ -7,12 +7,13 @@ import org.gitee.orryx.utils.debug
 import taboolib.common.LifeCycle
 import taboolib.common.inject.ClassVisitor
 import taboolib.common.platform.Awake
+import taboolib.common.util.unsafeLazy
 import taboolib.library.reflex.ReflexClass
 
 @Awake
 object SelectorInit: ClassVisitor(1) {
 
-    private val selectors by lazy { mutableListOf<ISelector>() }
+    private val selectors by unsafeLazy { mutableListOf<ISelector>() }
 
     override fun getLifeCycle(): LifeCycle {
         return LifeCycle.ENABLE

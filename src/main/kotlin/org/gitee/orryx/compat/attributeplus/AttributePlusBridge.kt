@@ -6,10 +6,12 @@ import org.gitee.orryx.compat.IAttributeBridge
 import org.gitee.orryx.core.common.task.SimpleTimeoutTask
 import org.serverct.ersha.api.AttributeAPI
 import org.serverct.ersha.attribute.data.AttributeData
+import taboolib.common.util.unsafeLazy
+import taboolib.module.kether.ScriptContext
 
 class AttributePlusBridge: IAttributeBridge {
 
-    private val attributeMap by lazy { mutableMapOf<String, AttributeData>() }
+    private val attributeMap by unsafeLazy { mutableMapOf<String, AttributeData>() }
 
     override fun addAttribute(entity: LivingEntity, key: String, value: List<String>, timeout: Long) {
         val source = AttributeAPI.createStaticAttributeSource(value)
@@ -28,7 +30,7 @@ class AttributePlusBridge: IAttributeBridge {
         AttributeAPI.takeSourceAttribute(attribute, key)
     }
 
-    override fun damage(attacker: LivingEntity, target: LivingEntity, damage: Double, type: DamageType) {
+    override fun damage(attacker: LivingEntity, target: LivingEntity, damage: Double, type: DamageType, context: ScriptContext?) {
         AttributeAPI.runAttributeAttackEntity(attacker, target, damage, callBeforeEvent = true, callCancel = true)
     }
 

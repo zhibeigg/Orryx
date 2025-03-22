@@ -1,12 +1,12 @@
 package org.gitee.orryx.core.kether
 
 import org.bukkit.entity.Player
-import org.gitee.orryx.core.kether.ScriptManager.removeCloseable
+import taboolib.common.util.unsafeLazy
 import taboolib.module.kether.ScriptContext
 
 class PlayerRunningSpace(val player: Player) {
 
-    private val runningSpaceMap by lazy { hashMapOf<String, RunningSpace>() }
+    private val runningSpaceMap by unsafeLazy { hashMapOf<String, RunningSpace>() }
 
     fun invoke(context: ScriptContext, tag: String) {
         runningSpaceMap.getOrPut(tag) { RunningSpace(tag) }.addScriptContext(context)

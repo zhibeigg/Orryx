@@ -16,7 +16,7 @@ class StationParameter(val stationLoader: String, val sender: ProxyCommandSender
 
     override var origin: ITargetLocation<*>? = sender.castSafely<Player>()?.toTarget()
 
-    private val lazies by lazy { hashMapOf<String, Any?>() }
+    private val lazies by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { hashMapOf<String, Any?>() }
 
     fun getOriginLocation(): Location? {
         return origin?.location

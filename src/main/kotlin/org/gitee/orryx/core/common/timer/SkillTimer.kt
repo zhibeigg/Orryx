@@ -9,11 +9,12 @@ import org.gitee.orryx.utils.getSkill
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.adaptPlayer
+import taboolib.common.util.unsafeLazy
 import java.util.*
 
 object SkillTimer : ITimer {
 
-    private val playerCooldowns: MutableMap<UUID, MutableMap<String, CooldownEntry>> by lazy { hashMapOf() }
+    private val playerCooldowns: MutableMap<UUID, MutableMap<String, CooldownEntry>> by unsafeLazy { hashMapOf() }
 
     fun reset(player: Player, parameter: SkillParameter) {
         reset(adaptPlayer(player), parameter)

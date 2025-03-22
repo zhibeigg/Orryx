@@ -8,13 +8,14 @@ import taboolib.common.LifeCycle
 import taboolib.common.inject.ClassVisitor
 import taboolib.common.platform.function.registerBukkitListener
 import taboolib.common.platform.function.unregisterListener
+import taboolib.common.util.unsafeLazy
 import taboolib.library.reflex.ReflexClass
 import java.util.*
 
 object PipeManager: ClassVisitor(1) {
 
-    private val triggers by lazy { hashMapOf<String, IPipeTrigger<*>>() }
-    private val pipeTaskMap by lazy { hashMapOf<UUID, IPipeTask>() }
+    private val triggers by unsafeLazy { hashMapOf<String, IPipeTrigger<*>>() }
+    private val pipeTaskMap by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { hashMapOf<UUID, IPipeTask>() }
 
     override fun getLifeCycle(): LifeCycle {
         return LifeCycle.ENABLE

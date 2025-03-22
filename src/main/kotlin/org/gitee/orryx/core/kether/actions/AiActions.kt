@@ -10,6 +10,7 @@ import org.gitee.orryx.utils.bukkitPlayer
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.function.info
+import taboolib.common.util.unsafeLazy
 import taboolib.expansion.submitChain
 import taboolib.module.chat.colored
 import taboolib.module.configuration.Config
@@ -24,7 +25,7 @@ object AiActions {
 
     class Npc(val key: String, val name: String, val system: String, val model: String, val maxTokens: Int, val temperature: Double)
 
-    private val npcMap by lazy { mutableMapOf<String, Npc>() }
+    private val npcMap by unsafeLazy { mutableMapOf<String, Npc>() }
 
     @Awake(LifeCycle.ENABLE)
     @Reload(1)

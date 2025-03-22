@@ -17,9 +17,9 @@ class SkillParameter(val skill: String?, val player: Player, var level: Int = 1)
 
     override var origin: ITargetLocation<*>? = player.toTarget()
 
-    private val proxyCommandSender by lazy { adaptPlayer(player) }
+    private val proxyCommandSender by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { adaptPlayer(player) }
 
-    private val lazies by lazy { hashMapOf<String, Any?>() }
+    private val lazies by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { hashMapOf<String, Any?>() }
 
     fun getSkill(): ISkill? {
         return skill?.let { SkillLoaderManager.getSkillLoader(skill) }

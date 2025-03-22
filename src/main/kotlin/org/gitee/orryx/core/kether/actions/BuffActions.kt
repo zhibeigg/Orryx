@@ -15,6 +15,7 @@ import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.info
+import taboolib.common.util.unsafeLazy
 import taboolib.module.chat.colored
 import taboolib.module.configuration.Config
 import taboolib.module.configuration.ConfigFile
@@ -24,8 +25,8 @@ import kotlin.collections.set
 
 object BuffActions {
 
-    private val buffMap by lazy { hashMapOf<String, Buff>() }
-    private val playerBuffMap by lazy { hashMapOf<UUID, MutableMap<String, PlayerBuff>>() }
+    private val buffMap by unsafeLazy { hashMapOf<String, Buff>() }
+    private val playerBuffMap by unsafeLazy { hashMapOf<UUID, MutableMap<String, PlayerBuff>>() }
 
     class Buff(val key: String, description: List<String>) {
 

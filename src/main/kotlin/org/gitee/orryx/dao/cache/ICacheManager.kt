@@ -10,6 +10,7 @@ import org.gitee.orryx.utils.RedisChannelPlugin
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.function.info
+import taboolib.common.util.unsafeLazy
 import taboolib.common5.format
 import taboolib.module.chat.colored
 import java.util.*
@@ -21,7 +22,7 @@ interface ICacheManager {
         private val type
             get() = OrryxAPI.config.getString("CacheManager", "memory")!!.uppercase()
 
-        private val lazy by lazy { type }
+        private val lazy by unsafeLazy { type }
 
         internal lateinit var INSTANCE: ICacheManager
 

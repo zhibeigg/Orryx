@@ -11,6 +11,7 @@ import org.gitee.orryx.core.ui.germplugin.GermPluginSkillHud
 import org.gitee.orryx.utils.getBindSkills
 import org.gitee.orryx.utils.job
 import taboolib.common.platform.function.getDataFolder
+import taboolib.common.util.unsafeLazy
 import taboolib.platform.util.onlinePlayers
 import java.io.File
 import java.util.*
@@ -22,7 +23,7 @@ open class DragonCoreSkillHud(override val viewer: Player, override val owner: P
         /**
          * owner, viewer, [GermPluginSkillHud]
          */
-        internal val dragonSkillHudMap by lazy { hashMapOf<UUID, MutableMap<UUID, DragonCoreSkillHud>>() }
+        internal val dragonSkillHudMap by unsafeLazy { hashMapOf<UUID, MutableMap<UUID, DragonCoreSkillHud>>() }
         internal lateinit var skillHudConfiguration: YamlConfiguration
 
         @Reload(2)
