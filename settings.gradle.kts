@@ -1,5 +1,5 @@
 rootProject.name = "Orryx"
 
-build = ""
+build = "$buildDir/dist"
 publishUsername = ""
 publishPassword = ""
