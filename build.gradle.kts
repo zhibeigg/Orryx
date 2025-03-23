@@ -13,32 +13,13 @@ plugins {
     kotlin("plugin.serialization") version "1.9.24"
     id("io.izzel.taboolib") version "2.0.22"
     id("org.jetbrains.dokka") version "2.0.0"
-    id("com.github.nbaztec.coveralls-jacoco") version "1.2.20"
 }
 
 tasks.jacocoTestReport {
-    dependsOn(tasks.test)  // 确保在运行测试之后生成报告
     reports {
-        xml.required = true // Coveralls 需要 XML 格式
-        html.required = true // 本地查看 HTML 报告
+        xml.required = true
+        html.required = true
     }
-
-    // 确保覆盖所有源码（包括 Kotlin）
-    classDirectories.setFrom(
-        files(classDirectories.files.map {
-            fileTree(it).apply {
-                exclude(
-                    "io/izzel/taboolib/**", // 排除 TabooLib 内部类
-                    "org/gitee/orryx/serialization/**", // 排除重定位的包
-                    "org/gitee/orryx/jexl3/**", // 排除重定位的包
-                    "org/gitee/orryx/caffeine/**", // 排除重定位的包
-                    "org/gitee/orryx/joml/**", // 排除重定位的包
-                    "org/gitee/orryx/larksuite/**", // 排除重定位的包
-                    "**/*Test.class" // 排除测试类
-                )
-            }
-        })
-    )
 }
 
 taboolib {
