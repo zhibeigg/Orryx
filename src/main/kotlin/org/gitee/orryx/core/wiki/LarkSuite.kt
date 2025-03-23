@@ -166,8 +166,10 @@ object LarkSuite {
     private suspend fun createDocumentBlocks(token: String, documentId: String, chain: Chain<*>) {
         val actionGroup = ScriptManager.wikiActions.groupBy { it.group }
         val selectorsGroup = ScriptManager.wikiSelectors.groupBy { it.type }
+        val triggersGroup = ScriptManager.wikiTriggers.groupBy { it.group }
         debug(actionGroup.mapValues { it.value.map { action -> action.name } })
         debug(selectorsGroup.mapValues { it.value.map { selector -> selector.name } })
+        debug(triggersGroup.mapValues { it.value.map { trigger -> trigger.key } })
         createPs(token, documentId, chain)
         actionGroup.forEach { (g, u) ->
             createGroup(token, g, u, documentId, chain)
@@ -175,6 +177,10 @@ object LarkSuite {
         createSelectorHanging(token, documentId, chain)
         selectorsGroup.forEach { (g, u) ->
             createSelectorType(token, g, u, documentId, chain)
+        }
+        createTriggerHanging(token, documentId, chain)
+        triggersGroup.forEach { (g, u) ->
+            createTriggerType(token, g, u, documentId, chain)
         }
     }
 
@@ -591,6 +597,170 @@ object LarkSuite {
                 info("&e┃┗&7Selector: ${selector.name} 创建成功 &a√".colored())
             } else {
                 info("&e┃┣&7Selector: ${selector.name} 创建成功 &a√".colored())
+            }
+        }
+    }
+
+    private suspend fun createTriggerHanging(token: String, documentId: String, chain: Chain<*>) {
+        chain.async {
+            val req = CreateDocumentBlockChildrenReq.newBuilder()
+                .documentId(documentId)
+                .blockId(documentId)
+                .documentRevisionId(-1)
+                .createDocumentBlockChildrenReqBody(
+                    CreateDocumentBlockChildrenReqBody.newBuilder()
+                        .children(
+                            arrayOf(
+                                Block.newBuilder()
+                                    .blockId("Trigger_hanging1")
+                                    .children(arrayOf())
+                                    .blockType(BlockBlockTypeEnum.HEADING1)
+                                    .heading1(
+                                        Text.newBuilder().elements(
+                                            arrayOf(
+                                                TextElement.newBuilder()
+                                                    .textRun(
+                                                        TextRun.newBuilder().content("Trigger触发器列表").build()
+                                                    ).build()
+                                            )
+                                        ).build()
+                                    )
+                                    .build()
+                            )
+                        )
+                        .index(-1)
+                        .build()
+                )
+                .build()
+
+            // 发起请求
+            val resp = client.docx().v1().documentBlockChildren().create(
+                req, RequestOptions.newBuilder()
+                    .userAccessToken(token)
+                    .build()
+            )
+
+            // 处理服务端错误
+            if (!resp.success()) {
+                println(
+                    String.format(
+                        "code:%s,msg:%s,reqId:%s, resp:%s",
+                        resp.code,
+                        resp.msg,
+                        resp.requestId,
+                        String(resp.rawResponse.body, UTF_8)
+                    )
+                )
+                return@async
+            }
+        }
+    }
+
+    private suspend fun createTriggerType(token: String, group: TriggerGroup, list: List<Trigger>, documentId: String, chain: Chain<*>) {
+        chain.async {
+            val req = CreateDocumentBlockChildrenReq.newBuilder()
+                .documentId(documentId)
+                .blockId(documentId)
+                .documentRevisionId(-1)
+                .createDocumentBlockChildrenReqBody(
+                    CreateDocumentBlockChildrenReqBody.newBuilder()
+                        .children(
+                            arrayOf(
+                                Block.newBuilder()
+                                    .blockId("Trigger_${group}_heading2")
+                                    .children(arrayOf())
+                                    .blockType(BlockBlockTypeEnum.HEADING2)
+                                    .heading2(
+                                        Text.newBuilder().elements(
+                                            arrayOf(
+                                                TextElement.newBuilder()
+                                                    .textRun(
+                                                        TextRun.newBuilder().content(
+                                                            group.value
+                                                        ).build()
+                                                    ).build()
+                                            )
+                                        ).build()
+                                    )
+                                    .build()
+                            )
+                        )
+                        .index(-1)
+                        .build()
+                )
+                .build()
+
+            // 发起请求
+            val resp = client.docx().v1().documentBlockChildren().create(
+                req, RequestOptions.newBuilder()
+                    .userAccessToken(token)
+                    .build()
+            )
+
+            // 处理服务端错误
+            if (!resp.success()) {
+                println(
+                    String.format(
+                        "code:%s,msg:%s,reqId:%s, resp:%s",
+                        resp.code,
+                        resp.msg,
+                        resp.requestId,
+                        String(resp.rawResponse.body, UTF_8)
+                    )
+                )
+                return@async
+            }
+            info("&e┣┳&7TriggerGroup: ${group.value} 创建成功 &a√".colored())
+        }
+        list.forEach {
+            if (list.last() == it) {
+                createTrigger(token, it, documentId, chain, true)
+            } else {
+                createTrigger(token, it, documentId, chain, false)
+            }
+        }
+    }
+
+    private suspend fun createTrigger(token: String, trigger: Trigger, documentId: String, chain: Chain<*>, last: Boolean) {
+        chain.async {
+            val blocks = trigger.createBlocks()
+            val req = CreateDocumentBlockDescendantReq.newBuilder()
+                .documentId(documentId)
+                .blockId(documentId)
+                .documentRevisionId(-1)
+                .createDocumentBlockDescendantReqBody(
+                    CreateDocumentBlockDescendantReqBody.newBuilder()
+                        .childrenId(blocks.second.toTypedArray())
+                        .index(-1)
+                        .descendants(blocks.first.toTypedArray())
+                        .build()
+                )
+                .build()
+
+            // 发起请求
+            val resp = client.docx().v1().documentBlockDescendant().create(
+                req, RequestOptions.newBuilder()
+                    .userAccessToken(token)
+                    .build()
+            )
+
+            // 处理服务端错误
+            if (!resp.success()) {
+                println(
+                    String.format(
+                        "code:%s,msg:%s,reqId:%s, resp:%s",
+                        resp.code,
+                        resp.msg,
+                        resp.requestId,
+                        String(resp.rawResponse.body, UTF_8)
+                    )
+                )
+                return@async
+            }
+            if (last) {
+                info("&e┃┗&7Trigger: ${trigger.key} 创建成功 &a√".colored())
+            } else {
+                info("&e┃┣&7Trigger: ${trigger.key} 创建成功 &a√".colored())
             }
         }
     }

@@ -89,7 +89,7 @@ dependencies {
     compileOnly("ink.ptms:nms-all:1.0.0")
 
     compileOnly("com.gitee.redischannel:RedisChannel:1.1:api")
-    compileOnly("ink.ptms.adyeshach:plugin:2.0.26")
+    compileOnly("ink.ptms.adyeshach:plugin:2.0.26:api")
     compileOnly("com.gitee:DragonCore:2.6.2.9")
     compileOnly("com.germ:germplugin:4.4.1-5")
     compileOnly("com.gitee:MythicMobs:4.11.0")
@@ -156,7 +156,7 @@ publishing {
         }
     }
     publications {
-        create<MavenPublication>("library") {
+        create<MavenPublication>("api") {
             from(components["java"])
             artifact(tasks["kotlinSourcesJar"]) {
                 classifier = "sources"

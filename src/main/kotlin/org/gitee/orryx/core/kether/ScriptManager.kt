@@ -27,6 +27,7 @@ object ScriptManager {
 
     val wikiActions by unsafeLazy { mutableListOf<org.gitee.orryx.core.wiki.Action>() }
     val wikiSelectors by unsafeLazy { mutableListOf<org.gitee.orryx.core.wiki.Selector>() }
+    val wikiTriggers by unsafeLazy { mutableListOf<org.gitee.orryx.core.wiki.Trigger>() }
 
     private val scriptMap by unsafeLazy { ConcurrentHashMap<String, Script>() }
     private val closeableMap by unsafeLazy { hashMapOf<String, ConcurrentMap<UUID, AutoCloseable>>() }

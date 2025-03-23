@@ -10,6 +10,7 @@ import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.kether.parameter.StationParameter
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.core.station.Plugin
+import org.gitee.orryx.core.station.WikiTrigger
 import org.gitee.orryx.utils.debug
 import org.gitee.orryx.utils.files
 import org.gitee.orryx.utils.getBytes
@@ -81,6 +82,7 @@ object StationLoaderManager: ClassVisitor(1) {
     override fun visitStart(clazz: ReflexClass) {
         if (IStationTrigger::class.java.isAssignableFrom(clazz.toClass())) {
             val instance = clazz.getInstance() as? IStationTrigger<*> ?: return
+            if (instance is WikiTrigger) ScriptManager.wikiTriggers.add(instance.wiki)
             if (clazz.hasAnnotation(Plugin::class.java)) {
                 val annotation = clazz.getAnnotation(Plugin::class.java)
                 val pluginEnabled = Bukkit.getPluginManager().isPluginEnabled(annotation.property<String>("plugin")!!)
