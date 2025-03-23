@@ -8,18 +8,10 @@ val build: String by project
 plugins {
     java
     `maven-publish`
-    jacoco
     kotlin("jvm") version "1.9.24"
     kotlin("plugin.serialization") version "1.9.24"
     id("io.izzel.taboolib") version "2.0.22"
     id("org.jetbrains.dokka") version "2.0.0"
-}
-
-tasks.jacocoTestReport {
-    reports {
-        xml.required = true
-        html.required = true
-    }
 }
 
 taboolib {
@@ -120,6 +112,13 @@ dependencies {
     compileOnly(kotlin("stdlib"))
     compileOnly(kotlin("reflect"))
     compileOnly(fileTree("libs"))
+}
+
+tasks.test {
+    useJUnitPlatform()
+    testLogging {
+        events("passed", "skipped", "failed")
+    }
 }
 
 tasks.withType<JavaCompile> {
