@@ -25,7 +25,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build project with Gradle
-        run: ./gradlew build -Pbuild=./build -PpublishUsername=test -PpublishPassword=test -Pbuild="$buildDir/dist"
+        run: ./gradlew build -Pbuild=./build -PpublishUsername=test -PpublishPassword=test
 
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v4.6.2
