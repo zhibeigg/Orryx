@@ -25,13 +25,12 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build project with Gradle
-        run: ./gradlew build -Pbuild=./build -PpublishUsername=test -PpublishPassword=test -Pgroup=org.gitee.orryx -Pversion=1.0.0
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        run: ./gradlew build jacocoTestReport -Pbuild=./build -PpublishUsername=${{ secrets.PUBLISH_USERNAME }} -PpublishPassword=${{ secrets.PUBLISH_PASSWORD }}
 
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v4.6.2
         with:
           name: Orryx
           path: build/*.jar
-          
-      - name: Coveralls GitHub Action
-        uses: coverallsapp/github-action@v2.3.6

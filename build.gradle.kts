@@ -8,6 +8,8 @@ val build: String by project
 plugins {
     java
     `maven-publish`
+    jacoco
+    id("com.github.nbaztec.coveralls-jacoco") version "1.2.20"
     kotlin("jvm") version "1.9.24"
     kotlin("plugin.serialization") version "1.9.24"
     id("io.izzel.taboolib") version "2.0.22"
