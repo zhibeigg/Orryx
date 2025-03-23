@@ -1,24 +1,36 @@
-name: Kotlin CI
+name: Build
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Set up JDK 8
         uses: actions/setup-java@v3
         with:
-          java-version: 8
+          java-version: '8'
           distribution: 'zulu'
-          
-      - name: Grant execute permission for gradlew
+          cache: 'gradle'
+
+      - name: Grant execute permission to gradlew
         run: chmod +x gradlew
-        
-      - name: Build with Gradle
-        run: ./gradlew :jar
-        
-      - name: Upload GitHub Pages artifact
-        uses: actions/upload-pages-artifact@v3.0.1
+
+      - name: Build project with Gradle
+        run: ./gradlew build -Pbuild=./build
+
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: Orryx
+          path: build/*.jar
+
+          
