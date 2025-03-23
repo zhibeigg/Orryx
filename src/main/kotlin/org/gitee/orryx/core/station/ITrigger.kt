@@ -1,12 +1,11 @@
 package org.gitee.orryx.core.station
 
 import org.bukkit.event.Cancellable
-import org.bukkit.event.Event
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.module.kether.ScriptContext
 import taboolib.module.kether.extend
 
-interface ITrigger<E : Event> {
+interface ITrigger<E> {
 
     /**
      * 监听的事件代名

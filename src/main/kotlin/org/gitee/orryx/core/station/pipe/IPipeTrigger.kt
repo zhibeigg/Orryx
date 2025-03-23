@@ -1,10 +1,9 @@
 package org.gitee.orryx.core.station.pipe
 
-import org.bukkit.event.Event
 import org.gitee.orryx.core.station.ITrigger
 import taboolib.common.platform.event.ProxyListener
 
-interface IPipeTrigger<E : Event>: ITrigger<E> {
+interface IPipeTrigger<E>: ITrigger<E> {
 
     /**
      * # 监听器

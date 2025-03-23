@@ -3,7 +3,7 @@ package org.gitee.orryx.core.station.stations
 import org.bukkit.event.Event
 import org.gitee.orryx.core.station.ITrigger
 
-interface IStationTrigger<E : Event>: ITrigger<E> {
+interface IStationTrigger<E>: ITrigger<E> {
 
     /**
      * 中转站需要读取的特殊配置文件键

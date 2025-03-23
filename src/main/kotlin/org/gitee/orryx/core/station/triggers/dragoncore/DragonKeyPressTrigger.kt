@@ -3,14 +3,14 @@ package org.gitee.orryx.core.station.triggers.dragoncore
 import eos.moe.dragoncore.api.event.KeyPressEvent
 import org.gitee.orryx.core.station.Plugin
 import org.gitee.orryx.core.station.pipe.IPipeTask
-import org.gitee.orryx.core.station.triggers.bukkit.AbstractEventTrigger
+import org.gitee.orryx.core.station.triggers.bukkit.AbstractPlayerEventTrigger
 import org.gitee.orryx.core.wiki.Trigger
 import org.gitee.orryx.core.wiki.TriggerGroup
 import org.gitee.orryx.core.wiki.Type
 import taboolib.module.kether.ScriptContext
 
 @Plugin("DragonCore")
-object DragonKeyPressTrigger: AbstractEventTrigger<KeyPressEvent>() {
+object DragonKeyPressTrigger: AbstractPlayerEventTrigger<KeyPressEvent>() {
 
     override val event = "dragon key press"
 
