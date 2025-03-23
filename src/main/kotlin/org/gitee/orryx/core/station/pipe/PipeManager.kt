@@ -1,7 +1,6 @@
 package org.gitee.orryx.core.station.pipe
 
 import org.bukkit.Bukkit
-import org.bukkit.event.Event
 import org.gitee.orryx.core.station.Plugin
 import org.gitee.orryx.utils.debug
 import taboolib.common.LifeCycle
@@ -44,7 +43,7 @@ object PipeManager: ClassVisitor(1) {
         pipeTaskMap[task.uuid] = task
     }
 
-    private fun <E : Event> registerListener(trigger: IPipeTrigger<E>) {
+    private fun <E> registerListener(trigger: IPipeTrigger<E>) {
         if (trigger.listener == null) {
             trigger.listener = registerBukkitListener(trigger.clazz) { event ->
                 val iterator = pipeTaskMap.values.iterator()

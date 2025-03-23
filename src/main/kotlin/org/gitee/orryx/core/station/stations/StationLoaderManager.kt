@@ -2,7 +2,6 @@ package org.gitee.orryx.core.station.stations
 
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
-import org.bukkit.event.Event
 import org.gitee.orryx.api.OrryxAPI.ketherScriptLoader
 import org.gitee.orryx.core.common.timer.StationTimer
 import org.gitee.orryx.core.kether.PlayerRunningSpace
@@ -108,7 +107,7 @@ object StationLoaderManager: ClassVisitor(1) {
         }
     }
 
-    private fun <E : Event> IStationTrigger<E>.register(priority: EventPriority, stations: List<IStation>) {
+    private fun <E> IStationTrigger<E>.register(priority: EventPriority, stations: List<IStation>) {
         listenerList += registerBukkitListener(clazz, priority, false) { event ->
             stations.forEach { station ->
                 val map = specialKeys.associateWith { (station as? StationLoader)?.options?.get(it) }
@@ -124,7 +123,7 @@ object StationLoaderManager: ClassVisitor(1) {
         }
     }
 
-    private fun <E : Event> IStationTrigger<E>.startStation(sender: ProxyCommandSender, station: IStation, map: Map<String, Any?>, event: E, parameter: StationParameter) {
+    private fun <E> IStationTrigger<E>.startStation(sender: ProxyCommandSender, station: IStation, map: Map<String, Any?>, event: E, parameter: StationParameter<E>) {
         lateinit var context: ScriptContext
         val player = sender.castSafely<Player>()
         val playerRunningSpace =

@@ -80,7 +80,7 @@ object ContextActions {
                 }
             }
             ParmType.STATION -> {
-                if (this !is StationParameter) return null
+                if (this !is StationParameter<*>) return null
                 when(key) {
                     "STATION" -> stationLoader
                     else -> null

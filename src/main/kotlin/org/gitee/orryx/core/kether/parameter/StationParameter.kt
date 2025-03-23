@@ -2,7 +2,6 @@ package org.gitee.orryx.core.kether.parameter
 
 import org.bukkit.Location
 import org.bukkit.entity.Player
-import org.bukkit.event.Event
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.station.stations.IStation
 import org.gitee.orryx.core.station.stations.StationLoaderManager
@@ -12,7 +11,7 @@ import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.warning
 import taboolib.module.kether.orNull
 
-class StationParameter(val stationLoader: String, val sender: ProxyCommandSender, val event: Event): IParameter {
+class StationParameter<E>(val stationLoader: String, val sender: ProxyCommandSender, val event: E): IParameter {
 
     override var origin: ITargetLocation<*>? = sender.castSafely<Player>()?.toTarget()
 

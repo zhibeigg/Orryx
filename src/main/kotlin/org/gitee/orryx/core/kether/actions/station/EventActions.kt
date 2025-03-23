@@ -26,7 +26,7 @@ object EventActions {
                 actionNow {
                     run(cancelled).bool { cancelled ->
                         val parameter = script().getParameter()
-                        if (parameter is StationParameter) {
+                        if (parameter is StationParameter<*>) {
                             if (parameter.event is Cancellable) {
                                 parameter.event.isCancelled = cancelled
                             }

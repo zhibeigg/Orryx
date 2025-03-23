@@ -15,7 +15,7 @@ object StationTimer: ITimer {
     private val playerCooldowns by unsafeLazy { hashMapOf<UUID, MutableMap<String, CooldownEntry>>() }
 
     override fun reset(sender: ProxyCommandSender, parameter: IParameter): Long {
-        require(parameter is StationParameter) { "Invalid parameter type" }
+        require(parameter is StationParameter<*>) { "Invalid parameter type" }
         val timeout = parameter.getStation().getBaffle(sender, parameter)
         val stationName = parameter.stationLoader
 

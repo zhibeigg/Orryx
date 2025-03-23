@@ -234,7 +234,7 @@ fun ScriptFrame.skillCaster(func: Player.() -> CompletableFuture<Any?>): Complet
             parm.player.func()
         }
 
-        is StationParameter -> {
+        is StationParameter<*> -> {
             parm.sender.castSafely<Player>()?.func() ?: error("Station发送者无Orryx信息")
         }
 
