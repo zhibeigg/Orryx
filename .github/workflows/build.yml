@@ -32,5 +32,6 @@ jobs:
         with:
           name: Orryx
           path: build/*.jar
-
           
+      - name: Coveralls GitHub Action
+        uses: coverallsapp/github-action@v2.3.6
