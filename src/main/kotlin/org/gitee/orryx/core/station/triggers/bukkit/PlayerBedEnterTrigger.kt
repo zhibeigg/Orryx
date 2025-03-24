@@ -1,16 +1,13 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
 import org.bukkit.event.player.PlayerBedEnterEvent
-import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.targets.LocationTarget
 import org.gitee.orryx.core.wiki.Trigger
 import org.gitee.orryx.core.wiki.TriggerGroup
 import org.gitee.orryx.core.wiki.Type
-import taboolib.common.platform.ProxyCommandSender
-import taboolib.common.platform.function.adaptPlayer
 import taboolib.module.kether.ScriptContext
 
-object PlayerBedEnterTrigger: AbstractEventTrigger<PlayerBedEnterEvent>() {
+object PlayerBedEnterTrigger: AbstractPlayerEventTrigger<PlayerBedEnterEvent>() {
 
     override val event: String = "Player Bed Enter"
 
@@ -23,14 +20,6 @@ object PlayerBedEnterTrigger: AbstractEventTrigger<PlayerBedEnterEvent>() {
 
     override val clazz
         get() = PlayerBedEnterEvent::class.java
-
-    override fun onJoin(event: PlayerBedEnterEvent, map: Map<String, Any?>): ProxyCommandSender {
-        return adaptPlayer(event.player)
-    }
-
-    override fun onCheck(pipeTask: IPipeTask, event: PlayerBedEnterEvent, map: Map<String, Any?>): Boolean {
-        return pipeTask.scriptContext?.sender?.origin == event.player
-    }
 
     override fun onStart(context: ScriptContext, event: PlayerBedEnterEvent, map: Map<String, Any?>) {
         super.onStart(context, event, map)

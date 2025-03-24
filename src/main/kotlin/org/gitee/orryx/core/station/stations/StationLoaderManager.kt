@@ -34,7 +34,7 @@ import taboolib.module.kether.ScriptService
 import taboolib.module.kether.printKetherErrorMessage
 
 @Awake
-object StationLoaderManager: ClassVisitor(1) {
+object StationLoaderManager: ClassVisitor(3) {
 
     private val triggers by unsafeLazy { hashMapOf<String, IStationTrigger<*>>() }
     private val stationMap by unsafeLazy { hashMapOf<String, IStation>() }
@@ -80,8 +80,12 @@ object StationLoaderManager: ClassVisitor(1) {
 
     override fun visitStart(clazz: ReflexClass) {
         if (IStationTrigger::class.java.isAssignableFrom(clazz.toClass())) {
-            val instance = clazz.getInstance() as? IStationTrigger<*> ?: return
-            if (instance is WikiTrigger) ScriptManager.wikiTriggers.add(instance.wiki)
+            (clazz.getInstance() as? WikiTrigger)?.also { ScriptManager.wikiTriggers.add(it.wiki) }
+            val instance = try {
+                clazz.getInstance() as? IStationTrigger<*> ?: return
+            } catch (_: Throwable) {
+                return
+            }
             if (clazz.hasAnnotation(Plugin::class.java)) {
                 val annotation = clazz.getAnnotation(Plugin::class.java)
                 val pluginEnabled = Bukkit.getPluginManager().isPluginEnabled(annotation.property<String>("plugin")!!)
@@ -101,7 +105,10 @@ object StationLoaderManager: ClassVisitor(1) {
             val list = stationMap.filter { it.value.event == event }.values
             list.groupBy { it.priority }.forEach { (priority, sub) ->
                 sub.sortedByDescending { it.weight }.also {
-                    trigger.register(priority, it)
+                    try {
+                        trigger.register(priority, it)
+                    } catch (_: Throwable) {
+                    }
                 }
             }
         }

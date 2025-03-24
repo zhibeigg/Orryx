@@ -1,15 +1,12 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
 import org.bukkit.event.player.PlayerChatTabCompleteEvent
-import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.wiki.Trigger
 import org.gitee.orryx.core.wiki.TriggerGroup
 import org.gitee.orryx.core.wiki.Type
-import taboolib.common.platform.ProxyCommandSender
-import taboolib.common.platform.function.adaptPlayer
 import taboolib.module.kether.ScriptContext
 
-object PlayerChatTabCompleteTrigger: AbstractEventTrigger<PlayerChatTabCompleteEvent>() {
+object PlayerChatTabCompleteTrigger: AbstractPlayerEventTrigger<PlayerChatTabCompleteEvent>() {
 
     override val event: String = "Player Chat Tab Complete"
 
@@ -22,14 +19,6 @@ object PlayerChatTabCompleteTrigger: AbstractEventTrigger<PlayerChatTabCompleteE
 
     override val clazz
         get() = PlayerChatTabCompleteEvent::class.java
-
-    override fun onJoin(event: PlayerChatTabCompleteEvent, map: Map<String, Any?>): ProxyCommandSender {
-        return adaptPlayer(event.player)
-    }
-
-    override fun onCheck(pipeTask: IPipeTask, event: PlayerChatTabCompleteEvent, map: Map<String, Any?>): Boolean {
-        return pipeTask.scriptContext?.sender?.origin == event.player
-    }
 
     override fun onStart(context: ScriptContext, event: PlayerChatTabCompleteEvent, map: Map<String, Any?>) {
         super.onStart(context, event, map)

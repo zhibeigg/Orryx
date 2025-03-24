@@ -11,7 +11,7 @@ import taboolib.common.util.unsafeLazy
 import taboolib.library.reflex.ReflexClass
 import java.util.*
 
-object PipeManager: ClassVisitor(1) {
+object PipeManager: ClassVisitor(3) {
 
     private val triggers by unsafeLazy { hashMapOf<String, IPipeTrigger<*>>() }
     private val pipeTaskMap by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { hashMapOf<UUID, IPipeTask>() }

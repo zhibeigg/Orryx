@@ -2,7 +2,6 @@ package org.gitee.orryx.core.station.triggers.bukkit
 
 import org.bukkit.event.player.AsyncPlayerChatEvent
 import org.gitee.orryx.core.container.Container
-import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.wiki.Trigger
 import org.gitee.orryx.core.wiki.TriggerGroup
 import org.gitee.orryx.core.wiki.Type
@@ -22,10 +21,6 @@ object AsyncPlayerChatTrigger: AbstractPlayerEventTrigger<AsyncPlayerChatEvent>(
 
     override val clazz
         get() = AsyncPlayerChatEvent::class.java
-
-    override fun onCheck(pipeTask: IPipeTask, event: AsyncPlayerChatEvent, map: Map<String, Any?>): Boolean {
-        return pipeTask.scriptContext?.sender?.origin == event.player
-    }
 
     override fun onStart(context: ScriptContext, event: AsyncPlayerChatEvent, map: Map<String, Any?>) {
         super.onStart(context, event, map)

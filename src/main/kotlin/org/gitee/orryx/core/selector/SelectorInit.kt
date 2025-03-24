@@ -11,7 +11,7 @@ import taboolib.common.util.unsafeLazy
 import taboolib.library.reflex.ReflexClass
 
 @Awake
-object SelectorInit: ClassVisitor(1) {
+object SelectorInit: ClassVisitor(3) {
 
     private val selectors by unsafeLazy { mutableListOf<ISelector>() }
 

@@ -14,7 +14,7 @@ import taboolib.library.reflex.ReflexClass
 import taboolib.module.chat.colored
 
 @Awake
-object ReloadAPI: IReloadAPI, ClassVisitor(1) {
+object ReloadAPI: IReloadAPI, ClassVisitor(3) {
 
     class ReloadFunction(val method: ClassMethod, val obj: Any, val weight: Int)
 

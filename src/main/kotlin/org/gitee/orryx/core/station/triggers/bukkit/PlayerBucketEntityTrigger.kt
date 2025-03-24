@@ -2,15 +2,12 @@ package org.gitee.orryx.core.station.triggers.bukkit
 
 import org.bukkit.event.player.PlayerBucketEntityEvent
 import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
-import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.wiki.Trigger
 import org.gitee.orryx.core.wiki.TriggerGroup
 import org.gitee.orryx.core.wiki.Type
-import taboolib.common.platform.ProxyCommandSender
-import taboolib.common.platform.function.adaptPlayer
 import taboolib.module.kether.ScriptContext
 
-object PlayerBucketEntityTrigger: AbstractEventTrigger<PlayerBucketEntityEvent>() {
+object PlayerBucketEntityTrigger: AbstractPlayerEventTrigger<PlayerBucketEntityEvent>() {
 
     override val event: String = "Player Bucket Entity"
 
@@ -23,14 +20,6 @@ object PlayerBucketEntityTrigger: AbstractEventTrigger<PlayerBucketEntityEvent>(
 
     override val clazz
         get() = PlayerBucketEntityEvent::class.java
-
-    override fun onJoin(event: PlayerBucketEntityEvent, map: Map<String, Any?>): ProxyCommandSender {
-        return adaptPlayer(event.player)
-    }
-
-    override fun onCheck(pipeTask: IPipeTask, event: PlayerBucketEntityEvent, map: Map<String, Any?>): Boolean {
-        return pipeTask.scriptContext?.sender?.origin == event.player
-    }
 
     override fun onStart(context: ScriptContext, event: PlayerBucketEntityEvent, map: Map<String, Any?>) {
         super.onStart(context, event, map)
