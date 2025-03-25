@@ -77,8 +77,6 @@ taboolib {
 repositories {
     mavenCentral()
     maven { url = uri("https://repo.tabooproject.org/repository/releases") }
-    maven { url = uri("https://repo.codemc.io/repository/maven-releases/") }
-    maven { url = uri("https://repo.dmulloy2.net/repository/public/") }
     maven { url = uri("https://www.mcwar.cn/nexus/repository/maven-public/") }
 }
 
@@ -90,17 +88,17 @@ dependencies {
 
     compileOnly("com.gitee.redischannel:RedisChannel:1.1:api")
     compileOnly("ink.ptms.adyeshach:plugin:2.0.26:api")
-    compileOnly("com.gitee:DragonCore:2.6.2.9")
-    compileOnly("com.germ:germplugin:4.4.1-5")
-    compileOnly("com.gitee:MythicMobs:4.11.0")
-    compileOnly("com.gitee:DragonArmourers:6.72")
-    compileOnly("com.gitee:GDDTitle:2.1")
-    compileOnly("com.gitee:GlowAPI:1.4.6")
-    compileOnly("com.gitee:DungeonPlus:1.3.9")
-    compileOnly("ac.github.oa:OriginAttribute:1.1.4")
-    compileOnly("org.serverct:ersha:3.3.3.0")
-    compileOnly("com.github.retrooper:packetevents-spigot:2.7.0")
-    compileOnly("com.comphenix.protocol:ProtocolLib:5.3.0")
+    compileOnly("org.eldergod.ext:DragonCore:2.6.2.9")
+    compileOnly("org.eldergod.ext:GermPlugin:4.4.1-5")
+    compileOnly("org.eldergod.ext:MythicMobs:4.11.0")
+    compileOnly("org.eldergod.ext:DragonArmourers:6.72")
+    compileOnly("org.eldergod.ext:GDDTitle:2.1")
+    compileOnly("org.eldergod.ext:GlowAPI:1.4.6")
+    compileOnly("org.eldergod.ext:OriginAttribute:1.1.4")
+    compileOnly("org.eldergod.ext:AttributePlus:3.3.3.0")
+    compileOnly("org.eldergod.ext:DungeonPlus:1.4.3")
+    compileOnly("org.eldergod.ext:packetevents:2.7.0")
+    compileOnly("org.eldergod.ext:ProtocolLib:5.3.0")
 
     taboo("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3") { isTransitive = false }
     taboo("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3") { isTransitive = false }
@@ -156,7 +154,7 @@ publishing {
         }
     }
     publications {
-        create<MavenPublication>("api") {
+        create<MavenPublication>("library") {
             from(components["java"])
             artifact(tasks["kotlinSourcesJar"]) {
                 classifier = "sources"
