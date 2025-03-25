@@ -11,24 +11,20 @@ import org.serverct.ersha.api.event.AttrEntityDamageBeforeEvent
 import taboolib.library.reflex.Reflex.Companion.getProperty
 import taboolib.library.reflex.Reflex.Companion.setProperty
 
-
-const val OA_EVENT = "@OriginAttribute:Event"
-const val AP_EVENT = "@AttributePlus:Event"
-
 fun AbstractDamageEvent.isOriginAttribute(): Boolean {
-    return data.containsKey(OA_EVENT)
+    return origin is ac.github.oa.api.event.entity.EntityDamageEvent
 }
 
 fun AbstractDamageEvent.isAttributePlus(): Boolean {
-    return data.containsKey(AP_EVENT)
+    return origin is AttrEntityDamageBeforeEvent
 }
 
 fun AbstractDamageEvent.oaDamageEvent(): ac.github.oa.api.event.entity.EntityDamageEvent? {
-    return data[OA_EVENT] as? ac.github.oa.api.event.entity.EntityDamageEvent
+    return origin as? ac.github.oa.api.event.entity.EntityDamageEvent
 }
 
 fun AbstractDamageEvent.apEvent(): AttrEntityDamageBeforeEvent? {
-    return data[AP_EVENT] as? AttrEntityDamageBeforeEvent
+    return origin as? AttrEntityDamageBeforeEvent
 }
 
 fun doDamage(source: LivingEntity?, entity: LivingEntity, damageCause: DamageCause, damage: Double) {

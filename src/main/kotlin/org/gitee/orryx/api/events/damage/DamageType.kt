@@ -7,6 +7,7 @@ enum class DamageType {
     FIRE,
     REAL,
     SELF,
-    CONSOLE;
+    CONSOLE,
+    CUSTOM;
 
 }

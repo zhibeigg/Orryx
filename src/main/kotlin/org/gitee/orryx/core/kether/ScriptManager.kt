@@ -89,10 +89,10 @@ object ScriptManager {
 
     fun runScript(sender: ProxyCommandSender, parameter: IParameter, script: Script, context: (ScriptContext.() -> Unit)? = null): CompletableFuture<Any?> {
         return ScriptContext.create(script).also {
+            context?.invoke(it)
             it.sender = sender
             it.id = UUID.randomUUID().toString()
             it[PARAMETER] = parameter
-            context?.invoke(it)
         }.runActions()
     }
 
@@ -102,10 +102,10 @@ object ScriptManager {
             KetherScriptLoader().load(ScriptService, "orryx_temp_${uuid}", getBytes(it), orryxEnvironmentNamespaces)
         }
         return ScriptContext.create(script).also {
+            context?.invoke(it)
             it.sender = sender
             it.id = uuid
             it[PARAMETER] = parameter
-            context?.invoke(it)
         }.runActions()
     }
 
@@ -113,8 +113,8 @@ object ScriptManager {
         return KetherFunction.parse(
             actions,
             ScriptOptions.builder().sandbox(false).namespace(namespace = orryxEnvironmentNamespaces).sender(sender = sender).context {
-                this[PARAMETER] = parameter
                 context?.invoke(this)
+                this[PARAMETER] = parameter
             }.build()
         )
     }
@@ -123,8 +123,8 @@ object ScriptManager {
         return KetherFunction.parse(
             actions,
             ScriptOptions.builder().sandbox(false).namespace(namespace = orryxEnvironmentNamespaces).sender(sender = sender).context {
-                this[PARAMETER] = parameter
                 context?.invoke(this)
+                this[PARAMETER] = parameter
             }.build()
         )
     }

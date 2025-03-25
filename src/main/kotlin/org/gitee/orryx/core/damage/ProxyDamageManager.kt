@@ -4,7 +4,9 @@ import ac.github.oa.api.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.gitee.orryx.api.events.damage.DamageType
 import org.gitee.orryx.api.events.damage.OrryxDamageEvents
-import org.gitee.orryx.utils.*
+import org.gitee.orryx.utils.AttributePlusPlugin
+import org.gitee.orryx.utils.OriginAttributePlugin
+import org.gitee.orryx.utils.transfer
 import org.serverct.ersha.api.event.AttrEntityDamageBeforeEvent
 import org.serverct.ersha.api.event.AttrEntityDamageEvent
 import taboolib.common.platform.Ghost
@@ -40,7 +42,7 @@ object ProxyDamageManager {
         }
         if (e.isPre) {
             val event = OrryxDamageEvents.Pre(e.attacker, e.victim, e.damageMemory.totalDamage, e.damageMemory.event.origin, type)
-            event.data[OA_EVENT] = e.damageMemory
+            event.origin = e.damageMemory
             if (!event.call()) {
                 e.isCancelled = true
             }
@@ -59,7 +61,7 @@ object ProxyDamageManager {
             DamageType.PHYSICS
         }
         val event = OrryxDamageEvents.Pre(e.attacker, e.target, e.damage, null, type)
-        event.data[AP_EVENT] = e
+        event.origin = e
         if (!event.call()) {
             e.isCancelled = true
         }
