@@ -28,3 +28,11 @@ internal fun IEntity.getBukkitLivingEntity(): LivingEntity? {
 internal fun IEntity.getAdyeshachEntity(): EntityInstance? {
     return (this as? AbstractAdyeshachEntity)?.getSource()
 }
+
+internal fun Entity.abstract(): AbstractBukkitEntity {
+    return AbstractBukkitEntity(this)
+}
+
+internal fun EntityInstance.abstract(): AbstractAdyeshachEntity {
+    return AbstractAdyeshachEntity(this)
+}

@@ -1,4 +1,4 @@
-package org.gitee.orryx.core.station.triggers.bukkit
+package org.gitee.orryx.core.station.triggers
 
 import org.gitee.orryx.core.station.WikiTrigger
 import org.gitee.orryx.core.station.pipe.IPipeTrigger

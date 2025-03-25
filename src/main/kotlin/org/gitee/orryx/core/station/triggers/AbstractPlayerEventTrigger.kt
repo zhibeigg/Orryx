@@ -1,4 +1,4 @@
-package org.gitee.orryx.core.station.triggers.bukkit
+package org.gitee.orryx.core.station.triggers
 
 import org.bukkit.event.player.PlayerEvent
 import org.gitee.orryx.core.station.pipe.IPipeTask

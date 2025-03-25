@@ -1,6 +1,7 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
 import org.bukkit.event.player.PlayerBedLeaveEvent
+import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
 import org.gitee.orryx.core.targets.LocationTarget
 import org.gitee.orryx.core.wiki.Trigger
 import org.gitee.orryx.core.wiki.TriggerGroup

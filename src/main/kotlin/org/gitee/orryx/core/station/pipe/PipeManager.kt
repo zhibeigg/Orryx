@@ -50,7 +50,6 @@ object PipeManager: ClassVisitor(3) {
                 while (iterator.hasNext()) {
                     val next = iterator.next()
                     if (trigger.event in next.brokeTriggers && trigger.onCheck(next, event, emptyMap())) {
-                        trigger.onJoin(event, emptyMap())
                         next.scriptContext?.let { trigger.onStart(it, event, emptyMap()) }
                         next.broke().whenComplete { _, _ ->
                             next.scriptContext?.let { trigger.onEnd(it, event, emptyMap()) }

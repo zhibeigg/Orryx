@@ -4,7 +4,7 @@ import com.germ.germplugin.api.event.GermKeyUpEvent
 import org.gitee.orryx.core.station.Plugin
 import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.station.stations.IStation
-import org.gitee.orryx.core.station.triggers.bukkit.AbstractEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractEventTrigger
 import org.gitee.orryx.core.wiki.Trigger
 import org.gitee.orryx.core.wiki.TriggerGroup
 import org.gitee.orryx.core.wiki.Type
@@ -20,6 +20,7 @@ object GermKeyUpTrigger: AbstractEventTrigger<GermKeyUpEvent>() {
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.GERM_PLUGIN, event)
             .addParm(Type.STRING, "key", "按下的按键")
+            .addSpecialKey(Type.STRING, "keys", "按键，可写列表/单个")
             .description("玩家释放按键事件")
 
     override val clazz

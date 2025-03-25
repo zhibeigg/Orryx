@@ -1,7 +1,6 @@
 package org.gitee.orryx.core.station
 
 import org.bukkit.event.Cancellable
-import taboolib.common.platform.ProxyCommandSender
 import taboolib.module.kether.ScriptContext
 import taboolib.module.kether.extend
 
@@ -16,14 +15,6 @@ interface ITrigger<E> {
      * 监听的事件
      * */
     val clazz: Class<E>
-
-    /**
-     * 当检测通过时
-     * @param event 监听到的事件
-     * @param map 传入的特殊参数
-     * @return 执行Script的Sender
-     * */
-    fun onJoin(event: E, map: Map<String, Any?>): ProxyCommandSender
 
     /**
      * 当开始运行脚本时注入
@@ -45,6 +36,9 @@ interface ITrigger<E> {
      * @param event 监听到的事件
      * @param map 传入的特殊参数
      * */
-    fun onEnd(context: ScriptContext, event: E, map: Map<String, Any?>)
+    fun onEnd(context: ScriptContext, event: E, map: Map<String, Any?>) {
+        context["@event"] = null
+        context["isCancelled"] = null
+    }
 
 }

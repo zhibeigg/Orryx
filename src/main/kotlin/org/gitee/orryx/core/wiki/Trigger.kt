@@ -8,6 +8,7 @@ import taboolib.common.util.unsafeLazy
 class Trigger(val group: TriggerGroup, val key: String, var description: String = ""): WikiBlock {
 
     private val entries by unsafeLazy { mutableListOf<Entry>() }
+    private val specialKeyEntries by unsafeLazy { mutableListOf<Entry>() }
 
     class Entry(val type: Type, val key: String, val description: String)
 
@@ -21,6 +22,11 @@ class Trigger(val group: TriggerGroup, val key: String, var description: String 
 
     fun addParm(type: Type, key: String, description: String): Trigger {
         entries += Entry(type, key, description)
+        return this
+    }
+
+    fun addSpecialKey(type: Type, key: String, description: String): Trigger {
+        specialKeyEntries += Entry(type, key, description)
         return this
     }
 

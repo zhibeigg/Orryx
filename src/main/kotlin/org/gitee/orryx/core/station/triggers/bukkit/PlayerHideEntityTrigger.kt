@@ -2,6 +2,7 @@ package org.gitee.orryx.core.station.triggers.bukkit
 
 import org.bukkit.event.player.PlayerHideEntityEvent
 import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
+import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
 import org.gitee.orryx.core.wiki.Trigger
 import org.gitee.orryx.core.wiki.TriggerGroup
 import org.gitee.orryx.core.wiki.Type

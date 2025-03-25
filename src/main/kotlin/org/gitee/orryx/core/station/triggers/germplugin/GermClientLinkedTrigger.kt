@@ -3,7 +3,7 @@ package org.gitee.orryx.core.station.triggers.germplugin
 import com.germ.germplugin.api.event.GermClientLinkedEvent
 import org.gitee.orryx.core.station.Plugin
 import org.gitee.orryx.core.station.pipe.IPipeTask
-import org.gitee.orryx.core.station.triggers.bukkit.AbstractEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractEventTrigger
 import org.gitee.orryx.core.wiki.Trigger
 import org.gitee.orryx.core.wiki.TriggerGroup
 import org.gitee.orryx.core.wiki.Type

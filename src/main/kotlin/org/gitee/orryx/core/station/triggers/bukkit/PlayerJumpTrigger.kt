@@ -1,6 +1,7 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
 import org.gitee.orryx.core.station.pipe.IPipeTask
+import org.gitee.orryx.core.station.triggers.AbstractEventTrigger
 import org.gitee.orryx.core.wiki.Trigger
 import org.gitee.orryx.core.wiki.TriggerGroup
 import taboolib.common.platform.ProxyCommandSender
