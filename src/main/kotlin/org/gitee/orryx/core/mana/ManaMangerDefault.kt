@@ -4,11 +4,7 @@ import org.bukkit.entity.Player
 import org.gitee.orryx.api.events.player.OrryxPlayerManaEvents
 import org.gitee.orryx.core.job.IJob
 import org.gitee.orryx.core.job.JobLoaderManager
-import org.gitee.orryx.core.profile.PlayerProfileManager.orryxProfile
-import org.gitee.orryx.utils.MANA_FLAG
-import org.gitee.orryx.utils.eval
-import org.gitee.orryx.utils.flag
-import org.gitee.orryx.utils.job
+import org.gitee.orryx.utils.*
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common5.cdouble

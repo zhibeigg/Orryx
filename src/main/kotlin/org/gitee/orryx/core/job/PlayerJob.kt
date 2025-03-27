@@ -17,7 +17,8 @@ import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.key.IGroup
 import org.gitee.orryx.core.skill.IPlayerSkill
-import org.gitee.orryx.dao.cache.ICacheManager
+import org.gitee.orryx.dao.cache.ISyncCacheManager
+import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.dao.pojo.PlayerJobPO
 import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.utils.*
@@ -248,14 +249,16 @@ class PlayerJob(
         val data = createDaoData()
         if (async && !GameManager.shutdown) {
             saveScope.launch {
+                MemoryCache.savePlayerJob(this@PlayerJob)
                 IStorageManager.INSTANCE.savePlayerJob(player.uniqueId, data)
-                ICacheManager.INSTANCE.savePlayerJob(player.uniqueId, data, false)
+                ISyncCacheManager.INSTANCE.savePlayerJob(player.uniqueId, data, false)
             }.invokeOnCompletion {
                 callback()
             }
         } else {
+            MemoryCache.savePlayerJob(this@PlayerJob)
             IStorageManager.INSTANCE.savePlayerJob(player.uniqueId, data)
-            ICacheManager.INSTANCE.savePlayerJob(player.uniqueId, data, false)
+            ISyncCacheManager.INSTANCE.savePlayerJob(player.uniqueId, data, false)
             callback()
         }
     }

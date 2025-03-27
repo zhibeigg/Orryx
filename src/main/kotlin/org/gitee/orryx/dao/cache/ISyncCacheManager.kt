@@ -1,46 +1,43 @@
 package org.gitee.orryx.dao.cache
 
-import com.github.benmanes.caffeine.cache.stats.CacheStats
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.dao.pojo.PlayerJobPO
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
-import org.gitee.orryx.utils.RedisChannelPlugin
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.function.info
 import taboolib.common.util.unsafeLazy
-import taboolib.common5.format
 import taboolib.module.chat.colored
 import java.util.*
 
-interface ICacheManager {
+interface ISyncCacheManager {
 
     companion object {
 
         private val type
-            get() = OrryxAPI.config.getString("CacheManager", "memory")!!.uppercase()
+            get() = OrryxAPI.config.getString("CacheManager", "DISABLE")!!.uppercase()
 
         private val lazy by unsafeLazy { type }
 
-        internal lateinit var INSTANCE: ICacheManager
+        internal lateinit var INSTANCE: ISyncCacheManager
 
         @Awake(LifeCycle.ENABLE)
         private fun loadCache() {
             INSTANCE = when(lazy) {
-                "MEMORY", "CODE" -> {
-                    info(("&e┣&7已选择代码内部缓存 &a√").colored())
-                    MemoryManager()
-                }
                 "REDIS" -> {
-                    if (RedisChannelPlugin.isEnabled) {
-                        info(("&e┣&7已选择Redis缓存 &a√").colored())
-                        RedisManager()
-                    } else {
-                        info(("&e┣&7因为未检测到RedisChannel，已自动选择代码内部缓存 &a√").colored())
-                        MemoryManager()
-                    }
+                    info(("&e┣&7已选择Redis缓存 &a√").colored())
+                    RedisManager()
+                }
+                "BROKER" -> {
+                    info(("&e┣&7已选择BROKE通道缓存 &a√").colored())
+                    error("暂不支持")
+                    //BrokerManager()
+                }
+                "DISABLE" -> {
+                    info(("&e┣&7已关闭跨服同步缓存 &a√").colored())
+                    DisableManager()
                 }
                 else -> error("未知的缓存数据库类型: $lazy")
             }
@@ -51,17 +48,6 @@ interface ICacheManager {
             if (type != lazy) {
                 info(("&e┣&6请勿在运行时修改缓存选择 &4×").colored())
             }
-        }
-
-        @Awake(LifeCycle.DISABLE)
-        private fun disable() {
-            val instance = INSTANCE as? MemoryManager ?: return
-            fun printStats(name: String, stats: CacheStats) {
-                info("&e┣&f缓存：$name &c命中率：${(stats.hitRate()*100).format(2)} % &c加载平均时间：${stats.averageLoadPenalty()/1000000} ms".colored())
-            }
-            printStats("玩家", instance.playerProfilePOCache.stats())
-            printStats("职业", instance.playerJobPOCache.stats())
-            printStats("技能", instance.playerSkillPOCache.stats())
         }
 
     }

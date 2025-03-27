@@ -9,7 +9,8 @@ import org.gitee.orryx.api.events.player.OrryxPlayerPointEvents
 import org.gitee.orryx.api.events.player.job.OrryxPlayerJobChangeEvents
 import org.gitee.orryx.core.GameManager
 import org.gitee.orryx.core.job.IPlayerJob
-import org.gitee.orryx.dao.cache.ICacheManager
+import org.gitee.orryx.dao.cache.ISyncCacheManager
+import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.utils.toSerializable
@@ -17,7 +18,12 @@ import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common.util.unsafeLazy
 import java.util.concurrent.ConcurrentMap
 
-class PlayerProfile(override val player: Player, private var privateJob: String?, private var privatePoint: Int, private val privateFlags: ConcurrentMap<String, IFlag>): IPlayerProfile {
+class PlayerProfile(
+    override val player: Player,
+    private var privateJob: String?,
+    private var privatePoint: Int,
+    private val privateFlags: ConcurrentMap<String, IFlag>
+): IPlayerProfile {
 
     override val flags: Map<String, IFlag>
         get() = privateFlags
@@ -154,14 +160,16 @@ class PlayerProfile(override val player: Player, private var privateJob: String?
         val data = createDaoData()
         if (async && !GameManager.shutdown) {
             saveScope.launch {
+                MemoryCache.savePlayerProfile(this@PlayerProfile)
                 IStorageManager.INSTANCE.savePlayerData(player.uniqueId, data)
-                ICacheManager.INSTANCE.savePlayerData(player.uniqueId, data, false)
+                ISyncCacheManager.INSTANCE.savePlayerData(player.uniqueId, data, false)
             }.invokeOnCompletion {
                 callback()
             }
         } else {
+            MemoryCache.savePlayerProfile(this@PlayerProfile)
             IStorageManager.INSTANCE.savePlayerData(player.uniqueId, data)
-            ICacheManager.INSTANCE.savePlayerData(player.uniqueId, data, false)
+            ISyncCacheManager.INSTANCE.savePlayerData(player.uniqueId, data, false)
             callback()
         }
     }

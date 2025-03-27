@@ -2,9 +2,9 @@ package org.gitee.orryx.core.profile
 
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.job.IPlayerJob
-import org.gitee.orryx.utils.EMPTY_FUNCTION
+import org.gitee.orryx.dao.cache.Saveable
 
-interface IPlayerProfile {
+interface IPlayerProfile: Saveable {
 
     /**
      * 玩家
@@ -111,12 +111,5 @@ interface IPlayerProfile {
      * @param job 玩家职业
      * */
     fun setJob(job: IPlayerJob)
-
-    /**
-     * 保存数据
-     * @param async 是否异步
-     * @param callback 完成回调
-     * */
-    fun save(async: Boolean = false, callback: () -> Unit = EMPTY_FUNCTION)
 
 }

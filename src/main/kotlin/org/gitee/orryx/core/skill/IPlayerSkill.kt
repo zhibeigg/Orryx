@@ -2,11 +2,10 @@ package org.gitee.orryx.core.skill
 
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.kether.parameter.IParameter
-import org.gitee.orryx.utils.EMPTY_FUNCTION
-import taboolib.common.platform.function.isPrimaryThread
+import org.gitee.orryx.dao.cache.Saveable
 import java.util.concurrent.CompletableFuture
 
-interface IPlayerSkill {
+interface IPlayerSkill: Saveable {
 
     /**
      * 拥有玩家
@@ -105,12 +104,5 @@ interface IPlayerSkill {
      * @return 是否成功
      * */
     fun clear(): CompletableFuture<Boolean>
-
-    /**
-     * 保存数据
-     * @param async 是否异步
-     * @param callback 完成回调
-     * */
-    fun save(async: Boolean = isPrimaryThread, callback: () -> Unit = EMPTY_FUNCTION)
 
 }

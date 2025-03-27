@@ -5,10 +5,10 @@ import org.gitee.orryx.core.experience.IExperience
 import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.key.IGroup
 import org.gitee.orryx.core.skill.IPlayerSkill
-import org.gitee.orryx.utils.EMPTY_FUNCTION
+import org.gitee.orryx.dao.cache.Saveable
 import java.util.concurrent.CompletableFuture
 
-interface IPlayerJob {
+interface IPlayerJob: Saveable {
 
     /**
      * 拥有玩家
@@ -146,12 +146,5 @@ interface IPlayerJob {
      * @return 是否成功
      * */
     fun clear(): CompletableFuture<Boolean>
-
-    /**
-     * 保存数据
-     * @param async 是否异步
-     * @param callback 完成回调
-     * */
-    fun save(async: Boolean = true, callback: () -> Unit = EMPTY_FUNCTION)
 
 }

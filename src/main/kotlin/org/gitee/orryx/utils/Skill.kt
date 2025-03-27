@@ -10,13 +10,12 @@ import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.message.PluginMessageHandler
-import org.gitee.orryx.core.profile.PlayerProfileManager.orryxProfile
 import org.gitee.orryx.core.skill.*
 import org.gitee.orryx.core.skill.skills.DirectAimSkill
 import org.gitee.orryx.core.skill.skills.DirectSkill
 import org.gitee.orryx.core.skill.skills.PressingAimSkill
 import org.gitee.orryx.core.skill.skills.PressingSkill
-import org.gitee.orryx.dao.cache.ICacheManager
+import org.gitee.orryx.dao.cache.MemoryCache
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common5.cdouble
@@ -98,9 +97,7 @@ internal fun Player.getSkill(skill: String, create: Boolean = false): IPlayerSki
 
 internal fun Player.getSkill(job: String, skill: String, create: Boolean = false): IPlayerSkill? {
     val skillLoader = SkillLoaderManager.getSkillLoader(skill) ?: return null
-    return ICacheManager.INSTANCE.getPlayerSkill(uniqueId, job, skill)?.let {
-        PlayerSkill(this, skill, job, it.level, if (it.locked && !skillLoader.isLocked) false else it.locked)
-    } ?: if (create) {
+    return MemoryCache.getPlayerSkill(this, job, skill) ?: if (create) {
         PlayerSkill(this, skill, job, skillLoader.minLevel, skillLoader.isLocked).apply {
             save(isPrimaryThread)
         }

@@ -13,7 +13,7 @@ import org.gitee.orryx.utils.playerJobSkillDataTag
 import taboolib.common.util.unsafeLazy
 import java.util.*
 
-class RedisManager: ICacheManager {
+class RedisManager: ISyncCacheManager {
 
     private val api by unsafeLazy { RedisChannelPlugin.api }
 

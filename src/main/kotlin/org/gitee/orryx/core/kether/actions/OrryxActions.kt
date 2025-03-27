@@ -4,7 +4,6 @@ import org.gitee.orryx.core.common.timer.SkillTimer
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.key.BindKeyLoaderManager
-import org.gitee.orryx.core.profile.PlayerProfileManager.orryxProfile
 import org.gitee.orryx.core.skill.SkillLoaderManager
 import org.gitee.orryx.core.wiki.Action
 import org.gitee.orryx.core.wiki.Type

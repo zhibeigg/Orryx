@@ -4,7 +4,6 @@ import com.germ.germplugin.api.dynamic.gui.*
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.job.IPlayerJob
-import org.gitee.orryx.core.profile.PlayerProfileManager.orryxProfile
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.core.ui.AbstractSkillUI

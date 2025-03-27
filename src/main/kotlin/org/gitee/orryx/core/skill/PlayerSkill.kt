@@ -11,12 +11,13 @@ import org.gitee.orryx.core.common.timer.SkillTimer
 import org.gitee.orryx.core.kether.parameter.IParameter
 import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.mana.IManaManager
-import org.gitee.orryx.core.profile.PlayerProfileManager.orryxProfile
 import org.gitee.orryx.core.skill.skills.PassiveSkill
-import org.gitee.orryx.dao.cache.ICacheManager
+import org.gitee.orryx.dao.cache.ISyncCacheManager
+import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.utils.castSkill
+import org.gitee.orryx.utils.orryxProfile
 import org.gitee.orryx.utils.runCustomAction
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common.util.unsafeLazy
@@ -155,14 +156,16 @@ class PlayerSkill(
         val data = createDaoData()
         if (async && !GameManager.shutdown) {
             saveScope.launch {
+                MemoryCache.savePlayerSkill(this@PlayerSkill)
                 IStorageManager.INSTANCE.savePlayerSkill(player.uniqueId, data)
-                ICacheManager.INSTANCE.savePlayerSkill(player.uniqueId, data, false)
+                ISyncCacheManager.INSTANCE.savePlayerSkill(player.uniqueId, data, false)
             }.invokeOnCompletion {
                 callback()
             }
         } else {
+            MemoryCache.savePlayerSkill(this@PlayerSkill)
             IStorageManager.INSTANCE.savePlayerSkill(player.uniqueId, data)
-            ICacheManager.INSTANCE.savePlayerSkill(player.uniqueId, data, false)
+            ISyncCacheManager.INSTANCE.savePlayerSkill(player.uniqueId, data, false)
             callback()
         }
     }

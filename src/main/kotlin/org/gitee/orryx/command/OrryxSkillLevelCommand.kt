@@ -1,10 +1,10 @@
 package org.gitee.orryx.command
 
 import org.gitee.orryx.core.job.JobLoaderManager
-import org.gitee.orryx.core.profile.PlayerProfileManager.orryxProfile
 import org.gitee.orryx.utils.bukkitPlayer
 import org.gitee.orryx.utils.debug
 import org.gitee.orryx.utils.getSkill
+import org.gitee.orryx.utils.orryxProfile
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.command.*
 import taboolib.common5.cint

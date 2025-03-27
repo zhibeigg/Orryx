@@ -4,7 +4,6 @@ import eos.moe.dragoncore.network.PacketSender
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.key.BindKeyLoaderManager
-import org.gitee.orryx.core.profile.PlayerProfileManager.orryxProfile
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.core.skill.SkillLevelResult
 import org.gitee.orryx.core.ui.AbstractSkillUI

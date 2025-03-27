@@ -6,9 +6,8 @@ import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.job.PlayerJob
 import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.key.IBindKey
-import org.gitee.orryx.core.profile.PlayerProfileManager.orryxProfile
 import org.gitee.orryx.core.skill.IPlayerSkill
-import org.gitee.orryx.dao.cache.ICacheManager
+import org.gitee.orryx.dao.cache.MemoryCache
 import taboolib.common.platform.function.isPrimaryThread
 import java.util.concurrent.CompletableFuture
 
@@ -49,9 +48,7 @@ fun Player.job(): IPlayerJob? {
 }
 
 fun Player.job(job: String): IPlayerJob {
-    return ICacheManager.INSTANCE.getPlayerJob(uniqueId, job)?.let {
-        PlayerJob(this, it.job, it.experience, it.group, bindKeyOfGroupToMutableMap(it.bindKeyOfGroup))
-    } ?: defaultJob(job).apply {
+    return MemoryCache.getPlayerJob(this, job) ?: defaultJob(job).apply {
         save(isPrimaryThread)
     }
 }

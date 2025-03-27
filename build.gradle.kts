@@ -1,3 +1,4 @@
+
 import io.izzel.taboolib.gradle.*
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -106,6 +107,9 @@ dependencies {
     compileOnly("com.github.ben-manes.caffeine:caffeine:2.9.3")
     compileOnly("org.joml:joml:1.10.7")
     compileOnly("com.larksuite.oapi:oapi-sdk:2.4.7")
+    //compileOnly("io.lettuce:lettuce-core:6.3.2.RELEASE")
+
+    testCompileOnly("com.github.ben-manes.caffeine:caffeine:2.9.3")
 
     compileOnly(kotlin("stdlib"))
     compileOnly(kotlin("reflect"))
