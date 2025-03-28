@@ -29,32 +29,45 @@ class DragonCoreSkillUI(override val viewer: Player, override val owner: Player)
         }
 
         fun update(viewer: Player, owner: Player) {
-            val job = owner.job() ?: return
-            val bindSkills = job.getBindSkills()
-            val keys = bindSkills.keys.sortedBy { it.sort }
-            val skills = owner.getSkills()
-
-            PacketSender.sendSyncPlaceholder(viewer, mapOf(
-                "Orryx_owner" to owner.uniqueId.toString(),
-                "Orryx_job" to job.job.name,
-                "Orryx_point" to owner.orryxProfile().point.toString(),
-                "Orryx_group" to job.group,
-                "Orryx_bind_keys" to keys.joinToString("<br>") { it.key },
-                "Orryx_bind_skills" to keys.joinToString("<br>") { bindSkills[it]?.key ?: "none" },
-                "Orryx_skills" to skills.joinToString("<br>") { it.key },
-                "Orryx_skills_name" to skills.joinToString("<br>") { it.skill.name },
-                "Orryx_skills_level" to skills.joinToString("<br>") { it.level.toString() },
-                "Orryx_skills_maxLevel" to skills.joinToString("<br>") { it.skill.maxLevel.toString() },
-                "Orryx_skills_locked" to skills.joinToString("<br>") { it.locked.toString() },
-                "Orryx_skills_point" to skills.joinToString("<br>") { it.upgradePointCheck(it.level, it.level+1).first.toString() }
-            ))
+            owner.orryxProfile { profile ->
+                owner.job { job ->
+                    job.bindSkills { bindSkills ->
+                        job.skills { skills ->
+                            val list = mutableListOf<Pair<Int, Boolean>>()
+                            skills.forEach { skill ->
+                                skill.upgradePointCheck(skill.level, skill.level+1).thenApply { pair ->
+                                    list += pair
+                                    if (list.size >= skills.size) {
+                                        val keys = bindKeys()
+                                        PacketSender.sendSyncPlaceholder(viewer, mapOf(
+                                            "Orryx_owner" to owner.uniqueId.toString(),
+                                            "Orryx_job" to job.job.name,
+                                            "Orryx_point" to profile.point.toString(),
+                                            "Orryx_group" to job.group,
+                                            "Orryx_bind_keys" to keys.joinToString("<br>") { it.key },
+                                            "Orryx_bind_skills" to keys.joinToString("<br>") { bindSkills[it]?.key ?: "none" },
+                                            "Orryx_skills" to skills.joinToString("<br>") { it.key },
+                                            "Orryx_skills_name" to skills.joinToString("<br>") { it.skill.name },
+                                            "Orryx_skills_level" to skills.joinToString("<br>") { it.level.toString() },
+                                            "Orryx_skills_maxLevel" to skills.joinToString("<br>") { it.skill.maxLevel.toString() },
+                                            "Orryx_skills_locked" to skills.joinToString("<br>") { it.locked.toString() },
+                                            "Orryx_skills_point" to list.joinToString("<br>") { it.first.toString() }
+                                        ))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         fun sendDescription(viewer: Player, owner: Player, skill: String) {
-            val playerSkill = owner.getSkill(skill) ?: return
-            PacketSender.sendSyncPlaceholder(viewer, mapOf(
-                "Orryx_description" to playerSkill.getDescriptionComparison().joinToString("\n")
-            ))
+            owner.skill(skill) { playerSkill ->
+                PacketSender.sendSyncPlaceholder(viewer, mapOf(
+                    "Orryx_description" to playerSkill.getDescriptionComparison().joinToString("\n")
+                ))
+            }
         }
 
         fun bindSkill(viewer: Player, owner: Player, group: String, bindKey: String, skill: String) {
@@ -62,7 +75,7 @@ class DragonCoreSkillUI(override val viewer: Player, override val owner: Player)
                 owner.job { job ->
                     BindKeyLoaderManager.getGroup(group)?.let { group ->
                         BindKeyLoaderManager.getBindKey(bindKey)?.let { bindKey ->
-                            owner.getSkill(skill)?.let { skill ->
+                            owner.skill(skill) { skill ->
                                 job.setBindKey(skill, group, bindKey).thenRun {
                                     update(viewer, owner)
                                     IUIManager.INSTANCE.getSkillHUD(viewer)?.apply {
@@ -80,7 +93,7 @@ class DragonCoreSkillUI(override val viewer: Player, override val owner: Player)
             if (viewer == owner || viewer.isOp) {
                 owner.job { job ->
                     BindKeyLoaderManager.getGroup(group)?.let { group ->
-                        owner.getSkill(skill)?.let { skill ->
+                        owner.skill(skill) { skill ->
                             job.unBindKey(skill, group).thenRun {
                                 update(viewer, owner)
                                 IUIManager.INSTANCE.getSkillHUD(viewer)?.apply {

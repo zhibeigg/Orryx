@@ -3,6 +3,7 @@ package org.gitee.orryx.core.ui.bukkit
 import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
 import org.gitee.orryx.core.job.IPlayerJob
+import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.core.ui.AbstractSkillUI
@@ -16,6 +17,7 @@ import taboolib.module.ui.buildMenu
 import taboolib.module.ui.openMenu
 import taboolib.module.ui.type.impl.PageableChestImpl
 import taboolib.platform.util.buildItem
+import java.util.concurrent.CompletableFuture
 import kotlin.jvm.optionals.getOrNull
 import kotlin.math.ceil
 
@@ -69,21 +71,31 @@ open class BukkitSkillUI(override val viewer: Player, override val owner: Player
         get() = viewer == owner || viewer.isOp
 
     protected open lateinit var inventory: Inventory
-    private val job: IPlayerJob?
-        get() = owner.job()
+    private lateinit var job: IPlayerJob
+    private lateinit var skills: List<IPlayerSkill>
+    private lateinit var bindSkills: MutableMap<IBindKey, IPlayerSkill?>
 
     override fun open() {
-        viewer.openMenu(build(job ?: return).also { inventory = it })
+        owner.job {
+            job = it
+            it.skills { skills ->
+                this.skills = skills
+                it.bindSkills { bindSkills ->
+                    this.bindSkills = bindSkills.toMutableMap()
+                    viewer.openMenu(build().also { inventory = it })
+                }
+            }
+        }
     }
 
-    protected open fun build(job: IPlayerJob): Inventory {
+    protected open fun build(): Inventory {
         return buildMenu<PageableChestImpl<IPlayerSkill>>(ui.title) {
             rows(6)
             handLocked(false)
             menuLocked(true)
 
             slots(ui.skills.slots)
-            elements { owner.getSkills() }
+            elements { skills }
 
             ui.space.slots.forEach {
                 set(it) {
@@ -121,9 +133,8 @@ open class BukkitSkillUI(override val viewer: Player, override val owner: Player
                 }
             }
 
-            val bindSkillMap = job.getBindSkills()
             bindKeys().forEachIndexed { index, iBindKey ->
-                bindSkillMap[iBindKey]?.apply {
+                bindSkills[iBindKey]?.apply {
                     set(ui.bindSkills.slots[index]) {
                         buildItem(XMaterial.matchXMaterial(skill.xMaterial).orElse(XMaterial.BLAZE_ROD)) {
                             name = getIcon()
@@ -177,7 +188,12 @@ open class BukkitSkillUI(override val viewer: Player, override val owner: Player
                     if (bindKeys.lastIndex < index) return@onClick
                     when {
                         event.clickEvent().isLeftClick && cursorSkill != null -> {
-                            bindSkill(job, cursorSkill!!.skill.key, job.group, bindKeys[index].key).thenAccept { success ->
+                            bindSkill(
+                                job,
+                                cursorSkill!!.skill.key,
+                                job.group,
+                                bindKeys[index].key
+                            ).thenAccept { success ->
                                 if (success) {
                                     update()
                                     viewer.setItemOnCursor(null)
@@ -185,13 +201,16 @@ open class BukkitSkillUI(override val viewer: Player, override val owner: Player
                                 }
                             }
                         }
+
                         event.clickEvent().isRightClick -> {
-                            owner.getGroupSkills(job.group)[bindKeys[index]]?.let {
-                                unBindSkill(job, it, job.group).thenAccept { success ->
-                                    if (success) {
-                                        update()
-                                        viewer.setItemOnCursor(null)
-                                        cursorSkill = null
+                            owner.getGroupSkills(job.group).thenApply {
+                                it?.get(bindKeys[index])?.let { skill ->
+                                    unBindSkill(job, skill, job.group).thenAccept { success ->
+                                        if (success) {
+                                            update()
+                                            viewer.setItemOnCursor(null)
+                                            cursorSkill = null
+                                        }
                                     }
                                 }
                             }
@@ -212,9 +231,11 @@ open class BukkitSkillUI(override val viewer: Player, override val owner: Player
     }
 
     override fun update() {
-        val bindSkillMap = (job ?: return).getBindSkills()
+        owner.job {
+            it.getBindSkills()
+        }
         bindKeys().forEachIndexed { index, iBindKey ->
-            bindSkillMap[iBindKey]?.apply {
+            bindSkills[iBindKey]?.apply {
                 inventory.setItem(
                     ui.bindSkills.slots[index],
                     buildItem(XMaterial.matchXMaterial(skill.xMaterial).orElse(XMaterial.BLAZE_ROD)) {

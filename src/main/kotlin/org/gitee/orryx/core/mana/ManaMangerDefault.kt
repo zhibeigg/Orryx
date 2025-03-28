@@ -13,13 +13,16 @@ import java.util.concurrent.CompletableFuture
 
 class ManaMangerDefault: IManaManager {
 
-    override fun getMana(player: Player): Double {
-        return player.orryxProfile().getFlag(MANA_FLAG)?.value.cdouble
+    override fun getMana(player: Player): CompletableFuture<Double> {
+        return player.orryxProfile {
+            it.getFlag(MANA_FLAG)?.value.cdouble
+        }
     }
 
-    override fun getMaxMana(player: Player): Double {
-        val job = player.job() ?: return 0.0
-        return job.getMaxMana()
+    override fun getMaxMana(player: Player): CompletableFuture<Double> {
+        return player.job().thenApply {
+            it?.getMaxMana() ?: 0.0
+        }
     }
 
     override fun getMaxMana(sender: ProxyCommandSender, job: IJob, level: Int): Double {
@@ -33,93 +36,117 @@ class ManaMangerDefault: IManaManager {
 
     override fun giveMana(player: Player, mana: Double): CompletableFuture<ManaResult> {
         if (mana < 0) return takeMana(player, -mana)
-        val profile = player.orryxProfile()
-        val job = player.job() ?: return CompletableFuture.completedFuture(ManaResult.NO_JOB)
         val future = CompletableFuture<ManaResult>()
-        val event = OrryxPlayerManaEvents.Up.Pre(player, profile, mana)
-        if (event.call()) {
-            profile.setFlag(MANA_FLAG, (profile.getFlag(MANA_FLAG)?.value.cdouble + event.mana).coerceAtLeast(0.0).coerceAtMost(job.getMaxMana()).flag(true), false)
-            profile.save(isPrimaryThread) {
-                future.complete(ManaResult.SUCCESS)
-                OrryxPlayerManaEvents.Up.Post(player, profile, event.mana)
+        player.orryxProfile { profile ->
+            player.job { job ->
+                val event = OrryxPlayerManaEvents.Up.Pre(player, profile, mana)
+                if (event.call()) {
+                    profile.setFlag(MANA_FLAG, (profile.getFlag(MANA_FLAG)?.value.cdouble + event.mana).coerceAtLeast(0.0).coerceAtMost(job.getMaxMana()).flag(true), false)
+                    profile.save(isPrimaryThread) {
+                        future.complete(ManaResult.SUCCESS)
+                        OrryxPlayerManaEvents.Up.Post(player, profile, event.mana)
+                    }
+                } else {
+                    future.complete(ManaResult.CANCELLED)
+                }
+            }.thenApply {
+                it ?: future.complete(ManaResult.NO_JOB)
             }
-        } else {
-            future.complete(ManaResult.CANCELLED)
         }
         return future
     }
 
     override fun takeMana(player: Player, mana: Double): CompletableFuture<ManaResult> {
         if (mana < 0) return giveMana(player, -mana)
-        val profile = player.orryxProfile()
-        val job = player.job() ?: return CompletableFuture.completedFuture(ManaResult.NO_JOB)
         val future = CompletableFuture<ManaResult>()
-        val event = OrryxPlayerManaEvents.Down.Pre(player, profile, mana)
-        if (event.call()) {
-            val less = profile.getFlag(MANA_FLAG)?.value.cdouble - event.mana
-            profile.setFlag(MANA_FLAG, less.coerceAtLeast(0.0).coerceAtMost(job.getMaxMana()).flag(true), false)
-            profile.save(isPrimaryThread) {
-                future.complete(if (less >= 0) {
-                    ManaResult.SUCCESS
+        player.orryxProfile { profile ->
+            player.job { job ->
+                val event = OrryxPlayerManaEvents.Down.Pre(player, profile, mana)
+                if (event.call()) {
+                    val less = profile.getFlag(MANA_FLAG)?.value.cdouble - event.mana
+                    profile.setFlag(MANA_FLAG, less.coerceAtLeast(0.0).coerceAtMost(job.getMaxMana()).flag(true), false)
+                    profile.save(isPrimaryThread) {
+                        future.complete(
+                            if (less >= 0) {
+                                ManaResult.SUCCESS
+                            } else {
+                                ManaResult.NOT_ENOUGH
+                            }
+                        )
+                        OrryxPlayerManaEvents.Down.Post(player, profile, event.mana)
+                    }
                 } else {
-                    ManaResult.NOT_ENOUGH
-                })
-                OrryxPlayerManaEvents.Down.Post(player, profile, event.mana)
+                    future.complete(ManaResult.CANCELLED)
+                }
+            }.thenApply {
+                it ?: future.complete(ManaResult.NO_JOB)
             }
-        } else {
-            future.complete(ManaResult.CANCELLED)
         }
         return future
     }
 
     override fun setMana(player: Player, mana: Double): CompletableFuture<ManaResult> {
-        val playerMana = getMana(player)
-        return when {
-            mana > playerMana -> giveMana(player, mana - playerMana)
-            mana < playerMana -> takeMana(player, playerMana - mana)
-            else -> CompletableFuture.completedFuture(ManaResult.SAME)
+        val future = CompletableFuture<ManaResult>()
+        getMana(player).thenApply { playerMana ->
+            when {
+                mana > playerMana -> giveMana(player, mana - playerMana)
+                mana < playerMana -> takeMana(player, playerMana - mana)
+                else -> CompletableFuture.completedFuture(ManaResult.SAME)
+            }.thenApply {
+                future.complete(it)
+            }
+        }
+        return future
+    }
+
+    override fun haveMana(player: Player, mana: Double): CompletableFuture<Boolean> {
+        return player.orryxProfile { profile ->
+            val less = profile.getFlag(MANA_FLAG)?.value.cdouble - mana
+            less >= 0
         }
     }
 
-    override fun haveMana(player: Player, mana: Double): Boolean {
-        val profile = player.orryxProfile()
-        val less = profile.getFlag(MANA_FLAG)?.value.cdouble - mana
-        return less >= 0
-    }
-
     override fun reginMana(player: Player): CompletableFuture<Double> {
-        val profile = player.orryxProfile()
-        val job = player.job()
-        val mana = job?.getReginMana() ?: return CompletableFuture.completedFuture(0.0)
         val future = CompletableFuture<Double>()
-        val event = OrryxPlayerManaEvents.Regin.Pre(player, profile, mana)
-        if (event.call()) {
-            profile.setFlag(MANA_FLAG, (profile.getFlag(MANA_FLAG)?.value.cdouble + mana).coerceAtMost(job.getMaxMana()).flag(true), false)
-            profile.save(isPrimaryThread) {
-                future.complete(mana)
-                OrryxPlayerManaEvents.Regin.Post(player, profile, event.reginMana).call()
+        player.orryxProfile { profile ->
+            player.job { job ->
+                val mana = job.getReginMana()
+                val event = OrryxPlayerManaEvents.Regin.Pre(player, profile, mana)
+                if (event.call()) {
+                    profile.setFlag(MANA_FLAG, (profile.getFlag(MANA_FLAG)?.value.cdouble + mana).coerceAtMost(job.getMaxMana()).flag(true), false)
+                    profile.save(isPrimaryThread) {
+                        future.complete(mana)
+                        OrryxPlayerManaEvents.Regin.Post(player, profile, event.reginMana).call()
+                    }
+                } else {
+                    future.complete(0.0)
+                }
+            }.thenApply {
+                it ?: future.complete(0.0)
             }
-        } else {
-            future.complete(0.0)
         }
         return future
     }
 
     override fun healMana(player: Player): CompletableFuture<Double> {
-        val profile = player.orryxProfile()
-        val job = player.job()
-        val mana = job?.getMaxMana() ?: return CompletableFuture.completedFuture(0.0)
         val future = CompletableFuture<Double>()
-        val add = mana - profile.getFlag(MANA_FLAG)?.value.cdouble
-        val event = OrryxPlayerManaEvents.Heal.Pre(player, profile, add)
-        if (event.call()) {
-            profile.setFlag(MANA_FLAG, mana.flag(true), false)
-            profile.save(isPrimaryThread) {
-                future.complete(add)
-                OrryxPlayerManaEvents.Heal.Post(player, profile, event.healMana).call()
+        player.orryxProfile { profile ->
+            player.job { job ->
+                val mana = job.getMaxMana()
+                val add = mana - profile.getFlag(MANA_FLAG)?.value.cdouble
+                val event = OrryxPlayerManaEvents.Heal.Pre(player, profile, add)
+                if (event.call()) {
+                    profile.setFlag(MANA_FLAG, mana.flag(true), false)
+                    profile.save(isPrimaryThread) {
+                        future.complete(add)
+                        OrryxPlayerManaEvents.Heal.Post(player, profile, event.healMana).call()
+                    }
+                } else {
+                    future.complete(0.0)
+                }
+            }.thenApply {
+                it ?: future.complete(0.0)
             }
-        } else {
-            future.complete(0.0)
         }
         return future
     }

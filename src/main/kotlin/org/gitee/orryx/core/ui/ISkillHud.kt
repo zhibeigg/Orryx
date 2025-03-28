@@ -44,7 +44,7 @@ interface ISkillHud {
      * 获取展示的技能
      * @return 绑定按键对照技能
      * */
-    fun getShowSkills(): Map<IBindKey, String?>
+    fun getShowSkills(): CompletableFuture<Map<IBindKey, String?>?>
 
     /**
      * 获取技能冷却倒计时

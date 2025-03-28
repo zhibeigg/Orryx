@@ -70,7 +70,9 @@ object FlagActions {
         return actionFuture { future ->
             run(key).str { key ->
                 containerOrSelf(they) {
-                    future.complete(it.firstInstance<PlayerTarget>().getSource().orryxProfile().getFlag(key)?.value)
+                    it.firstInstance<PlayerTarget>().getSource().orryxProfile { profile ->
+                        future.complete(profile.getFlag(key)?.value)
+                    }
                 }
             }
         }
@@ -83,16 +85,17 @@ object FlagActions {
         val timeout = reader.nextHeadAction("timeout", 0)
         val they = reader.nextTheyContainerOrNull()
 
-        return actionFuture { future ->
+        return actionNow {
             run(key).str { key ->
                 run(value).thenAccept { value ->
                     run(persistence).bool { persistence ->
                         run(timeout).long { timeout ->
                             containerOrSelf(they) {
-                                it.forEachInstance<PlayerTarget> {
-                                    value?.flag(persistence, timeout*50)?.let { it1 -> it.getSource().orryxProfile().setFlag(key, it1) }
+                                it.forEachInstance<PlayerTarget> { target ->
+                                    target.getSource().orryxProfile { profile ->
+                                        value?.flag(persistence, timeout*50)?.let { it1 -> profile.setFlag(key, it1) }
+                                    }
                                 }
-                                future.complete(value)
                             }
                         }
                     }
@@ -108,7 +111,9 @@ object FlagActions {
         return actionFuture { future ->
             run(key).str { key ->
                 containerOrSelf(they) {
-                    future.complete(it.firstInstance<PlayerTarget>().getSource().orryxProfile().removeFlag(key))
+                    it.firstInstance<PlayerTarget>().getSource().orryxProfile { profile ->
+                        future.complete(profile.removeFlag(key))
+                    }
                 }
             }
         }
@@ -120,7 +125,9 @@ object FlagActions {
         return actionNow {
             containerOrSelf(they) {
                 it.forEachInstance<PlayerTarget> { target ->
-                    target.getSource().orryxProfile().clearFlags()
+                    target.getSource().orryxProfile { profile ->
+                        profile.clearFlags()
+                    }
                 }
             }
         }
@@ -133,13 +140,15 @@ object FlagActions {
         return actionFuture { future ->
             run(key).str { key ->
                 containerOrSelf(they) {
-                    val flag = it.firstInstance<PlayerTarget>().getSource().orryxProfile().getFlag(key)
+                    it.firstInstance<PlayerTarget>().getSource().orryxProfile { profile ->
+                        val flag = profile.getFlag(key)
 
-                    future.complete(
-                        flag?.let {
-                            (System.currentTimeMillis() - flag.timestamp)/50
-                        } ?: 0
-                    )
+                        future.complete(
+                            flag?.let {
+                                (System.currentTimeMillis() - flag.timestamp) / 50
+                            } ?: 0
+                        )
+                    }
                 }
             }
         }
@@ -152,13 +161,15 @@ object FlagActions {
         return actionFuture { future ->
             run(key).str { key ->
                 containerOrSelf(they) {
-                    val flag = it.firstInstance<PlayerTarget>().getSource().orryxProfile().getFlag(key)
+                    it.firstInstance<PlayerTarget>().getSource().orryxProfile { profile ->
+                        val flag = profile.getFlag(key)
 
-                    future.complete(
-                        flag?.let {
-                            (flag.timestamp + flag.timeout - System.currentTimeMillis())/50
-                        } ?: 0
-                    )
+                        future.complete(
+                            flag?.let {
+                                (flag.timestamp + flag.timeout - System.currentTimeMillis()) / 50
+                            } ?: 0
+                        )
+                    }
                 }
             }
         }

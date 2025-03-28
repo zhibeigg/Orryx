@@ -74,73 +74,76 @@ open class GermPluginSkillHud(override val viewer: Player, override val owner: P
             update()
         }
 
-        val bind = owner.job()?.getBindSkills() ?: return
-        val bindKeys = bindKeys()
-        val width = StringBuilder()
-        bindKeys.forEach {
-            val bindKeyBackground = GermGuiTexture("skillBindKeyH-background-${it.key}").copyFrom(bindKeyBackgroundBase)
-            val bindKeyLabel = GermGuiLabel("skillBindKeyH-label-${it.key}").copyFrom(bindKeyLabelBase)
-            val bindKeyIcon = GermGuiTexture("skillBindKeyH-icon-${it.key}").copyFrom(bindKeyIconBase)
-            val bindKeyCooldown = GermGuiColor("skillBindKeyH-cooldown-${it.key}").copyFrom(bindKeyCooldownBase)
-            val bindKeyCooldownLabel = GermGuiLabel("skillBindKeyH-cooldown-label-${it.key}").copyFrom(bindKeyCooldownLabelBase)
+        owner.job { job ->
+            job.bindSkills { bind ->
+                val bindKeys = bindKeys()
+                val width = StringBuilder()
+                bindKeys.forEach {
+                    val bindKeyBackground = GermGuiTexture("skillBindKeyH-background-${it.key}").copyFrom(bindKeyBackgroundBase)
+                    val bindKeyLabel = GermGuiLabel("skillBindKeyH-label-${it.key}").copyFrom(bindKeyLabelBase)
+                    val bindKeyIcon = GermGuiTexture("skillBindKeyH-icon-${it.key}").copyFrom(bindKeyIconBase)
+                    val bindKeyCooldown = GermGuiColor("skillBindKeyH-cooldown-${it.key}").copyFrom(bindKeyCooldownBase)
+                    val bindKeyCooldownLabel = GermGuiLabel("skillBindKeyH-cooldown-label-${it.key}").copyFrom(bindKeyCooldownLabelBase)
 
-            bindKeyBackground.enable = true
-            bindKeyLabel.setText(it.key)
-            bindKeyLabel.enable = true
+                    bindKeyBackground.enable = true
+                    bindKeyLabel.setText(it.key)
+                    bindKeyLabel.enable = true
 
-            val canvas = GermGuiCanvas("skillBindKeyH-canvas-${it.key}")
+                    val canvas = GermGuiCanvas("skillBindKeyH-canvas-${it.key}")
 
-            val skill = bind[it]
-            if (bind[it] != null) {
-                bindKeyIcon.path = bindKeyIcon.path.replace("{skill}", skill!!.key)
-                bindKeyIcon.enable = true
+                    val skill = bind[it]
+                    if (bind[it] != null) {
+                        bindKeyIcon.path = bindKeyIcon.path.replace("{skill}", skill!!.key)
+                        bindKeyIcon.enable = true
 
-                val cooldown = skillCooldownMap[owner.uniqueId]?.get(skill.key)
-                bindKeyCooldown.tickDos = listOf(
-                    "update<->${skillBindCanvas.indexName}\$${canvas.indexName}\$${bindKeyCooldown.indexName}@height@${bindKeyIcon.height}*(max(${cooldown?.getOverStamp(owner) ?: 0}-%time_now%,0)/${cooldown?.max ?: 1})",
-                    "update<->${skillBindCanvas.indexName}\$${canvas.indexName}\$${bindKeyCooldown.indexName}@locationY@${bindKeyCooldown.locationY}+${bindKeyIcon.height}*(1-(max(${cooldown?.getOverStamp(owner) ?: 0}-%time_now%,0)/${cooldown?.max ?: 1}))"
-                )
-                bindKeyCooldown.enable = true
+                        val cooldown = skillCooldownMap[owner.uniqueId]?.get(skill.key)
+                        bindKeyCooldown.tickDos = listOf(
+                            "update<->${skillBindCanvas.indexName}\$${canvas.indexName}\$${bindKeyCooldown.indexName}@height@${bindKeyIcon.height}*(max(${cooldown?.getOverStamp(owner) ?: 0}-%time_now%,0)/${cooldown?.max ?: 1})",
+                            "update<->${skillBindCanvas.indexName}\$${canvas.indexName}\$${bindKeyCooldown.indexName}@locationY@${bindKeyCooldown.locationY}+${bindKeyIcon.height}*(1-(max(${cooldown?.getOverStamp(owner) ?: 0}-%time_now%,0)/${cooldown?.max ?: 1}))"
+                        )
+                        bindKeyCooldown.enable = true
 
-                bindKeyCooldownLabel.setText("&c%countdown2_${cooldown?.getOverStamp(owner) ?: 0}%")
-                bindKeyCooldownLabel.enable = "notStr(%countdown2_${cooldown?.getOverStamp(owner) ?: 0}%,0.0s)"
+                        bindKeyCooldownLabel.setText("&c%countdown2_${cooldown?.getOverStamp(owner) ?: 0}%")
+                        bindKeyCooldownLabel.enable = "notStr(%countdown2_${cooldown?.getOverStamp(owner) ?: 0}%,0.0s)"
+                    }
+
+                    canvas.width = "%${screen.guiName}_${skillBindCanvas.indexName}$${canvas.indexName}$${bindKeyBackground.indexName}_width%"
+                    canvas.height = "%${screen.guiName}_${skillBindCanvas.indexName}$${canvas.indexName}$${bindKeyBackground.indexName}_height%"
+                    canvas.addGuiPart(bindKeyBackground)
+                    canvas.addGuiPart(bindKeyLabel)
+                    canvas.addGuiPart(bindKeyIcon)
+                    canvas.addGuiPart(bindKeyCooldown)
+                    canvas.addGuiPart(bindKeyCooldownLabel)
+                    canvas.enable = true
+
+                    width.append(canvas.width)
+                    width.append('+')
+
+                    skillBindCanvas.addGuiPart(canvas)
+                }
+                val canvas = screen.pickPart<GermGuiCanvas>("canvasH")
+                width.append("${skillBindCanvas.srcLayout.getString("gapX", "0")!!}*${bindKeys.size - 1}")
+                skillBindCanvas.width = canvas.width
+                skillBindCanvas.height = canvas.height
+                skillBindCanvas.enable = true
+
+                screen.options.drag.setWidth(canvas.width)
+                screen.options.drag.setHeight(canvas.height)
+
+                checkButton.locationX = canvas.locationX
+                checkButton.locationY = canvas.locationY
+                checkButton.width = canvas.width
+                checkButton.height = canvas.height
+
+                canvas.pickPart<GermGuiTexture>("background-center").width = width.toString()
+                canvas.enable = true
+                submitAsync {
+                    screen.sendDos(listOf(
+                        "updateOption<->OrryxSkillHUD@dragWidth@%OrryxSkillHUD_canvasH\$background-left_width%+%OrryxSkillHUD_canvasH\$background-center_width%+%OrryxSkillHUD_canvasH\$background-right_width%",
+                        "updateOption<->OrryxSkillHUD@dragHeight@%OrryxSkillHUD_canvasH\$background-left_height%"
+                    ))
+                }
             }
-
-            canvas.width = "%${screen.guiName}_${skillBindCanvas.indexName}$${canvas.indexName}$${bindKeyBackground.indexName}_width%"
-            canvas.height = "%${screen.guiName}_${skillBindCanvas.indexName}$${canvas.indexName}$${bindKeyBackground.indexName}_height%"
-            canvas.addGuiPart(bindKeyBackground)
-            canvas.addGuiPart(bindKeyLabel)
-            canvas.addGuiPart(bindKeyIcon)
-            canvas.addGuiPart(bindKeyCooldown)
-            canvas.addGuiPart(bindKeyCooldownLabel)
-            canvas.enable = true
-
-            width.append(canvas.width)
-            width.append('+')
-
-            skillBindCanvas.addGuiPart(canvas)
-        }
-        val canvas = screen.pickPart<GermGuiCanvas>("canvasH")
-        width.append("${skillBindCanvas.srcLayout.getString("gapX", "0")!!}*${bindKeys.size - 1}")
-        skillBindCanvas.width = canvas.width
-        skillBindCanvas.height = canvas.height
-        skillBindCanvas.enable = true
-
-        screen.options.drag.setWidth(canvas.width)
-        screen.options.drag.setHeight(canvas.height)
-
-        checkButton.locationX = canvas.locationX
-        checkButton.locationY = canvas.locationY
-        checkButton.width = canvas.width
-        checkButton.height = canvas.height
-
-        canvas.pickPart<GermGuiTexture>("background-center").width = width.toString()
-        canvas.enable = true
-        submitAsync {
-            screen.sendDos(listOf(
-                "updateOption<->OrryxSkillHUD@dragWidth@%OrryxSkillHUD_canvasH\$background-left_width%+%OrryxSkillHUD_canvasH\$background-center_width%+%OrryxSkillHUD_canvasH\$background-right_width%",
-                "updateOption<->OrryxSkillHUD@dragHeight@%OrryxSkillHUD_canvasH\$background-left_height%"
-            ))
         }
     }
 
@@ -158,70 +161,87 @@ open class GermPluginSkillHud(override val viewer: Player, override val owner: P
             update()
         }
 
-        val bind = owner.job()?.getBindSkills() ?: return
-        val bindKeys = bindKeys()
-        val height = StringBuilder()
-        bindKeys.forEach {
-            val bindKeyBackground = GermGuiTexture("skillBindKeyV-background-${it.key}").copyFrom(bindKeyBackgroundBase)
-            val bindKeyLabel = GermGuiLabel("skillBindKeyV-label-${it.key}").copyFrom(bindKeyLabelBase)
-            val bindKeyIcon = GermGuiTexture("skillBindKeyV-icon-${it.key}").copyFrom(bindKeyIconBase)
-            val bindKeyCooldown = GermGuiColor("skillBindKeyV-cooldown-${it.key}").copyFrom(bindKeyCooldownBase)
-            val bindKeyCooldownLabel = GermGuiLabel("skillBindKeyV-cooldown-label-${it.key}").copyFrom(bindKeyCooldownLabelBase)
+        owner.job { job ->
+            job.bindSkills { bind ->
+                val bindKeys = bindKeys()
+                val height = StringBuilder()
+                bindKeys.forEach {
+                    val bindKeyBackground =
+                        GermGuiTexture("skillBindKeyV-background-${it.key}").copyFrom(bindKeyBackgroundBase)
+                    val bindKeyLabel = GermGuiLabel("skillBindKeyV-label-${it.key}").copyFrom(bindKeyLabelBase)
+                    val bindKeyIcon = GermGuiTexture("skillBindKeyV-icon-${it.key}").copyFrom(bindKeyIconBase)
+                    val bindKeyCooldown = GermGuiColor("skillBindKeyV-cooldown-${it.key}").copyFrom(bindKeyCooldownBase)
+                    val bindKeyCooldownLabel =
+                        GermGuiLabel("skillBindKeyV-cooldown-label-${it.key}").copyFrom(bindKeyCooldownLabelBase)
 
-            bindKeyBackground.enable = true
-            bindKeyLabel.setText(it.key)
-            bindKeyLabel.enable = true
+                    bindKeyBackground.enable = true
+                    bindKeyLabel.setText(it.key)
+                    bindKeyLabel.enable = true
 
-            val canvas = GermGuiCanvas("skillBindKeyV-canvas-${it.key}")
+                    val canvas = GermGuiCanvas("skillBindKeyV-canvas-${it.key}")
 
-            val skill = bind[it]
-            if (bind[it] != null) {
-                bindKeyIcon.path = bindKeyIcon.path.replace("{skill}", skill!!.key)
-                bindKeyIcon.enable = true
+                    val skill = bind[it]
+                    if (bind[it] != null) {
+                        bindKeyIcon.path = bindKeyIcon.path.replace("{skill}", skill!!.key)
+                        bindKeyIcon.enable = true
 
-                val cooldown = skillCooldownMap[owner.uniqueId]?.get(skill.key)
-                bindKeyCooldown.tickDos = listOf(
-                    "update<->${skillBindCanvas.indexName}\$${canvas.indexName}\$${bindKeyCooldown.indexName}@height@${bindKeyIcon.height}*(max(${cooldown?.getOverStamp(owner) ?: 0}-%time_now%,0)/${cooldown?.max ?: 1})",
-                    "update<->${skillBindCanvas.indexName}\$${canvas.indexName}\$${bindKeyCooldown.indexName}@locationY@${bindKeyCooldown.locationY}+${bindKeyIcon.height}*(1-(max(${cooldown?.getOverStamp(owner) ?: 0}-%time_now%,0)/${cooldown?.max ?: 1}))"
-                )
-                bindKeyCooldown.enable = true
+                        val cooldown = skillCooldownMap[owner.uniqueId]?.get(skill.key)
+                        bindKeyCooldown.tickDos = listOf(
+                            "update<->${skillBindCanvas.indexName}\$${canvas.indexName}\$${bindKeyCooldown.indexName}@height@${bindKeyIcon.height}*(max(${
+                                cooldown?.getOverStamp(
+                                    owner
+                                ) ?: 0
+                            }-%time_now%,0)/${cooldown?.max ?: 1})",
+                            "update<->${skillBindCanvas.indexName}\$${canvas.indexName}\$${bindKeyCooldown.indexName}@locationY@${bindKeyCooldown.locationY}+${bindKeyIcon.height}*(1-(max(${
+                                cooldown?.getOverStamp(
+                                    owner
+                                ) ?: 0
+                            }-%time_now%,0)/${cooldown?.max ?: 1}))"
+                        )
+                        bindKeyCooldown.enable = true
 
-                bindKeyCooldownLabel.setText("&c%countdown2_${cooldown?.getOverStamp(owner) ?: 0}%")
-                bindKeyCooldownLabel.enable = "notStr(%countdown2_${cooldown?.getOverStamp(owner) ?: 0}%,0.0s)"
+                        bindKeyCooldownLabel.setText("&c%countdown2_${cooldown?.getOverStamp(owner) ?: 0}%")
+                        bindKeyCooldownLabel.enable = "notStr(%countdown2_${cooldown?.getOverStamp(owner) ?: 0}%,0.0s)"
+                    }
+
+                    canvas.width =
+                        "%${screen.guiName}_${skillBindCanvas.indexName}$${canvas.indexName}$${bindKeyBackground.indexName}_width%"
+                    canvas.height =
+                        "%${screen.guiName}_${skillBindCanvas.indexName}$${canvas.indexName}$${bindKeyBackground.indexName}_height%"
+                    canvas.addGuiPart(bindKeyBackground)
+                    canvas.addGuiPart(bindKeyLabel)
+                    canvas.addGuiPart(bindKeyIcon)
+                    canvas.addGuiPart(bindKeyCooldown)
+                    canvas.addGuiPart(bindKeyCooldownLabel)
+                    canvas.enable = true
+
+                    height.append(canvas.height)
+                    height.append('+')
+
+                    skillBindCanvas.addGuiPart(canvas)
+                }
+                val canvas = screen.pickPart<GermGuiCanvas>("canvasV")
+                height.append("${skillBindCanvas.srcLayout.getString("gapY", "0")!!}*${bindKeys.size - 1}")
+                skillBindCanvas.width = canvas.width
+                skillBindCanvas.height = canvas.height
+                skillBindCanvas.enable = true
+
+                checkButton.locationX = canvas.locationX
+                checkButton.locationY = canvas.locationY
+                checkButton.width = canvas.width
+                checkButton.height = canvas.height
+
+                canvas.pickPart<GermGuiTexture>("background-center").height = height.toString()
+                canvas.enable = true
+                submitAsync {
+                    screen.sendDos(
+                        listOf(
+                            "updateOption<->OrryxSkillHUD@dragWidth@%OrryxSkillHUD_canvasV\$background-up_width%",
+                            "updateOption<->OrryxSkillHUD@dragHeight@%OrryxSkillHUD_canvasV\$background-up_height%+%OrryxSkillHUD_canvasV\$background-center_height%+%OrryxSkillHUD_canvasV\$background-down_height%"
+                        )
+                    )
+                }
             }
-
-            canvas.width = "%${screen.guiName}_${skillBindCanvas.indexName}$${canvas.indexName}$${bindKeyBackground.indexName}_width%"
-            canvas.height = "%${screen.guiName}_${skillBindCanvas.indexName}$${canvas.indexName}$${bindKeyBackground.indexName}_height%"
-            canvas.addGuiPart(bindKeyBackground)
-            canvas.addGuiPart(bindKeyLabel)
-            canvas.addGuiPart(bindKeyIcon)
-            canvas.addGuiPart(bindKeyCooldown)
-            canvas.addGuiPart(bindKeyCooldownLabel)
-            canvas.enable = true
-
-            height.append(canvas.height)
-            height.append('+')
-
-            skillBindCanvas.addGuiPart(canvas)
-        }
-        val canvas = screen.pickPart<GermGuiCanvas>("canvasV")
-        height.append("${skillBindCanvas.srcLayout.getString("gapY", "0")!!}*${bindKeys.size - 1}")
-        skillBindCanvas.width = canvas.width
-        skillBindCanvas.height = canvas.height
-        skillBindCanvas.enable = true
-
-        checkButton.locationX = canvas.locationX
-        checkButton.locationY = canvas.locationY
-        checkButton.width = canvas.width
-        checkButton.height = canvas.height
-
-        canvas.pickPart<GermGuiTexture>("background-center").height = height.toString()
-        canvas.enable = true
-        submitAsync {
-            screen.sendDos(listOf(
-                "updateOption<->OrryxSkillHUD@dragWidth@%OrryxSkillHUD_canvasV\$background-up_width%",
-                "updateOption<->OrryxSkillHUD@dragHeight@%OrryxSkillHUD_canvasV\$background-up_height%+%OrryxSkillHUD_canvasV\$background-center_height%+%OrryxSkillHUD_canvasV\$background-down_height%"
-            ))
         }
     }
 

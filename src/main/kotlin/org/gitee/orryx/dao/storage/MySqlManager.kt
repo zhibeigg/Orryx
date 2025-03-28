@@ -7,12 +7,15 @@ import org.gitee.orryx.dao.pojo.PlayerJobPO
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.utils.*
+import taboolib.common.platform.function.isPrimaryThread
+import taboolib.common.platform.function.submitAsync
 import taboolib.common.util.unsafeLazy
 import taboolib.module.database.ColumnOptionSQL
 import taboolib.module.database.ColumnTypeSQL
 import taboolib.module.database.Table
 import taboolib.module.database.getHost
 import java.util.*
+import java.util.concurrent.CompletableFuture
 
 class MySqlManager: IStorageManager {
 
@@ -50,36 +53,103 @@ class MySqlManager: IStorageManager {
         skillsTable.createTable(dataSource)
     }
 
-    override fun getPlayerData(player: UUID): PlayerProfilePO? {
-        return playerTable.select(dataSource) {
-            where { UUID eq player.toString() }
-            rows(JOB, POINT, FLAGS)
-        }.firstOrNull {
-            PlayerProfilePO(
-                player,
-                getString(JOB),
-                getInt(POINT),
-                Json.decodeFromString(getString(FLAGS))
-            )
+    override fun getPlayerData(player: UUID): CompletableFuture<PlayerProfilePO?> {
+        val future = CompletableFuture<PlayerProfilePO?>()
+        fun read() {
+            try {
+                future.complete(playerTable.select(dataSource) {
+                    where { UUID eq player.toString() }
+                    rows(JOB, POINT, FLAGS)
+                }.firstOrNull {
+                    PlayerProfilePO(
+                        player,
+                        getString(JOB),
+                        getInt(POINT),
+                        Json.decodeFromString(getString(FLAGS))
+                    )
+                })
+            } catch (e: Throwable) {
+                future.completeExceptionally(e)
+            }
         }
+        if (isPrimaryThread) {
+            submitAsync { read() }
+        } else {
+            read()
+        }
+        return future
     }
 
-    override fun getPlayerJob(player: UUID, job: String): PlayerJobPO? {
-        return jobsTable.select(dataSource) {
-            where { UUID eq player.toString() and ( JOB eq job ) }
-            rows(EXPERIENCE, GROUP, BIND_KEY_OF_GROUP)
-        }.firstOrNull {
-            PlayerJobPO(player, job, getInt(EXPERIENCE), getString(GROUP), Json.decodeFromString(getString(BIND_KEY_OF_GROUP)))
+    override fun getPlayerJob(player: UUID, job: String): CompletableFuture<PlayerJobPO?> {
+        val future = CompletableFuture<PlayerJobPO?>()
+        fun read() {
+            try {
+                future.complete(jobsTable.select(dataSource) {
+                    where { UUID eq player.toString() and (JOB eq job) }
+                    rows(EXPERIENCE, GROUP, BIND_KEY_OF_GROUP)
+                }.firstOrNull {
+                    PlayerJobPO(
+                        player,
+                        job,
+                        getInt(EXPERIENCE),
+                        getString(GROUP),
+                        Json.decodeFromString(getString(BIND_KEY_OF_GROUP))
+                    )
+                })
+            } catch (e: Throwable) {
+                future.completeExceptionally(e)
+            }
         }
+        if (isPrimaryThread) {
+            submitAsync { read() }
+        } else {
+            read()
+        }
+        return future
     }
 
-    override fun getPlayerSkill(player: UUID, job: String, skill: String): PlayerSkillPO? {
-        return skillsTable.select(dataSource) {
-            where { UUID eq player.toString() and ( JOB eq job ) and ( SKILL eq skill ) }
-            rows(LOCKED, LEVEL)
-        }.firstOrNull {
-            PlayerSkillPO(player, job, skill, getBoolean(LOCKED), getInt(LEVEL))
+    override fun getPlayerSkill(player: UUID, job: String, skill: String): CompletableFuture<PlayerSkillPO?> {
+        val future = CompletableFuture<PlayerSkillPO?>()
+        fun read() {
+            try {
+                future.complete(skillsTable.select(dataSource) {
+                    where { UUID eq player.toString() and (JOB eq job) and (SKILL eq skill) }
+                    rows(LOCKED, LEVEL)
+                }.firstOrNull {
+                    PlayerSkillPO(player, job, skill, getBoolean(LOCKED), getInt(LEVEL))
+                })
+            } catch (e: Throwable) {
+                future.completeExceptionally(e)
+            }
         }
+        if (isPrimaryThread) {
+            submitAsync { read() }
+        } else {
+            read()
+        }
+        return future
+    }
+
+    override fun getPlayerSkills(player: UUID, job: String): CompletableFuture<List<PlayerSkillPO>> {
+        val future = CompletableFuture<List<PlayerSkillPO>>()
+        fun read() {
+            try {
+                future.complete(skillsTable.select(dataSource) {
+                    where { UUID eq player.toString() and (JOB eq job) }
+                    rows(SKILL, LOCKED, LEVEL)
+                }.map {
+                    PlayerSkillPO(player, job, getString(SKILL), getBoolean(LOCKED), getInt(LEVEL))
+                })
+            } catch (e: Throwable) {
+                future.completeExceptionally(e)
+            }
+        }
+        if (isPrimaryThread) {
+            submitAsync { read() }
+        } else {
+            read()
+        }
+        return future
     }
 
     override fun savePlayerData(player: UUID, playerProfilePO: PlayerProfilePO) {

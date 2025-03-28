@@ -224,12 +224,19 @@ class PlayerJob(
             privateExperience = 0
             privateGroup = DEFAULT
             var var1 = 0
-            val list = job.skills.mapNotNull { player.getSkill(it) }
+            val list = job.skills.map { player.getSkill(it) }
             list.forEach {
-                it.clear().whenComplete { _, _ ->
-                    var1++
-                    if (var1 > list.size) {
-                        future.complete(true)
+                it.thenApply { skill ->
+                    skill?.clear()?.whenComplete { _, _ ->
+                        var1++
+                        if (var1 > list.size) {
+                            future.complete(true)
+                        }
+                    } ?: run {
+                        var1++
+                        if (var1 > list.size) {
+                            future.complete(true)
+                        }
                     }
                 }
             }

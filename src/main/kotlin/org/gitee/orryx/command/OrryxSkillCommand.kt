@@ -15,23 +15,22 @@ object OrryxSkillCommand {
     val bindKey = subCommand {
         player {
             dynamic("skill") {
-                suggest {
-                    val player = ctx.bukkitPlayer() ?: return@suggest emptyList()
-                    player.getSkills().map { it.key }
-                }
+                suggest { SkillLoaderManager.getSkills().map { it.key } }
                 dynamic("group") {
                     suggest { BindKeyLoaderManager.getGroups().keys.toList() }
                     dynamic("key") {
                         suggest { BindKeyLoaderManager.getBindKeys().values.sortedBy { it.sort }.map { it.key } }
                         exec<ProxyCommandSender> {
                             val player = ctx.bukkitPlayer() ?: return@exec
-                            val job = player.job()
-                            val skill = player.getSkill(job?.key ?: return@exec, ctx["skill"]) ?: return@exec
-                            val group = BindKeyLoaderManager.getGroup(ctx["group"]) ?: return@exec
-                            val bindKey = BindKeyLoaderManager.getBindKey(ctx["key"]) ?: return@exec
-                            job.setBindKey(skill, group, bindKey).whenComplete { t, _ ->
-                                sender.sendMessage("玩家${player.name} 绑定按键 result: $t")
-                                debug("${player.name}指令skill bindKey结果${t}")
+                            player.job { job ->
+                                player.getSkill(ctx["skill"]).thenApply {
+                                    val group = BindKeyLoaderManager.getGroup(ctx["group"]) ?: return@thenApply
+                                    val bindKey = BindKeyLoaderManager.getBindKey(ctx["key"]) ?: return@thenApply
+                                    job.setBindKey(it ?: return@thenApply, group, bindKey).whenComplete { t, _ ->
+                                        sender.sendMessage("玩家${player.name} 绑定按键 result: $t")
+                                        debug("${player.name}指令skill bindKey结果${t}")
+                                    }
+                                }
                             }
                         }
                     }
@@ -60,14 +59,12 @@ object OrryxSkillCommand {
     val tryCast = subCommand {
         player {
             dynamic("skill") {
-                suggest {
-                    val player = ctx.bukkitPlayer() ?: return@suggest emptyList()
-                    player.getSkills().map { it.key }
-                }
+                suggest { SkillLoaderManager.getSkills().map { it.key } }
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
-                    val skill = player.getSkill(player.orryxProfile().job!!, ctx["skill"]) ?: return@exec
-                    skill.tryCast()
+                    player.getSkill(ctx["skill"]).thenApply {
+                        it?.tryCast()
+                    }
                 }
             }
         }
@@ -77,15 +74,13 @@ object OrryxSkillCommand {
     val clear = subCommand {
         player {
             dynamic("skill") {
-                suggest {
-                    val player = ctx.bukkitPlayer() ?: return@suggest emptyList()
-                    player.getSkills().map { it.key }
-                }
+                suggest { SkillLoaderManager.getSkills().map { it.key } }
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
-                    val skill = player.getSkill(player.orryxProfile().job!!, ctx["skill"]) ?: return@exec
-                    skill.clear().whenComplete { _, _ ->
-                        sender.sendMessage("技能${skill.key}已清除")
+                    player.getSkill(ctx["skill"]).thenApply {
+                        (it ?: return@thenApply).clear().whenComplete { _, _ ->
+                            sender.sendMessage("技能${it.key}已清除")
+                        }
                     }
                 }
             }

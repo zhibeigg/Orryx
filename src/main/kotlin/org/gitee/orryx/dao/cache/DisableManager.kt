@@ -5,18 +5,19 @@ import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.dao.storage.IStorageManager
 import java.util.*
+import java.util.concurrent.CompletableFuture
 
 class DisableManager: ISyncCacheManager {
 
-    override fun getPlayerData(player: UUID): PlayerProfilePO? {
+    override fun getPlayerData(player: UUID): CompletableFuture<PlayerProfilePO?> {
         return IStorageManager.INSTANCE.getPlayerData(player)
     }
 
-    override fun getPlayerJob(player: UUID, job: String): PlayerJobPO? {
+    override fun getPlayerJob(player: UUID, job: String): CompletableFuture<PlayerJobPO?> {
         return IStorageManager.INSTANCE.getPlayerJob(player, job)
     }
 
-    override fun getPlayerSkill(player: UUID, job: String, skill: String): PlayerSkillPO? {
+    override fun getPlayerSkill(player: UUID, job: String, skill: String): CompletableFuture<PlayerSkillPO?> {
         return IStorageManager.INSTANCE.getPlayerSkill(player, job, skill)
     }
 

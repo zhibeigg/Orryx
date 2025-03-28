@@ -5,6 +5,7 @@ import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.key.IGroup
 import org.gitee.orryx.core.skill.IPlayerSkill
+import java.util.concurrent.CompletableFuture
 
 const val DEFAULT = "default"
 val MC_KEYS = arrayOf("MC1", "MC2", "MC3", "MC4", "MC5", "MC6", "MC7", "MC8", "MC9")
@@ -13,15 +14,20 @@ fun bindKeys(): List<IBindKey> {
     return BindKeyLoaderManager.getBindKeys().values.sortedBy { it.sort }
 }
 
-fun IBindKey.getBindSkill(player: Player): IPlayerSkill? {
-    return player.job {
-        it.getBindSkills()[this]
+fun IBindKey.getBindSkill(player: Player): CompletableFuture<IPlayerSkill?> {
+    val future = CompletableFuture<IPlayerSkill?>()
+    player.job {
+        it.getBindSkills()[this]?.thenApply { skill ->
+            future.complete(skill)
+        } ?: future.complete(null)
     }
+    return future
 }
 
 fun IBindKey.tryCast(player: Player) {
-    val skill = getBindSkill(player) ?: return
-    skill.tryCast()
+    getBindSkill(player).thenApply { skill ->
+        skill?.tryCast()
+    }
 }
 
 fun bindKeyOfGroupToMutableMap(bindKeyOfGroup: Map<String, Map<String, String?>>): MutableMap<IGroup, MutableMap<IBindKey, String?>> {

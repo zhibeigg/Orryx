@@ -18,10 +18,11 @@ object OrryxJobLevelCommand {
             int("level") {
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
-                    val job = player.job() ?: return@exec
-                    job.giveLevel(ctx["level"].cint).whenComplete { t, _ ->
-                        sender.sendMessage("玩家${player.name} 职业${job.key}获取等级成功")
-                        debug("${player.name}指令job level give结果${t}")
+                    player.job {
+                        it.giveLevel(ctx["level"].cint).whenComplete { t, _ ->
+                            sender.sendMessage("玩家${player.name} 职业${it.key}获取等级成功")
+                            debug("${player.name}指令job level give结果${t}")
+                        }
                     }
                 }
             }
@@ -34,10 +35,11 @@ object OrryxJobLevelCommand {
             int("level") {
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
-                    val job = player.job() ?: return@exec
-                    job.takeLevel(ctx["level"].cint).whenComplete { t, _ ->
-                        sender.sendMessage("玩家${player.name} 职业${job.key}获取等级成功")
-                        debug("${player.name}指令job level take结果${t}")
+                    player.job {
+                        it.takeLevel(ctx["level"].cint).whenComplete { t, _ ->
+                            sender.sendMessage("玩家${player.name} 职业${it.key}获取等级成功")
+                            debug("${player.name}指令job level take结果${t}")
+                        }
                     }
                 }
             }
@@ -50,10 +52,11 @@ object OrryxJobLevelCommand {
             int("level") {
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
-                    val job = player.job() ?: return@exec
-                    job.setLevel(ctx["level"].cint).whenComplete { t, _ ->
-                        sender.sendMessage("玩家${player.name} 职业${job.key}获取等级成功")
-                        debug("${player.name}指令job level set结果${t}")
+                    player.job {
+                        it.setLevel(ctx["level"].cint).whenComplete { t, _ ->
+                            sender.sendMessage("玩家${player.name} 职业${it.key}获取等级成功")
+                            debug("${player.name}指令job level set结果${t}")
+                        }
                     }
                 }
             }

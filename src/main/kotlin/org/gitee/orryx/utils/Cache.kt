@@ -1,5 +1,6 @@
 package org.gitee.orryx.utils
 
+import taboolib.common5.util.parseUUID
 import java.util.*
 
 const val PLAYER_DATA = "orryx_player_data_"
@@ -19,13 +20,19 @@ fun playerJobSkillDataTag(player: UUID, job: String, skill: String): String {
 }
 
 fun reversePlayerDataTag(flag: String): UUID {
-    return java.util.UUID.fromString(flag.removePrefix(PLAYER_DATA))
+    return flag.removePrefix(PLAYER_DATA).parseUUID()!!
 }
 
-fun reversePlayerJobDataTag(flag: String): List<String> {
-    return flag.removePrefix(PLAYER_JOB_DATA).split("_")
+fun reversePlayerJobDataTag(flag: String): Pair<String, UUID> {
+    return flag.removePrefix(PLAYER_JOB_DATA).split("_").let {
+        it[it.lastIndex-1] to it.last().parseUUID()!!
+    }
 }
 
-fun reversePlayerJobSkillDataTag(flag: String): List<String> {
-    return flag.removePrefix(PLAYER_JOB_SKILL_DATA).split("_")
+class JobSkillDataTag(val player: UUID, val job: String, val skill: String)
+
+fun reversePlayerJobSkillDataTag(flag: String): JobSkillDataTag {
+    return flag.removePrefix(PLAYER_JOB_SKILL_DATA).split("_").let {
+        JobSkillDataTag(it.last().parseUUID()!!, it[it.lastIndex-2], it[it.lastIndex-1])
+    }
 }

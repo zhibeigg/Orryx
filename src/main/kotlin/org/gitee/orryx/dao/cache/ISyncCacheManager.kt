@@ -11,6 +11,7 @@ import taboolib.common.platform.function.info
 import taboolib.common.util.unsafeLazy
 import taboolib.module.chat.colored
 import java.util.*
+import java.util.concurrent.CompletableFuture
 
 interface ISyncCacheManager {
 
@@ -59,7 +60,7 @@ interface ISyncCacheManager {
      * @param player 玩家的UUID
      * @return 玩家数据
      * */
-    fun getPlayerData(player: UUID): PlayerProfilePO?
+    fun getPlayerData(player: UUID): CompletableFuture<PlayerProfilePO?>
 
     /**
      * 从缓存获取职业数据
@@ -69,7 +70,7 @@ interface ISyncCacheManager {
      * @param job 获取的职业
      * @return 职业数据
      * */
-    fun getPlayerJob(player: UUID, job: String): PlayerJobPO?
+    fun getPlayerJob(player: UUID, job: String): CompletableFuture<PlayerJobPO?>
 
     /**
      * 从缓存获取技能数据
@@ -80,7 +81,7 @@ interface ISyncCacheManager {
      * @param skill 获取的技能
      * @return 技能数据
      * */
-    fun getPlayerSkill(player: UUID, job: String, skill: String): PlayerSkillPO?
+    fun getPlayerSkill(player: UUID, job: String, skill: String): CompletableFuture<PlayerSkillPO?>
 
     /**
      * 保存玩家数据到缓存

@@ -52,20 +52,22 @@ class PlayerSkill(
         }
     }
 
-    override fun castCheck(parameter: IParameter): CastResult {
-        if (parameter !is SkillParameter) return CastResult.PARAMETER
+    override fun castCheck(parameter: IParameter): CompletableFuture<CastResult> {
+        if (parameter !is SkillParameter) return CompletableFuture.completedFuture(CastResult.PARAMETER)
         val skill = skill
         //被动技能
-        if (skill is PassiveSkill) return CastResult.PASSIVE
+        if (skill is PassiveSkill) return CompletableFuture.completedFuture(CastResult.PASSIVE)
         //冷却
-        if (!SkillTimer.hasNext(player, key)) return CastResult.COOLDOWN
+        if (!SkillTimer.hasNext(player, key)) return CompletableFuture.completedFuture(CastResult.COOLDOWN)
         //法力
-        if (!IManaManager.INSTANCE.haveMana(player, parameter.manaValue())) return CastResult.MANA_NOT_ENOUGH
-        //脚本检测
-        if ((skill as? ICastSkill)?.castCheckAction?.let { runCustomAction(it, mapOf()).orNull().cbool } == false) return CastResult.CHECK_ACTION_FAILED
-        //事件
-        if (!OrryxPlayerSkillCastEvents.Check(player, this, parameter).call()) return CastResult.CANCELED
-        return CastResult.SUCCESS
+        return IManaManager.INSTANCE.haveMana(player, parameter.manaValue()).thenApply {
+            if (it) return@thenApply CastResult.MANA_NOT_ENOUGH
+            //脚本检测
+            if ((skill as? ICastSkill)?.castCheckAction?.let { runCustomAction(it, mapOf()).orNull().cbool } == false) return@thenApply CastResult.CHECK_ACTION_FAILED
+            //事件
+            if (!OrryxPlayerSkillCastEvents.Check(player, this, parameter).call()) return@thenApply CastResult.CANCELED
+            return@thenApply CastResult.SUCCESS
+        }
     }
 
     override fun upLevelCheck(from: Int, to: Int): Boolean {
@@ -81,9 +83,11 @@ class PlayerSkill(
         }
     }
 
-    override fun upgradePointCheck(from: Int, to: Int): Pair<Int,Boolean> {
+    override fun upgradePointCheck(from: Int, to: Int): CompletableFuture<Pair<Int,Boolean>> {
         val point = skill.upgradePointAction?.let { runCustomAction(it, mapOf("from" to from, "to" to to)).orNull() }.cint
-        return point to (player.orryxProfile().point >= point)
+        return player.orryxProfile {
+            point to (it.point >= point)
+        }
     }
 
     override fun upLevel(level: Int): CompletableFuture<SkillLevelResult> {

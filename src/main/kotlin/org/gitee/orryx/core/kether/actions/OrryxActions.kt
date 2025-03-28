@@ -10,7 +10,6 @@ import org.gitee.orryx.core.wiki.Type
 import org.gitee.orryx.utils.*
 import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*
-import java.util.concurrent.CompletableFuture
 
 object OrryxActions {
 
@@ -125,37 +124,43 @@ object OrryxActions {
 
     private fun level(reader: QuestReader): ScriptAction<Any?> {
         val job = reader.nextHeadActionOrNull("job")
-        return actionTake {
+        return actionFuture { future ->
             skillCaster {
                 if (job != null) {
                     run(job).str {
-                        job(it).level
+                        job(it) { job ->
+                            future.complete(job.level)
+                        }
                     }
                 } else {
-                    CompletableFuture.completedFuture(job()?.level)
+                    job { future.complete(it.level) }
                 }
             }
         }
     }
 
     private fun point(): ScriptAction<Any?> {
-        return actionTake {
+        return actionFuture { future ->
             skillCaster {
-                CompletableFuture.completedFuture(orryxProfile().point)
+                orryxProfile {
+                    future.complete(it.point)
+                }
             }
         }
     }
 
     private fun experience(reader: QuestReader): ScriptAction<Any?> {
         val job = reader.nextHeadActionOrNull("job")
-        return actionTake {
+        return actionFuture { future ->
             skillCaster {
                 if (job != null) {
                     run(job).str {
-                        job(it).experience
+                        job(it) { job ->
+                            future.complete(job.experience)
+                        }
                     }
                 } else {
-                    CompletableFuture.completedFuture(job()?.experience)
+                    job { future.complete(it.experience) }
                 }
             }
         }
@@ -163,14 +168,16 @@ object OrryxActions {
 
     private fun experienceOfLevel(reader: QuestReader): ScriptAction<Any?> {
         val job = reader.nextHeadActionOrNull("job")
-        return actionTake {
+        return actionFuture { future ->
             skillCaster {
                 if (job != null) {
                     run(job).str {
-                        job(it).experienceOfLevel
+                        job(it) { job ->
+                            future.complete(job.experienceOfLevel)
+                        }
                     }
                 } else {
-                    CompletableFuture.completedFuture(job()?.experienceOfLevel)
+                    job { future.complete(it.experienceOfLevel) }
                 }
             }
         }
@@ -178,14 +185,16 @@ object OrryxActions {
 
     private fun maxExperienceOfLevel(reader: QuestReader): ScriptAction<Any?> {
         val job = reader.nextHeadActionOrNull("job")
-        return actionTake {
+        return actionFuture { future ->
             skillCaster {
                 if (job != null) {
                     run(job).str {
-                        job(it).maxExperienceOfLevel
+                        job(it) { job ->
+                            future.complete(job.maxExperienceOfLevel)
+                        }
                     }
                 } else {
-                    CompletableFuture.completedFuture(job()?.maxExperienceOfLevel)
+                    job { future.complete(it.maxExperienceOfLevel) }
                 }
             }
         }
@@ -193,14 +202,16 @@ object OrryxActions {
 
     private fun group(reader: QuestReader): ScriptAction<Any?> {
         val job = reader.nextHeadActionOrNull("job")
-        return actionTake {
+        return actionFuture { future ->
             skillCaster {
                 if (job != null) {
                     run(job).str {
-                        job(it).group
+                        job(it) { job ->
+                            future.complete(job.group)
+                        }
                     }
                 } else {
-                    CompletableFuture.completedFuture(job()?.group)
+                    job { future.complete(it.group) }
                 }
             }
         }
@@ -209,11 +220,17 @@ object OrryxActions {
     private fun bindSkill(reader: QuestReader): ScriptAction<Any?> {
         val group = reader.nextParsedAction()
         val key = reader.nextParsedAction()
-        return actionTake {
+        return actionFuture { future ->
             run(group).str { group ->
                 run(key).str { key ->
                     skillCaster {
-                        CompletableFuture.completedFuture(getGroupSkills(group)[BindKeyLoaderManager.getBindKey(key)])
+                        getGroupSkills(group).thenApply {
+                            it?.get(BindKeyLoaderManager.getBindKey(key))?.apply {
+                                future.complete(this)
+                            } ?: kotlin.run {
+                                future.complete(null)
+                            }
+                        }
                     }
                 }
             }
@@ -229,10 +246,18 @@ object OrryxActions {
                 run(skill).str { skill ->
                     if (job != null) {
                         run(job).str { job ->
-                            future.complete(getSkill(job, skill, true)?.level)
+                            getSkill(job, skill, true).thenApply {
+                                future.complete(it?.level)
+                            }
                         }
                     } else {
-                        future.complete(orryxProfile().job?.let { getSkill(it, skill, true) }?.level)
+                        orryxProfile {
+                            it.job?.let { job -> getSkill(job, skill, true) }?.thenApply { skill ->
+                                future.complete(skill?.level)
+                            } ?: kotlin.run {
+                                future.complete(null)
+                            }
+                        }
                     }
                 }
             }
@@ -248,10 +273,18 @@ object OrryxActions {
                 run(skill).str { skill ->
                     if (job != null) {
                         run(job).str { job ->
-                            future.complete(getSkill(job, skill, true)?.locked)
+                            getSkill(job, skill, true).thenApply {
+                                future.complete(it?.locked)
+                            }
                         }
                     } else {
-                        future.complete(orryxProfile().job?.let { getSkill(it, skill, true) }?.locked)
+                        orryxProfile {
+                            it.job?.let { job -> getSkill(job, skill, true) }?.thenApply { skill ->
+                                future.complete(skill?.locked)
+                            } ?: kotlin.run {
+                                future.complete(null)
+                            }
+                        }
                     }
                 }
             }
@@ -284,8 +317,10 @@ object OrryxActions {
         return actionFuture { future ->
             skillCaster {
                 run(skill).str { skill ->
-                    val skillParameter = getSkill(skill, true)?.level?.let { SkillParameter(skill, this, it) }
-                    future.complete(skillParameter?.cooldownValue(true) ?: 0)
+                    getSkill(skill, true).thenApply {
+                        val skillParameter = it?.level?.let { level -> SkillParameter(skill, this, level) }
+                        future.complete(skillParameter?.cooldownValue(true) ?: 0)
+                    }
                 }
             }
         }
@@ -309,8 +344,10 @@ object OrryxActions {
         return actionFuture { future ->
             skillCaster {
                 run(skill).str { skill ->
-                    val skillParameter = getSkill(skill, true)?.level?.let { SkillParameter(skill, this, it) }
-                    future.complete(skillParameter?.manaValue(true) ?: 0)
+                    getSkill(skill, true).thenApply {
+                        val skillParameter = it?.level?.let { level -> SkillParameter(skill, this, level) }
+                        future.complete(skillParameter?.manaValue(true) ?: 0)
+                    }
                 }
             }
         }

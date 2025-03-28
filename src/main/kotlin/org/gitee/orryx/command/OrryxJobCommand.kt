@@ -17,9 +17,12 @@ object OrryxJobCommand {
                 suggest { JobLoaderManager.getAllJobLoaders().keys.toList() }
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
-                    val job = player.job(ctx["job"])
-                    player.orryxProfile().setJob(job)
-                    sender.sendMessage("玩家${player.name} 职业已切换到${job.key}")
+                    player.job(ctx["job"]) { job ->
+                        player.orryxProfile {
+                            it.setJob(job)
+                            sender.sendMessage("玩家${player.name} 职业已切换到${job.key}")
+                        }
+                    }
                 }
             }
         }
@@ -32,9 +35,10 @@ object OrryxJobCommand {
                 suggest { JobLoaderManager.getAllJobLoaders().keys.toList() }
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
-                    val job = player.job(ctx["job"])
-                    job.clear().whenComplete { _, _ ->
-                        sender.sendMessage("玩家${player.name} 职业${job.key}已清除")
+                    player.job(ctx["job"]) { job ->
+                        job.clear().whenComplete { _, _ ->
+                            sender.sendMessage("玩家${player.name} 职业${job.key}已清除")
+                        }
                     }
                 }
             }

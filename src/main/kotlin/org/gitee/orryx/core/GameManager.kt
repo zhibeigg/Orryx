@@ -13,6 +13,7 @@ import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.info
 import taboolib.common.platform.function.submit
 import taboolib.module.chat.colored
+import taboolib.module.nms.MinecraftVersion
 
 
 object GameManager {
@@ -26,8 +27,10 @@ object GameManager {
     private fun hunger(e: FoodLevelChangeEvent) {
         if (disabledHunger) {
             e.isCancelled = true
-            e.entity.foodLevel = 20
-            e.entity.saturation = 20F
+            if (MinecraftVersion.isHigher(MinecraftVersion.V1_16)) {
+                e.entity.foodLevel = 20
+                e.entity.saturation = 20F
+            }
         }
     }
 

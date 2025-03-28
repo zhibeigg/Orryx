@@ -53,7 +53,7 @@ interface IPlayerSkill: Saveable {
      * @param parameter 释放参数
      * @return 释放结果
      * */
-    fun castCheck(parameter: IParameter): CastResult
+    fun castCheck(parameter: IParameter): CompletableFuture<CastResult>
 
     /**
      * 升级技能点检测
@@ -61,7 +61,7 @@ interface IPlayerSkill: Saveable {
      * @param to 到等级
      * @return 需要消耗数量，是否足够
      * */
-    fun upgradePointCheck(from: Int, to: Int): Pair<Int, Boolean>
+    fun upgradePointCheck(from: Int, to: Int): CompletableFuture<Pair<Int,Boolean>>
 
     /**
      * 升级检测

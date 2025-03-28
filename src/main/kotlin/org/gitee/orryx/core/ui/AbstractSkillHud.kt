@@ -11,10 +11,10 @@ import java.util.concurrent.CompletableFuture
 
 abstract class AbstractSkillHud(override val viewer: Player, override val owner: Player): ISkillHud {
 
-    override fun getShowSkills(): Map<IBindKey, String?> {
+    override fun getShowSkills(): CompletableFuture<Map<IBindKey, String?>?> {
         return owner.job {
-            it.bindKeyOfGroup[BindKeyLoaderManager.getGroup(it.group)]
-        } ?: emptyMap()
+            it.bindKeyOfGroup[BindKeyLoaderManager.getGroup(it.group)] ?: emptyMap()
+        }
     }
 
     override fun getCountdown(skill: IPlayerSkill): Long {
@@ -22,9 +22,13 @@ abstract class AbstractSkillHud(override val viewer: Player, override val owner:
     }
 
     override fun setGroup(group: IGroup): CompletableFuture<Boolean> {
-        return owner.job {
-            it.setGroup(group.key)
-        } ?: CompletableFuture.completedFuture(false)
+        val future = CompletableFuture<Boolean>()
+        owner.job {
+            it.setGroup(group.key).thenApply { bool ->
+                future.complete(bool)
+            }
+        }
+        return future
     }
 
 }

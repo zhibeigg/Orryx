@@ -70,19 +70,19 @@ interface IManaManager {
      * @param mana 法力值
      * @return 是否有足够法力值
      * */
-    fun haveMana(player: Player, mana: Double): Boolean
+    fun haveMana(player: Player, mana: Double): CompletableFuture<Boolean>
 
     /**
      * 获得玩家的法力值
      * @param player 玩家
      * */
-    fun getMana(player: Player): Double
+    fun getMana(player: Player): CompletableFuture<Double>
 
     /**
      * 获得玩家的最大法力值
      * @param player 玩家
      * */
-    fun getMaxMana(player: Player): Double
+    fun getMaxMana(player: Player): CompletableFuture<Double>
 
     /**
      * 获得职业的最大法力值

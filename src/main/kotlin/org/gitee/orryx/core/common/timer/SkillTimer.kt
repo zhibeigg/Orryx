@@ -51,34 +51,40 @@ object SkillTimer : ITimer {
 
     override fun increase(sender: ProxyCommandSender, tag: String, amount: Long) {
         val player = sender.castSafely<Player>() ?: return
-        val event = OrryxPlayerSkillCooldownEvents.Increase.Pre(player, player.getSkill(tag)!!, amount)
-        if (event.call()) {
-            getCooldownMap(sender)[tag]?.addDuration(event.amount)
-            OrryxPlayerSkillCooldownEvents.Increase.Post(event.player, event.skill, event.amount).call()
+        player.getSkill(tag).thenApply {
+            val event = OrryxPlayerSkillCooldownEvents.Increase.Pre(player, it ?: return@thenApply, amount)
+            if (event.call()) {
+                getCooldownMap(sender)[tag]?.addDuration(event.amount)
+                OrryxPlayerSkillCooldownEvents.Increase.Post(event.player, event.skill, event.amount).call()
+            }
         }
     }
 
     override fun reduce(sender: ProxyCommandSender, tag: String, amount: Long) {
         val player = sender.castSafely<Player>() ?: return
-        val event = OrryxPlayerSkillCooldownEvents.Reduce.Pre(player, player.getSkill(tag)!!, amount)
-        if (event.call()) {
-            getCooldownMap(sender)[tag]?.reduceDuration(event.amount)
-            OrryxPlayerSkillCooldownEvents.Reduce.Post(event.player, event.skill, event.amount).call()
+        player.getSkill(tag).thenApply {
+            val event = OrryxPlayerSkillCooldownEvents.Reduce.Pre(player, it ?: return@thenApply, amount)
+            if (event.call()) {
+                getCooldownMap(sender)[tag]?.reduceDuration(event.amount)
+                OrryxPlayerSkillCooldownEvents.Reduce.Post(event.player, event.skill, event.amount).call()
+            }
         }
     }
 
     override fun set(sender: ProxyCommandSender, tag: String, amount: Long) {
         val player = sender.castSafely<Player>() ?: return
-        val event = OrryxPlayerSkillCooldownEvents.Set.Pre(player, player.getSkill(tag)!!, amount)
-        if (event.call()) {
-            val cooldownMap = getCooldownMap(sender)
-            cooldownMap.values.removeIf { it.isReady }
-            if (event.amount <= 0L) {
-                cooldownMap.remove(tag)
-            } else {
-                cooldownMap[tag] = CooldownEntry(tag, event.amount)
+        player.getSkill(tag).thenApply {
+            val event = OrryxPlayerSkillCooldownEvents.Set.Pre(player, it ?: return@thenApply, amount)
+            if (event.call()) {
+                val cooldownMap = getCooldownMap(sender)
+                cooldownMap.values.removeIf { it.isReady }
+                if (event.amount <= 0L) {
+                    cooldownMap.remove(tag)
+                } else {
+                    cooldownMap[tag] = CooldownEntry(tag, event.amount)
+                }
+                OrryxPlayerSkillCooldownEvents.Set.Post(event.player, event.skill, event.amount).call()
             }
-            OrryxPlayerSkillCooldownEvents.Set.Post(event.player, event.skill, event.amount).call()
         }
     }
 

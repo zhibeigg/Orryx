@@ -11,6 +11,7 @@ import taboolib.common.platform.function.info
 import taboolib.common.util.unsafeLazy
 import taboolib.module.chat.colored
 import java.util.*
+import java.util.concurrent.CompletableFuture
 
 interface IStorageManager {
 
@@ -52,7 +53,7 @@ interface IStorageManager {
      * @param player 玩家的UUID
      * @return 玩家数据
      * */
-    fun getPlayerData(player: UUID): PlayerProfilePO?
+    fun getPlayerData(player: UUID): CompletableFuture<PlayerProfilePO?>
 
     /**
      * 从数据库获取职业数据
@@ -60,7 +61,7 @@ interface IStorageManager {
      * @param job 获取的职业
      * @return 职业数据
      * */
-    fun getPlayerJob(player: UUID, job: String): PlayerJobPO?
+    fun getPlayerJob(player: UUID, job: String): CompletableFuture<PlayerJobPO?>
 
     /**
      * 从数据库获取技能数据
@@ -69,7 +70,15 @@ interface IStorageManager {
      * @param skill 获取的技能
      * @return 技能数据
      * */
-    fun getPlayerSkill(player: UUID, job: String, skill: String): PlayerSkillPO?
+    fun getPlayerSkill(player: UUID, job: String, skill: String): CompletableFuture<PlayerSkillPO?>
+
+    /**
+     * 从数据库获取技能数据列表
+     * @param player 玩家的UUID
+     * @param job 获取的职业
+     * @return 技能数据列表
+     * */
+    fun getPlayerSkills(player: UUID, job: String): CompletableFuture<List<PlayerSkillPO>>
 
     /**
      * 保存玩家数据到数据库

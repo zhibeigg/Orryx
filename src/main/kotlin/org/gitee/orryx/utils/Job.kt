@@ -8,7 +8,6 @@ import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.dao.cache.MemoryCache
-import taboolib.common.platform.function.isPrimaryThread
 import java.util.concurrent.CompletableFuture
 
 fun IPlayerJob.clearAllLevelAndBackPoint(): CompletableFuture<Boolean> {
@@ -18,10 +17,12 @@ fun IPlayerJob.clearAllLevelAndBackPoint(): CompletableFuture<Boolean> {
         var size = 0
         job.skills.forEach {
             size++
-            player.getSkill(job.key, it)?.clearLevelAndBackPoint()?.whenComplete { _, _ ->
-                size -= 1
-                if (size == 0) {
-                    future.complete(true)
+            player.getSkill(job.key, it).thenApply { skill ->
+                skill?.clearLevelAndBackPoint()?.whenComplete { _, _ ->
+                    size -= 1
+                    if (size == 0) {
+                        future.complete(true)
+                    }
                 }
             }
         }
@@ -31,25 +32,81 @@ fun IPlayerJob.clearAllLevelAndBackPoint(): CompletableFuture<Boolean> {
     return future
 }
 
-fun IPlayerJob.getBindSkills(): Map<IBindKey, IPlayerSkill?> {
+fun IPlayerJob.getBindSkills(): Map<IBindKey, CompletableFuture<IPlayerSkill?>?> {
     val map = bindKeyOfGroup[BindKeyLoaderManager.getGroup(group)] ?: return bindKeys().associateWith { null }
     return bindKeys().associateWith { map[it]?.let { skill -> player.getSkill(job.key, skill) } }
 }
 
-fun <T> Player.job(function: (IPlayerJob) -> T): T? {
-    return job()?.let {
-        function(it)
+fun IPlayerJob.getSkills(): List<CompletableFuture<IPlayerSkill?>> {
+    return job.skills.map {
+        player.skill(it, true) { skill -> skill }
     }
 }
 
-fun Player.job(): IPlayerJob? {
-    val job = orryxProfile().job ?: return null
-    return job(job)
+fun <T> IPlayerJob.skills(func: (skills: List<IPlayerSkill>) -> T): CompletableFuture<T> {
+    val skills = mutableListOf<IPlayerSkill>()
+    val fSkills = getSkills()
+    val future = CompletableFuture<T>()
+    fSkills.forEach { s ->
+        s.thenAccept { skill ->
+            skills += skill!!
+            if (skills.size >= fSkills.size) {
+                future.complete(func(skills))
+            }
+        }
+    }
+    return future
 }
 
-fun Player.job(job: String): IPlayerJob {
-    return MemoryCache.getPlayerJob(this, job) ?: defaultJob(job).apply {
-        save(isPrimaryThread)
+fun <T> IPlayerJob.bindSkills(func: (bindSkills: Map<IBindKey, IPlayerSkill?>) -> T): CompletableFuture<T> {
+    val bindSkills = mutableMapOf<IBindKey, IPlayerSkill?>()
+    val fBindSkills = getBindSkills()
+    val future = CompletableFuture<T>()
+    fBindSkills.forEach { (k, s) ->
+        s?.thenAccept { skill ->
+            bindSkills[k] = skill
+            if (bindSkills.size >= fBindSkills.size) {
+                future.complete(func(bindSkills))
+            }
+        } ?: kotlin.run {
+            bindSkills[k] = null
+            if (bindSkills.size >= fBindSkills.size) {
+                future.complete(func(bindSkills))
+            }
+        }
+    }
+    return future
+}
+
+fun <T> Player.job(function: (IPlayerJob) -> T): CompletableFuture<T?> {
+    return job().thenApply {
+        it?.let { it1 -> function(it1) }
+    }
+}
+
+fun <T> Player.job(job: String, function: (IPlayerJob) -> T): CompletableFuture<T?> {
+    return job(job).thenApply {
+        it?.let { it1 -> function(it1) }
+    }
+}
+
+fun Player.job(): CompletableFuture<IPlayerJob?> {
+    val future = CompletableFuture<IPlayerJob?>()
+    orryxProfile { profile ->
+        profile.job?.let {
+            job(it) { job ->
+                future.complete(job)
+            }
+        }
+    }
+    return future
+}
+
+fun Player.job(job: String): CompletableFuture<IPlayerJob?> {
+    return MemoryCache.getPlayerJob(this, job).thenApply {
+        it ?: defaultJob(job).apply {
+            save()
+        }
     }
 }
 

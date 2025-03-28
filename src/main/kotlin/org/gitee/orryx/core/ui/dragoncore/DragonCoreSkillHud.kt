@@ -8,7 +8,7 @@ import org.gitee.orryx.core.ui.AbstractSkillHud
 import org.gitee.orryx.core.ui.IUIManager
 import org.gitee.orryx.core.ui.IUIManager.Companion.skillCooldownMap
 import org.gitee.orryx.core.ui.germplugin.GermPluginSkillHud
-import org.gitee.orryx.utils.getBindSkills
+import org.gitee.orryx.utils.bindSkills
 import org.gitee.orryx.utils.job
 import taboolib.common.platform.function.getDataFolder
 import taboolib.common.util.unsafeLazy
@@ -45,14 +45,16 @@ open class DragonCoreSkillHud(override val viewer: Player, override val owner: P
     }
 
     override fun update() {
-        val job = owner.job() ?: return
-        val bindSkills = job.getBindSkills()
-        val keys = bindSkills.keys.sortedBy { it.sort }
-        PacketSender.sendSyncPlaceholder(viewer, mapOf(
-            "Orryx_bind_keys" to keys.joinToString("<br>") { it.key },
-            "Orryx_bind_skills" to keys.joinToString("<br>") { bindSkills[it]?.key ?: "none" },
-            "Orryx_bind_cooldowns" to keys.joinToString("<br>") { bindSkills[it]?.key?.let { skill -> skillCooldownMap[owner.uniqueId]?.get(skill)?.getOverStamp(owner) }.toString() }
-        ))
+        owner.job { job ->
+            job.bindSkills { bindSkills ->
+                val keys = bindSkills.keys.sortedBy { it.sort }
+                PacketSender.sendSyncPlaceholder(viewer, mapOf(
+                    "Orryx_bind_keys" to keys.joinToString("<br>") { it.key },
+                    "Orryx_bind_skills" to keys.joinToString("<br>") { bindSkills[it]?.key ?: "none" },
+                    "Orryx_bind_cooldowns" to keys.joinToString("<br>") { bindSkills[it]?.key?.let { skill -> skillCooldownMap[owner.uniqueId]?.get(skill)?.getOverStamp(owner) }.toString() }
+                ))
+            }
+        }
     }
 
     override fun open() {

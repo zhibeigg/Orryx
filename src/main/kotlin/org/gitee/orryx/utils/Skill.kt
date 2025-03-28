@@ -66,58 +66,72 @@ fun IPlayerSkill.up(): CompletableFuture<SkillLevelResult> {
     if (level == skill.maxLevel) return CompletableFuture.completedFuture(SkillLevelResult.MAX)
     val from = level
     val to = level+1
-    return if(upLevelCheck(from, to)) {
-        val pointCheck = upgradePointCheck(from, to)
-        if (pointCheck.second) {
-            val result = upLevel(1)
-            result.thenApply {
-                if (it == SkillLevelResult.SUCCESS) {
-                    player.orryxProfile().takePoint(pointCheck.first)
-                    upLevelSuccess(from, level)
+    val future = CompletableFuture<SkillLevelResult>()
+    player.orryxProfile { profile ->
+        if (upLevelCheck(from, to)) {
+            upgradePointCheck(from, to).thenApply { pointCheck ->
+                if (pointCheck.second) {
+                    val result = upLevel(1)
+                    result.thenApply {
+                        if (it == SkillLevelResult.SUCCESS) {
+                            profile.takePoint(pointCheck.first)
+                            upLevelSuccess(from, level)
+                        }
+                        future.complete(it)
+                    }
+                } else {
+                    future.complete(SkillLevelResult.POINT)
                 }
-                it
             }
         } else {
-            CompletableFuture.completedFuture(SkillLevelResult.POINT)
+            future.complete(SkillLevelResult.CHECK)
         }
-    } else {
-        CompletableFuture.completedFuture(SkillLevelResult.CHECK)
+    }
+    return future
+}
+
+fun <T> Player.skill(skill: String, create: Boolean = false, function: (IPlayerSkill) -> T): CompletableFuture<T?> {
+    return getSkill(skill, create).thenApply {
+        it?.let { it1 -> function(it1) }
     }
 }
 
-fun <T> Player.skill(skill: String, create: Boolean = false, function: (IPlayerSkill) -> T): T? {
-    return getSkill(skill, create)?.let {
-        function(it)
+fun <T> Player.skill(job: String, skill: String, create: Boolean = false, function: (IPlayerSkill) -> T): CompletableFuture<T?> {
+    return getSkill(job, skill, create).thenApply {
+        it?.let { it1 -> function(it1) }
     }
 }
 
-internal fun Player.getSkill(skill: String, create: Boolean = false): IPlayerSkill? {
-    return orryxProfile().job?.let { getSkill(it, skill, create) }
-}
-
-internal fun Player.getSkill(job: String, skill: String, create: Boolean = false): IPlayerSkill? {
-    val skillLoader = SkillLoaderManager.getSkillLoader(skill) ?: return null
-    return MemoryCache.getPlayerSkill(this, job, skill) ?: if (create) {
-        PlayerSkill(this, skill, job, skillLoader.minLevel, skillLoader.isLocked).apply {
-            save(isPrimaryThread)
+internal fun Player.getSkill(skill: String, create: Boolean = false): CompletableFuture<IPlayerSkill?> {
+    val future = CompletableFuture<IPlayerSkill?>()
+    job {
+        getSkill(it.key, skill, create).thenApply { skill ->
+            future.complete(skill)
         }
-    } else {
-        null
+    }
+    return future
+}
+
+internal fun Player.getSkill(job: String, skill: String, create: Boolean = false): CompletableFuture<IPlayerSkill?> {
+    val skillLoader = SkillLoaderManager.getSkillLoader(skill)
+    return MemoryCache.getPlayerSkill(this, job, skill).thenApply {
+        skillLoader ?: return@thenApply null
+        it ?: if (create) {
+            PlayerSkill(this, skill, job, skillLoader.minLevel, skillLoader.isLocked).apply {
+                save(isPrimaryThread)
+            }
+        } else {
+            null
+        }
     }
 }
 
-fun Player.getSkills(): List<IPlayerSkill> {
-    return job()?.job?.skills?.mapNotNull {
-        getSkill(it, true)
-    } ?: emptyList()
-}
-
-fun Player.getGroupSkills(group: String): Map<IBindKey, String?> {
+fun Player.getGroupSkills(group: String): CompletableFuture<Map<IBindKey, String?>?> {
     return job { job ->
         BindKeyLoaderManager.getGroup(group)?.let { group ->
             job.bindKeyOfGroup[group]
-        }
-    } ?: emptyMap()
+        } ?: emptyMap()
+    }
 }
 
 internal fun IPlayerSkill.parameter(): IParameter {
@@ -191,9 +205,9 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean
 
 fun IPlayerSkill.tryCast() {
     val parameter = parameter()
-    castCheck(parameter).apply {
-        sendLang(player)
-        if (isSuccess()) {
+    castCheck(parameter).thenApply {
+        it.sendLang(player)
+        if (it.isSuccess()) {
             cast(parameter, true)
         }
     }
@@ -204,16 +218,25 @@ fun CastResult.isSuccess(): Boolean {
 }
 
 fun IPlayerSkill.clearLevelAndBackPoint(): CompletableFuture<Boolean> {
-    if (level == skill.minLevel) return CompletableFuture.completedFuture(false)
-    val event = OrryxClearSkillLevelAndBackPointEvent(player, this)
-    return if (event.call()) {
-        player.orryxProfile().givePoint(upgradePointCheck(skill.minLevel, level).first)
-        clearLevel().thenApply {
-            it == SkillLevelResult.SUCCESS
-        }
+    val future = CompletableFuture<Boolean>()
+    if (level == skill.minLevel) {
+        future.complete(false)
     } else {
-        CompletableFuture.completedFuture(false)
+        player.orryxProfile { profile ->
+            val event = OrryxClearSkillLevelAndBackPointEvent(player, this)
+            if (event.call()) {
+                upgradePointCheck(skill.minLevel, level).thenApply { pair ->
+                    profile.givePoint(pair.first)
+                    clearLevel().thenApply {
+                        future.complete(it == SkillLevelResult.SUCCESS)
+                    }
+                }
+            } else {
+                future.complete(false)
+            }
+        }
     }
+    return future
 }
 
 fun IPlayerSkill.clearLevel(): CompletableFuture<SkillLevelResult> {

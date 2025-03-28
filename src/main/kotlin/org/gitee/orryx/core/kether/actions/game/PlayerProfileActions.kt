@@ -30,16 +30,24 @@ object PlayerProfileActions {
                 }
                 when (type) {
                     "set", "to" -> foreach { target ->
-                        target.getSource().orryxProfile().setSuperBody(timeout)
+                        target.getSource().orryxProfile { profile ->
+                            profile.setSuperBody(timeout)
+                        }
                     }
                     "add", "+" -> foreach { target ->
-                        target.getSource().orryxProfile().addSuperBody(timeout)
+                        target.getSource().orryxProfile { profile ->
+                            profile.addSuperBody(timeout)
+                        }
                     }
                     "reduce", "-" -> foreach { target ->
-                        target.getSource().orryxProfile().reduceSuperBody(timeout)
+                        target.getSource().orryxProfile { profile ->
+                            profile.reduceSuperBody(timeout)
+                        }
                     }
                     "cancel", "stop" -> foreach { target ->
-                        target.getSource().orryxProfile().cancelSuperBody()
+                        target.getSource().orryxProfile { profile ->
+                            profile.cancelSuperBody()
+                        }
                     }
                 }
             }

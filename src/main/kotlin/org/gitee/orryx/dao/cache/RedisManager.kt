@@ -10,47 +10,89 @@ import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.utils.playerDataTag
 import org.gitee.orryx.utils.playerJobDataTag
 import org.gitee.orryx.utils.playerJobSkillDataTag
+import taboolib.common.platform.function.isPrimaryThread
+import taboolib.common.platform.function.submitAsync
 import taboolib.common.util.unsafeLazy
 import java.util.*
+import java.util.concurrent.CompletableFuture
 
 class RedisManager: ISyncCacheManager {
 
     private val api by unsafeLazy { RedisChannelPlugin.api }
 
-    override fun getPlayerData(player: UUID): PlayerProfilePO? {
+    override fun getPlayerData(player: UUID): CompletableFuture<PlayerProfilePO?> {
         val tag = playerDataTag(player)
-        var playerProfilePO = api.get(playerDataTag(player))?.let { Json.decodeFromString<PlayerProfilePO>(it) }
-        if (playerProfilePO == null) {
-            playerProfilePO = IStorageManager.INSTANCE.getPlayerData(player)
-            playerProfilePO?.let { savePlayerData(player, it, true) }
-        } else {
-            api.refreshExpire(tag, 900, true)
+        val future = CompletableFuture<PlayerProfilePO?>()
+        fun read() {
+            try {
+                var playerProfilePO = api.get(playerDataTag(player))?.let { Json.decodeFromString<PlayerProfilePO>(it) }
+                if (playerProfilePO == null) {
+                    playerProfilePO = IStorageManager.INSTANCE.getPlayerData(player).join()
+                    playerProfilePO?.let { savePlayerData(player, it, false) }
+                } else {
+                    api.refreshExpire(tag, 900, false)
+                }
+                future.complete(playerProfilePO)
+            } catch (e: Throwable) {
+                future.completeExceptionally(e)
+            }
         }
-        return playerProfilePO
+        if (isPrimaryThread) {
+            submitAsync { read() }
+        } else {
+            read()
+        }
+        return future
     }
 
-    override fun getPlayerJob(player: UUID, job: String): PlayerJobPO? {
+    override fun getPlayerJob(player: UUID, job: String): CompletableFuture<PlayerJobPO?> {
         val tag = playerJobDataTag(player, job)
-        var jobData = api.get(playerJobDataTag(player, job))?.let { Json.decodeFromString<PlayerJobPO>(it) }
-        if (jobData == null) {
-            jobData = IStorageManager.INSTANCE.getPlayerJob(player, job)
-            jobData?.let { savePlayerJob(player, it, true) }
-        } else {
-            api.refreshExpire(tag, 900, true)
+        val future = CompletableFuture<PlayerJobPO?>()
+        fun read() {
+            try {
+                var playerJobPO = api.get(playerJobDataTag(player, job))?.let { Json.decodeFromString<PlayerJobPO>(it) }
+                if (playerJobPO == null) {
+                    playerJobPO = IStorageManager.INSTANCE.getPlayerJob(player, job).join()
+                    playerJobPO?.let { savePlayerJob(player, it, false) }
+                } else {
+                    api.refreshExpire(tag, 900, false)
+                }
+                future.complete(playerJobPO)
+            } catch (e: Throwable) {
+                future.completeExceptionally(e)
+            }
         }
-        return jobData
+        if (isPrimaryThread) {
+            submitAsync { read() }
+        } else {
+            read()
+        }
+        return future
     }
 
-    override fun getPlayerSkill(player: UUID, job: String, skill: String): PlayerSkillPO? {
+    override fun getPlayerSkill(player: UUID, job: String, skill: String): CompletableFuture<PlayerSkillPO?> {
         val tag = playerJobSkillDataTag(player, job, skill)
-        var skillData = api.get(tag)?.let { Json.decodeFromString<PlayerSkillPO>(it) }
-        if (skillData == null) {
-            skillData = IStorageManager.INSTANCE.getPlayerSkill(player, job, skill)
-            skillData?.let { savePlayerSkill(player, it, true) }
-        } else {
-            api.refreshExpire(tag, 600, true)
+        val future = CompletableFuture<PlayerSkillPO?>()
+        fun read() {
+            try {
+                var playerSkillPO = api.get(tag)?.let { Json.decodeFromString<PlayerSkillPO>(it) }
+                if (playerSkillPO == null) {
+                    playerSkillPO = IStorageManager.INSTANCE.getPlayerSkill(player, job, skill).join()
+                    playerSkillPO?.let { savePlayerSkill(player, it, false) }
+                } else {
+                    api.refreshExpire(tag, 600, false)
+                }
+                future.complete(playerSkillPO)
+            } catch (e: Throwable) {
+                future.completeExceptionally(e)
+            }
         }
-        return skillData
+        if (isPrimaryThread) {
+            submitAsync { read() }
+        } else {
+            read()
+        }
+        return future
     }
 
     override fun savePlayerData(player: UUID, playerProfilePO: PlayerProfilePO, async: Boolean) {
