@@ -53,10 +53,13 @@ class PlayerJob(
     override val level: Int
         get() = getExperience().getLevel(player, experience)
 
+    override val maxLevel: Int
+        get() = getExperience().maxLevel
+
     override val maxExperienceOfLevel: Int
         get() = getExperience().getExperienceOfLevel(player, experience)
 
-    private fun createDaoData(): PlayerJobPO {
+    override fun createPO(): PlayerJobPO {
         return PlayerJobPO(player.uniqueId, key, experience, group, bindKeyOfGroupToMap(bindKeyOfGroup))
     }
 
@@ -253,7 +256,7 @@ class PlayerJob(
     }
 
     override fun save(async: Boolean, callback: () -> Unit) {
-        val data = createDaoData()
+        val data = createPO()
         if (async && !GameManager.shutdown) {
             saveScope.launch {
                 MemoryCache.savePlayerJob(this@PlayerJob)

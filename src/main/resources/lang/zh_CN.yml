@@ -7,3 +7,27 @@ cooldown: "&4| &f技能正处于冷却"
 canceled: "&4| &f事件已取消"
 
 command-hud-owner: "&a| &f当前你浏览的技能HUD拥有者是 &e{0}"
+info-no-job: "&4| &f玩家 &e{0} &f当前无职业"
+info:
+  - ==: JSON
+    text:
+      - '&a| &c&lOrryx &e信息面板'
+      - '&a| &7玩家名称: &f{0} [&8[&7点击查看&8\]]'
+      - '&a| &7玩家职业: &f{1}&7({2}) [&8[&7点击查看&8\]]'
+      - '&a| &7技能数量: &f{3} [&8[&7点击查看&8\]]'
+      - '&a| &7玩家等级: &e{4}&7/&e{5}&7(&f{6}&7/&a{7}&7)'
+      - '&a| &7技能点: &f{8} [&8[&a↑↑↑] &7/ [&c↓↓↓]&7&8\]'
+      - '&a| &7法力值: &b{9}&7/&b{10} [&8[&a点击回满&8\]]'
+    args:
+      - suggest: '{0}'
+        hover: '点击复制'
+      - command: '/orryx info job {1}'
+        hover: '点击查看'
+      - command: '/orryx info skill {0}'
+        hover: '点击查看'
+      - command: '/orryx point give {0} 1'
+        hover: '点击添加 1 技能点'
+      - command: '/orryx point take {0} 1'
+        hover: '点击减少 1 技能点'
+      - command: '/or mana heal {0}'
+        hover: '点击回满法力值'

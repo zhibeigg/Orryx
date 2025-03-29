@@ -22,8 +22,8 @@ import java.util.concurrent.ConcurrentMap
 
 object ScriptManager {
 
-    val runningSkillScriptsMap by unsafeLazy { hashMapOf<UUID, PlayerRunningSpace>() }
-    val runningStationScriptsMap by unsafeLazy { hashMapOf<UUID, PlayerRunningSpace>() }
+    val runningSkillScriptsMap by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { ConcurrentHashMap<UUID, PlayerRunningSpace>() }
+    val runningStationScriptsMap by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { ConcurrentHashMap<UUID, PlayerRunningSpace>() }
 
     val wikiActions by unsafeLazy { mutableListOf<org.gitee.orryx.core.wiki.Action>() }
     val wikiSelectors by unsafeLazy { mutableListOf<org.gitee.orryx.core.wiki.Selector>() }

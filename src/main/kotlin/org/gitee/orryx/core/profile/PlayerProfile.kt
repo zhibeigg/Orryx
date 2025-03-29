@@ -152,12 +152,12 @@ class PlayerProfile(
         }
     }
 
-    private fun createDaoData(): PlayerProfilePO {
+    override fun createPO(): PlayerProfilePO {
         return PlayerProfilePO(player.uniqueId, job, point, privateFlags.filter { it.value.isPersistence }.mapValues { it.value.toSerializable() })
     }
 
     override fun save(async: Boolean, callback: () -> Unit) {
-        val data = createDaoData()
+        val data = createPO()
         if (async && !GameManager.shutdown) {
             saveScope.launch {
                 MemoryCache.savePlayerProfile(this@PlayerProfile)

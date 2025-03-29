@@ -1,12 +1,12 @@
 package org.gitee.orryx.core.kether
 
 import org.gitee.orryx.api.events.OrryxScriptTerminateEvent
-import taboolib.common.util.unsafeLazy
 import taboolib.module.kether.ScriptContext
+import java.util.concurrent.ConcurrentHashMap
 
 class RunningSpace(val tag: String) {
 
-    private val runningScriptContexts by unsafeLazy { hashMapOf<String, ScriptContext>() }
+    private val runningScriptContexts by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { ConcurrentHashMap<String, ScriptContext>() }
 
     fun addScriptContext(scriptContext: ScriptContext) {
         runningScriptContexts[scriptContext.id] = scriptContext

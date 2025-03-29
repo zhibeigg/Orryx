@@ -3,6 +3,7 @@ package org.gitee.orryx.core.profile
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.dao.cache.Saveable
+import org.gitee.orryx.dao.pojo.PlayerProfilePO
 
 interface IPlayerProfile: Saveable {
 
@@ -111,5 +112,10 @@ interface IPlayerProfile: Saveable {
      * @param job 玩家职业
      * */
     fun setJob(job: IPlayerJob)
+
+    /**
+     * 创建序列化存储数据
+     * */
+    fun createPO(): PlayerProfilePO
 
 }

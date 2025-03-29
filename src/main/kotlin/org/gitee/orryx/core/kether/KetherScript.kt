@@ -3,6 +3,7 @@ package org.gitee.orryx.core.kether
 import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.skill.SkillLoaderManager
 import taboolib.common.platform.function.adaptPlayer
+import taboolib.common.platform.function.submitAsync
 import taboolib.module.kether.Script
 import taboolib.module.kether.ScriptContext
 import taboolib.module.kether.extend
@@ -20,16 +21,18 @@ class KetherScript(val skill: String, override val script: Script): IKetherScrip
     }
 
     override fun runActions(skillParameter: SkillParameter, map: Map<String, Any>?) {
-        val playerRunningSpace =
-            ScriptManager.runningSkillScriptsMap.getOrPut(skillParameter.player.uniqueId) { PlayerRunningSpace(skillParameter.player) }
+        submitAsync {
+            val playerRunningSpace =
+                ScriptManager.runningSkillScriptsMap.getOrPut(skillParameter.player.uniqueId) { PlayerRunningSpace(skillParameter.player) }
 
-        var context: ScriptContext? = null
-        ScriptManager.runScript(adaptPlayer(skillParameter.player), skillParameter, script) {
-            playerRunningSpace.invoke(this, skill)
-            map?.let { extend(it) }
-            context = this
-        }.whenComplete { _, _ ->
-            playerRunningSpace.release(context!!, skill)
+            var context: ScriptContext? = null
+            ScriptManager.runScript(adaptPlayer(skillParameter.player), skillParameter, script) {
+                playerRunningSpace.invoke(this, skill)
+                map?.let { extend(it) }
+                context = this
+            }.whenComplete { _, _ ->
+                playerRunningSpace.release(context!!, skill)
+            }
         }
     }
 

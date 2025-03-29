@@ -60,8 +60,8 @@ class PlayerSkill(
         //冷却
         if (!SkillTimer.hasNext(player, key)) return CompletableFuture.completedFuture(CastResult.COOLDOWN)
         //法力
-        return IManaManager.INSTANCE.haveMana(player, parameter.manaValue()).thenApply {
-            if (it) return@thenApply CastResult.MANA_NOT_ENOUGH
+        return IManaManager.INSTANCE.haveMana(player, parameter.manaValue()).thenApply { mana ->
+            if (!mana) return@thenApply CastResult.MANA_NOT_ENOUGH
             //脚本检测
             if ((skill as? ICastSkill)?.castCheckAction?.let { runCustomAction(it, mapOf()).orNull().cbool } == false) return@thenApply CastResult.CHECK_ACTION_FAILED
             //事件
@@ -136,7 +136,7 @@ class PlayerSkill(
         }
     }
 
-    private fun createDaoData(): PlayerSkillPO {
+    override fun createPO(): PlayerSkillPO {
         return PlayerSkillPO(player.uniqueId, job, key, locked, level)
     }
 
@@ -157,7 +157,7 @@ class PlayerSkill(
     }
 
     override fun save(async: Boolean, callback: () -> Unit) {
-        val data = createDaoData()
+        val data = createPO()
         if (async && !GameManager.shutdown) {
             saveScope.launch {
                 MemoryCache.savePlayerSkill(this@PlayerSkill)

@@ -7,10 +7,8 @@ import org.gitee.orryx.core.wiki.Type
 import org.gitee.orryx.utils.ORRYX_NAMESPACE
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common.platform.function.submit
-import taboolib.module.kether.KetherParser
-import taboolib.module.kether.actionFuture
-import taboolib.module.kether.long
-import taboolib.module.kether.run
+import taboolib.common.util.sync
+import taboolib.module.kether.*
 
 object Actions {
 
@@ -29,6 +27,22 @@ object Actions {
                     f.complete(null)
                 }
                 addOrryxCloseable(f) { task.cancel() }
+            }
+        }
+    }
+
+    @KetherParser(["sync"], namespace = ORRYX_NAMESPACE)
+    private fun actionSync() = scriptParser(
+        arrayOf(
+            Action.new("普通语句", "同步Sync", "sync")
+                .description("将语句在主线程运行并等待返回")
+                .addEntry("actions", Type.ANY)
+        )
+    ) {
+        val actions = it.nextParsedAction()
+        actionTake {
+            sync {
+                run(actions)
             }
         }
     }

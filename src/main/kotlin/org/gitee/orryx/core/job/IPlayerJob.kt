@@ -6,6 +6,7 @@ import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.key.IGroup
 import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.dao.cache.Saveable
+import org.gitee.orryx.dao.pojo.PlayerJobPO
 import java.util.concurrent.CompletableFuture
 
 interface IPlayerJob: Saveable {
@@ -38,22 +39,27 @@ interface IPlayerJob: Saveable {
     val group: String
 
     /**
-     * 等级(30/100 Lv.6)中的6
+     * 等级(30/100 Lv.6/10)中的6
      * */
     val level: Int
 
     /**
-     * 经验值(30/100 Lv.6)中的30加前六级经验
+     * 等级(30/100 Lv.6/10)中的10
+     * */
+    val maxLevel: Int
+
+    /**
+     * 经验值(30/100 Lv.6/10)中的30加前六级经验
      * */
     val experience: Int
 
     /**
-     * 当前等级下的经验值(30/100 Lv.6)中的30
+     * 当前等级下的经验值(30/100 Lv.6/10)中的30
      * */
     val experienceOfLevel: Int
 
     /**
-     * 当前等级下的最大经验值(30/100 Lv.6)中的100
+     * 当前等级下的最大经验值(30/100 Lv.6/10)中的100
      * */
     val maxExperienceOfLevel: Int
 
@@ -146,5 +152,10 @@ interface IPlayerJob: Saveable {
      * @return 是否成功
      * */
     fun clear(): CompletableFuture<Boolean>
+
+    /**
+     * 创建序列化存储数据
+     * */
+    fun createPO(): PlayerJobPO
 
 }

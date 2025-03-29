@@ -1,9 +1,15 @@
 package org.gitee.orryx.core.mana
 
+import kotlinx.coroutines.launch
 import org.bukkit.entity.Player
+import org.gitee.orryx.api.OrryxAPI.saveScope
 import org.gitee.orryx.api.events.player.OrryxPlayerManaEvents
+import org.gitee.orryx.core.GameManager
 import org.gitee.orryx.core.job.IJob
 import org.gitee.orryx.core.job.JobLoaderManager
+import org.gitee.orryx.core.profile.IPlayerProfile
+import org.gitee.orryx.dao.cache.ISyncCacheManager
+import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.utils.*
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.isPrimaryThread
@@ -42,7 +48,7 @@ class ManaMangerDefault: IManaManager {
                 val event = OrryxPlayerManaEvents.Up.Pre(player, profile, mana)
                 if (event.call()) {
                     profile.setFlag(MANA_FLAG, (profile.getFlag(MANA_FLAG)?.value.cdouble + event.mana).coerceAtLeast(0.0).coerceAtMost(job.getMaxMana()).flag(true), false)
-                    profile.save(isPrimaryThread) {
+                    save(player, profile) {
                         future.complete(ManaResult.SUCCESS)
                         OrryxPlayerManaEvents.Up.Post(player, profile, event.mana)
                     }
@@ -65,7 +71,7 @@ class ManaMangerDefault: IManaManager {
                 if (event.call()) {
                     val less = profile.getFlag(MANA_FLAG)?.value.cdouble - event.mana
                     profile.setFlag(MANA_FLAG, less.coerceAtLeast(0.0).coerceAtMost(job.getMaxMana()).flag(true), false)
-                    profile.save(isPrimaryThread) {
+                    save(player, profile) {
                         future.complete(
                             if (less >= 0) {
                                 ManaResult.SUCCESS
@@ -114,7 +120,7 @@ class ManaMangerDefault: IManaManager {
                 val event = OrryxPlayerManaEvents.Regin.Pre(player, profile, mana)
                 if (event.call()) {
                     profile.setFlag(MANA_FLAG, (profile.getFlag(MANA_FLAG)?.value.cdouble + mana).coerceAtMost(job.getMaxMana()).flag(true), false)
-                    profile.save(isPrimaryThread) {
+                    save(player, profile) {
                         future.complete(mana)
                         OrryxPlayerManaEvents.Regin.Post(player, profile, event.reginMana).call()
                     }
@@ -137,7 +143,7 @@ class ManaMangerDefault: IManaManager {
                 val event = OrryxPlayerManaEvents.Heal.Pre(player, profile, add)
                 if (event.call()) {
                     profile.setFlag(MANA_FLAG, mana.flag(true), false)
-                    profile.save(isPrimaryThread) {
+                    save(player, profile) {
                         future.complete(add)
                         OrryxPlayerManaEvents.Heal.Post(player, profile, event.healMana).call()
                     }
@@ -149,6 +155,21 @@ class ManaMangerDefault: IManaManager {
             }
         }
         return future
+    }
+
+    private fun save(player: Player, profile: IPlayerProfile, callback: () -> Unit) {
+        if (isPrimaryThread && !GameManager.shutdown) {
+            saveScope.launch {
+                MemoryCache.savePlayerProfile(profile)
+                ISyncCacheManager.INSTANCE.savePlayerData(player.uniqueId, profile.createPO(), false)
+            }.invokeOnCompletion {
+                callback()
+            }
+        } else {
+            MemoryCache.savePlayerProfile(profile)
+            ISyncCacheManager.INSTANCE.savePlayerData(player.uniqueId, profile.createPO(), false)
+            callback()
+        }
     }
 
 }

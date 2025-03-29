@@ -1,12 +1,12 @@
 package org.gitee.orryx.core.kether
 
 import org.bukkit.entity.Player
-import taboolib.common.util.unsafeLazy
 import taboolib.module.kether.ScriptContext
+import java.util.concurrent.ConcurrentHashMap
 
 class PlayerRunningSpace(val player: Player) {
 
-    private val runningSpaceMap by unsafeLazy { hashMapOf<String, RunningSpace>() }
+    private val runningSpaceMap by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { ConcurrentHashMap<String, RunningSpace>() }
 
     fun invoke(context: ScriptContext, tag: String) {
         runningSpaceMap.getOrPut(tag) { RunningSpace(tag) }.addScriptContext(context)

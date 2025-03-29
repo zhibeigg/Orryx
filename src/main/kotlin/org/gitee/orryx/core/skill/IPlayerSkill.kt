@@ -3,6 +3,7 @@ package org.gitee.orryx.core.skill
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.kether.parameter.IParameter
 import org.gitee.orryx.dao.cache.Saveable
+import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import java.util.concurrent.CompletableFuture
 
 interface IPlayerSkill: Saveable {
@@ -104,5 +105,10 @@ interface IPlayerSkill: Saveable {
      * @return 是否成功
      * */
     fun clear(): CompletableFuture<Boolean>
+
+    /**
+     * 创建序列化存储数据
+     * */
+    fun createPO(): PlayerSkillPO
 
 }

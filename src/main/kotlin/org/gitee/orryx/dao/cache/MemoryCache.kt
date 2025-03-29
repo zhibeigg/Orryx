@@ -109,15 +109,15 @@ object MemoryCache {
         return playerSkillCache.get(playerJobSkillDataTag(player.uniqueId, job, skill))
     }
 
-    fun savePlayerProfile(playerProfile: PlayerProfile) {
+    fun savePlayerProfile(playerProfile: IPlayerProfile) {
         playerProfileCache.put(playerProfile.player.uniqueId, CompletableFuture.completedFuture(playerProfile))
     }
 
-    fun savePlayerJob(playerJob: PlayerJob) {
+    fun savePlayerJob(playerJob: IPlayerJob) {
         playerJobCache.put(playerJobDataTag(playerJob.player.uniqueId, playerJob.key), CompletableFuture.completedFuture(playerJob))
     }
 
-    fun savePlayerSkill(playerSkill: PlayerSkill) {
+    fun savePlayerSkill(playerSkill: IPlayerSkill) {
         playerSkillCache.put(playerJobSkillDataTag(playerSkill.player.uniqueId, playerSkill.job, playerSkill.key), CompletableFuture.completedFuture(playerSkill))
     }
 

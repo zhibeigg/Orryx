@@ -4,14 +4,16 @@ import org.bukkit.Bukkit
 import org.bukkit.command.ConsoleCommandSender
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.GameManager
+import org.gitee.orryx.core.mana.IManaManager
 import org.gitee.orryx.core.reload.ReloadAPI
+import org.gitee.orryx.utils.bukkitPlayer
+import org.gitee.orryx.utils.job
+import org.gitee.orryx.utils.orryxProfile
 import taboolib.common.platform.ProxyCommandSender
-import taboolib.common.platform.command.CommandBody
-import taboolib.common.platform.command.CommandHeader
-import taboolib.common.platform.command.mainCommand
-import taboolib.common.platform.command.subCommandExec
+import taboolib.common.platform.command.*
 import taboolib.common.platform.function.info
 import taboolib.expansion.createHelper
+import taboolib.module.lang.sendLang
 
 @CommandHeader("Orryx", ["or"], "Orryx技能插件主指令", permission = "Orryx.Command.Main", permissionMessage = "你没有权限使用此指令")
 object OrryxCommand {
@@ -44,6 +46,42 @@ object OrryxCommand {
 
     @CommandBody
     val script = OrryxScriptCommand
+
+    @CommandBody
+    val info = subCommand {
+        player {
+            exec<ProxyCommandSender> {
+                val player = ctx.bukkitPlayer() ?: return@exec
+                player.orryxProfile { profile ->
+                    val jobKey = profile.job
+                    if (jobKey != null) {
+                        IManaManager.INSTANCE.getMana(player).thenApply { mana ->
+                            IManaManager.INSTANCE.getMaxMana(player).thenApply { maxMana ->
+                                player.job(jobKey) { job ->
+                                    sender.sendLang(
+                                        "info",
+                                        player.name,
+                                        job.job.name,
+                                        job.key,
+                                        job.job.skills.size,
+                                        job.level,
+                                        job.maxLevel,
+                                        job.experienceOfLevel,
+                                        job.maxExperienceOfLevel,
+                                        profile.point,
+                                        mana,
+                                        maxMana
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        sender.sendLang("info-no-job", player.name)
+                    }
+                }
+            }
+        }
+    }
 
     @CommandBody
     val test = subCommandExec<Player> {
