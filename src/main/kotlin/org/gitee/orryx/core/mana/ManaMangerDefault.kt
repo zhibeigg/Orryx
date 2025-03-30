@@ -2,7 +2,7 @@ package org.gitee.orryx.core.mana
 
 import kotlinx.coroutines.launch
 import org.bukkit.entity.Player
-import org.gitee.orryx.api.OrryxAPI.saveScope
+import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.api.events.player.OrryxPlayerManaEvents
 import org.gitee.orryx.core.GameManager
 import org.gitee.orryx.core.job.IJob
@@ -159,7 +159,7 @@ class ManaMangerDefault: IManaManager {
 
     private fun save(player: Player, profile: IPlayerProfile, callback: () -> Unit) {
         if (isPrimaryThread && !GameManager.shutdown) {
-            saveScope.launch {
+            OrryxAPI.saveScope.launch {
                 ISyncCacheManager.INSTANCE.savePlayerProfile(player.uniqueId, profile.createPO(), false)
                 MemoryCache.savePlayerProfile(profile)
             }.invokeOnCompletion {

@@ -1,6 +1,6 @@
 package org.gitee.orryx.dao.cache
 
-import org.gitee.orryx.api.OrryxAPI
+import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.dao.pojo.PlayerJobPO
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
@@ -18,7 +18,7 @@ interface ISyncCacheManager {
     companion object {
 
         private val type
-            get() = OrryxAPI.config.getString("CacheManager", "DISABLE")!!.uppercase()
+            get() = Orryx.config.getString("CacheManager", "DISABLE")!!.uppercase()
 
         private val lazy by unsafeLazy { type }
 

@@ -12,7 +12,7 @@ import com.lark.oapi.service.wiki.v2.model.MoveDocsToWikiSpaceNodeReq
 import com.lark.oapi.service.wiki.v2.model.MoveDocsToWikiSpaceNodeReqBody
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
-import org.gitee.orryx.api.OrryxAPI
+import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.utils.debug
 import taboolib.common.platform.function.info
@@ -28,16 +28,16 @@ import kotlin.text.Charsets.UTF_8
 object LarkSuite {
 
     private val appId
-        get() = OrryxAPI.config.getString("LarkSuite.AppId")
+        get() = Orryx.config.getString("LarkSuite.AppId")
 
     private val appSecret
-        get() = OrryxAPI.config.getString("LarkSuite.AppSecret")
+        get() = Orryx.config.getString("LarkSuite.AppSecret")
 
     private val parentWikiToken
-        get() = OrryxAPI.config.getString("LarkSuite.ParentWikiToken")
+        get() = Orryx.config.getString("LarkSuite.ParentWikiToken")
 
     private val spaceId
-        get() = OrryxAPI.config.getString("LarkSuite.SpaceId")
+        get() = Orryx.config.getString("LarkSuite.SpaceId")
 
     private val client: Client by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         Client.newBuilder(appId, appSecret).requestTimeout(30, TimeUnit.MINUTES).build()

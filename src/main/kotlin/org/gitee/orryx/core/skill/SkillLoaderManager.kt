@@ -1,6 +1,6 @@
 package org.gitee.orryx.core.skill
 
-import org.gitee.orryx.api.OrryxAPI.ketherScriptLoader
+import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.api.events.OrryxSkillReloadEvent
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.core.skill.skills.*
@@ -52,7 +52,7 @@ object SkillLoaderManager {
 
     internal fun loadScript(skill: ICastSkill): Script? {
         return try {
-            ketherScriptLoader.load(ScriptService, skill.key, getBytes(skill.actions), orryxEnvironmentNamespaces)
+            OrryxAPI.ketherScriptLoader.load(ScriptService, skill.key, getBytes(skill.actions), orryxEnvironmentNamespaces)
         } catch (ex: Exception) {
             ex.printKetherErrorMessage()
             warning("Skill: ${skill.key}")

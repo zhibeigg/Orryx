@@ -1,6 +1,6 @@
 package org.gitee.orryx.core.reload
 
-import org.gitee.orryx.api.OrryxAPI
+import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.api.events.OrryxPluginReloadEvent
 import org.gitee.orryx.api.interfaces.IReloadAPI
 import org.gitee.orryx.utils.debug
@@ -14,7 +14,7 @@ import taboolib.library.reflex.ReflexClass
 import taboolib.module.chat.colored
 
 @Awake
-object ReloadAPI: IReloadAPI, ClassVisitor(3) {
+internal object ReloadAPI: IReloadAPI, ClassVisitor(3) {
 
     class ReloadFunction(val method: ClassMethod, val obj: Any, val weight: Int)
 
@@ -39,8 +39,8 @@ object ReloadAPI: IReloadAPI, ClassVisitor(3) {
         val event = OrryxPluginReloadEvent()
         if (event.call()) {
             info("&e┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".colored())
-            OrryxAPI.config.reload()
-            debug = OrryxAPI.config.getBoolean("Debug")
+            Orryx.config.reload()
+            debug = Orryx.config.getBoolean("Debug")
             val extensions = event.getFunctions()
             val weights = (methodList.map { it.weight } + extensions.map { it.weight }).distinct()
             weights.sorted().forEach { weight ->

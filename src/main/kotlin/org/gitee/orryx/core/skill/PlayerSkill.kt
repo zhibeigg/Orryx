@@ -2,7 +2,7 @@ package org.gitee.orryx.core.skill
 
 import kotlinx.coroutines.launch
 import org.bukkit.entity.Player
-import org.gitee.orryx.api.OrryxAPI.saveScope
+import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillCastEvents
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillClearEvents
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillLevelEvents
@@ -159,7 +159,7 @@ class PlayerSkill(
     override fun save(async: Boolean, callback: () -> Unit) {
         val data = createPO()
         if (async && !GameManager.shutdown) {
-            saveScope.launch {
+            OrryxAPI.saveScope.launch {
                 IStorageManager.INSTANCE.savePlayerSkill(player.uniqueId, data) {
                     ISyncCacheManager.INSTANCE.removePlayerSkill(player.uniqueId, job, key, false)
                     MemoryCache.removePlayerSkill(player.uniqueId, job, key)

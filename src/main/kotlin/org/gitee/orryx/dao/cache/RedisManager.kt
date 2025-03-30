@@ -18,6 +18,11 @@ import java.util.concurrent.CompletableFuture
 
 class RedisManager: ISyncCacheManager {
 
+    companion object {
+        const val SECOND_6_HOURS = 6 * 60 * 60L
+        const val SECOND_12_HOURS = 12 * 60 * 60L
+    }
+
     private val api by unsafeLazy { RedisChannelPlugin.api }
 
     override fun getPlayerProfile(player: UUID): CompletableFuture<PlayerProfilePO?> {
@@ -30,7 +35,7 @@ class RedisManager: ISyncCacheManager {
                     playerProfilePO = IStorageManager.INSTANCE.getPlayerData(player).join()
                     playerProfilePO?.let { savePlayerProfile(player, it, false) }
                 } else {
-                    api.refreshExpire(tag, 900, false)
+                    api.refreshExpire(tag, SECOND_12_HOURS, false)
                 }
                 future.complete(playerProfilePO)
             } catch (e: Throwable) {
@@ -55,7 +60,7 @@ class RedisManager: ISyncCacheManager {
                     playerJobPO = IStorageManager.INSTANCE.getPlayerJob(player, job).join()
                     playerJobPO?.let { savePlayerJob(player, it, false) }
                 } else {
-                    api.refreshExpire(tag, 900, false)
+                    api.refreshExpire(tag, SECOND_12_HOURS, false)
                 }
                 future.complete(playerJobPO)
             } catch (e: Throwable) {
@@ -80,7 +85,7 @@ class RedisManager: ISyncCacheManager {
                     playerSkillPO = IStorageManager.INSTANCE.getPlayerSkill(player, job, skill).join()
                     playerSkillPO?.let { savePlayerSkill(player, it, false) }
                 } else {
-                    api.refreshExpire(tag, 600, false)
+                    api.refreshExpire(tag, SECOND_6_HOURS, false)
                 }
                 future.complete(playerSkillPO)
             } catch (e: Throwable) {

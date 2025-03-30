@@ -1,7 +1,7 @@
 package org.gitee.orryx.core.mana
 
 import org.bukkit.entity.Player
-import org.gitee.orryx.api.OrryxAPI
+import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.core.job.IJob
 import org.gitee.orryx.core.reload.Reload
 import taboolib.common.LifeCycle
@@ -20,12 +20,12 @@ interface IManaManager {
 
         private var thread: PlatformExecutor.PlatformTask? = null
 
-        private var reginTick: Long = OrryxAPI.config.getLong("ManaReginTick", 20)
+        private var reginTick: Long = Orryx.config.getLong("ManaReginTick", 20)
 
         @Reload(2)
         @Awake(LifeCycle.ENABLE)
         private fun init() {
-            reginTick = OrryxAPI.config.getLong("ManaReginTick", 20)
+            reginTick = Orryx.config.getLong("ManaReginTick", 20)
             thread?.cancel()
             thread = submitAsync(period = reginTick) {
                 onlinePlayers.forEach {

@@ -4,7 +4,7 @@ import kotlinx.coroutines.launch
 import org.bukkit.attribute.Attribute
 import org.bukkit.attribute.AttributeModifier
 import org.bukkit.entity.Player
-import org.gitee.orryx.api.OrryxAPI.saveScope
+import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.api.events.player.OrryxPlayerPointEvents
 import org.gitee.orryx.api.events.player.job.OrryxPlayerJobChangeEvents
 import org.gitee.orryx.core.GameManager
@@ -159,7 +159,7 @@ class PlayerProfile(
     override fun save(async: Boolean, callback: () -> Unit) {
         val data = createPO()
         if (async && !GameManager.shutdown) {
-            saveScope.launch {
+            OrryxAPI.saveScope.launch {
                 IStorageManager.INSTANCE.savePlayerData(player.uniqueId, data) {
                     ISyncCacheManager.INSTANCE.removePlayerProfile(player.uniqueId, false)
                     MemoryCache.removePlayerProfile(player.uniqueId)

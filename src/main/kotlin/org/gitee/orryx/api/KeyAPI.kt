@@ -9,14 +9,16 @@ import org.gitee.orryx.core.profile.IPlayerKeySetting
 import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.utils.getSkill
 import org.gitee.orryx.utils.job
+import taboolib.common.LifeCycle
+import taboolib.common.platform.Awake
+import taboolib.common.platform.PlatformFactory
 import taboolib.common.platform.function.info
 import taboolib.module.chat.colored
 import java.util.concurrent.CompletableFuture
 
-internal object KeyAPI: IKeyAPI {
+class KeyAPI: IKeyAPI {
 
-    override val keySetting: IPlayerKeySetting
-        get() = IPlayerKeySetting.INSTANCE
+    override val keySetting: IPlayerKeySetting = PlatformFactory.getAPI<IPlayerKeySetting>()
 
     override fun registerKeySetting(keySetting: IPlayerKeySetting) {
         IPlayerKeySetting.register(keySetting)
@@ -42,5 +44,14 @@ internal object KeyAPI: IKeyAPI {
     override fun getGroup(key: String): IGroup = BindKeyLoaderManager.getGroup(key) ?: error("未找到组${key}请在config中配置")
 
     override fun getBindKey(key: String): IBindKey = BindKeyLoaderManager.getBindKey(key) ?: error("未找到绑定按键${key}请在keys中配置")
+
+    companion object {
+
+        @Awake(LifeCycle.CONST)
+        fun init() {
+            PlatformFactory.registerAPI<IKeyAPI>(KeyAPI())
+        }
+
+    }
 
 }

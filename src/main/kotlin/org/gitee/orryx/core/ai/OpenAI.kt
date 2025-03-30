@@ -10,7 +10,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.gitee.orryx.api.OrryxAPI
+import org.gitee.orryx.api.Orryx
 import java.util.concurrent.TimeUnit
 
 
@@ -59,10 +59,10 @@ object OpenAI {
     )
 
     private val API_KEY
-        get() = OrryxAPI.config.getString("OpenAI.ApiKey") ?: error("未配置OpenAI ApiKey")
+        get() = Orryx.config.getString("OpenAI.ApiKey") ?: error("未配置OpenAI ApiKey")
 
     private val BASE_URL
-        get() = OrryxAPI.config.getString("OpenAI.BaseUrl") ?: error("未配置OpenAI BaseUrl")
+        get() = Orryx.config.getString("OpenAI.BaseUrl") ?: error("未配置OpenAI BaseUrl")
 
     fun npcChat(player: String, npc: String, npcDescription: String, message: String, model: String, maxTokens: Int, temperature: Double): String? {
         val mediaType = MediaType.parse("application/json")

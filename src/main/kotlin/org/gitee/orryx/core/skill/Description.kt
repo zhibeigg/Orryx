@@ -1,7 +1,7 @@
 package org.gitee.orryx.core.skill
 
 import org.bukkit.entity.Player
-import org.gitee.orryx.api.OrryxAPI
+import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.core.kether.ScriptManager.parseScript
 import org.gitee.orryx.core.kether.ScriptManager.runScript
 import org.gitee.orryx.core.kether.parameter.SkillParameter
@@ -17,11 +17,11 @@ class Description(val description: List<String>) {
 
     companion object {
 
-        private var descriptionSplit: String = OrryxAPI.config.getString("DescriptionSplit", "&7→")!!
+        private var descriptionSplit: String = Orryx.config.getString("DescriptionSplit", "&7→")!!
 
         @Reload(weight = 2)
         private fun reload() {
-            descriptionSplit = OrryxAPI.config.getString("DescriptionSplit", "&7→")!!
+            descriptionSplit = Orryx.config.getString("DescriptionSplit", "&7→")!!
         }
 
     }

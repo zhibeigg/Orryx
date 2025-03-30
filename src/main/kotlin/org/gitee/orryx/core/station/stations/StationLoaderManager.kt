@@ -2,7 +2,7 @@ package org.gitee.orryx.core.station.stations
 
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
-import org.gitee.orryx.api.OrryxAPI.ketherScriptLoader
+import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.common.timer.StationTimer
 import org.gitee.orryx.core.kether.PlayerRunningSpace
 import org.gitee.orryx.core.kether.ScriptManager
@@ -70,7 +70,7 @@ object StationLoaderManager: ClassVisitor(3) {
 
     internal fun loadScript(station: StationLoader): Script? {
         return try {
-            ketherScriptLoader.load(ScriptService, station.key, getBytes(station.actions), orryxEnvironmentNamespaces)
+            OrryxAPI.ketherScriptLoader.load(ScriptService, station.key, getBytes(station.actions), orryxEnvironmentNamespaces)
         } catch (ex: Exception) {
             ex.printKetherErrorMessage()
             warning("Station: ${station.configuration.file}")

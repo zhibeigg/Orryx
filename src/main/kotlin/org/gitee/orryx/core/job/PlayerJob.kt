@@ -2,7 +2,7 @@ package org.gitee.orryx.core.job
 
 import kotlinx.coroutines.launch
 import org.bukkit.entity.Player
-import org.gitee.orryx.api.OrryxAPI.saveScope
+import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.api.events.player.OrryxPlayerChangeGroupEvents
 import org.gitee.orryx.api.events.player.job.OrryxPlayerJobClearEvents
 import org.gitee.orryx.api.events.player.job.OrryxPlayerJobExperienceEvents
@@ -267,7 +267,7 @@ class PlayerJob(
     override fun save(async: Boolean, callback: () -> Unit) {
         val data = createPO()
         if (async && !GameManager.shutdown) {
-            saveScope.launch {
+            OrryxAPI.saveScope.launch {
                 IStorageManager.INSTANCE.savePlayerJob(player.uniqueId, data) {
                     ISyncCacheManager.INSTANCE.removePlayerJob(player.uniqueId, key, false)
                     MemoryCache.removePlayerJob(player.uniqueId, key)

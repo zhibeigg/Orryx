@@ -2,7 +2,7 @@ package org.gitee.orryx.dao.storage
 
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.gitee.orryx.api.OrryxAPI
+import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.dao.pojo.PlayerJobPO
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture
 
 class MySqlManager: IStorageManager {
 
-    private val host by unsafeLazy { OrryxAPI.config.getHost("Database.sql") }
+    private val host by unsafeLazy { Orryx.config.getHost("Database.sql") }
     private val dataSource by unsafeLazy { host.createDataSource() }
 
     private val playerTable: Table<*, *> = Table("orryx_player", host) {

@@ -2,7 +2,7 @@ package org.gitee.orryx.core.ui
 
 import org.bukkit.entity.Player
 import org.bukkit.event.player.PlayerQuitEvent
-import org.gitee.orryx.api.OrryxAPI
+import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillBindKeyEvent
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillCooldownEvents
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillUnBindKeyEvent
@@ -110,7 +110,7 @@ interface IUIManager {
         }
 
         private val type
-            get() = OrryxAPI.config.getString("UI.use", "bukkit")!!.uppercase()
+            get() = Orryx.config.getString("UI.use", "bukkit")!!.uppercase()
 
         internal lateinit var INSTANCE: IUIManager
 

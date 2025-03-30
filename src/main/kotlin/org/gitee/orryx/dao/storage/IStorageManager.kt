@@ -1,6 +1,6 @@
 package org.gitee.orryx.dao.storage
 
-import org.gitee.orryx.api.OrryxAPI
+import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.dao.pojo.PlayerJobPO
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
@@ -18,7 +18,7 @@ interface IStorageManager {
     companion object {
 
         private val type
-            get() = OrryxAPI.config.getString("Database.use", "SQLLITE")!!.uppercase()
+            get() = Orryx.config.getString("Database.use", "SQLLITE")!!.uppercase()
 
         private val lazy: String by unsafeLazy { type }
 

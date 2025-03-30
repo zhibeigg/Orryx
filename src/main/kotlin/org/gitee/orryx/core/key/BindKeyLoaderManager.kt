@@ -1,6 +1,6 @@
 package org.gitee.orryx.core.key
 
-import org.gitee.orryx.api.OrryxAPI
+import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.utils.DEFAULT
 import org.gitee.orryx.utils.keysRegister
@@ -29,7 +29,7 @@ object BindKeyLoaderManager {
             it.uppercase() to BindKeyLoader(it.uppercase(), keys.getConfigurationSection("Keys.$it")!!)
         } ?: emptyMap()
         keysRegister(bindKeyLoaderMap.values as Collection<BindKeyLoader>)
-        groupMap = (OrryxAPI.config.getStringList("Group") + DEFAULT).associateWith { Group(it) }
+        groupMap = (Orryx.config.getStringList("Group") + DEFAULT).associateWith { Group(it) }
         info("&e┣&7Groups loaded &e${groupMap.size} &a√".colored())
         info("&e┣&7BindKeys loaded &e${bindKeyLoaderMap.size} &a√".colored())
     }
