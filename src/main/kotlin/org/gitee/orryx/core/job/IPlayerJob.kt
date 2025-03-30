@@ -106,6 +106,16 @@ interface IPlayerJob: Saveable {
     fun setLevel(level: Int): CompletableFuture<LevelResult>
 
     /**
+     * 获取升级会带来的技能点点数
+     * */
+    fun getUpgradePoint(from: Int, to: Int): Int
+
+    /**
+     * 获取属性数据
+     * */
+    fun getAttributes(): List<String>
+
+    /**
      * 获得经验计算器
      * @return 经验计算器
      * */

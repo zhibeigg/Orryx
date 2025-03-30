@@ -152,35 +152,58 @@ class MySqlManager: IStorageManager {
         return future
     }
 
-    override fun savePlayerData(player: UUID, playerProfilePO: PlayerProfilePO) {
-        playerTable.insert(dataSource, UUID, JOB, POINT, FLAGS) {
-            onDuplicateKeyUpdate {
-                update(POINT, playerProfilePO.point)
-                update(FLAGS, Json.encodeToString(playerProfilePO.flags))
+    override fun savePlayerData(player: UUID, playerProfilePO: PlayerProfilePO, onSuccess: () -> Unit) {
+        playerTable.transaction(dataSource) {
+            insert(UUID, JOB, POINT, FLAGS) {
+                onDuplicateKeyUpdate {
+                    update(POINT, playerProfilePO.point)
+                    update(FLAGS, Json.encodeToString(playerProfilePO.flags))
+                }
+                value(
+                    player.toString(),
+                    playerProfilePO.job,
+                    playerProfilePO.point,
+                    Json.encodeToString(playerProfilePO.flags)
+                )
             }
-            value(player.toString(), playerProfilePO.job, playerProfilePO.point, Json.encodeToString(playerProfilePO.flags))
-        }
+        }.onSuccess { onSuccess() }
     }
 
-    override fun savePlayerJob(player: UUID, playerJobPO: PlayerJobPO) {
-        jobsTable.insert(dataSource, UUID, JOB, EXPERIENCE, GROUP, BIND_KEY_OF_GROUP) {
-            onDuplicateKeyUpdate {
-                update(EXPERIENCE, playerJobPO.experience)
-                update(GROUP, playerJobPO.group)
-                update(BIND_KEY_OF_GROUP, Json.encodeToString(playerJobPO.bindKeyOfGroup))
+    override fun savePlayerJob(player: UUID, playerJobPO: PlayerJobPO, onSuccess: () -> Unit) {
+        jobsTable.transaction(dataSource) {
+            insert(UUID, JOB, EXPERIENCE, GROUP, BIND_KEY_OF_GROUP) {
+                onDuplicateKeyUpdate {
+                    update(EXPERIENCE, playerJobPO.experience)
+                    update(GROUP, playerJobPO.group)
+                    update(BIND_KEY_OF_GROUP, Json.encodeToString(playerJobPO.bindKeyOfGroup))
+                }
+                value(
+                    player.toString(),
+                    playerJobPO.job,
+                    playerJobPO.experience,
+                    playerJobPO.group,
+                    Json.encodeToString(playerJobPO.bindKeyOfGroup)
+                )
             }
-            value(player.toString(), playerJobPO.job, playerJobPO.experience, playerJobPO.group, Json.encodeToString(playerJobPO.bindKeyOfGroup))
-        }
+        }.onSuccess { onSuccess() }
     }
 
-    override fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO) {
-        skillsTable.insert(dataSource, UUID, JOB, SKILL, LOCKED, LEVEL) {
-            onDuplicateKeyUpdate {
-                update(LOCKED, playerSkillPO.locked)
-                update(LEVEL, playerSkillPO.level)
+    override fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO, onSuccess: () -> Unit) {
+        skillsTable.transaction(dataSource) {
+            insert(UUID, JOB, SKILL, LOCKED, LEVEL) {
+                onDuplicateKeyUpdate {
+                    update(LOCKED, playerSkillPO.locked)
+                    update(LEVEL, playerSkillPO.level)
+                }
+                value(
+                    player.toString(),
+                    playerSkillPO.job,
+                    playerSkillPO.skill,
+                    playerSkillPO.locked,
+                    playerSkillPO.level
+                )
             }
-            value(player.toString(), playerSkillPO.job, playerSkillPO.skill, playerSkillPO.locked, playerSkillPO.level)
-        }
+        }.onSuccess { onSuccess() }
     }
 
 }

@@ -160,14 +160,14 @@ class ManaMangerDefault: IManaManager {
     private fun save(player: Player, profile: IPlayerProfile, callback: () -> Unit) {
         if (isPrimaryThread && !GameManager.shutdown) {
             saveScope.launch {
+                ISyncCacheManager.INSTANCE.savePlayerProfile(player.uniqueId, profile.createPO(), false)
                 MemoryCache.savePlayerProfile(profile)
-                ISyncCacheManager.INSTANCE.savePlayerData(player.uniqueId, profile.createPO(), false)
             }.invokeOnCompletion {
                 callback()
             }
         } else {
+            ISyncCacheManager.INSTANCE.savePlayerProfile(player.uniqueId, profile.createPO(), false)
             MemoryCache.savePlayerProfile(profile)
-            ISyncCacheManager.INSTANCE.savePlayerData(player.uniqueId, profile.createPO(), false)
             callback()
         }
     }

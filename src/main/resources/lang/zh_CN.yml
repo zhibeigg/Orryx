@@ -12,18 +12,18 @@ info:
   - ==: JSON
     text:
       - '&a| &c&lOrryx &e信息面板'
-      - '&a| &7玩家名称: &f{0} [&8[&7点击查看&8\]]'
+      - '&a| &7玩家名称: &f{0} [&8[&7点击复制&8\]]'
       - '&a| &7玩家职业: &f{1}&7({2}) [&8[&7点击查看&8\]]'
-      - '&a| &7技能数量: &f{3} [&8[&7点击查看&8\]]'
+      - '&a| &7解锁技能数量: &f{3} [&8[&7点击查看&8\]]'
       - '&a| &7玩家等级: &e{4}&7/&e{5}&7(&f{6}&7/&a{7}&7)'
       - '&a| &7技能点: &f{8} [&8[&a↑↑↑] &7/ [&c↓↓↓]&7&8\]'
       - '&a| &7法力值: &b{9}&7/&b{10} [&8[&a点击回满&8\]]'
     args:
       - suggest: '{0}'
         hover: '点击复制'
-      - command: '/orryx info job {1}'
+      - command: '/orryx info {0} job {2}'
         hover: '点击查看'
-      - command: '/orryx info skill {0}'
+      - command: '/orryx info {0} skills'
         hover: '点击查看'
       - command: '/orryx point give {0} 1'
         hover: '点击添加 1 技能点'
@@ -31,3 +31,60 @@ info:
         hover: '点击减少 1 技能点'
       - command: '/or mana heal {0}'
         hover: '点击回满法力值'
+info-job:
+  - ==: JSON
+    text:
+      - '&a| &c&lOrryx &e信息面板&7-&e职业'
+      - '&a| &7玩家名称: &f{0} [&8[&7点击复制&8\]]'
+      - '&a| &7职业Key: &f{1} [&8[&7点击复制&8\]]'
+      - '&a| &7职业名: &f{2} [&8[&7点击复制&8\]]'
+      - '&a| &7职业属性: &f{3}'
+      - '&a| &7职业法力恢复: &f{4}'
+      - '&a| &7职业最大法力: &f{5}'
+      - '&a| &7职业升级获得技能点: &f{6}'
+      - '&a| &7职业等级算法: &f{7} [&8[&7点击查看&8\]]'
+      - '&a| &7职业技能: &f'
+    args:
+      - suggest: '{0}'
+        hover: '点击复制'
+      - suggest: '{1}'
+        hover: '点击复制'
+      - suggest: '{2}'
+        hover: '点击复制'
+      - command: '/orryx info {0} experience {8}'
+        hover: '点击查看'
+skill:
+  - ==: JSON
+    text:
+      - '[{1}]'
+    args:
+      - command: '/orryx info {0} skill {1}'
+        hover: '点击查看'
+info-skills:
+  - '&a| &c&lOrryx &e信息面板&7-&e技能列表'
+  - '&a| &7职业技能: &f'
+info-skill:
+  - ==: JSON
+    text:
+      - '&a| &c&lOrryx &e信息面板&7-&e技能'
+      - '&a| &7玩家名称: &f{0} [&8[&7点击复制&8\]]'
+      - '&a| &7技能Key: &f{1} [&8[&7点击复制&8\]]'
+      - '&a| &7技能名: &f{2} [&8[&7点击复制&8\]]'
+      - '&a| &7技能类型: &f{3}'
+      - '&a| &7是否需要解锁: &f{4}'
+      - '&a| &7初始等级: &f{5}'
+      - '&a| &7等级: &e{6}&7/&e{7}'
+      - '&a| &7消耗法力值: &f{8}'
+      - '&a| &7冷却时间: &f{9}'
+      - '&a| [&8[&7强制释放&8\]]  [&8[&7尝试释放&8\]]'
+    args:
+      - suggest: '{0}'
+        hover: '点击复制'
+      - suggest: '{1}'
+        hover: '点击复制'
+      - suggest: '{2}'
+        hover: '点击复制'
+      - command: '/orryx skill cast {0} {1} 1'
+        hover: '点击强制释放 1 级'
+      - command: '/orryx skill tryCast {0} {1}'
+        hover: '点击尝试释放'

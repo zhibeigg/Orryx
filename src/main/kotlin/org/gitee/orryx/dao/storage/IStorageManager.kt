@@ -84,21 +84,24 @@ interface IStorageManager {
      * 保存玩家数据到数据库
      * @param player 玩家的UUID
      * @param playerProfilePO 玩家数据
+     * @param onSuccess 成功时执行
      * */
-    fun savePlayerData(player: UUID, playerProfilePO: PlayerProfilePO)
+    fun savePlayerData(player: UUID, playerProfilePO: PlayerProfilePO, onSuccess: () -> Unit)
 
     /**
      * 保存职业数据到数据库
      * @param player 玩家的UUID
      * @param playerJobPO 职业数据
+     * @param onSuccess 成功时执行
      * */
-    fun savePlayerJob(player: UUID, playerJobPO: PlayerJobPO)
+    fun savePlayerJob(player: UUID, playerJobPO: PlayerJobPO, onSuccess: () -> Unit)
 
     /**
      * 保存技能数据到数据库
      * @param player 玩家的UUID
      * @param playerSkillPO 技能数据
+     * @param onSuccess 成功时执行
      * */
-    fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO)
+    fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO, onSuccess: () -> Unit)
 
 }

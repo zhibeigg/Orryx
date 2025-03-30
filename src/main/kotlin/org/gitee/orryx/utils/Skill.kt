@@ -134,7 +134,7 @@ fun Player.getGroupSkills(group: String): CompletableFuture<Map<IBindKey, String
     }
 }
 
-internal fun IPlayerSkill.parameter(): IParameter {
+internal fun IPlayerSkill.parameter(): SkillParameter {
     return SkillParameter(key, player, level)
 }
 

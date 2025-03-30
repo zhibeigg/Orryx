@@ -36,7 +36,7 @@ object MemoryCache {
         .recordStats()
         .scheduler(Scheduler.systemScheduler())
         .buildAsync { uuid, _ ->
-            val po = ISyncCacheManager.INSTANCE.getPlayerData(uuid)
+            val po = ISyncCacheManager.INSTANCE.getPlayerProfile(uuid)
             po.thenApply {
                 it?.let { p ->
                     val list = p.flags.mapNotNull { (key, value) ->

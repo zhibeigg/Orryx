@@ -20,7 +20,7 @@ class RedisManager: ISyncCacheManager {
 
     private val api by unsafeLazy { RedisChannelPlugin.api }
 
-    override fun getPlayerData(player: UUID): CompletableFuture<PlayerProfilePO?> {
+    override fun getPlayerProfile(player: UUID): CompletableFuture<PlayerProfilePO?> {
         val tag = playerDataTag(player)
         val future = CompletableFuture<PlayerProfilePO?>()
         fun read() {
@@ -28,7 +28,7 @@ class RedisManager: ISyncCacheManager {
                 var playerProfilePO = api.get(playerDataTag(player))?.let { Json.decodeFromString<PlayerProfilePO>(it) }
                 if (playerProfilePO == null) {
                     playerProfilePO = IStorageManager.INSTANCE.getPlayerData(player).join()
-                    playerProfilePO?.let { savePlayerData(player, it, false) }
+                    playerProfilePO?.let { savePlayerProfile(player, it, false) }
                 } else {
                     api.refreshExpire(tag, 900, false)
                 }
@@ -95,7 +95,7 @@ class RedisManager: ISyncCacheManager {
         return future
     }
 
-    override fun savePlayerData(player: UUID, playerProfilePO: PlayerProfilePO, async: Boolean) {
+    override fun savePlayerProfile(player: UUID, playerProfilePO: PlayerProfilePO, async: Boolean) {
         api.set(playerDataTag(player), Json.encodeToString(playerProfilePO), 900, async)
     }
 
@@ -107,7 +107,7 @@ class RedisManager: ISyncCacheManager {
         api.set(playerJobSkillDataTag(player, playerSkillPO.job, playerSkillPO.skill), Json.encodeToString(playerSkillPO), 600, async)
     }
 
-    override fun removePlayerData(player: UUID, async: Boolean) {
+    override fun removePlayerProfile(player: UUID, async: Boolean) {
         api.remove(playerDataTag(player), async)
     }
 

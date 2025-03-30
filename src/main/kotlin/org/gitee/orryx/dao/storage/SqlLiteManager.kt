@@ -153,47 +153,70 @@ class SqlLiteManager: IStorageManager {
         return future
     }
 
-    override fun savePlayerData(player: UUID, playerProfilePO: PlayerProfilePO) {
-        if (playerTable.find(dataSource) { where { UUID eq player.toString() } }) {
-            playerTable.update(dataSource) {
-                where { UUID eq player.toString() }
-                set(POINT, playerProfilePO.point)
-                set(FLAGS, Json.encodeToString(playerProfilePO.flags))
+    override fun savePlayerData(player: UUID, playerProfilePO: PlayerProfilePO, onSuccess: () -> Unit) {
+        playerTable.transaction(dataSource) {
+            if (select { where { UUID eq player.toString() } }.find()) {
+                update {
+                    where { UUID eq player.toString() }
+                    set(POINT, playerProfilePO.point)
+                    set(FLAGS, Json.encodeToString(playerProfilePO.flags))
+                }
+            } else {
+                insert(UUID, JOB, POINT, FLAGS) {
+                    value(
+                        player.toString(),
+                        playerProfilePO.job,
+                        playerProfilePO.point,
+                        Json.encodeToString(playerProfilePO.flags)
+                    )
+                }
             }
-        } else {
-            playerTable.insert(dataSource, UUID, JOB, POINT, FLAGS) {
-                value(player.toString(), playerProfilePO.job, playerProfilePO.point, Json.encodeToString(playerProfilePO.flags))
-            }
-        }
+        }.onSuccess { onSuccess() }
     }
 
-    override fun savePlayerJob(player: UUID, playerJobPO: PlayerJobPO) {
-        if (jobsTable.find(dataSource) { where { UUID eq player.toString() and ( JOB eq playerJobPO.job ) } }) {
-            jobsTable.update(dataSource) {
-                where { UUID eq player.toString() and ( JOB eq playerJobPO.job ) }
-                set(EXPERIENCE, playerJobPO.experience)
-                set(GROUP, playerJobPO.group)
-                set(BIND_KEY_OF_GROUP, Json.encodeToString(playerJobPO.bindKeyOfGroup))
+    override fun savePlayerJob(player: UUID, playerJobPO: PlayerJobPO, onSuccess: () -> Unit) {
+        jobsTable.transaction(dataSource) {
+            if (select { where { UUID eq player.toString() and (JOB eq playerJobPO.job) } }.find()) {
+                update {
+                    where { UUID eq player.toString() and (JOB eq playerJobPO.job) }
+                    set(EXPERIENCE, playerJobPO.experience)
+                    set(GROUP, playerJobPO.group)
+                    set(BIND_KEY_OF_GROUP, Json.encodeToString(playerJobPO.bindKeyOfGroup))
+                }
+            } else {
+                insert(UUID, JOB, EXPERIENCE, GROUP, BIND_KEY_OF_GROUP) {
+                    value(
+                        player.toString(),
+                        playerJobPO.job,
+                        playerJobPO.experience,
+                        playerJobPO.group,
+                        Json.encodeToString(playerJobPO.bindKeyOfGroup)
+                    )
+                }
             }
-        } else {
-            jobsTable.insert(dataSource, UUID, JOB, EXPERIENCE, GROUP, BIND_KEY_OF_GROUP) {
-                value(player.toString(), playerJobPO.job, playerJobPO.experience, playerJobPO.group, Json.encodeToString(playerJobPO.bindKeyOfGroup))
-            }
-        }
+        }.onSuccess { onSuccess() }
     }
 
-    override fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO) {
-        if (skillsTable.find(dataSource) { where { UUID eq player.toString() and ( JOB eq playerSkillPO.job ) and ( SKILL eq playerSkillPO.skill ) } }) {
-            skillsTable.update(dataSource) {
-                where { UUID eq player.toString() and ( JOB eq playerSkillPO.job ) and ( SKILL eq playerSkillPO.skill ) }
-                set(LOCKED, playerSkillPO.locked)
-                set(LEVEL, playerSkillPO.level)
+    override fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO, onSuccess: () -> Unit) {
+        skillsTable.transaction(dataSource) {
+            if (select { where { UUID eq player.toString() and (JOB eq playerSkillPO.job) and (SKILL eq playerSkillPO.skill) } }.find()) {
+                update {
+                    where { UUID eq player.toString() and (JOB eq playerSkillPO.job) and (SKILL eq playerSkillPO.skill) }
+                    set(LOCKED, playerSkillPO.locked)
+                    set(LEVEL, playerSkillPO.level)
+                }
+            } else {
+                insert(UUID, JOB, SKILL, LOCKED, LEVEL) {
+                    value(
+                        player.toString(),
+                        playerSkillPO.job,
+                        playerSkillPO.skill,
+                        playerSkillPO.locked,
+                        playerSkillPO.level
+                    )
+                }
             }
-        } else {
-            skillsTable.insert(dataSource, UUID, JOB, SKILL, LOCKED, LEVEL) {
-                value(player.toString(), playerSkillPO.job, playerSkillPO.skill, playerSkillPO.locked, playerSkillPO.level)
-            }
-        }
+        }.onSuccess { onSuccess() }
     }
 
 }

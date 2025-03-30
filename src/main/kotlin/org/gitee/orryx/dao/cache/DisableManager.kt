@@ -9,7 +9,7 @@ import java.util.concurrent.CompletableFuture
 
 class DisableManager: ISyncCacheManager {
 
-    override fun getPlayerData(player: UUID): CompletableFuture<PlayerProfilePO?> {
+    override fun getPlayerProfile(player: UUID): CompletableFuture<PlayerProfilePO?> {
         return IStorageManager.INSTANCE.getPlayerData(player)
     }
 
@@ -21,7 +21,7 @@ class DisableManager: ISyncCacheManager {
         return IStorageManager.INSTANCE.getPlayerSkill(player, job, skill)
     }
 
-    override fun savePlayerData(player: UUID, playerProfilePO: PlayerProfilePO, async: Boolean) {
+    override fun savePlayerProfile(player: UUID, playerProfilePO: PlayerProfilePO, async: Boolean) {
     }
 
     override fun savePlayerJob(player: UUID, playerJobPO: PlayerJobPO, async: Boolean) {
@@ -30,7 +30,7 @@ class DisableManager: ISyncCacheManager {
     override fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO, async: Boolean) {
     }
 
-    override fun removePlayerData(player: UUID, async: Boolean) {
+    override fun removePlayerProfile(player: UUID, async: Boolean) {
     }
 
     override fun removePlayerJob(player: UUID, job: String, async: Boolean) {

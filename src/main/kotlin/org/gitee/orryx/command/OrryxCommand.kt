@@ -1,19 +1,19 @@
 package org.gitee.orryx.command
 
-import org.bukkit.Bukkit
 import org.bukkit.command.ConsoleCommandSender
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.GameManager
+import org.gitee.orryx.core.job.IPlayerJob
+import org.gitee.orryx.core.job.JobLoaderManager
 import org.gitee.orryx.core.mana.IManaManager
 import org.gitee.orryx.core.reload.ReloadAPI
-import org.gitee.orryx.utils.bukkitPlayer
-import org.gitee.orryx.utils.job
-import org.gitee.orryx.utils.orryxProfile
+import org.gitee.orryx.core.skill.SkillLoaderManager
+import org.gitee.orryx.utils.*
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.command.*
-import taboolib.common.platform.function.info
 import taboolib.expansion.createHelper
 import taboolib.module.lang.sendLang
+import taboolib.platform.util.sendLang
 
 @CommandHeader("Orryx", ["or"], "Orryx技能插件主指令", permission = "Orryx.Command.Main", permissionMessage = "你没有权限使用此指令")
 object OrryxCommand {
@@ -80,13 +80,70 @@ object OrryxCommand {
                     }
                 }
             }
+            literal("job") {
+                dynamic("job") {
+                    suggest { JobLoaderManager.getAllJobLoaders().map { it.key } }
+                    exec<ProxyCommandSender> {
+                        val player = ctx.bukkitPlayer() ?: return@exec
+                        player.job(ctx["job"]) { job ->
+                            sender.sendLang(
+                                "info-job",
+                                player.name,
+                                job.key,
+                                job.job.name,
+                                job.getAttributes().joinToString(", "),
+                                job.getReginMana(),
+                                job.getMaxMana(),
+                                job.getUpgradePoint(job.level, job.level + 1),
+                                job.getExperience().key
+                            )
+                            sendSkills(player, job)
+                        }
+                    }
+                }
+            }
+            literal("skills") {
+                exec<ProxyCommandSender> {
+                    val player = ctx.bukkitPlayer() ?: return@exec
+                    player.job { job ->
+                        sendSkills(player, job)
+                    }
+                }
+            }
+            literal("skill") {
+                dynamic("skill") {
+                    suggest { SkillLoaderManager.getSkills().map { it.key } }
+                    exec<ProxyCommandSender> {
+                        val player = ctx.bukkitPlayer() ?: return@exec
+                        player.skill(ctx["skill"]) { skill ->
+                            sender.sendLang(
+                                "info-skill",
+                                player.name,
+                                skill.key,
+                                skill.skill.name,
+                                skill.skill.type.uppercase(),
+                                skill.skill.isLocked,
+                                skill.skill.minLevel,
+                                skill.level,
+                                skill.skill.maxLevel,
+                                skill.parameter().manaValue(),
+                                skill.parameter().cooldownValue()
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 
-    @CommandBody
-    val test = subCommandExec<Player> {
-        Bukkit.getScheduler().pendingTasks.forEach {
-            info("${it.owner.name} ${it.isSync} ${it.taskId}")
+    private fun sendSkills(player: Player, job: IPlayerJob) {
+        var count = job.job.skills.size
+        for (i in job.job.skills.indices) {
+            player.sendLang("skill", player.name, job.job.skills[i])
+            count --
+            if (count != 0) {
+                player.sendMessage(", ")
+            }
         }
     }
 

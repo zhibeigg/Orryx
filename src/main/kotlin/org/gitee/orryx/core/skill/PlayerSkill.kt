@@ -160,17 +160,18 @@ class PlayerSkill(
         val data = createPO()
         if (async && !GameManager.shutdown) {
             saveScope.launch {
-                MemoryCache.savePlayerSkill(this@PlayerSkill)
-                IStorageManager.INSTANCE.savePlayerSkill(player.uniqueId, data)
-                ISyncCacheManager.INSTANCE.savePlayerSkill(player.uniqueId, data, false)
-            }.invokeOnCompletion {
-                callback()
+                IStorageManager.INSTANCE.savePlayerSkill(player.uniqueId, data) {
+                    ISyncCacheManager.INSTANCE.removePlayerSkill(player.uniqueId, job, key, false)
+                    MemoryCache.removePlayerSkill(player.uniqueId, job, key)
+                    callback()
+                }
             }
         } else {
-            MemoryCache.savePlayerSkill(this@PlayerSkill)
-            IStorageManager.INSTANCE.savePlayerSkill(player.uniqueId, data)
-            ISyncCacheManager.INSTANCE.savePlayerSkill(player.uniqueId, data, false)
-            callback()
+            IStorageManager.INSTANCE.savePlayerSkill(player.uniqueId, data) {
+                ISyncCacheManager.INSTANCE.removePlayerSkill(player.uniqueId, job, key, false)
+                MemoryCache.removePlayerSkill(player.uniqueId, job, key)
+                callback()
+            }
         }
     }
 

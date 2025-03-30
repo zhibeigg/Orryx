@@ -60,7 +60,7 @@ interface ISyncCacheManager {
      * @param player 玩家的UUID
      * @return 玩家数据
      * */
-    fun getPlayerData(player: UUID): CompletableFuture<PlayerProfilePO?>
+    fun getPlayerProfile(player: UUID): CompletableFuture<PlayerProfilePO?>
 
     /**
      * 从缓存获取职业数据
@@ -89,7 +89,7 @@ interface ISyncCacheManager {
      * @param playerProfilePO 玩家数据
      * @param async 是否异步
      * */
-    fun savePlayerData(player: UUID, playerProfilePO: PlayerProfilePO, async: Boolean)
+    fun savePlayerProfile(player: UUID, playerProfilePO: PlayerProfilePO, async: Boolean)
 
     /**
      * 保存职业数据到缓存
@@ -112,7 +112,7 @@ interface ISyncCacheManager {
      * @param player 玩家的UUID
      * @param async 是否异步
      * */
-    fun removePlayerData(player: UUID, async: Boolean)
+    fun removePlayerProfile(player: UUID, async: Boolean)
 
     /**
      * 删除缓存中的职业数据

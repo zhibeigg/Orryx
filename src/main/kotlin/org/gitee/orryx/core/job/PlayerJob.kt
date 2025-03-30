@@ -25,6 +25,7 @@ import org.gitee.orryx.utils.*
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common.util.unsafeLazy
 import taboolib.common5.cdouble
+import taboolib.common5.cint
 import taboolib.module.kether.orNull
 import java.util.concurrent.CompletableFuture
 
@@ -61,6 +62,14 @@ class PlayerJob(
 
     override fun createPO(): PlayerJobPO {
         return PlayerJobPO(player.uniqueId, key, experience, group, bindKeyOfGroupToMap(bindKeyOfGroup))
+    }
+
+    override fun getUpgradePoint(from: Int, to: Int): Int {
+        return player.eval(job.upgradePointActions, mapOf("from" to from, "to" to to)).orNull().cint
+    }
+
+    override fun getAttributes(): List<String> {
+        return player.parse(job.attributes, mapOf("level" to level))
     }
 
     override fun getExperience(): IExperience {
@@ -259,17 +268,18 @@ class PlayerJob(
         val data = createPO()
         if (async && !GameManager.shutdown) {
             saveScope.launch {
-                MemoryCache.savePlayerJob(this@PlayerJob)
-                IStorageManager.INSTANCE.savePlayerJob(player.uniqueId, data)
-                ISyncCacheManager.INSTANCE.savePlayerJob(player.uniqueId, data, false)
-            }.invokeOnCompletion {
-                callback()
+                IStorageManager.INSTANCE.savePlayerJob(player.uniqueId, data) {
+                    ISyncCacheManager.INSTANCE.removePlayerJob(player.uniqueId, key, false)
+                    MemoryCache.removePlayerJob(player.uniqueId, key)
+                    callback()
+                }
             }
         } else {
-            MemoryCache.savePlayerJob(this@PlayerJob)
-            IStorageManager.INSTANCE.savePlayerJob(player.uniqueId, data)
-            ISyncCacheManager.INSTANCE.savePlayerJob(player.uniqueId, data, false)
-            callback()
+            IStorageManager.INSTANCE.savePlayerJob(player.uniqueId, data) {
+                ISyncCacheManager.INSTANCE.removePlayerJob(player.uniqueId, key, false)
+                MemoryCache.removePlayerJob(player.uniqueId, key)
+                callback()
+            }
         }
     }
 

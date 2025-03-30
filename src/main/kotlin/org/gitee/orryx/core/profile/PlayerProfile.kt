@@ -160,17 +160,18 @@ class PlayerProfile(
         val data = createPO()
         if (async && !GameManager.shutdown) {
             saveScope.launch {
-                MemoryCache.savePlayerProfile(this@PlayerProfile)
-                IStorageManager.INSTANCE.savePlayerData(player.uniqueId, data)
-                ISyncCacheManager.INSTANCE.savePlayerData(player.uniqueId, data, false)
-            }.invokeOnCompletion {
-                callback()
+                IStorageManager.INSTANCE.savePlayerData(player.uniqueId, data) {
+                    ISyncCacheManager.INSTANCE.removePlayerProfile(player.uniqueId, false)
+                    MemoryCache.removePlayerProfile(player.uniqueId)
+                    callback()
+                }
             }
         } else {
-            MemoryCache.savePlayerProfile(this@PlayerProfile)
-            IStorageManager.INSTANCE.savePlayerData(player.uniqueId, data)
-            ISyncCacheManager.INSTANCE.savePlayerData(player.uniqueId, data, false)
-            callback()
+            IStorageManager.INSTANCE.savePlayerData(player.uniqueId, data) {
+                ISyncCacheManager.INSTANCE.removePlayerProfile(player.uniqueId, false)
+                MemoryCache.removePlayerProfile(player.uniqueId)
+                callback()
+            }
         }
     }
 
