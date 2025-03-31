@@ -127,7 +127,7 @@ object OrryxCommand {
                                 skill.level,
                                 skill.skill.maxLevel,
                                 skill.parameter().manaValue(),
-                                skill.parameter().cooldownValue()
+                                skill.parameter().cooldownValue()/20
                             )
                         }
                     }

@@ -1,8 +1,6 @@
 package org.gitee.orryx.api
 
 import org.gitee.orryx.api.interfaces.IOrryxAPI
-import taboolib.common.env.RuntimeDependencies
-import taboolib.common.env.RuntimeDependency
 import taboolib.module.configuration.Config
 import taboolib.module.configuration.ConfigFile
 

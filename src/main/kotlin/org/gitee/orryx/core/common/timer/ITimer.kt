@@ -9,7 +9,7 @@ interface ITimer {
      * 重置计时
      * @param sender 计时者
      * @param parameter 计时参数
-     * @return 计时时长
+     * @return 计时时长（毫秒）
      * */
     fun reset(sender: ProxyCommandSender, parameter: IParameter): Long
 

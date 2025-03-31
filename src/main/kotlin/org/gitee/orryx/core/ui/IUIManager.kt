@@ -47,6 +47,10 @@ interface IUIManager {
                 return SkillTimer.getCooldownEntry(adaptPlayer(player), skill)?.overStamp ?: 0
             }
 
+            fun getRemaining(player: Player): Long {
+                return SkillTimer.getCooldownEntry(adaptPlayer(player), skill)?.remaining ?: 0
+            }
+
             fun isOver(player: Player): Boolean {
                 return SkillTimer.getCountdown(player, skill) <= 0L
             }

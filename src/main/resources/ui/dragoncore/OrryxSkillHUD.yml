@@ -38,9 +38,11 @@ Functions:
       界面变量.绑定技能列表 = 方法.分割(局部变量.args.1, '<br>');
     };
     if(局部变量.args.0 == 'Orryx_bind_cooldowns') {
-      界面变量.绑定冷却列表 = 方法.分割(局部变量.args.1, '<br>');
-      for_each(局部变量.cooldown, 局部变量.index, 界面变量.绑定冷却列表, {
-        方法.设置组件值('冷却遮罩_' & 方法.到整数(局部变量.index) & '_texture', 'timeout', 方法.MAX(0, 局部变量.cooldown-方法.取当前时间))
+      局部变量.冷却列表 = 方法.分割(局部变量.args.1, '<br>');
+      界面变量.绑定冷却列表 = 方法.新建数组;
+      for_each(局部变量.cooldown, 局部变量.index, 局部变量.冷却列表, {
+        方法.添加成员(界面变量.绑定冷却列表, 局部变量.cooldown+方法.取当前时间);
+        方法.设置组件值('冷却遮罩_' & 方法.到整数(局部变量.index) & '_texture', 'timeout', 方法.MAX(0, 局部变量.cooldown))
       });
     };
 背景_up_texture:

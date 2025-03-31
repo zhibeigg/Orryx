@@ -76,8 +76,8 @@ taboolib {
 
 repositories {
     mavenCentral()
-    maven { url = uri("https://repo.tabooproject.org/repository/releases") }
-    maven { url = uri("https://www.mcwar.cn/nexus/repository/maven-public/") }
+    maven("https://repo.tabooproject.org/repository/releases")
+    maven("https://www.mcwar.cn/nexus/repository/maven-public/")
 }
 
 dependencies {
