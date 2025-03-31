@@ -8,6 +8,7 @@ import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.mana.IManaManager
+import org.gitee.orryx.core.reload.Reload
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.info
@@ -18,10 +19,14 @@ import taboolib.module.nms.MinecraftVersion
 
 object GameManager {
 
-    private val disabledHunger
-        get() = Orryx.config.getBoolean("disableHunger")
+    private var disabledHunger = Orryx.config.getBoolean("DisableHunger")
 
     var shutdown: Boolean = false
+
+    @Reload(1)
+    private fun reload() {
+        disabledHunger = Orryx.config.getBoolean("DisableHunger")
+    }
 
     @SubscribeEvent(EventPriority.MONITOR)
     private fun hunger(e: FoodLevelChangeEvent) {

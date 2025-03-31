@@ -1,11 +1,11 @@
 package org.gitee.orryx.utils
 
 import org.bukkit.entity.Player
+import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.api.events.player.skill.OrryxClearSkillLevelAndBackPointEvent
 import org.gitee.orryx.core.common.timer.SkillTimer
 import org.gitee.orryx.core.kether.KetherScript
 import org.gitee.orryx.core.kether.ScriptManager
-import org.gitee.orryx.core.kether.parameter.IParameter
 import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.key.IBindKey
@@ -16,6 +16,7 @@ import org.gitee.orryx.core.skill.skills.DirectSkill
 import org.gitee.orryx.core.skill.skills.PressingAimSkill
 import org.gitee.orryx.core.skill.skills.PressingSkill
 import org.gitee.orryx.dao.cache.MemoryCache
+import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common5.cdouble
@@ -31,6 +32,11 @@ const val PRESSING_AIM = "Pressing Aim"
 const val PASSIVE = "Passive"
 
 const val DEFAULT_PICTURE = "default"
+
+const val SILENCE_TAG = "Orryx@Silence"
+
+var silence: Boolean = Orryx.config.getBoolean("Silence", false)
+    internal set
 
 internal fun SkillParameter.runSkillAction(map: Map<String, Any> = emptyMap()) {
     SkillLoaderManager.getSkillLoader(skill ?: return)?.let { skill ->
@@ -146,6 +152,11 @@ fun IPlayerSkill.getIcon(): String {
     return skill.icon.getIcon(player, SkillParameter(key, player, level))
 }
 
+fun consume(player: Player, parameter: SkillParameter) {
+    parameter.silence(adaptPlayer(player))
+    SkillTimer.reset(player, parameter)
+}
+
 fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean = true) {
     when(val skill = this) {
         is PressingSkill -> parameter.runSkillAction(mapOf("pressTick" to 1))
@@ -158,9 +169,7 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean
             PluginMessageHandler.requestAiming(player, key, DEFAULT_PICTURE, aimMin, aimMax, aimRadius, maxTick) { aimInfo ->
                 aimInfo.getOrNull()?.let {
                     if (it.skillId == skill.key) {
-                        if (consume) {
-                            SkillTimer.reset(player, parameter)
-                        }
+                        if (consume) consume(player, parameter)
                         parameter.origin = it.location.toTarget()
                         parameter.runSkillAction(
                             mapOf(
@@ -175,9 +184,7 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean
             }
         }
         is DirectSkill -> {
-            if (consume) {
-                SkillTimer.reset(player, parameter)
-            }
+            if (consume) consume(player, parameter)
             parameter.runSkillAction()
         }
         is DirectAimSkill -> {
@@ -187,9 +194,7 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean
                 aimInfo.onSuccess {
                     if (it.skillId == skill.key) {
                         parameter.origin = it.location.toTarget()
-                        if (consume) {
-                            SkillTimer.reset(player, parameter)
-                        }
+                        if (consume) consume(player, parameter)
                         parameter.runSkillAction(
                             mapOf(
                                 "aimRadius" to aimRadius,
@@ -206,7 +211,7 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean
 fun IPlayerSkill.tryCast() {
     val parameter = parameter()
     castCheck(parameter).thenApply {
-        it.sendLang(player)
+        if (!silence) it.sendLang(player)
         if (it.isSuccess()) {
             cast(parameter, true)
         }
@@ -241,4 +246,17 @@ fun IPlayerSkill.clearLevelAndBackPoint(): CompletableFuture<Boolean> {
 
 fun IPlayerSkill.clearLevel(): CompletableFuture<SkillLevelResult> {
     return setLevel(skill.minLevel)
+}
+
+fun SkillParameter.silence(sender: ProxyCommandSender): Long {
+    return silence(sender, silenceValue(true))
+}
+
+fun silence(sender: ProxyCommandSender, timeout: Long): Long {
+    if (timeout >= 0) {
+        SkillTimer.set(sender, SILENCE_TAG, timeout)
+    } else {
+        SkillTimer.set(sender, SILENCE_TAG, 0)
+    }
+    return timeout
 }

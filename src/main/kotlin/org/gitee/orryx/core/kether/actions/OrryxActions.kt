@@ -96,7 +96,14 @@ object OrryxActions {
                 .addEntry("法力值标识符", Type.SYMBOL, false, head = "mana")
                 .addEntry("技能", Type.STRING, false)
                 .addJob(optional = true, default = "当前职业")
-                .result("技能释放消耗法力值", Type.DOUBLE)
+                .result("技能释放消耗法力值", Type.DOUBLE),
+            Action.new("Orryx信息获取", "获取玩家技能沉默时间", "orryx", false)
+                .description("获取玩家技能沉默时间")
+                .addEntry("技能标识符", Type.SYMBOL, false, head = "skill")
+                .addEntry("沉默标识符", Type.SYMBOL, false, head = "silence")
+                .addEntry("技能", Type.STRING, false)
+                .addJob(optional = true, default = "当前职业")
+                .result("技能释放沉默时间", Type.DOUBLE)
         )
     ) {
         it.switch {
@@ -108,7 +115,7 @@ object OrryxActions {
             case("group") { group(it) }
             case("bindSkill") { bindSkill(it) }
             case("skill") {
-                when(expects("level", "locked", "minLevel", "maxLevel", "min", "max", "cooldown", "countdown", "mana")) {
+                when(expects("level", "locked", "minLevel", "maxLevel", "min", "max", "cooldown", "countdown", "mana", "silence")) {
                     "level" -> { skillLevel(it) }
                     "locked" -> { skillLocked(it) }
                     "minLevel", "min" -> { skillMinLevel(it) }
@@ -116,6 +123,7 @@ object OrryxActions {
                     "cooldown" -> { skillCooldown(it) }
                     "countdown" -> { skillCountdown(it) }
                     "mana" -> { skillMana(it) }
+                    "silence" -> { skillSilence(it) }
                     else -> error("kether orryx skill书写错误")
                 }
             }
@@ -347,6 +355,21 @@ object OrryxActions {
                     getSkill(skill, true).thenApply {
                         val skillParameter = it?.level?.let { level -> SkillParameter(skill, this, level) }
                         future.complete(skillParameter?.manaValue(true) ?: 0)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun skillSilence(reader: QuestReader): ScriptAction<Any?> {
+        val skill = reader.nextParsedAction()
+
+        return actionFuture { future ->
+            skillCaster {
+                run(skill).str { skill ->
+                    getSkill(skill, true).thenApply {
+                        val skillParameter = it?.level?.let { level -> SkillParameter(skill, this, level) }
+                        future.complete(skillParameter?.silenceValue(true) ?: 0)
                     }
                 }
             }

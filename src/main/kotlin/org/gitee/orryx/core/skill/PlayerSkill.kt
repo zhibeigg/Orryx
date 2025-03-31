@@ -16,6 +16,7 @@ import org.gitee.orryx.dao.cache.ISyncCacheManager
 import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.dao.storage.IStorageManager
+import org.gitee.orryx.utils.SILENCE_TAG
 import org.gitee.orryx.utils.castSkill
 import org.gitee.orryx.utils.orryxProfile
 import org.gitee.orryx.utils.runCustomAction
@@ -57,13 +58,15 @@ class PlayerSkill(
         val skill = skill
         //被动技能
         if (skill is PassiveSkill) return CompletableFuture.completedFuture(CastResult.PASSIVE)
+        //沉默
+        if (!SkillTimer.hasNext(player, SILENCE_TAG)) return CompletableFuture.completedFuture(CastResult.SILENCE)
         //冷却
         if (!SkillTimer.hasNext(player, key)) return CompletableFuture.completedFuture(CastResult.COOLDOWN)
         //法力
         return IManaManager.INSTANCE.haveMana(player, parameter.manaValue()).thenApply { mana ->
             if (!mana) return@thenApply CastResult.MANA_NOT_ENOUGH
             //脚本检测
-            if ((skill as? ICastSkill)?.castCheckAction?.let { runCustomAction(it, mapOf()).orNull().cbool } == false) return@thenApply CastResult.CHECK_ACTION_FAILED
+            if ((skill as? ICastSkill)?.castCheckAction?.let { parameter.runCustomAction(it, mapOf()).orNull().cbool } == false) return@thenApply CastResult.CHECK_ACTION_FAILED
             //事件
             if (!OrryxPlayerSkillCastEvents.Check(player, this, parameter).call()) return@thenApply CastResult.CANCELED
             return@thenApply CastResult.SUCCESS

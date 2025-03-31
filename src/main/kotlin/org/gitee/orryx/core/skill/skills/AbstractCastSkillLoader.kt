@@ -5,11 +5,11 @@ import taboolib.module.configuration.Configuration
 
 abstract class AbstractCastSkillLoader(override val key: String, configuration: Configuration): AbstractSkillLoader(key, configuration), ICastSkill {
 
-    override val actions: String = getScriptFactor(configuration.getString("Actions") ?: error("技能${key}位于${configuration.file}未书写Actions"))
+    override val actions: String = getCleanScript(configuration.getString("Actions") ?: error("技能${key}位于${configuration.file}未书写Actions"))
 
-    override val castCheckAction: String? = configuration.getString("CastCheckAction")?.let { getScriptFactor(it) }
+    override val castCheckAction: String? = configuration.getString("CastCheckAction")?.let { getCleanScript(it) }
 
-    private fun getScriptFactor(action: String): String {
+    private fun getCleanScript(action: String): String {
         return action.split("\n").mapNotNull { if (it.trim().getOrNull(0) == '#') null else it }.joinToString("\n")
     }
 
