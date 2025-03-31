@@ -6,24 +6,18 @@ import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.key.IGroup
 import org.gitee.orryx.core.profile.IPlayerKeySetting
+import org.gitee.orryx.core.profile.PlayerKeySetting
 import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.utils.getSkill
 import org.gitee.orryx.utils.job
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.PlatformFactory
-import taboolib.common.platform.function.info
-import taboolib.module.chat.colored
 import java.util.concurrent.CompletableFuture
 
 class KeyAPI: IKeyAPI {
 
     override val keySetting: IPlayerKeySetting = PlatformFactory.getAPI<IPlayerKeySetting>()
-
-    override fun registerKeySetting(keySetting: IPlayerKeySetting) {
-        IPlayerKeySetting.register(keySetting)
-        info("&e┣&7外部KeySetting注册成功 &a√".colored())
-    }
 
     override fun bindSkillKeyOfGroup(skill: IPlayerSkill, group: IGroup, bindKey: IBindKey): CompletableFuture<Boolean> {
         return bindSkillKeyOfGroup(skill.player, skill.job, skill.key, group.key, bindKey.key)
@@ -49,6 +43,7 @@ class KeyAPI: IKeyAPI {
 
         @Awake(LifeCycle.CONST)
         fun init() {
+            PlatformFactory.registerAPI<IPlayerKeySetting>(PlayerKeySetting())
             PlatformFactory.registerAPI<IKeyAPI>(KeyAPI())
         }
 

@@ -5,7 +5,7 @@ import eos.moe.dragoncore.network.PacketBuffer
 import eos.moe.dragoncore.network.PacketSender
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
-import org.gitee.orryx.core.profile.IPlayerKeySetting
+import org.gitee.orryx.api.Orryx
 import taboolib.common.platform.Ghost
 import java.util.*
 
@@ -42,7 +42,7 @@ object DragonCoreCustomPacketSender : PacketSender() {
     }
 
     fun sendKeyRegister(player: Player) {
-        val list = IPlayerKeySetting.INSTANCE.let { listOf(it.aimConfirmKey(player), it.aimCancelKey(player)) }
+        val list = Orryx.api().keyAPI.keySetting.let { listOf(it.aimConfirmKey(player), it.aimCancelKey(player)) }
         sendPluginMessage(player, 14) { buffer: PacketBuffer ->
             val set = (Config.fileMap["KeyConfig.yml"] as YamlConfiguration).getKeys(false)
             set.addAll(Config.registeredKeys + list)

@@ -16,12 +16,6 @@ interface IKeyAPI {
     val keySetting: IPlayerKeySetting
 
     /**
-     * 注册通用按键设定器
-     * @param keySetting 通用按键设定器
-     * */
-    fun registerKeySetting(keySetting: IPlayerKeySetting)
-
-    /**
      * 绑定技能到组的按键上
      * @param skill 技能
      * @param group 组

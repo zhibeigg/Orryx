@@ -15,8 +15,8 @@ import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.plugin.messaging.PluginMessageListener
+import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.compat.dragoncore.DragonCoreCustomPacketSender
-import org.gitee.orryx.core.profile.IPlayerKeySetting
 import org.gitee.orryx.utils.DragonCorePlugin
 import org.gitee.orryx.utils.GermPluginPlugin
 import taboolib.common.LifeCycle
@@ -70,8 +70,8 @@ object PluginMessageHandler {
     private fun onKeyPress(e: KeyPressEvent) {
         if (e.isCancelled) return
         when (e.key.uppercase()) {
-            IPlayerKeySetting.INSTANCE.aimConfirmKey(e.player) -> handleConfirmation(e.player, true)
-            IPlayerKeySetting.INSTANCE.aimCancelKey(e.player) -> handleConfirmation(e.player, false)
+            Orryx.api().keyAPI.keySetting.aimConfirmKey(e.player) -> handleConfirmation(e.player, true)
+            Orryx.api().keyAPI.keySetting.aimCancelKey(e.player) -> handleConfirmation(e.player, false)
             else -> return
         }.also { e.isCancelled = true }
     }
@@ -81,8 +81,8 @@ object PluginMessageHandler {
     private fun onKeyPress(e: GermKeyDownEvent) {
         if (e.isCancelled) return
         when (e.keyType.simpleKey.uppercase()) {
-            IPlayerKeySetting.INSTANCE.aimConfirmKey(e.player) -> handleConfirmation(e.player, true)
-            IPlayerKeySetting.INSTANCE.aimCancelKey(e.player) -> handleConfirmation(e.player, false)
+            Orryx.api().keyAPI.keySetting.aimConfirmKey(e.player) -> handleConfirmation(e.player, true)
+            Orryx.api().keyAPI.keySetting.aimCancelKey(e.player) -> handleConfirmation(e.player, false)
             else -> return
         }.also { e.isCancelled = true }
     }
@@ -100,8 +100,8 @@ object PluginMessageHandler {
     @SubscribeEvent(priority = EventPriority.HIGH)
     private fun onPlayerJoin(e: PlayerJoinEvent) {
         if (GermPluginPlugin.isEnabled) {
-            GermPacketAPI.sendKeyRegister(e.player, KeyType.valueOf("KEY_${IPlayerKeySetting.INSTANCE.aimConfirmKey(e.player)}").keyId)
-            GermPacketAPI.sendKeyRegister(e.player, KeyType.valueOf("KEY_${IPlayerKeySetting.INSTANCE.aimCancelKey(e.player)}").keyId)
+            GermPacketAPI.sendKeyRegister(e.player, KeyType.valueOf("KEY_${Orryx.api().keyAPI.keySetting.aimConfirmKey(e.player)}").keyId)
+            GermPacketAPI.sendKeyRegister(e.player, KeyType.valueOf("KEY_${Orryx.api().keyAPI.keySetting.aimCancelKey(e.player)}").keyId)
         }
         if (DragonCorePlugin.isEnabled) {
             try {

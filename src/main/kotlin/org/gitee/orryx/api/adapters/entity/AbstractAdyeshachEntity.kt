@@ -12,6 +12,7 @@ import org.bukkit.util.Vector
 import org.gitee.orryx.api.adapters.IEntity
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.core.targets.ITargetLocation
+import taboolib.common.platform.Ghost
 import taboolib.common5.cdouble
 import java.util.*
 

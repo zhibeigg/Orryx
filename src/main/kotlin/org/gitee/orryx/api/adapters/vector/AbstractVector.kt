@@ -6,6 +6,7 @@ import org.gitee.orryx.api.adapters.IVector
 import org.gitee.orryx.utils.joml
 import org.joml.Vector3d
 import org.joml.Vector3dc
+import taboolib.common.platform.Ghost
 
 open class AbstractVector(override val joml: Vector3d): IVector, Vector3dc by joml {
 

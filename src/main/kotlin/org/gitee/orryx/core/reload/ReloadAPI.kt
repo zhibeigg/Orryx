@@ -7,6 +7,7 @@ import org.gitee.orryx.utils.debug
 import taboolib.common.LifeCycle
 import taboolib.common.inject.ClassVisitor
 import taboolib.common.platform.Awake
+import taboolib.common.platform.PlatformFactory
 import taboolib.common.platform.function.info
 import taboolib.common.util.unsafeLazy
 import taboolib.library.reflex.ClassMethod
@@ -14,7 +15,7 @@ import taboolib.library.reflex.ReflexClass
 import taboolib.module.chat.colored
 
 @Awake
-internal object ReloadAPI: IReloadAPI, ClassVisitor(3) {
+object ReloadAPI: IReloadAPI, ClassVisitor(3) {
 
     class ReloadFunction(val method: ClassMethod, val obj: Any, val weight: Int)
 
@@ -53,6 +54,11 @@ internal object ReloadAPI: IReloadAPI, ClassVisitor(3) {
             }
             info("&e┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".colored())
         }
+    }
+
+    @Awake(LifeCycle.CONST)
+    fun init() {
+        PlatformFactory.registerAPI<IReloadAPI>(ReloadAPI)
     }
 
 }
