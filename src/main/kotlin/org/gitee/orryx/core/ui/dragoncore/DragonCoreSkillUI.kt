@@ -12,6 +12,7 @@ import org.gitee.orryx.utils.*
 import taboolib.common.platform.function.getDataFolder
 import taboolib.platform.util.onlinePlayers
 import java.io.File
+import java.util.concurrent.CompletableFuture
 
 class DragonCoreSkillUI(override val viewer: Player, override val owner: Player): AbstractSkillUI(viewer, owner) {
 
@@ -34,27 +35,28 @@ class DragonCoreSkillUI(override val viewer: Player, override val owner: Player)
                     job.bindSkills { bindSkills ->
                         job.skills { skills ->
                             val list = mutableListOf<Pair<Int, Boolean>>()
-                            skills.forEach { skill ->
-                                skill.upgradePointCheck(skill.level, skill.level+1).thenApply { pair ->
-                                    list += pair
-                                    if (list.size >= skills.size) {
-                                        val keys = bindKeys()
-                                        PacketSender.sendSyncPlaceholder(viewer, mapOf(
-                                            "Orryx_owner" to owner.uniqueId.toString(),
-                                            "Orryx_job" to job.job.name,
-                                            "Orryx_point" to profile.point.toString(),
-                                            "Orryx_group" to job.group,
-                                            "Orryx_bind_keys" to keys.joinToString("<br>") { it.key },
-                                            "Orryx_bind_skills" to keys.joinToString("<br>") { bindSkills[it]?.key ?: "none" },
-                                            "Orryx_skills" to skills.joinToString("<br>") { it.key },
-                                            "Orryx_skills_name" to skills.joinToString("<br>") { it.skill.name },
-                                            "Orryx_skills_level" to skills.joinToString("<br>") { it.level.toString() },
-                                            "Orryx_skills_maxLevel" to skills.joinToString("<br>") { it.skill.maxLevel.toString() },
-                                            "Orryx_skills_locked" to skills.joinToString("<br>") { it.locked.toString() },
-                                            "Orryx_skills_point" to list.joinToString("<br>") { it.first.toString() }
-                                        ))
+                            CompletableFuture.allOf(
+                                *skills.map { skill ->
+                                    skill.upgradePointCheck(skill.level, skill.level+1).thenAccept { pair ->
+                                        list += pair
                                     }
-                                }
+                                }.toTypedArray()
+                            ).thenRun {
+                                val keys = bindKeys()
+                                PacketSender.sendSyncPlaceholder(viewer, mapOf(
+                                    "Orryx_owner" to owner.uniqueId.toString(),
+                                    "Orryx_job" to job.job.name,
+                                    "Orryx_point" to profile.point.toString(),
+                                    "Orryx_group" to job.group,
+                                    "Orryx_bind_keys" to keys.joinToString("<br>") { it.key },
+                                    "Orryx_bind_skills" to keys.joinToString("<br>") { bindSkills[it]?.key ?: "none" },
+                                    "Orryx_skills" to skills.joinToString("<br>") { it.key },
+                                    "Orryx_skills_name" to skills.joinToString("<br>") { it.skill.name },
+                                    "Orryx_skills_level" to skills.joinToString("<br>") { it.level.toString() },
+                                    "Orryx_skills_maxLevel" to skills.joinToString("<br>") { it.skill.maxLevel.toString() },
+                                    "Orryx_skills_locked" to skills.joinToString("<br>") { it.locked.toString() },
+                                    "Orryx_skills_point" to list.joinToString("<br>") { it.first.toString() }
+                                ))
                             }
                         }
                     }

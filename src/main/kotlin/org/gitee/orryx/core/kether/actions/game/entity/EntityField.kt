@@ -68,12 +68,4 @@ enum class EntityField(val get: IEntity.() -> Any?) {
 
     VALID({ isValid });
 
-    companion object {
-
-        fun fields(): List<String> {
-            return entries.map { it.name.lowercase(Locale.getDefault()) }
-        }
-
-    }
-
 }

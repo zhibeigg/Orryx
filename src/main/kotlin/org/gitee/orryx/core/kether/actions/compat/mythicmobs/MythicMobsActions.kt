@@ -76,9 +76,11 @@ object MythicMobsActions {
             container(mobs) {mobs ->
                 containerOrSelf(they) {they ->
                     val players = they.get<PlayerTarget>()
-                    mobs.forEachInstance<ITargetEntity<Entity>> { target ->
-                        players.forEach {
-                            MythicMobs.inst().apiHelper.taunt(target.getSource(), it.getSource())
+                    ensureSync {
+                        mobs.forEachInstance<ITargetEntity<Entity>> { target ->
+                            players.forEach {
+                                MythicMobs.inst().apiHelper.taunt(target.getSource(), it.getSource())
+                            }
                         }
                     }
                 }
@@ -96,9 +98,11 @@ object MythicMobsActions {
                 container(mobs) {mobs ->
                     containerOrSelf(they) {they ->
                         val players = they.get<PlayerTarget>()
-                        mobs.forEachInstance<ITargetEntity<Entity>> { target ->
-                            players.forEach {
-                                MythicMobs.inst().apiHelper.addThreat(target.getSource(), it.getSource(), amount)
+                        ensureSync {
+                            mobs.forEachInstance<ITargetEntity<Entity>> { target ->
+                                players.forEach {
+                                    MythicMobs.inst().apiHelper.addThreat(target.getSource(), it.getSource(), amount)
+                                }
                             }
                         }
                     }
@@ -117,9 +121,11 @@ object MythicMobsActions {
                 container(mobs) {mobs ->
                     containerOrSelf(they) {they ->
                         val players = they.get<PlayerTarget>()
-                        mobs.forEachInstance<ITargetEntity<Entity>> { target ->
-                            players.forEach {
-                                MythicMobs.inst().apiHelper.reduceThreat(target.getSource(), it.getSource(), amount)
+                        ensureSync {
+                            mobs.forEachInstance<ITargetEntity<Entity>> { target ->
+                                players.forEach {
+                                    MythicMobs.inst().apiHelper.reduceThreat(target.getSource(), it.getSource(), amount)
+                                }
                             }
                         }
                     }
@@ -138,9 +144,11 @@ object MythicMobsActions {
                 container(mobs) {mobs ->
                     containerOrSelf(they) {they ->
                         val players = they.get<PlayerTarget>()
-                        mobs.forEachInstance<ITargetEntity<Entity>> { target ->
-                            players.forEach {
-                                setThreat(target.getSource(), it.getSource(), amount)
+                        ensureSync {
+                            mobs.forEachInstance<ITargetEntity<Entity>> { target ->
+                                players.forEach {
+                                    setThreat(target.getSource(), it.getSource(), amount)
+                                }
                             }
                         }
                     }
@@ -173,9 +181,11 @@ object MythicMobsActions {
                 container(mobs) {mobs ->
                     containerOrSelf(they) {they ->
                         val players = they.get<PlayerTarget>()
-                        mobs.forEachInstance<ITargetEntity<Entity>> { target ->
-                            players.forEach {
-                                signal(target.getSource(), it.getSource(), signal)
+                        ensureSync {
+                            mobs.forEachInstance<ITargetEntity<Entity>> { target ->
+                                players.forEach {
+                                    signal(target.getSource(), it.getSource(), signal)
+                                }
                             }
                         }
                     }
@@ -206,17 +216,19 @@ object MythicMobsActions {
                     containerOrSelf(trigger) { mobs ->
                         containerOrSelf(they) { they ->
                             val caster = they.get<ITargetEntity<Entity>>()
-                            mobs.forEachInstance<ITargetEntity<Entity>> { target ->
-                                caster.forEach {
-                                    MythicMobs.inst().apiHelper.castSkill(
-                                        it.getSource(),
-                                        skillName,
-                                        target.getSource(),
-                                        script().getParameterOrNull()?.origin?.location,
-                                        null,
-                                        null,
-                                        power
-                                    )
+                            ensureSync {
+                                mobs.forEachInstance<ITargetEntity<Entity>> { target ->
+                                    caster.forEach {
+                                        MythicMobs.inst().apiHelper.castSkill(
+                                            it.getSource(),
+                                            skillName,
+                                            target.getSource(),
+                                            script().getParameterOrNull()?.origin?.location,
+                                            null,
+                                            null,
+                                            power
+                                        )
+                                    }
                                 }
                             }
                         }

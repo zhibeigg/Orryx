@@ -23,8 +23,10 @@ object GameActions {
             theyContainer(true)
         ).apply(it) { isSprint, container ->
             now {
-                container.orElse(self()).forEachInstance<PlayerTarget> { player ->
-                    player.getSource().isSprinting = isSprint
+                ensureSync {
+                    container.orElse(self()).forEachInstance<PlayerTarget> { player ->
+                        player.getSource().isSprinting = isSprint
+                    }
                 }
             }
         }
@@ -42,8 +44,11 @@ object GameActions {
             theyContainer(false)
         ).apply(it) { target, container ->
             now {
-                container.orElse(self()).forEachInstance<PlayerTarget> { player ->
-                    target?.firstInstanceOrNull<ITargetEntity<Entity>>()?.getSource()?.let { entity -> player.getSource().spectatorTarget = entity }
+                ensureSync {
+                    container.orElse(self()).forEachInstance<PlayerTarget> { player ->
+                        target?.firstInstanceOrNull<ITargetEntity<Entity>>()?.getSource()
+                            ?.let { entity -> player.getSource().spectatorTarget = entity }
+                    }
                 }
             }
         }

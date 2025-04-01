@@ -44,7 +44,7 @@ object RayHit: ISelectorGeometry {
         val vector = context.vector(v)?.joml ?: return emptyList()
 
         val normal = vector.normalize(0.1, Vector3d()).taboo()
-        var length = vector.length()
+        var length = distance
         val start = adaptLocation(origin.eyeLocation)
         val list = mutableListOf<taboolib.common.util.Location>()
         while (length > 0) {
@@ -57,9 +57,7 @@ object RayHit: ISelectorGeometry {
     private fun findEntitiesAlongRay(origin: Location, direction: Vector3d, distance: Double): List<Entity> {
         val world = origin.world ?: return emptyList()
 
-        val length = direction.length()
-
-        val nearbyEntities = world.getNearbyEntities(origin, length, length, length)
+        val nearbyEntities = world.getNearbyEntities(origin, distance, distance, distance)
 
         // 初始化射线
         val ray = RayAabIntersection(

@@ -28,25 +28,30 @@ object PlayerProfileActions {
                         func(player)
                     }
                 }
-                when (type) {
-                    "set", "to" -> foreach { target ->
-                        target.getSource().orryxProfile { profile ->
-                            profile.setSuperBody(timeout)
+                ensureSync {
+                    when (type) {
+                        "set", "to" -> foreach { target ->
+                            target.getSource().orryxProfile { profile ->
+                                profile.setSuperBody(timeout)
+                            }
                         }
-                    }
-                    "add", "+" -> foreach { target ->
-                        target.getSource().orryxProfile { profile ->
-                            profile.addSuperBody(timeout)
+
+                        "add", "+" -> foreach { target ->
+                            target.getSource().orryxProfile { profile ->
+                                profile.addSuperBody(timeout)
+                            }
                         }
-                    }
-                    "reduce", "-" -> foreach { target ->
-                        target.getSource().orryxProfile { profile ->
-                            profile.reduceSuperBody(timeout)
+
+                        "reduce", "-" -> foreach { target ->
+                            target.getSource().orryxProfile { profile ->
+                                profile.reduceSuperBody(timeout)
+                            }
                         }
-                    }
-                    "cancel", "stop" -> foreach { target ->
-                        target.getSource().orryxProfile { profile ->
-                            profile.cancelSuperBody()
+
+                        "cancel", "stop" -> foreach { target ->
+                            target.getSource().orryxProfile { profile ->
+                                profile.cancelSuperBody()
+                            }
                         }
                     }
                 }

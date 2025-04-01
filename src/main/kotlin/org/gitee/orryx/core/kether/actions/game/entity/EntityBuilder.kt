@@ -108,6 +108,7 @@ class EntityBuilder {
                     .create(type, location) {
                         it.setTag("source", "Orryx")
                         it.setNoGravity(!gravity)
+                        it.setCustomName(name)
                         vector?.bukkit()?.let { vector -> it.setVelocity(vector) }
                     }
             } else {
@@ -115,6 +116,7 @@ class EntityBuilder {
                     .create(type, location) {
                         it.setTag("source", "Orryx")
                         it.setNoGravity(!gravity)
+                        it.setCustomName(name)
                         it.clearViewer()
                         players.forEach { player -> it.addViewer(player) }
                         vector?.bukkit()?.let { vector -> it.setVelocity(vector) }

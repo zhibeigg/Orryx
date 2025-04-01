@@ -11,9 +11,10 @@ import org.gitee.orryx.utils.*
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common.platform.function.submit
-import taboolib.common.util.sync
 import taboolib.common5.clong
+import taboolib.library.kether.QuestFuture
 import taboolib.module.kether.*
+import java.util.concurrent.CompletableFuture
 
 object Actions {
 
@@ -44,11 +45,11 @@ object Actions {
                 .addEntry("actions", Type.ANY)
         )
     ) {
-        val actions = it.nextParsedAction()
+        val action = it.nextParsedAction()
         actionTake {
-            sync {
-                run(actions)
-            }
+            val future = CompletableFuture<Any>()
+            run(action).thenAcceptAsync(QuestFuture.complete(future), context().executor)
+            future
         }
     }
 
@@ -64,8 +65,10 @@ object Actions {
             theyContainer(true)
         ).apply(it) { timeout, they ->
             now {
-                they.orElse(self()).forEachInstance<PlayerTarget> { target ->
-                    silence(adaptPlayer(target.getSource()), timeout * 50)
+                ensureSync {
+                    they.orElse(self()).forEachInstance<PlayerTarget> { target ->
+                        silence(adaptPlayer(target.getSource()), timeout * 50)
+                    }
                 }
             }
         }

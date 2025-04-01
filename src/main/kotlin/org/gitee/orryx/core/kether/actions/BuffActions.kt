@@ -151,8 +151,10 @@ object BuffActions {
                     run(buff).str { buff ->
                         run(timeout).long { timeout ->
                             containerOrSelf(container) { container ->
-                                container.forEachInstance<PlayerTarget> { player ->
-                                    sendBuff(player.getSource(), buff, timeout)
+                                ensureSync {
+                                    container.forEachInstance<PlayerTarget> { player ->
+                                        sendBuff(player.getSource(), buff, timeout)
+                                    }
                                 }
                             }
                         }
@@ -167,15 +169,19 @@ object BuffActions {
                     if (container1 == null) {
                         run(buff).str { buff ->
                             containerOrSelf(container2) { container ->
-                                container.forEachInstance<PlayerTarget> { player ->
-                                    clearBuff(player.getSource(), buff)
+                                ensureSync {
+                                    container.forEachInstance<PlayerTarget> { player ->
+                                        clearBuff(player.getSource(), buff)
+                                    }
                                 }
                             }
                         }
                     } else {
                         containerOrSelf(container1) { container ->
-                            container.forEachInstance<PlayerTarget> { player ->
-                                clearBuffAll(player.getSource())
+                            ensureSync {
+                                container.forEachInstance<PlayerTarget> { player ->
+                                    clearBuffAll(player.getSource())
+                                }
                             }
                         }
                     }

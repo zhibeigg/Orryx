@@ -1,20 +1,26 @@
 package org.gitee.orryx.core.kether.actions
 
 import org.gitee.orryx.core.kether.ScriptManager.combinationParser
-import org.gitee.orryx.core.kether.parameter.IParameter
-import org.gitee.orryx.core.kether.parameter.SkillParameter
-import org.gitee.orryx.core.kether.parameter.StationParameter
+import org.gitee.orryx.core.kether.ScriptManager.scriptParser
 import org.gitee.orryx.core.targets.ITargetEntity
-import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.core.wiki.Action
 import org.gitee.orryx.core.wiki.Type
 import org.gitee.orryx.utils.*
 import taboolib.common.platform.function.adaptCommandSender
-import taboolib.common.platform.function.warning
-import taboolib.module.kether.*
-import java.util.concurrent.CompletableFuture
+import taboolib.module.kether.KetherParser
+import taboolib.module.kether.actionNow
+import taboolib.module.kether.run
+import taboolib.module.kether.script
 
 object ContextActions {
+
+    private val registerOperators = mutableMapOf<String, ParameterOperator>()
+
+    init {
+        ParameterOperators.entries.forEach {
+            registerOperators[it.name] = it.build()
+        }
+    }
 
     @KetherParser(["senderSpace"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun senderSpace() = combinationParser(
@@ -39,71 +45,59 @@ object ContextActions {
     }
 
     @KetherParser(["parameter", "parm"], namespace = ORRYX_NAMESPACE)
-    private fun parameter() = combinationParser(
-        Action.new("上下文", "parameter参数", "parameter/parm")
-            .description("获取指定parameter参数")
-            .addEntry("目标参数", Type.STRING)
+    private fun parameter() = scriptParser(
+        arrayOf(
+            Action.new("上下文", "读取parameter参数", "parameter/parm")
+                .description("获取指定parameter参数")
+                .addEntry("目标参数", Type.STRING)
+                .result("获取的参数", Type.ANY),
+            Action.new("上下文", "设置parameter参数", "parameter/parm")
+                .description("设置指定parameter参数")
+                .addEntry("目标参数", Type.STRING)
+                .addEntry("设置标识符", Type.SYMBOL, head = "set/to/=")
+                .addEntry("目标参数", Type.ANY),
+            Action.new("上下文", "加parameter参数", "parameter/parm")
+                .description("加指定parameter参数")
+                .addEntry("目标参数", Type.STRING)
+                .addEntry("加标识符", Type.SYMBOL, head = "add/increase/+")
+                .addEntry("目标参数", Type.ANY),
+            Action.new("上下文", "减parameter参数", "parameter/parm")
+                .description("减指定parameter参数")
+                .addEntry("目标参数", Type.STRING)
+                .addEntry("减标识符", Type.SYMBOL, head = "sub/decrease/-")
+                .addEntry("目标参数", Type.ANY)
+        )
     ) {
-        it.group(
-            text(),
-            symbol().and(action()).option()
-        ).apply(it) { key, symbolAndValue ->
-            future {
-                val parameter = script().getParameter()
-                val method = Method.entries.firstOrNull { method ->
-                    symbolAndValue?.first?.lowercase() in method.symbols
-                } ?: Method.NONE
-                val future = CompletableFuture<Any>()
-                val value = symbolAndValue?.second?.let { value -> run(value).orNull() }
-                    future.complete(
-                        when(val pkey = key.uppercase()) {
-                            "SKILL" -> parameter.parseParm(pkey, ParmType.SKILL, method, value, script())
-                            "LEVEL" -> parameter.parseParm(pkey, ParmType.SKILL, method, value, script())
-                            "STATION" -> parameter.parseParm(pkey, ParmType.STATION, method, value, script())
-                            "ORIGIN" -> parameter.parseParm(pkey, ParmType.ALL, method, value, script())
-                            else -> warning("not found parm $key")
-                        }
-                    )
-                future
+        val key = it.nextToken()
+        val operator = registerOperators.entries.first { (name, _) ->
+            name == key.uppercase()
+        }.value
+        it.mark()
+        val method = when (it.nextToken()) {
+            "to", "=" -> ParameterOperator.Method.MODIFY
+            "add", "increase", "+" -> ParameterOperator.Method.INCREASE
+            "sub", "decrease", "-" -> ParameterOperator.Method.DECREASE
+            else -> {
+                it.reset()
+                ParameterOperator.Method.NONE
             }
         }
-    }
-
-    private fun IParameter.parseParm(key: String, type: ParmType, method: Method, value: Any?, context: ScriptContext): Any? {
-        return when(type) {
-            ParmType.SKILL -> {
-                if (this !is SkillParameter) return null
-                when(key) {
-                    "SKILL" -> skill
-                    "LEVEL" -> level
-                    else -> null
-                }
+        if (method == ParameterOperator.Method.NONE) {
+            actionNow {
+                operator.reader!!.func(script().getParameter())
             }
-            ParmType.STATION -> {
-                if (this !is StationParameter<*>) return null
-                when(key) {
-                    "STATION" -> stationLoader
-                    else -> null
-                }
-            }
-            ParmType.ALL -> {
-                when(key) {
-                    "ORIGIN" -> {
-                        when(method) {
-                            Method.INCREASE -> origin
-                            Method.DECREASE -> origin
-                            Method.MODIFY -> value.readContainer(context)?.firstInstanceOrNull<ITargetLocation<*>>()?.let { origin = it }
-                            Method.NONE -> origin
-                        }
+        } else {
+            if (operator.usable.contains(method)) {
+                val value = it.nextParsedAction()
+                actionNow {
+                    run(value).thenApply { value ->
+                        operator.writer!!.func(script().getParameter(), method, script(), value)
                     }
-                    else -> null
                 }
+            } else {
+                error("$method not supported in $key")
             }
         }
-    }
-
-    enum class ParmType {
-        SKILL, STATION, ALL;
     }
 
 }

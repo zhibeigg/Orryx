@@ -235,29 +235,18 @@ class PlayerJob(
             privateBindKeyOfGroup.clear()
             privateExperience = 0
             privateGroup = DEFAULT
-            var var1 = 0
-            val list = job.skills.map { player.getSkill(it) }
-            list.forEach {
-                it.thenApply { skill ->
-                    skill?.clear()?.whenComplete { _, _ ->
-                        var1++
-                        if (var1 > list.size) {
-                            future.complete(true)
-                        }
-                    } ?: run {
-                        var1++
-                        if (var1 > list.size) {
-                            future.complete(true)
-                        }
-                    }
+
+            val saveFuture = CompletableFuture<Void>()
+            val futures = job.skills.map {
+                player.getSkill(it).thenCompose { skill ->
+                    skill?.clear() ?: CompletableFuture.completedFuture(null)
                 }
+            } + saveFuture
+            CompletableFuture.allOf(*futures.toTypedArray()).thenAccept {
+                future.complete(true)
             }
-            save(isPrimaryThread) {
-                var1++
-                if (var1 > list.size) {
-                    future.complete(true)
-                }
-            }
+
+            save(isPrimaryThread) { saveFuture.complete(null) }
         } else {
             future.complete(false)
         }

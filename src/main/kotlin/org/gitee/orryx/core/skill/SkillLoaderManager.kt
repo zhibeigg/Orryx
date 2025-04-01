@@ -56,7 +56,7 @@ object SkillLoaderManager {
         return try {
             OrryxAPI.ketherScriptLoader.load(ScriptService, skill.key, getBytes(skill.actions), orryxEnvironmentNamespaces)
         } catch (ex: Exception) {
-            ex.printKetherErrorMessage()
+            ex.printStackTrace()
             warning("Skill: ${skill.key}")
             null
         }

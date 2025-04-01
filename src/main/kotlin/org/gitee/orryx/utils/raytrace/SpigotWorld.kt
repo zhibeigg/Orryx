@@ -4,7 +4,6 @@ import org.bukkit.Bukkit
 import org.bukkit.FluidCollisionMode
 import org.bukkit.World
 import org.bukkit.block.BlockFace
-import org.bukkit.util.Vector
 import org.gitee.orryx.utils.bukkit
 import org.gitee.orryx.utils.joml
 import org.gitee.orryx.utils.raytrace.FluidHandling.*
@@ -27,8 +26,8 @@ class SpigotWorld(private val world: World) : PlatformWorld {
         returnClosestPos: Boolean
     ): RayTraceResult? {
         if (MinecraftVersion.isHigher(MinecraftVersion.V1_12)) {
-            val startVec = Vector(start.x(), start.y(), start.z())
-            val directionVec = Vector(direction.x(), direction.y(), direction.z())
+            val startVec = start.bukkit()
+            val directionVec = direction.bukkit()
 
             val fluidMode = when(fluidHandling) {
                 NONE -> FluidCollisionMode.NEVER

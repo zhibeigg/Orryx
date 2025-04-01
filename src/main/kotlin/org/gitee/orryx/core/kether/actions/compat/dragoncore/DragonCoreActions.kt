@@ -25,7 +25,6 @@ import org.gitee.orryx.core.wiki.Type
 import org.gitee.orryx.utils.*
 import taboolib.common.platform.Ghost
 import taboolib.common.platform.event.SubscribeEvent
-import taboolib.common.util.unsafeLazy
 import taboolib.common5.cfloat
 import taboolib.common5.util.parseUUID
 import taboolib.library.kether.QuestReader
@@ -37,8 +36,8 @@ import java.util.concurrent.CompletableFuture
 
 object DragonCoreActions {
 
-    private val armourersMap by unsafeLazy { hashMapOf<UUID, MutableList<String>>() }
-    private val effectMap by unsafeLazy { hashMapOf<UUID, MutableList<ModelEffect>>() }
+    private val armourersMap by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { hashMapOf<UUID, MutableList<String>>() }
+    private val effectMap by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { hashMapOf<UUID, MutableList<ModelEffect>>() }
 
     @Ghost
     @SubscribeEvent
@@ -940,20 +939,13 @@ object DragonCoreActions {
                 run(model).str { model ->
                     run(timeout).long { timeout ->
                         containerOrSelf(they) {container ->
-                            val f = CompletableFuture<Void>()
-                            var size = 0
-                            val list = container.mapInstance<ITargetEntity<*>, ModelEffect> { target ->
-                                sendModelEffect(target.entity, key, model, timeout)
-                            }
-
-                            list.forEach { modelEffect ->
-                                modelEffect.simpleTimeoutTask.future.whenComplete { _, _ ->
-                                    size++
-                                    if (size >= list.size) f.complete(null)
+                            val list = ensureSync {
+                                container.mapInstance<ITargetEntity<*>, ModelEffect> { target ->
+                                    sendModelEffect(target.entity, key, model, timeout)
                                 }
                             }
 
-                            addOrryxCloseable(f) {
+                            addOrryxCloseable(CompletableFuture.allOf(*list.map { modelEffect -> modelEffect.simpleTimeoutTask.future }.toTypedArray())) {
                                 list.forEach { modelEffect0 ->
                                     effectMap[modelEffect0.owner]?.removeIf { modelEffect1 ->
                                         modelEffect0 == modelEffect1
@@ -996,7 +988,7 @@ object DragonCoreActions {
 
     private fun sendModelEffect(entity: IEntity, key: String, model: String, timeout: Long): ModelEffect {
         val effect: ITargetEntity<*> = when(entity) {
-            is AbstractBukkitEntity, is PlayerTarget-> {
+            is AbstractBukkitEntity, is PlayerTarget -> {
                 val craftWorld = entity.world as CraftWorld
                 val effectEntity = craftWorld.addEntity<CraftArmorStand>(
                     craftWorld.createEntity(entity.location, ArmorStand::class.java),
@@ -1012,10 +1004,12 @@ object DragonCoreActions {
                 entity.getBukkitEntity()?.addPassenger(effectEntity)
                 AbstractBukkitEntity(effectEntity)
             }
+
             is AbstractAdyeshachEntity -> {
                 val instance = Adyeshach.api().getPublicEntityManager().create(EntityTypes.ARMOR_STAND, entity.location)
                 AbstractAdyeshachEntity(instance)
             }
+
             else -> error("使用了不支持modelEffect的实体类型")
         }
         onlinePlayers.forEach { player ->

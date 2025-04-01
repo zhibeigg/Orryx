@@ -16,6 +16,8 @@ import org.joml.Matrix3d
 import org.joml.Vector3d
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptCommandSender
+import taboolib.common.platform.function.isPrimaryThread
+import taboolib.common.platform.function.submit
 import taboolib.library.kether.ParsedAction
 import taboolib.library.kether.Parser
 import taboolib.library.kether.Parser.Action
@@ -133,7 +135,8 @@ internal fun vector(): Parser<AbstractVector> {
                     is Vector -> Vector3d(vector.x, vector.y, vector.z).abstract()
                     is Vector3d -> vector.abstract()
                     is ITargetLocation<*> -> AbstractVector(vector.location)
-                    else -> AbstractVector()
+                    is String -> vector.parseVector()
+                    else -> null
                 }
             }
         }
@@ -148,7 +151,7 @@ fun <T> CompletableFuture<Any?>.vector(then: (IVector) -> T): CompletableFuture<
                 is Vector -> Vector3d(vector.x, vector.y, vector.z).abstract()
                 is Vector3d -> vector.abstract()
                 is ITargetLocation<*> -> AbstractVector(vector.location)
-                is String -> AbstractVector()
+                is String -> vector.parseVector() ?: AbstractVector()
                 else -> AbstractVector()
             }
         )
@@ -224,6 +227,7 @@ internal fun ScriptContext.vector(key: String, def: IVector? = null): IVector? {
         is Vector3d -> vector.abstract()
         is AbstractVector -> vector
         is ITargetLocation<*> -> AbstractVector(vector.location)
+        is String -> vector.parseVector()
         else -> def
     }
 }
@@ -244,6 +248,15 @@ fun ScriptFrame.skillCaster(func: Player.() -> CompletableFuture<Any?>): Complet
     }
 }
 
-enum class Method(vararg val symbols: String) {
-    INCREASE("add", "+"), DECREASE("sub", "-"), MODIFY("set", "to", "="), NONE;
+/**
+ * 确保[func]在主线程运行
+ * */
+fun <T> ensureSync(func: () -> T): T {
+    if (isPrimaryThread) {
+        return func()
+    } else {
+        val future = CompletableFuture<T>()
+        submit { future.complete(func()) }
+        return future.get()
+    }
 }

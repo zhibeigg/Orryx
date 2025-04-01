@@ -12,24 +12,17 @@ import java.util.concurrent.CompletableFuture
 
 fun IPlayerJob.clearAllLevelAndBackPoint(): CompletableFuture<Boolean> {
     val event = OrryxClearAllSkillLevelAndBackPointEvent(player, this)
-    val future = CompletableFuture<Boolean>()
-    if (event.call()) {
-        var size = 0
-        job.skills.forEach {
-            size++
-            player.getSkill(job.key, it).thenApply { skill ->
-                skill?.clearLevelAndBackPoint()?.whenComplete { _, _ ->
-                    size -= 1
-                    if (size == 0) {
-                        future.complete(true)
-                    }
+    return if (event.call()) {
+        CompletableFuture.allOf(
+            *job.skills.map {
+                player.getSkill(job.key, it).thenCompose { skill ->
+                    skill?.clearLevelAndBackPoint() ?: CompletableFuture.completedFuture(null)
                 }
-            }
-        }
+            }.toTypedArray()
+        ).thenApply { true }
     } else {
-        future.complete(false)
+        CompletableFuture.completedFuture(false)
     }
-    return future
 }
 
 fun IPlayerJob.getBindSkills(): Map<IBindKey, CompletableFuture<IPlayerSkill?>?> {
@@ -46,36 +39,27 @@ fun IPlayerJob.getSkills(): List<CompletableFuture<IPlayerSkill?>> {
 fun <T> IPlayerJob.skills(func: (skills: List<IPlayerSkill>) -> T): CompletableFuture<T> {
     val skills = mutableListOf<IPlayerSkill>()
     val fSkills = getSkills()
-    val future = CompletableFuture<T>()
-    fSkills.forEach { s ->
-        s.thenAccept { skill ->
-            skills += skill!!
-            if (skills.size >= fSkills.size) {
-                future.complete(func(skills))
+    return CompletableFuture.allOf(
+        *fSkills.map { s ->
+            s.thenAccept { skill ->
+                skill?.let { skills.add(it) }
             }
-        }
+        }.toTypedArray()
+    ).thenApply {
+        func(skills)
     }
-    return future
 }
 
 fun <T> IPlayerJob.bindSkills(func: (bindSkills: Map<IBindKey, IPlayerSkill?>) -> T): CompletableFuture<T> {
     val bindSkills = mutableMapOf<IBindKey, IPlayerSkill?>()
     val fBindSkills = getBindSkills()
-    val future = CompletableFuture<T>()
-    fBindSkills.forEach { (k, s) ->
-        s?.thenAccept { skill ->
-            bindSkills[k] = skill
-            if (bindSkills.size >= fBindSkills.size) {
-                future.complete(func(bindSkills))
-            }
-        } ?: kotlin.run {
-            bindSkills[k] = null
-            if (bindSkills.size >= fBindSkills.size) {
-                future.complete(func(bindSkills))
-            }
-        }
+    return CompletableFuture.allOf(*fBindSkills.map { (k, s) ->
+        s?.thenApply {
+            bindSkills[k] = it
+        } ?: CompletableFuture.completedFuture(null)
+    }.toTypedArray()).thenApply {
+        func(bindSkills)
     }
-    return future
 }
 
 fun <T> Player.job(function: (IPlayerJob) -> T): CompletableFuture<T?> {

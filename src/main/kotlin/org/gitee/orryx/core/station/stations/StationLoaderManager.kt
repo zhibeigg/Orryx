@@ -72,7 +72,7 @@ object StationLoaderManager: ClassVisitor(3) {
         return try {
             OrryxAPI.ketherScriptLoader.load(ScriptService, station.key, getBytes(station.actions), orryxEnvironmentNamespaces)
         } catch (ex: Exception) {
-            ex.printKetherErrorMessage()
+            ex.printStackTrace()
             warning("Station: ${station.configuration.file}")
             null
         }

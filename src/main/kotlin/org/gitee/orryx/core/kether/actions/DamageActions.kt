@@ -37,28 +37,30 @@ object DamageActions {
             now {
                 val sources = source.orElse(self())
                 val damageType = type?.uppercase()?.let { it1 -> DamageType.valueOf(it1) } ?: DamageType.PHYSICS
-                if (attribute) {
-                    container!!.forEachInstance<ITargetEntity<*>> { target ->
-                        target.entity.getBukkitLivingEntity()?.let { entity ->
-                            IAttributeBridge.INSTANCE.damage(
-                                sources.firstInstance<ITargetEntity<LivingEntity>>().getSource(),
-                                entity,
-                                damage,
-                                damageType,
-                                script()
-                            )
+                ensureSync {
+                    if (attribute) {
+                        container!!.forEachInstance<ITargetEntity<*>> { target ->
+                            target.entity.getBukkitLivingEntity()?.let { entity ->
+                                IAttributeBridge.INSTANCE.damage(
+                                    sources.firstInstance<ITargetEntity<LivingEntity>>().getSource(),
+                                    entity,
+                                    damage,
+                                    damageType,
+                                    script()
+                                )
+                            }
                         }
-                    }
-                } else {
-                    container!!.forEachInstance<ITargetEntity<*>> { target ->
-                        target.entity.getBukkitLivingEntity()?.let { entity ->
-                            Default.damage(
-                                sources.firstInstance<ITargetEntity<LivingEntity>>().getSource(),
-                                entity,
-                                damage,
-                                damageType,
-                                script()
-                            )
+                    } else {
+                        container!!.forEachInstance<ITargetEntity<*>> { target ->
+                            target.entity.getBukkitLivingEntity()?.let { entity ->
+                                Default.damage(
+                                    sources.firstInstance<ITargetEntity<LivingEntity>>().getSource(),
+                                    entity,
+                                    damage,
+                                    damageType,
+                                    script()
+                                )
+                            }
                         }
                     }
                 }

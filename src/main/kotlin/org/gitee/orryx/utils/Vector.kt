@@ -53,7 +53,7 @@ internal fun Location.isInRound(origin: Location, radius: Double): Boolean {
  * @param y 上方
  * @param z 右方
  * */
-internal fun LivingEntity.direction(x: Double, y: Double, z: Double, pitch: Boolean = false) = eyeLocation.direction.direction(x, y, z, pitch)
+internal fun LivingEntity.direction(x: Double, y: Double, z: Double, pitch: Boolean = false) = location.direction.direction(x, y, z, pitch)
 
 /**
  * 获得目标的方向向量
@@ -61,7 +61,7 @@ internal fun LivingEntity.direction(x: Double, y: Double, z: Double, pitch: Bool
  * @param y 上方
  * @param z 右方
  * */
-internal fun ITargetLocation<*>.direction(x: Double, y: Double, z: Double, pitch: Boolean = false) = eyeLocation.direction.direction(x, y, z, pitch)
+internal fun ITargetLocation<*>.direction(x: Double, y: Double, z: Double, pitch: Boolean = false) = location.direction.direction(x, y, z, pitch)
 
 /**
  * 获得目标的方向向量
@@ -69,13 +69,13 @@ internal fun ITargetLocation<*>.direction(x: Double, y: Double, z: Double, pitch
  * @param y 上方
  * @param z 右方
  * */
-internal fun ITargetEntity<*>.direction(x: Double, y: Double, z: Double, pitch: Boolean = false) = entity.eyeLocation.direction.direction(x, y, z, pitch)
+internal fun ITargetEntity<*>.direction(x: Double, y: Double, z: Double, pitch: Boolean = false) = entity.location.direction.direction(x, y, z, pitch)
 
 private fun Vector.direction(x: Double, y: Double, z: Double, pitch: Boolean): Vector {
     return if (pitch) {
         val zV = clone().setY(0).normalize().crossProduct(Vector(0, 1, 0)).normalize()
-        val yV = clone().crossProduct(zV).normalize()
-        val xV = zV.crossProduct(yV).normalize()
+        val yV = clone().normalize().crossProduct(zV)
+        val xV = clone().normalize()
         xV.multiply(x).add(zV.multiply(z)).add(yV.multiply(y))
     } else {
         val xV = clone().setY(0).normalize()
@@ -92,7 +92,7 @@ fun Vector.joml() = Vector3d(x, y, z)
 
 fun taboolib.common.util.Vector.joml() = Vector3d(x, y, z)
 
-fun Vector3d.bukkit() = Vector(x, y, z)
+fun Vector3dc.bukkit() = Vector(x(), y(), z())
 
 fun Vector.abstract() = AbstractVector(joml())
 
@@ -108,11 +108,11 @@ fun IVector.taboo() = taboolib.common.util.Vector(joml.x, joml.y, joml.z)
 
 fun IVector.joml() = joml
 
-fun String.parseVector(): AbstractVector {
+fun String.parseVector(): AbstractVector? {
     val list = split(",")
     return kotlin.runCatching {
         AbstractVector(list[0].cdouble, list[1].cdouble, list[2].cdouble)
-    }.getOrNull() ?: AbstractVector()
+    }.getOrNull()
 }
 
 fun IVector.dragonString() = "${x()},${y()},${z()}"

@@ -13,11 +13,8 @@ import org.gitee.orryx.core.targets.PlayerTarget
 import org.gitee.orryx.core.wiki.Action
 import org.gitee.orryx.core.wiki.Type
 import org.gitee.orryx.utils.*
-import taboolib.common.platform.function.isPrimaryThread
-import taboolib.common.platform.function.submit
 import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*
-import java.util.*
 
 object EntityActions {
 
@@ -83,15 +80,19 @@ object EntityActions {
                                                 .vector(vector)
                                                 .gravity(gravity)
                                                 .timeout(timeout)
-                                        val container = Container(
-                                            builder.build(it.mapNotNullInstance<ITargetLocation<*>, Location> { target ->
-                                                target.location
-                                            }).mapTo(
-                                                mutableSetOf()
-                                            ) { entity ->
-                                                entity as AbstractBukkitEntity
-                                            }
-                                        )
+
+                                        val container = ensureSync {
+                                            Container(
+                                                builder.build(it.mapNotNullInstance<ITargetLocation<*>, Location> { target ->
+                                                    target.location
+                                                }).mapTo(
+                                                    mutableSetOf()
+                                                ) { entity ->
+                                                    entity as AbstractBukkitEntity
+                                                }
+                                            )
+                                        }
+
                                         addOrryxCloseable(builder.removed) {
                                             fun clean() {
                                                 builder.task.cancel()
@@ -101,13 +102,7 @@ object EntityActions {
                                                     }
                                                 }
                                             }
-                                            if (isPrimaryThread) {
-                                                clean()
-                                            } else {
-                                                submit {
-                                                    clean()
-                                                }
-                                            }
+                                            ensureSync { clean() }
                                         }
                                         future.complete(container)
                                     }
@@ -145,14 +140,19 @@ object EntityActions {
                                                 .gravity(gravity)
                                                 .timeout(timeout)
                                                 .private(players.size == 1)
+
                                         val locations = it.mapNotNullInstance<ITargetLocation<*>, Location> { target ->
                                             target.location
                                         }
-                                        val container = Container(
-                                            builder.build(locations, players.map { playerTarget -> playerTarget.getSource() }, true).mapTo(mutableSetOf()) { entity ->
-                                                entity as AbstractAdyeshachEntity
-                                            }
-                                        )
+
+                                        val container = ensureSync {
+                                            Container(
+                                                builder.build(locations, players.map { playerTarget -> playerTarget.getSource() }, true).mapTo(mutableSetOf()) { entity ->
+                                                    entity as AbstractAdyeshachEntity
+                                                }
+                                            )
+                                        }
+
                                         addOrryxCloseable(builder.removed) {
                                             fun clean() {
                                                 builder.task.cancel()
@@ -162,13 +162,7 @@ object EntityActions {
                                                     }
                                                 }
                                             }
-                                            if (isPrimaryThread) {
-                                                clean()
-                                            } else {
-                                                submit {
-                                                    clean()
-                                                }
-                                            }
+                                            ensureSync { clean() }
                                         }
                                         future.complete(container)
                                     }
@@ -182,19 +176,13 @@ object EntityActions {
     }
 
     private fun fieldGet(reader: QuestReader): ScriptAction<Any?> {
-        return try {
-            reader.mark()
-            val expect = reader.expects(*EntityField.fields().toTypedArray())
-            val they = reader.nextTheyContainerOrNull()
-            actionFuture { future ->
-                containerOrSelf(they) {
-                    val entity = it.firstInstance<ITargetEntity<*>>().entity
-                    future.complete(EntityField.valueOf(expect.uppercase(Locale.getDefault())).get(entity))
-                }
+        val key = reader.nextToken().uppercase()
+        val they = reader.nextTheyContainerOrNull()
+        return actionFuture { future ->
+            containerOrSelf(they) {
+                val entity = it.firstInstance<ITargetEntity<*>>().entity
+                future.complete(EntityField.valueOf(key).get(entity))
             }
-        } catch (_: Throwable) {
-            reader.reset()
-            error("entity field not found")
         }
     }
 
