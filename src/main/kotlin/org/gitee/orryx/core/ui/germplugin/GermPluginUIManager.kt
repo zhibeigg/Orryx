@@ -13,6 +13,7 @@ import org.gitee.orryx.core.ui.IUIManager
 import org.gitee.orryx.utils.keyPress
 import org.gitee.orryx.utils.keyRelease
 import org.gitee.orryx.utils.loadFromFile
+import org.gitee.orryx.utils.orryxProfile
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.function.getDataFolder
 import taboolib.common.platform.function.registerBukkitListener
@@ -51,7 +52,9 @@ class GermPluginUIManager: IUIManager {
 
         registerBukkitListener(GermClientLinkedEvent::class.java) { e ->
             if (setting.joinOpenHud) {
-                createSkillHUD(e.player, e.player).open()
+                e.player.orryxProfile {
+                    if (it.job != null) createSkillHUD(e.player, e.player).open()
+                }
             }
         }
 

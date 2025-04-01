@@ -22,14 +22,14 @@ object DamageActions {
         Action.new("属性系统", "攻击目标", "damage", true)
             .description("攻击目标，支持接入属性系统")
             .addEntry("攻击数值", Type.DOUBLE)
-            .addEntry("攻击是否接入属性系统", Type.BOOLEAN, true, default = "false")
+            .addEntry("攻击是否接入属性系统", Type.BOOLEAN)
             .addContainerEntry("攻击目标")
             .addEntry("攻击来源", Type.CONTAINER, true, "@self", head = "source")
             .addEntry("攻击类型", Type.STRING, true, "PHYSICS", head = "type")
     ) {
         it.group(
             double(),
-            bool().option().defaultsTo(false),
+            bool(),
             theyContainer(),
             command("source", then = container()).option(),
             command("type", then = text()).option()

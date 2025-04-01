@@ -44,6 +44,11 @@ object OrryxSkillCommand {
         player {
             dynamic("skill") {
                 suggest { SkillLoaderManager.getSkills().filter { it.value is ICastSkill }.map { it.key } }
+                exec<ProxyCommandSender> {
+                    val player = ctx.bukkitPlayer() ?: return@exec
+                    val skill = SkillLoaderManager.getSkillLoader(ctx["skill"]) as ICastSkill
+                    skill.castSkill(player, SkillParameter(skill.key, player, 1), false)
+                }
                 int("level") {
                     exec<ProxyCommandSender> {
                         val player = ctx.bukkitPlayer() ?: return@exec

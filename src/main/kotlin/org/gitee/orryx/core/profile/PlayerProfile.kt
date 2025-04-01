@@ -119,7 +119,7 @@ class PlayerProfile(
         val event = OrryxPlayerPointEvents.Up.Pre(player, this, point)
         if (event.call()) {
             privatePoint = (privatePoint + event.point).coerceAtLeast(0)
-            save(isPrimaryThread) {
+            save {
                 OrryxPlayerPointEvents.Up.Post(player, this, event.point)
             }
         }
@@ -130,7 +130,7 @@ class PlayerProfile(
         val event = OrryxPlayerPointEvents.Down.Pre(player, this, point)
         if (event.call()) {
             privatePoint = (privatePoint - event.point).coerceAtLeast(0)
-            save(isPrimaryThread) {
+            save {
                 OrryxPlayerPointEvents.Down.Post(player, this, event.point)
             }
         }
@@ -146,8 +146,14 @@ class PlayerProfile(
     override fun setJob(job: IPlayerJob) {
         if (OrryxPlayerJobChangeEvents.Pre(player, job).call()) {
             privateJob = job.key
-            job.save(isPrimaryThread) {
-                OrryxPlayerJobChangeEvents.Post(player, job).call()
+            var var1 = 0
+            save {
+                var1 ++
+                if (var1 == 2) OrryxPlayerJobChangeEvents.Post(player, job).call()
+            }
+            job.save {
+                var1 ++
+                if (var1 == 2) OrryxPlayerJobChangeEvents.Post(player, job).call()
             }
         }
     }

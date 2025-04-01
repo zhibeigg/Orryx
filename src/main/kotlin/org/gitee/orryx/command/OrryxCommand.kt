@@ -1,19 +1,34 @@
 package org.gitee.orryx.command
 
+import eos.moe.dragoncore.network.PacketSender
+import ink.ptms.adyeshach.core.Adyeshach
+import ink.ptms.adyeshach.core.entity.EntityTypes
 import org.bukkit.command.ConsoleCommandSender
+import org.bukkit.craftbukkit.v1_12_R1.CraftWorld
+import org.bukkit.craftbukkit.v1_12_R1.entity.CraftArmorStand
+import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.Player
+import org.bukkit.event.entity.CreatureSpawnEvent
+import org.gitee.orryx.api.adapters.IEntity
+import org.gitee.orryx.api.adapters.entity.AbstractAdyeshachEntity
+import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
 import org.gitee.orryx.core.GameManager
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.job.JobLoaderManager
 import org.gitee.orryx.core.mana.IManaManager
 import org.gitee.orryx.core.reload.ReloadAPI
 import org.gitee.orryx.core.skill.SkillLoaderManager
+import org.gitee.orryx.core.targets.ITargetEntity
+import org.gitee.orryx.core.targets.PlayerTarget
 import org.gitee.orryx.utils.*
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.command.*
+import taboolib.common.platform.function.info
 import taboolib.expansion.createHelper
 import taboolib.module.lang.sendLang
+import taboolib.platform.util.onlinePlayers
 import taboolib.platform.util.sendLang
+import taboolib.platform.util.setMeta
 
 @CommandHeader("Orryx", ["or"], "Orryx技能插件主指令", permission = "Orryx.Command.Main", permissionMessage = "你没有权限使用此指令")
 object OrryxCommand {

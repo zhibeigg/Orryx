@@ -43,7 +43,7 @@ object MemoryCache {
                         value.toFlag()?.let { flag -> key to flag }
                     }
                     PlayerProfile(Bukkit.getPlayer(uuid) ?: return@let null, p.job, p.point, list.toMap(ConcurrentHashMap(list.size)))
-                }?: PlayerProfile(Bukkit.getPlayer(uuid) ?: return@thenApply null, null, 0, ConcurrentHashMap())
+                } ?: PlayerProfile(Bukkit.getPlayer(uuid) ?: return@thenApply null, null, 0, ConcurrentHashMap())
             }
         }
 

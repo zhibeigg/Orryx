@@ -185,7 +185,7 @@ object EntityActions {
         return try {
             reader.mark()
             val expect = reader.expects(*EntityField.fields().toTypedArray())
-            val they = reader.nextTheyContainerOrSelf()
+            val they = reader.nextTheyContainerOrNull()
             actionFuture { future ->
                 containerOrSelf(they) {
                     val entity = it.firstInstance<ITargetEntity<*>>().entity

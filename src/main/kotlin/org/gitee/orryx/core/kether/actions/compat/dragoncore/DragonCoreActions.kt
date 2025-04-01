@@ -5,8 +5,10 @@ import eos.moe.armourers.api.PlayerSkinUpdateEvent
 import eos.moe.dragoncore.network.PacketSender
 import ink.ptms.adyeshach.core.Adyeshach
 import ink.ptms.adyeshach.core.entity.EntityTypes
+import org.bukkit.craftbukkit.v1_12_R1.CraftWorld
 import org.bukkit.craftbukkit.v1_12_R1.entity.CraftArmorStand
-import org.bukkit.entity.EntityType
+import org.bukkit.entity.ArmorStand
+import org.bukkit.event.entity.CreatureSpawnEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.gitee.orryx.api.adapters.IEntity
 import org.gitee.orryx.api.adapters.entity.AbstractAdyeshachEntity
@@ -162,6 +164,7 @@ object DragonCoreActions {
                 .addEntry("gui标识符", Type.SYMBOL, false, head = "gui")
                 .addEntry("gui名字", Type.STRING, false)
                 .addEntry("方法语句", Type.STRING, false)
+                .addEntry("是否异步执行", Type.BOOLEAN, false)
                 .addContainerEntry("客户端参与执行的玩家", true, "@self"),
             Action.new("DragonCore附属语句", "运行龙核动作控制器方法", "dragoncore", true)
                 .description("运行龙核动作控制器方法")
@@ -994,13 +997,18 @@ object DragonCoreActions {
     private fun sendModelEffect(entity: IEntity, key: String, model: String, timeout: Long): ModelEffect {
         val effect: ITargetEntity<*> = when(entity) {
             is AbstractBukkitEntity, is PlayerTarget-> {
-                val effectEntity = entity.world.spawnEntity(entity.location, EntityType.ARMOR_STAND) as CraftArmorStand
-                effectEntity.customName = key
-                effectEntity.setMeta(IGNORE_HIT, true)
-                effectEntity.setGravity(false)
-                effectEntity.isSilent = true
-                effectEntity.isInvulnerable = true
-                effectEntity.isMarker = true
+                val craftWorld = entity.world as CraftWorld
+                val effectEntity = craftWorld.addEntity<CraftArmorStand>(
+                    craftWorld.createEntity(entity.location, ArmorStand::class.java),
+                    CreatureSpawnEvent.SpawnReason.CUSTOM
+                ) {
+                    it.customName = key
+                    it.setMeta(IGNORE_HIT, true)
+                    it.setGravity(false)
+                    it.isSilent = true
+                    it.isInvulnerable = true
+                    it.isMarker = true
+                }
                 entity.getBukkitEntity()?.addPassenger(effectEntity)
                 AbstractBukkitEntity(effectEntity)
             }
