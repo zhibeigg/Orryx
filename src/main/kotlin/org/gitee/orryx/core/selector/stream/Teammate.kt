@@ -18,7 +18,7 @@ object Teammate: ISelectorStream {
     override val keys = arrayOf("teammate")
 
     override val wiki: Selector
-        get() = Selector.new("dp队员", Server.keys, SelectorType.STREAM)
+        get() = Selector.new("dp队员", keys, SelectorType.STREAM)
             .addExample("@teammate")
             .description("dp队员")
 

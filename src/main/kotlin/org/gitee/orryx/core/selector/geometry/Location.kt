@@ -4,7 +4,6 @@ import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.ISelectorGeometry
-import org.gitee.orryx.core.selector.stream.Server
 import org.gitee.orryx.core.targets.ITarget
 import org.gitee.orryx.core.wiki.Selector
 import org.gitee.orryx.core.wiki.SelectorType
@@ -19,7 +18,7 @@ object Location: ISelectorGeometry {
     override val keys = arrayOf("location")
 
     override val wiki: Selector
-        get() = Selector.new("具体坐标点", Server.keys, SelectorType.GEOMETRY)
+        get() = Selector.new("具体坐标点", keys, SelectorType.GEOMETRY)
             .addExample("@location 2 3 5 1 2")
             .addParm(Type.DOUBLE, "x", "0.0")
             .addParm(Type.DOUBLE, "y", "0.0")

@@ -16,7 +16,7 @@ object Current: ISelectorStream {
     override val keys = arrayOf("current")
 
     override val wiki: Selector
-        get() = Selector.new("Sender当前位置", Server.keys, SelectorType.STREAM)
+        get() = Selector.new("Sender当前位置", keys, SelectorType.STREAM)
             .addExample("@current e")
             .addExample("@current l")
             .addParm(Type.SYMBOL, "位置模式，l代表脚底，e代表眼睛", "l")

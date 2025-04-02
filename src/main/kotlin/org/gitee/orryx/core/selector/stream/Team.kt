@@ -18,7 +18,7 @@ object Team: ISelectorStream {
     override val keys = arrayOf("team")
 
     override val wiki: Selector
-        get() = Selector.new("dp队伍过滤", Server.keys, SelectorType.STREAM)
+        get() = Selector.new("dp队伍过滤", keys, SelectorType.STREAM)
             .addExample("@team")
             .addExample("!@team")
             .description("只保留队内人员,或只保留队外人员")

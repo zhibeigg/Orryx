@@ -16,7 +16,7 @@ object Amount: ISelectorStream {
     override val keys = arrayOf("amount")
 
     override val wiki: Selector
-        get() = Selector.new("数量过滤", Server.keys, SelectorType.STREAM)
+        get() = Selector.new("数量过滤", keys, SelectorType.STREAM)
             .addExample("@amount 1 drop")
             .addExample("@amount 1 take")
             .addParm(Type.SYMBOL, "drop丢弃前方take丢弃后方", "take")

@@ -16,7 +16,7 @@ object Type: ISelectorStream {
     override val keys: Array<String> = arrayOf("type")
 
     override val wiki: Selector
-        get() = Selector.new("实体/目标类型过滤", Server.keys, SelectorType.STREAM)
+        get() = Selector.new("实体/目标类型过滤", keys, SelectorType.STREAM)
             .addExample("@type player,pig")
             .addExample("!@type location")
             .addParm(Type.STRING, "指定实体类型，location表示坐标类型目标，用英文逗号分割", "player")

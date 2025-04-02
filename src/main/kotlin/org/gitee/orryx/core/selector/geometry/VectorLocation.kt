@@ -3,7 +3,6 @@ package org.gitee.orryx.core.selector.geometry
 import org.bukkit.util.Vector
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.ISelectorGeometry
-import org.gitee.orryx.core.selector.stream.Server
 import org.gitee.orryx.core.targets.ITarget
 import org.gitee.orryx.core.wiki.Selector
 import org.gitee.orryx.core.wiki.SelectorType
@@ -20,7 +19,7 @@ object VectorLocation: ISelectorGeometry {
     override val keys = arrayOf("vector", "direction")
 
     override val wiki: Selector
-        get() = Selector.new("原点偏移", Server.keys, SelectorType.GEOMETRY)
+        get() = Selector.new("原点偏移", keys, SelectorType.GEOMETRY)
             .addExample("@vector 2 3 5 true false")
             .addExample("@direction x y z yaw pitch")
             .addParm(Type.DOUBLE, "前方", "0.0")

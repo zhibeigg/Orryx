@@ -5,7 +5,6 @@ import org.bukkit.entity.LivingEntity
 import org.bukkit.util.Vector
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.ISelectorGeometry
-import org.gitee.orryx.core.selector.stream.Server
 import org.gitee.orryx.core.targets.ITarget
 import org.gitee.orryx.core.wiki.Selector
 import org.gitee.orryx.core.wiki.SelectorType
@@ -25,7 +24,7 @@ object Annular : ISelectorGeometry {
     override val keys = arrayOf("annular")
 
     override val wiki: Selector
-        get() = Selector.new("环状选取", Server.keys, SelectorType.GEOMETRY)
+        get() = Selector.new("环状选取", keys, SelectorType.GEOMETRY)
             .addExample("@annular 2 3 5")
             .addParm(Type.DOUBLE, "最小半径", "0.0")
             .addParm(Type.DOUBLE, "最大半径", "0.0")

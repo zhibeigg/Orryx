@@ -2,7 +2,6 @@ package org.gitee.orryx.core.selector.geometry
 
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.ISelectorGeometry
-import org.gitee.orryx.core.selector.stream.Server
 import org.gitee.orryx.core.targets.ITarget
 import org.gitee.orryx.core.wiki.Selector
 import org.gitee.orryx.core.wiki.SelectorType
@@ -20,7 +19,7 @@ object Sector: ISelectorGeometry {
     override val keys = arrayOf("sec", "sector")
 
     override val wiki: Selector
-        get() = Selector.new("扇形范围", Server.keys, SelectorType.GEOMETRY)
+        get() = Selector.new("扇形范围", keys, SelectorType.GEOMETRY)
             .addExample("@sector 10 120 2 0")
             .addExample("@sec 10 120 2")
             .addParm(Type.DOUBLE, "半径", "10.0")

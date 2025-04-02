@@ -3,7 +3,6 @@ package org.gitee.orryx.core.selector.geometry
 import org.bukkit.entity.LivingEntity
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.ISelectorGeometry
-import org.gitee.orryx.core.selector.stream.Server
 import org.gitee.orryx.core.targets.ITarget
 import org.gitee.orryx.core.wiki.Selector
 import org.gitee.orryx.core.wiki.SelectorType
@@ -23,7 +22,7 @@ object Range: ISelectorGeometry {
     override val keys = arrayOf("range")
 
     override val wiki: Selector
-        get() = Selector.new("球形范围", Server.keys, SelectorType.GEOMETRY)
+        get() = Selector.new("球形范围", keys, SelectorType.GEOMETRY)
             .addExample("@range 10")
             .addParm(Type.DOUBLE, "半径", "10.0")
             .description("球形范围内的所有实体")

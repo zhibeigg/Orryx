@@ -16,7 +16,7 @@ object Origin: ISelectorStream {
     override val keys = arrayOf("origin")
 
     override val wiki: Selector
-        get() = Selector.new("原点位置", Server.keys, SelectorType.STREAM)
+        get() = Selector.new("原点位置", keys, SelectorType.STREAM)
             .addExample("@origin e")
             .addExample("@origin l")
             .addParm(Type.SYMBOL, "位置模式，l代表脚底，e代表眼睛", "l")

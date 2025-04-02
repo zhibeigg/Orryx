@@ -20,7 +20,7 @@ object Offset: ISelectorStream {
     override val keys = arrayOf("offset")
 
     override val wiki: Selector
-        get() = Selector.new("改变坐标", Server.keys, SelectorType.STREAM)
+        get() = Selector.new("改变坐标", keys, SelectorType.STREAM)
             .addExample("@offset 2 0 0 true false")
             .addExample("!@offset x y z yaw pitch")
             .addParm(Type.DOUBLE, "x", "0.0")

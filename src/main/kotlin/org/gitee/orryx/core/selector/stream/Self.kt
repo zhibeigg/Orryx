@@ -15,7 +15,7 @@ object Self: ISelectorStream {
     override val keys = arrayOf("self")
 
     override val wiki: Selector
-        get() = Selector.new("sender玩家", Server.keys, SelectorType.STREAM)
+        get() = Selector.new("sender玩家", keys, SelectorType.STREAM)
             .addExample("@self")
             .addExample("!@self")
             .description("Sender转化为玩家")

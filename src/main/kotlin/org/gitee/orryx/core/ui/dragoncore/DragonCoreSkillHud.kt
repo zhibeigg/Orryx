@@ -56,7 +56,7 @@ open class DragonCoreSkillHud(override val viewer: Player, override val owner: P
                 PacketSender.sendSyncPlaceholder(viewer, mapOf(
                     "Orryx_bind_keys" to keys.joinToString("<br>") { it.key },
                     "Orryx_bind_skills" to keys.joinToString("<br>") { bindSkills[it]?.key ?: "none" },
-                    "Orryx_bind_cooldowns" to keys.joinToString("<br>") { bindSkills[it]?.key?.let { skill -> skillCooldownMap[owner.uniqueId]?.get(skill)?.getRemaining(owner) }.toString() }
+                    "Orryx_bind_cooldowns" to keys.joinToString("<br>") { bindSkills[it]?.key?.let { skill -> skillCooldownMap[owner.uniqueId]?.get(skill)?.getCountdown(owner) }.toString() }
                 ))
             }
         }

@@ -3,7 +3,6 @@ package org.gitee.orryx.core.selector.geometry
 import org.gitee.orryx.api.adapters.vector.AbstractVector
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.ISelectorGeometry
-import org.gitee.orryx.core.selector.stream.Server
 import org.gitee.orryx.core.targets.ITarget
 import org.gitee.orryx.core.wiki.Selector
 import org.gitee.orryx.core.wiki.SelectorType
@@ -18,7 +17,7 @@ object Rectangle: ISelectorGeometry {
     override val keys = arrayOf("rec", "rectangle")
 
     override val wiki: Selector
-        get() = Selector.new("碰撞箱", Server.keys, SelectorType.GEOMETRY)
+        get() = Selector.new("碰撞箱", keys, SelectorType.GEOMETRY)
             .addExample("@rectangle 2 2 2 2 1 true")
             .addParm(Type.DOUBLE, "长度", "0.0")
             .addParm(Type.DOUBLE, "宽度", "0.0")

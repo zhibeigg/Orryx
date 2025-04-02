@@ -20,7 +20,7 @@ object Direct: ISelectorStream {
     override val keys = arrayOf("direct")
 
     override val wiki: Selector
-        get() = Selector.new("改变视角向量", Server.keys, SelectorType.STREAM)
+        get() = Selector.new("改变视角向量", keys, SelectorType.STREAM)
             .addExample("@direct x y z")
             .addExample("!@direct x y z")
             .addParm(Type.DOUBLE, "x", "0.0")

@@ -18,7 +18,7 @@ object World: ISelectorStream {
     override val keys = arrayOf("world")
 
     override val wiki: Selector
-        get() = Selector.new("添加/剔除世界目标", Server.keys, SelectorType.STREAM)
+        get() = Selector.new("添加/剔除世界目标", keys, SelectorType.STREAM)
             .addExample("@world sender/指定世界")
             .addExample("!@world sender/指定世界")
             .addParm(Type.STRING, "指定世界或者sender世界", "sender")
