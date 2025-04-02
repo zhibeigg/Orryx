@@ -251,12 +251,12 @@ fun ScriptFrame.skillCaster(func: Player.() -> CompletableFuture<Any?>): Complet
 /**
  * 确保[func]在主线程运行
  * */
-fun <T> ensureSync(func: () -> T): T {
+fun <T> ensureSync(func: () -> T): CompletableFuture<T> {
     if (isPrimaryThread) {
-        return func()
+        return CompletableFuture.completedFuture(func())
     } else {
         val future = CompletableFuture<T>()
         submit { future.complete(func()) }
-        return future.get()
+        return future
     }
 }

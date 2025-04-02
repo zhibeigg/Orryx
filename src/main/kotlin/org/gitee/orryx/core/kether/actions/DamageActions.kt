@@ -34,7 +34,7 @@ object DamageActions {
             command("source", then = container()).option(),
             command("type", then = text()).option()
         ).apply(it) { damage, attribute, container, source, type ->
-            now {
+            future {
                 val sources = source.orElse(self())
                 val damageType = type?.uppercase()?.let { it1 -> DamageType.valueOf(it1) } ?: DamageType.PHYSICS
                 ensureSync {

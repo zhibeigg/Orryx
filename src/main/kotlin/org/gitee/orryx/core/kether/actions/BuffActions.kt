@@ -147,7 +147,7 @@ object BuffActions {
                 val buff = it.nextParsedAction()
                 val timeout = it.nextParsedAction()
                 val container = it.nextTheyContainerOrNull()
-                actionNow {
+                actionFuture { future ->
                     run(buff).str { buff ->
                         run(timeout).long { timeout ->
                             containerOrSelf(container) { container ->
@@ -155,6 +155,7 @@ object BuffActions {
                                     container.forEachInstance<PlayerTarget> { player ->
                                         sendBuff(player.getSource(), buff, timeout)
                                     }
+                                    future.complete(null)
                                 }
                             }
                         }
@@ -165,7 +166,7 @@ object BuffActions {
                 val container1 = it.nextTheyContainerOrNull()
                 val buff = it.nextParsedAction()
                 val container2 = it.nextTheyContainerOrNull()
-                actionNow {
+                actionFuture { future ->
                     if (container1 == null) {
                         run(buff).str { buff ->
                             containerOrSelf(container2) { container ->
@@ -173,6 +174,7 @@ object BuffActions {
                                     container.forEachInstance<PlayerTarget> { player ->
                                         clearBuff(player.getSource(), buff)
                                     }
+                                    future.complete(null)
                                 }
                             }
                         }
@@ -182,6 +184,7 @@ object BuffActions {
                                 container.forEachInstance<PlayerTarget> { player ->
                                     clearBuffAll(player.getSource())
                                 }
+                                future.complete(null)
                             }
                         }
                     }

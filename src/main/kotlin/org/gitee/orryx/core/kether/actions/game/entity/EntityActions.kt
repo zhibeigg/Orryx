@@ -81,7 +81,7 @@ object EntityActions {
                                                 .gravity(gravity)
                                                 .timeout(timeout)
 
-                                        val container = ensureSync {
+                                        ensureSync {
                                             Container(
                                                 builder.build(it.mapNotNullInstance<ITargetLocation<*>, Location> { target ->
                                                     target.location
@@ -91,20 +91,20 @@ object EntityActions {
                                                     entity as AbstractBukkitEntity
                                                 }
                                             )
-                                        }
-
-                                        addOrryxCloseable(builder.removed) {
-                                            fun clean() {
-                                                builder.task.cancel()
-                                                container.forEachInstance<ITargetEntity<*>> { target ->
-                                                    if (target.entity.isValid) {
-                                                        target.entity.remove()
+                                        }.thenApply {
+                                            addOrryxCloseable(builder.removed) {
+                                                fun clean() {
+                                                    builder.task.cancel()
+                                                    it.forEachInstance<ITargetEntity<*>> { target ->
+                                                        if (target.entity.isValid) {
+                                                            target.entity.remove()
+                                                        }
                                                     }
                                                 }
+                                                ensureSync { clean() }
                                             }
-                                            ensureSync { clean() }
+                                            future.complete(it)
                                         }
-                                        future.complete(container)
                                     }
                                 }
                             }
@@ -145,26 +145,26 @@ object EntityActions {
                                             target.location
                                         }
 
-                                        val container = ensureSync {
+                                        ensureSync {
                                             Container(
                                                 builder.build(locations, players.map { playerTarget -> playerTarget.getSource() }, true).mapTo(mutableSetOf()) { entity ->
                                                     entity as AbstractAdyeshachEntity
                                                 }
                                             )
-                                        }
-
-                                        addOrryxCloseable(builder.removed) {
-                                            fun clean() {
-                                                builder.task.cancel()
-                                                container.forEachInstance<ITargetEntity<*>> { target ->
-                                                    if (target.entity.isValid) {
-                                                        target.entity.remove()
+                                        }.thenAccept { container ->
+                                            addOrryxCloseable(builder.removed) {
+                                                fun clean() {
+                                                    builder.task.cancel()
+                                                    container.forEachInstance<ITargetEntity<*>> { target ->
+                                                        if (target.entity.isValid) {
+                                                            target.entity.remove()
+                                                        }
                                                     }
                                                 }
+                                                ensureSync { clean() }
                                             }
-                                            ensureSync { clean() }
+                                            future.complete(container)
                                         }
-                                        future.complete(container)
                                     }
                                 }
                             }

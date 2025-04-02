@@ -22,7 +22,7 @@ object PlayerProfileActions {
             long(),
             theyContainer(true)
         ).apply(it) { type, timeout, container ->
-            now {
+            future {
                 fun foreach(func: (player: PlayerTarget) -> Unit) {
                     container.orElse(self()).forEachInstance<PlayerTarget> { player ->
                         func(player)

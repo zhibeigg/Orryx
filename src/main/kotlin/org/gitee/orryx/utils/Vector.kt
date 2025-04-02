@@ -19,6 +19,9 @@ import org.joml.Vector3dc
 import taboolib.common5.cdouble
 import taboolib.module.effect.math.Matrix
 
+val X_AXIS = Vector(1.0, 0.0, 0.0)
+val Y_AXIS = Vector(0.0, 1.0, 0.0)
+val Z_AXIS = Vector(0.0, 0.0, 1.0)
 
 /**
  * AbstractLocation是否面相loc2
@@ -74,12 +77,12 @@ internal fun ITargetEntity<*>.direction(x: Double, y: Double, z: Double, pitch: 
 private fun Vector.direction(x: Double, y: Double, z: Double, pitch: Boolean): Vector {
     return if (pitch) {
         val zV = clone().setY(0).normalize().crossProduct(Vector(0, 1, 0)).normalize()
-        val yV = clone().normalize().crossProduct(zV)
         val xV = clone().normalize()
+        val yV = zV.clone().crossProduct(xV)
         xV.multiply(x).add(zV.multiply(z)).add(yV.multiply(y))
     } else {
         val xV = clone().setY(0).normalize()
-        val zV = xV.crossProduct(Vector(0, 1, 0)).normalize()
+        val zV = xV.clone().crossProduct(Vector(0, 1, 0))
         xV.multiply(x).add(Vector(0.0, y, 0.0)).add(zV.multiply(z))
     }
 }

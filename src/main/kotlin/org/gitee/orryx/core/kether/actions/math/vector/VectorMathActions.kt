@@ -1,6 +1,5 @@
 package org.gitee.orryx.core.kether.actions.math.vector
 
-import org.bukkit.util.Vector
 import org.gitee.orryx.api.adapters.IVector
 import org.gitee.orryx.api.adapters.vector.AbstractVector
 import org.gitee.orryx.core.kether.ScriptManager.scriptParser
@@ -97,6 +96,10 @@ object VectorMathActions {
                 .description("原点向量")
                 .addEntry("原点标识符", Type.SYMBOL, head = "origin")
                 .result("origin原点向量", Type.VECTOR),
+            Action.new("Math数学运算", "原点的视角向量", "vector", true)
+                .description("原点的视角向量")
+                .addEntry("原点视角标识符", Type.SYMBOL, head = "eye")
+                .result("origin原点的视角向量", Type.VECTOR),
             Action.new("Math数学运算", "根据法线反射向量", "vector", true)
                 .description("根据法线反射向量")
                 .addEntry("反射占位符", Type.SYMBOL, head = "reflect")
@@ -143,10 +146,13 @@ object VectorMathActions {
                 }
             }
             case("origin") {
-                actionFuture { future ->
-                    val vector = script().getParameter().origin?.location?.toVector() ?: Vector(0, 0, 0)
-                    val vector3d = Vector3d(vector.x, vector.y, vector.z)
-                    future.complete(vector3d.abstract())
+                actionNow {
+                    script().getParameter().origin?.location?.toVector()?.let { v -> AbstractVector(v.x, v.y, v.z) } ?: AbstractVector(0.0, 0.0, 0.0)
+                }
+            }
+            case("eye") {
+                actionNow {
+                    script().getParameter().origin?.location?.direction?.let { v -> AbstractVector(v.x, v.y, v.z) } ?: AbstractVector(0.0, 0.0, 0.0)
                 }
             }
             other { create(it) }

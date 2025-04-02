@@ -939,21 +939,21 @@ object DragonCoreActions {
                 run(model).str { model ->
                     run(timeout).long { timeout ->
                         containerOrSelf(they) {container ->
-                            val list = ensureSync {
+                            ensureSync {
                                 container.mapInstance<ITargetEntity<*>, ModelEffect> { target ->
                                     sendModelEffect(target.entity, key, model, timeout)
                                 }
-                            }
-
-                            addOrryxCloseable(CompletableFuture.allOf(*list.map { modelEffect -> modelEffect.simpleTimeoutTask.future }.toTypedArray())) {
-                                list.forEach { modelEffect0 ->
-                                    effectMap[modelEffect0.owner]?.removeIf { modelEffect1 ->
-                                        modelEffect0 == modelEffect1
+                            }.thenAccept {
+                                addOrryxCloseable(CompletableFuture.allOf(*it.map { modelEffect -> modelEffect.simpleTimeoutTask.future }.toTypedArray())) {
+                                    it.forEach { modelEffect0 ->
+                                        effectMap[modelEffect0.owner]?.removeIf { modelEffect1 ->
+                                            modelEffect0 == modelEffect1
+                                        }
+                                        modelEffect0.entity.entity.remove()
                                     }
-                                    modelEffect0.entity.entity.remove()
                                 }
+                                future.complete(Container(it.mapTo(mutableSetOf()) { modelEffect -> modelEffect.entity }))
                             }
-                            future.complete(Container(list.mapTo(mutableSetOf()) { modelEffect -> modelEffect.entity }))
                         }
                     }
                 }

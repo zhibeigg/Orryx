@@ -93,7 +93,7 @@ object MythicMobsActions {
         val mobs = reader.nextParsedAction()
         val they = reader.nextTheyContainerOrNull()
 
-        return actionNow {
+        return actionFuture { future ->
             run(amount).double { amount ->
                 container(mobs) {mobs ->
                     containerOrSelf(they) {they ->
@@ -104,6 +104,7 @@ object MythicMobsActions {
                                     MythicMobs.inst().apiHelper.addThreat(target.getSource(), it.getSource(), amount)
                                 }
                             }
+                            future.complete(null)
                         }
                     }
                 }
@@ -116,7 +117,7 @@ object MythicMobsActions {
         val mobs = reader.nextParsedAction()
         val they = reader.nextTheyContainerOrNull()
 
-        return actionNow {
+        return actionFuture { future ->
             run(amount).double { amount ->
                 container(mobs) {mobs ->
                     containerOrSelf(they) {they ->
@@ -127,6 +128,7 @@ object MythicMobsActions {
                                     MythicMobs.inst().apiHelper.reduceThreat(target.getSource(), it.getSource(), amount)
                                 }
                             }
+                            future.complete(null)
                         }
                     }
                 }
@@ -139,7 +141,7 @@ object MythicMobsActions {
         val mobs = reader.nextParsedAction()
         val they = reader.nextTheyContainerOrNull()
 
-        return actionNow {
+        return actionFuture { future ->
             run(amount).double { amount ->
                 container(mobs) {mobs ->
                     containerOrSelf(they) {they ->
@@ -150,6 +152,7 @@ object MythicMobsActions {
                                     setThreat(target.getSource(), it.getSource(), amount)
                                 }
                             }
+                            future.complete(null)
                         }
                     }
                 }
@@ -176,7 +179,7 @@ object MythicMobsActions {
         val mobs = reader.nextParsedAction()
         val they = reader.nextTheyContainerOrNull()
 
-        return actionNow {
+        return actionFuture { future ->
             run(signal).str { signal ->
                 container(mobs) {mobs ->
                     containerOrSelf(they) {they ->
@@ -187,6 +190,7 @@ object MythicMobsActions {
                                     signal(target.getSource(), it.getSource(), signal)
                                 }
                             }
+                            future.complete(null)
                         }
                     }
                 }
@@ -210,7 +214,7 @@ object MythicMobsActions {
         val trigger = reader.nextHeadActionOrNull(arrayOf("trigger"))
         val they = reader.nextTheyContainerOrNull()
 
-        return actionNow {
+        return actionFuture { future ->
             run(skillName).str { skillName ->
                 run(power).float { power ->
                     containerOrSelf(trigger) { mobs ->
@@ -230,6 +234,7 @@ object MythicMobsActions {
                                         )
                                     }
                                 }
+                                future.complete(null)
                             }
                         }
                     }

@@ -22,7 +22,7 @@ object GameActions {
             bool(),
             theyContainer(true)
         ).apply(it) { isSprint, container ->
-            now {
+            future {
                 ensureSync {
                     container.orElse(self()).forEachInstance<PlayerTarget> { player ->
                         player.getSource().isSprinting = isSprint
@@ -43,7 +43,7 @@ object GameActions {
             container(),
             theyContainer(false)
         ).apply(it) { target, container ->
-            now {
+            future {
                 ensureSync {
                     container.orElse(self()).forEachInstance<PlayerTarget> { player ->
                         target?.firstInstanceOrNull<ITargetEntity<Entity>>()?.getSource()

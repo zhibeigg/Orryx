@@ -10,6 +10,7 @@ import org.gitee.orryx.utils.raytrace.RayTraceResult
 import org.joml.Vector3d
 import taboolib.module.kether.KetherParser
 import taboolib.module.kether.script
+import java.util.concurrent.CompletableFuture
 
 object VectorActions {
 
@@ -24,7 +25,7 @@ object VectorActions {
             vector(),
             theyContainer(true)
         ).apply(it) { vector, container ->
-            now {
+            future {
                 ensureSync {
                     container.orElse(self()).forEachInstance<ITargetEntity<*>> { entity ->
                         entity.entity.teleport(
@@ -43,17 +44,17 @@ object VectorActions {
             .addEntry("视角前方移动距离", Type.DOUBLE, false)
             .addEntry("视角上方移动距离", Type.DOUBLE, false)
             .addEntry("视角右方移动距离", Type.DOUBLE, false)
-            .addEntry("视角向量", Type.DOUBLE, true, "保留")
+            .addEntry("视角向量", Type.VECTOR, false)
             .addContainerEntry(optional = true, default = "@self")
     ) {
         it.group(
             double(),
             double(),
             double(),
-            vector().option(),
+            vector(),
             theyContainer(true)
         ).apply(it) { x, y, z, direction, container ->
-            now {
+            future {
                 ensureSync {
                     container.orElse(self()).forEachInstance<ITargetEntity<*>> { entity ->
                         val dir = entity.direction(x, y, z, true)
@@ -68,8 +69,8 @@ object VectorActions {
                         )
                         result?.hitPosition?.toLocation(entity.entity.world)?.let { loc ->
                             entity.entity.teleport(loc.setDirection(direction?.bukkit() ?: entity.entity.location.direction).apply {
-                                if (result.type == RayTraceResult.EnumMovingObjectType.MISS) {
-                                    add(0.0, -1.0, 0.0)
+                                if (result.type != RayTraceResult.EnumMovingObjectType.MISS) {
+                                    add(dir.normalize().multiply(-0.1))
                                 }
                             })
                         }
@@ -96,13 +97,13 @@ object VectorActions {
             bool(),
             theyContainer(true)
         ).apply(it) { x, y, z, additional, container ->
-            now {
+            future {
                 ensureSync {
                     container.orElse(self()).forEachInstance<ITargetEntity<*>> { entity ->
                         if (additional) {
-                            entity.entity.velocity = entity.direction(x, y, z).add(entity.entity.velocity)
+                            entity.entity.velocity = entity.direction(x, y, z, false).add(entity.entity.velocity)
                         } else {
-                            entity.entity.velocity = entity.direction(x, y, z)
+                            entity.entity.velocity = entity.direction(x, y, z, false)
                         }
                     }
                 }
@@ -121,8 +122,8 @@ object VectorActions {
             vector(),
             theyContainer(true)
         ).apply(it) { vector, container ->
-            now {
-                val bukkit = vector?.bukkit() ?: return@now null
+            future {
+                val bukkit = vector?.bukkit() ?: return@future CompletableFuture.completedFuture(null)
                 ensureSync {
                     container.readContainer(script()).orElse(self()).forEachInstance<ITargetEntity<*>> { target ->
                         target.entity.velocity = bukkit

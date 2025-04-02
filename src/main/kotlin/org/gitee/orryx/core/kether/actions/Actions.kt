@@ -12,9 +12,10 @@ import taboolib.common.platform.function.adaptPlayer
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common.platform.function.submit
 import taboolib.common5.clong
-import taboolib.library.kether.QuestFuture
-import taboolib.module.kether.*
-import java.util.concurrent.CompletableFuture
+import taboolib.module.kether.KetherParser
+import taboolib.module.kether.actionFuture
+import taboolib.module.kether.long
+import taboolib.module.kether.run
 
 object Actions {
 
@@ -46,10 +47,8 @@ object Actions {
         )
     ) {
         val action = it.nextParsedAction()
-        actionTake {
-            val future = CompletableFuture<Any>()
-            run(action).thenAcceptAsync(QuestFuture.complete(future), context().executor)
-            future
+        actionFuture {future ->
+            ensureSync { run(action).thenAccept { value -> future.complete(value) } }
         }
     }
 
@@ -64,7 +63,7 @@ object Actions {
             long(),
             theyContainer(true)
         ).apply(it) { timeout, they ->
-            now {
+            future {
                 ensureSync {
                     they.orElse(self()).forEachInstance<PlayerTarget> { target ->
                         silence(adaptPlayer(target.getSource()), timeout * 50)
