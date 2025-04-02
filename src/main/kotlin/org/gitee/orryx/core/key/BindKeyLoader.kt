@@ -18,4 +18,20 @@ class BindKeyLoader(override val key: String, val configurationSection: Configur
         return boolean
     }
 
+    override fun toString(): String {
+        return "BindKeyLoader(key=$key, sort=$sort)"
+    }
+
+    override fun hashCode(): Int {
+        return key.hashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return if (other is BindKeyLoader) {
+            key == other.key
+        } else {
+            false
+        }
+    }
+
 }

@@ -26,8 +26,9 @@ fun IPlayerJob.clearAllLevelAndBackPoint(): CompletableFuture<Boolean> {
 }
 
 fun IPlayerJob.getBindSkills(): Map<IBindKey, CompletableFuture<IPlayerSkill?>?> {
-    val map = bindKeyOfGroup[BindKeyLoaderManager.getGroup(group)] ?: return bindKeys().associateWith { null }
-    return bindKeys().associateWith { map[it]?.let { skill -> player.getSkill(job.key, skill) } }
+    val sourceMap = bindKeyOfGroup[BindKeyLoaderManager.getGroup(group)] ?: return bindKeys().associateWith { null }
+    val map = bindKeys().associateWith { sourceMap[it] }
+    return map.mapValues { it.value?.let { skill -> player.getSkill(key, skill, true) } }
 }
 
 fun IPlayerJob.getSkills(): List<CompletableFuture<IPlayerSkill?>> {
@@ -51,10 +52,9 @@ fun <T> IPlayerJob.skills(func: (skills: List<IPlayerSkill>) -> T): CompletableF
 }
 
 fun <T> IPlayerJob.bindSkills(func: (bindSkills: Map<IBindKey, IPlayerSkill?>) -> T): CompletableFuture<T> {
-    val bindSkills = mutableMapOf<IBindKey, IPlayerSkill?>()
-    val fBindSkills = getBindSkills()
-    return CompletableFuture.allOf(*fBindSkills.map { (k, s) ->
-        s?.thenApply {
+    val bindSkills = hashMapOf<IBindKey, IPlayerSkill?>()
+    return CompletableFuture.allOf(*getBindSkills().map { (k, s) ->
+        s?.thenAccept {
             bindSkills[k] = it
         } ?: CompletableFuture.completedFuture(null)
     }.toTypedArray()).thenApply {

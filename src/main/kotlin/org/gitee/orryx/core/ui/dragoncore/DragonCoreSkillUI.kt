@@ -48,8 +48,8 @@ class DragonCoreSkillUI(override val viewer: Player, override val owner: Player)
                                     "Orryx_job" to job.job.name,
                                     "Orryx_point" to profile.point.toString(),
                                     "Orryx_group" to job.group,
-                                    "Orryx_bind_keys" to keys.joinToString("<br>") { it.key },
-                                    "Orryx_bind_skills" to keys.joinToString("<br>") { bindSkills[it]?.key ?: "none" },
+                                    "Orryx_bind_keys_ui" to keys.joinToString("<br>") { it.key },
+                                    "Orryx_bind_skills_ui" to keys.joinToString("<br>") { bindSkills[it]?.key ?: "none" },
                                     "Orryx_skills" to skills.joinToString("<br>") { it.key },
                                     "Orryx_skills_name" to skills.joinToString("<br>") { it.skill.name },
                                     "Orryx_skills_level" to skills.joinToString("<br>") { it.level.toString() },
@@ -80,9 +80,6 @@ class DragonCoreSkillUI(override val viewer: Player, override val owner: Player)
                             owner.skill(skill) { skill ->
                                 job.setBindKey(skill, group, bindKey).thenRun {
                                     update(viewer, owner)
-                                    IUIManager.INSTANCE.getSkillHUD(viewer)?.apply {
-                                        update()
-                                    }
                                 }
                             }
                         }
@@ -98,9 +95,6 @@ class DragonCoreSkillUI(override val viewer: Player, override val owner: Player)
                         owner.skill(skill) { skill ->
                             job.unBindKey(skill, group).thenRun {
                                 update(viewer, owner)
-                                IUIManager.INSTANCE.getSkillHUD(viewer)?.apply {
-                                    update()
-                                }
                             }
                         }
                     }

@@ -31,23 +31,25 @@ fun IBindKey.tryCast(player: Player) {
 }
 
 fun bindKeyOfGroupToMutableMap(bindKeyOfGroup: Map<String, Map<String, String?>>): MutableMap<IGroup, MutableMap<IBindKey, String?>> {
-    val map = mutableMapOf<IGroup, MutableMap<IBindKey, String?>>()
-    bindKeyOfGroup.forEach {
-        val group = BindKeyLoaderManager.getGroup(it.key) ?: return@forEach
-        it.value.forEach sec@{ sec ->
-            val bindKey = BindKeyLoaderManager.getBindKey(sec.key) ?: return@sec
-            map.getOrPut(group) { mutableMapOf() }[bindKey] = sec.value
+    val map = HashMap<IGroup, MutableMap<IBindKey, String?>>()
+    bindKeyOfGroup.forEach { entry ->
+        val group = BindKeyLoaderManager.getGroup(entry.key) ?: return@forEach
+        val bindKeyMap = HashMap<IBindKey, String?>()
+        entry.value.forEach sec@{
+            val bind = BindKeyLoaderManager.getBindKey(it.key) ?: return@sec
+            bindKeyMap[bind] = it.value
         }
+        map[group] = bindKeyMap
     }
     return map
 }
 
 fun bindKeyOfGroupToMap(bindKeyOfGroup: Map<IGroup, Map<IBindKey, String?>>): Map<String, Map<String, String?>> {
-    val map = mutableMapOf<String, MutableMap<String, String?>>()
-    bindKeyOfGroup.forEach {
-        it.value.forEach sec@{ sec ->
-            map.getOrPut(it.key.key) { mutableMapOf() }[sec.key.key] = sec.value
+    return bindKeyOfGroup.mapKeys {
+        it.key.key
+    }.mapValues {
+        it.value.mapKeys { entry ->
+            entry.key.key
         }
     }
-    return map
 }

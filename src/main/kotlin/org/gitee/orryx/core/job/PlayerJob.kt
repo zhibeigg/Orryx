@@ -272,4 +272,8 @@ class PlayerJob(
         }
     }
 
+    override fun toString(): String {
+        return "PlayerJob(player=${player.name}, key=$key, level=$level)"
+    }
+
 }

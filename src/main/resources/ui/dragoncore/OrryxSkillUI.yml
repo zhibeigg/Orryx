@@ -40,7 +40,7 @@ Functions:
     if(局部变量.args.0 == 'Orryx_group') {
       界面变量.技能组 = 局部变量.args.1;
     };
-    if(局部变量.args.0 == 'Orryx_bind_keys') {
+    if(局部变量.args.0 == 'Orryx_bind_keys_ui') {
       界面变量.绑定按键列表 = 方法.分割(局部变量.args.1, '<br>');
       for_each(局部变量.key, 局部变量.index, 界面变量.绑定按键列表, {
         局部变量.组件1 = 方法.新建组件('绑定技能背景_' & 方法.到整数(局部变量.index) & '_texture', '绑定技能背景');
@@ -56,7 +56,7 @@ Functions:
         方法.添加组件(局部变量.组件3);
       });
     };
-    if(局部变量.args.0 == 'Orryx_bind_skills') {
+    if(局部变量.args.0 == 'Orryx_bind_skills_ui') {
       界面变量.绑定技能列表 = 方法.分割(局部变量.args.1, '<br>');
     };
     if(局部变量.args.0 == 'Orryx_skills') {

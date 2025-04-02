@@ -29,7 +29,7 @@ object BindKeyLoaderManager {
             it.uppercase() to BindKeyLoader(it.uppercase(), keys.getConfigurationSection("Keys.$it")!!)
         } ?: emptyMap()
         keysRegister(bindKeyLoaderMap.values as Collection<BindKeyLoader>)
-        groupMap = (Orryx.config.getStringList("Group") + DEFAULT).associateWith { Group(it) }
+        groupMap = (Orryx.config.getStringList("Group") + DEFAULT).associateWith { GroupLoader(it) }
         info("&e┣&7Groups loaded &e${groupMap.size} &a√".colored())
         info("&e┣&7BindKeys loaded &e${bindKeyLoaderMap.size} &a√".colored())
     }

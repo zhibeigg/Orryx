@@ -8,6 +8,7 @@ import org.gitee.orryx.core.ui.AbstractSkillHud
 import org.gitee.orryx.core.ui.IUIManager
 import org.gitee.orryx.core.ui.IUIManager.Companion.skillCooldownMap
 import org.gitee.orryx.core.ui.germplugin.GermPluginSkillHud
+import org.gitee.orryx.utils.bindKeys
 import org.gitee.orryx.utils.bindSkills
 import org.gitee.orryx.utils.job
 import taboolib.common.platform.function.getDataFolder
@@ -51,7 +52,7 @@ open class DragonCoreSkillHud(override val viewer: Player, override val owner: P
     override fun update() {
         owner.job { job ->
             job.bindSkills { bindSkills ->
-                val keys = bindSkills.keys.sortedBy { it.sort }
+                val keys = bindKeys()
                 PacketSender.sendSyncPlaceholder(viewer, mapOf(
                     "Orryx_bind_keys" to keys.joinToString("<br>") { it.key },
                     "Orryx_bind_skills" to keys.joinToString("<br>") { bindSkills[it]?.key ?: "none" },
@@ -84,6 +85,9 @@ open class DragonCoreSkillHud(override val viewer: Player, override val owner: P
                     }
                 }
             }
+        }
+        if (dragonSkillHudMap[owner.uniqueId]?.isEmpty() == true) {
+            dragonSkillHudMap.remove(owner.uniqueId)
         }
     }
 
