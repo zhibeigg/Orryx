@@ -196,8 +196,10 @@ cursor_texture:
   actions:
     click: |-
       方法.播放声音;
-      if(界面变量.cursor != 局部变量.当前组件.index) {
-        界面变量.cursor = 局部变量.当前组件.index;
+      if(方法.取成员(界面变量.技能是否能绑定列表, 局部变量.当前组件.index)) {
+        if(界面变量.cursor != 局部变量.当前组件.index) {
+          界面变量.cursor = 局部变量.当前组件.index;
+        };
       };
 等级:
   x: "方法.取组件值(方法.合并文本('技能背景_' & 局部变量.当前组件.index & '_texture'),'x')+58*界面变量.界面大小"
@@ -265,6 +267,11 @@ cursor_texture:
       if(界面变量.cursor != 'none') {
         方法.发包('OrryxBindSkill', 界面变量.owner, 界面变量.技能组, 方法.取成员(界面变量.绑定按键列表, 局部变量.当前组件.index), 方法.取成员(界面变量.技能key列表, 界面变量.cursor));
         界面变量.cursor = 'none';
+      };
+    click_right: |-
+      方法.播放声音;
+      if(方法.取成员(界面变量.绑定技能列表, 局部变量.当前组件.index) != 'none') {
+        方法.发包('OrryxUnBindSkill', 界面变量.owner, 界面变量.技能组, 方法.取成员(界面变量.绑定技能列表, 局部变量.当前组件.index));
       };
 按键名:
   x: "方法.取组件值(方法.合并文本('绑定技能背景_' & 局部变量.当前组件.index & '_texture'),'x')+11.5*界面变量.界面大小"

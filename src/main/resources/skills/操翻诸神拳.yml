@@ -6,6 +6,9 @@ Options:
   # PRESSING蓄力释放
   Type: "DIRECT"
   Name: "操翻诸神拳"
+  # 在UI中的排序位置
+  Sort: "0"
+  # 在HUD中的显示图标
   Icon: "操翻诸神拳 {{ flag 操翻诸神拳 }} 段"
   XMaterial: "BLAZE_ROD"
   # * 代表此行不进行下一级预览

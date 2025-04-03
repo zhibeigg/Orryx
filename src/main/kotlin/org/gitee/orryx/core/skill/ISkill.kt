@@ -13,6 +13,11 @@ interface ISkill {
     val name: String
 
     /**
+     * UI显示顺序
+     * */
+    val sort: Int
+
+    /**
      * 技能显示图标名
      * */
     val icon: Icon

@@ -4,6 +4,7 @@ import org.bukkit.entity.Player
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.api.events.player.skill.OrryxClearSkillLevelAndBackPointEvent
 import org.gitee.orryx.core.common.timer.SkillTimer
+import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.kether.KetherScript
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.kether.parameter.SkillParameter
@@ -100,6 +101,10 @@ fun <T> Player.skill(skill: String, create: Boolean = false, function: (IPlayerS
     return getSkill(skill, create).thenApply {
         it?.let { it1 -> function(it1) }
     }
+}
+
+internal fun Player.getSkill(job: IPlayerJob, skill: String, create: Boolean = false): CompletableFuture<IPlayerSkill?> {
+    return getSkill(job.key, skill, create)
 }
 
 fun <T> Player.skill(job: String, skill: String, create: Boolean = false, function: (IPlayerSkill) -> T): CompletableFuture<T?> {

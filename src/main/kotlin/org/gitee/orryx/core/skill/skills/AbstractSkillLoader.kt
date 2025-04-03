@@ -15,6 +15,8 @@ abstract class AbstractSkillLoader(key: String, open val configuration: Configur
 
     override val name: String = (options.getString("Name") ?: key).colored()
 
+    override val sort: Int = options.getInt("Sort", 0)
+
     override val icon: Icon = Icon(options.getString("Icon", options.getString("Name", key))!!.colored())
 
     override val xMaterial: String = options.getString("XMaterial") ?: XMaterial.BLAZE_ROD.name

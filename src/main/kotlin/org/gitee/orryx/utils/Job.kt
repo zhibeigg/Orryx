@@ -33,7 +33,7 @@ fun IPlayerJob.getBindSkills(): Map<IBindKey, CompletableFuture<IPlayerSkill?>?>
 
 fun IPlayerJob.getSkills(): List<CompletableFuture<IPlayerSkill?>> {
     return job.skills.map {
-        player.skill(it, true) { skill -> skill }
+        player.skill(key, it, true) { skill -> skill }
     }
 }
 
@@ -47,7 +47,7 @@ fun <T> IPlayerJob.skills(func: (skills: List<IPlayerSkill>) -> T): CompletableF
             }
         }.toTypedArray()
     ).thenApply {
-        func(skills)
+        func(skills.sortedBy { it.skill.sort })
     }
 }
 

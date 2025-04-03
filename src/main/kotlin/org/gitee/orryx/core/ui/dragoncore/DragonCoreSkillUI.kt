@@ -5,6 +5,7 @@ import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.reload.Reload
+import org.gitee.orryx.core.skill.ICastSkill
 import org.gitee.orryx.core.skill.SkillLevelResult
 import org.gitee.orryx.core.ui.AbstractSkillUI
 import org.gitee.orryx.core.ui.IUIManager
@@ -52,6 +53,7 @@ class DragonCoreSkillUI(override val viewer: Player, override val owner: Player)
                                     "Orryx_bind_skills_ui" to keys.joinToString("<br>") { bindSkills[it]?.key ?: "none" },
                                     "Orryx_skills" to skills.joinToString("<br>") { it.key },
                                     "Orryx_skills_name" to skills.joinToString("<br>") { it.skill.name },
+                                    "Orryx_skills_canBind" to skills.joinToString("<br>") { (it.skill is ICastSkill).toString() },
                                     "Orryx_skills_level" to skills.joinToString("<br>") { it.level.toString() },
                                     "Orryx_skills_maxLevel" to skills.joinToString("<br>") { it.skill.maxLevel.toString() },
                                     "Orryx_skills_locked" to skills.joinToString("<br>") { it.locked.toString() },

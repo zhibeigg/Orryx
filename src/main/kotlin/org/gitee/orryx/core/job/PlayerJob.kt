@@ -16,6 +16,7 @@ import org.gitee.orryx.core.job.ExperienceResult.*
 import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.key.IGroup
+import org.gitee.orryx.core.skill.ICastSkill
 import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.dao.cache.ISyncCacheManager
 import org.gitee.orryx.dao.cache.MemoryCache
@@ -181,6 +182,7 @@ class PlayerJob(
     }
 
     override fun setBindKey(skill: IPlayerSkill, group: IGroup, bindKey: IBindKey): CompletableFuture<Boolean> {
+        if (skill.skill !is ICastSkill) return CompletableFuture.completedFuture(false)
         val event = OrryxPlayerSkillBindKeyEvent.Pre(player, skill, group, bindKey)
         val future = CompletableFuture<Boolean>()
         if (event.call()) {
