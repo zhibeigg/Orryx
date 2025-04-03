@@ -56,40 +56,6 @@ interface IPlayerProfile: Saveable {
     fun clearFlags()
 
     /**
-     * 是否在霸体状态
-     * @return 是否在霸体状态
-     */
-    fun isSuperBody(): Boolean
-
-    /**
-     * 设置霸体时间
-     * @param timeout 霸体时长
-     */
-    fun setSuperBody(timeout: Long)
-
-    /**
-     * 取消霸体
-     */
-    fun cancelSuperBody()
-
-    /**
-     * 延长霸体时间
-     * @param timeout 延长的霸体时长
-     */
-    fun addSuperBody(timeout: Long)
-
-    /**
-     * 减少霸体时间
-     * @param timeout 减少的霸体时长
-     */
-    fun reduceSuperBody(timeout: Long)
-
-    /**
-     * 更新霸体
-     */
-    fun updateSuperBody()
-
-    /**
      * 给予玩家技能点
      * @param point 技能点
      */

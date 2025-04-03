@@ -65,6 +65,9 @@ class DragonCoreUIManager: IUIManager {
                         }
                     }
                 }
+                "OrryxOpen" -> {
+                    DragonCoreSkillUI(e.player, e.player).open()
+                }
                 "OrryxSelectSkill" -> {
                     if (e.data.size == 2) {
                         val owner = Bukkit.getPlayer(java.util.UUID.fromString(e.data[0])) ?: return@registerBukkitListener

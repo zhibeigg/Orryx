@@ -1,8 +1,6 @@
 package org.gitee.orryx.core.profile
 
 import kotlinx.coroutines.launch
-import org.bukkit.attribute.Attribute
-import org.bukkit.attribute.AttributeModifier
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.api.events.player.OrryxPlayerPointEvents
@@ -15,7 +13,6 @@ import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.utils.toSerializable
 import taboolib.common.platform.function.isPrimaryThread
-import taboolib.common.util.unsafeLazy
 import java.util.concurrent.ConcurrentMap
 
 class PlayerProfile(
@@ -33,12 +30,6 @@ class PlayerProfile(
 
     override val point: Int
         get() = privatePoint
-
-    private val superBodyModifier: AttributeModifier by unsafeLazy { AttributeModifier("Orryx@SuperBody", 99999.0, AttributeModifier.Operation.ADD_NUMBER) }
-
-    //霸体过期时间
-    private var superBody: Long = 0
-    private var change = false
 
     override fun setFlag(flagName: String, flag: IFlag, save: Boolean) {
         privateFlags[flagName] = flag
@@ -69,49 +60,6 @@ class PlayerProfile(
     override fun clearFlags() {
         privateFlags.clear()
         save(isPrimaryThread)
-    }
-
-    override fun isSuperBody(): Boolean {
-        return superBody >= System.currentTimeMillis()
-    }
-
-    override fun setSuperBody(timeout: Long) {
-        superBody = System.currentTimeMillis() + timeout
-        updateSuperBody()
-    }
-
-    override fun cancelSuperBody() {
-        superBody = 0
-        updateSuperBody()
-    }
-
-    override fun addSuperBody(timeout: Long) {
-        if (isSuperBody()) {
-            superBody += timeout
-            updateSuperBody()
-        } else {
-            setSuperBody(timeout)
-        }
-    }
-
-    override fun reduceSuperBody(timeout: Long) {
-        if (isSuperBody()) {
-            superBody = (superBody - timeout).coerceAtLeast(0)
-            updateSuperBody()
-        }
-    }
-
-    override fun updateSuperBody() {
-        when {
-            !isSuperBody() && change -> {
-                player.getAttribute(Attribute.GENERIC_ATTACK_KNOCKBACK)?.removeModifier(superBodyModifier)
-                change = false
-            }
-            isSuperBody() && !change -> {
-                player.getAttribute(Attribute.GENERIC_ATTACK_KNOCKBACK)?.addModifier(superBodyModifier)
-                change = true
-            }
-        }
     }
 
     override fun givePoint(point: Int) {

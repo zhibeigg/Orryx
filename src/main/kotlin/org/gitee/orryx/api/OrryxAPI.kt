@@ -2,10 +2,7 @@ package org.gitee.orryx.api
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
-import org.gitee.orryx.api.interfaces.IKeyAPI
-import org.gitee.orryx.api.interfaces.IOrryxAPI
-import org.gitee.orryx.api.interfaces.IReloadAPI
-import org.gitee.orryx.api.interfaces.ITimerAPI
+import org.gitee.orryx.api.interfaces.*
 import taboolib.common.env.RuntimeDependencies
 import taboolib.common.env.RuntimeDependency
 import taboolib.common.platform.PlatformFactory
@@ -39,6 +36,8 @@ class OrryxAPI: IOrryxAPI {
     override val reloadAPI: IReloadAPI = PlatformFactory.getAPI<IReloadAPI>()
 
     override val timerAPI: ITimerAPI = PlatformFactory.getAPI<ITimerAPI>()
+
+    override val profileAPI: IProfileAPI = PlatformFactory.getAPI<IProfileAPI>()
 
     companion object {
 

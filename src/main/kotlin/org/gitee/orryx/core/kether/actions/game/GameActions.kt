@@ -1,13 +1,16 @@
 package org.gitee.orryx.core.kether.actions.game
 
 import org.bukkit.entity.Entity
+import org.bukkit.potion.PotionEffect
 import org.gitee.orryx.core.kether.ScriptManager.combinationParser
+import org.gitee.orryx.core.kether.ScriptManager.scriptParser
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.core.targets.PlayerTarget
 import org.gitee.orryx.core.wiki.Action
 import org.gitee.orryx.core.wiki.Type
 import org.gitee.orryx.utils.*
-import taboolib.module.kether.KetherParser
+import taboolib.library.xseries.XPotion
+import taboolib.module.kether.*
 
 object GameActions {
 
@@ -48,6 +51,86 @@ object GameActions {
                     container.orElse(self()).forEachInstance<PlayerTarget> { player ->
                         target?.firstInstanceOrNull<ITargetEntity<Entity>>()?.getSource()
                             ?.let { entity -> player.getSource().spectatorTarget = entity }
+                    }
+                }
+            }
+        }
+    }
+
+    @KetherParser(["potion"], namespace = ORRYX_NAMESPACE, shared = true)
+    private fun actionPotion() = scriptParser(
+        arrayOf(
+            Action.new("Game原版游戏", "设置药水效果", "potion", true)
+                .description("设置药水效果")
+                .addEntry("设置标识符", Type.SYMBOL, false, head = "set")
+                .addEntry("效果", Type.STRING)
+                .addEntry("持续时间", Type.INT, false)
+                .addEntry("等级", Type.INT, true, "1", "level")
+                .addContainerEntry("玩家", optional = true, default = "@self"),
+            Action.new("Game原版游戏", "删除药水效果", "potion", true)
+                .description("删除药水效果")
+                .addEntry("删除标识符", Type.SYMBOL, false, head = "remove/delete")
+                .addEntry("效果", Type.STRING)
+                .addContainerEntry("实体", optional = true, default = "@self"),
+            Action.new("Game原版游戏", "清除所有药水效果", "potion", true)
+                .description("清除所有药水效果")
+                .addEntry("清除标识符", Type.SYMBOL, false, head = "clear")
+                .addContainerEntry("实体", optional = true, default = "@self")
+        )
+    ) {
+        it.switch {
+            case("set") {
+                val effect = nextToken().uppercase()
+                val duration = nextParsedAction()
+                val level = nextHeadAction("level", 1)
+                val they = nextTheyContainerOrNull()
+                actionFuture { future ->
+                    run(duration).int { duration ->
+                        run(level).int { level ->
+                            containerOrSelf(they) { container ->
+                                ensureSync {
+                                    val type = XPotion.matchXPotion(effect).orElse(XPotion.SPEED).potionEffectType?: return@ensureSync future.complete(false)
+                                    val potion = PotionEffect(type, duration, level, false, false)
+                                    future.complete(
+                                        container.mapNotNullInstance<ITargetEntity<Entity>, Boolean> { target ->
+                                            target.entity.getBukkitLivingEntity()?.addPotionEffect(potion)
+                                        }.all { b -> b }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            case("remove", "delete") {
+                val effect = nextToken().uppercase()
+                val they = nextTheyContainerOrNull()
+                actionFuture { future ->
+                    containerOrSelf(they) { container ->
+                        ensureSync {
+                            val type = XPotion.matchXPotion(effect).orElse(XPotion.SPEED).potionEffectType ?: return@ensureSync future.complete(null)
+                            container.forEachInstance<ITargetEntity<Entity>> { target ->
+                                target.entity.getBukkitLivingEntity()?.removePotionEffect(type)
+                            }
+                            future.complete(null)
+                        }
+                    }
+                }
+            }
+            case("clear") {
+                val they = nextTheyContainerOrNull()
+                actionFuture { future ->
+                    containerOrSelf(they) { container ->
+                        ensureSync {
+                            container.forEachInstance<ITargetEntity<Entity>> { target ->
+                                target.entity.getBukkitLivingEntity()?.apply {
+                                    activePotionEffects.forEach { effect ->
+                                        removePotionEffect(effect.type)
+                                    }
+                                }
+                            }
+                            future.complete(null)
+                        }
                     }
                 }
             }
