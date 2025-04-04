@@ -3,8 +3,8 @@ package org.gitee.orryx.core.kether.actions
 import org.gitee.orryx.core.kether.ScriptManager.addOrryxCloseable
 import org.gitee.orryx.core.kether.ScriptManager.combinationParser
 import org.gitee.orryx.core.station.pipe.PipeBuilder
-import org.gitee.orryx.core.wiki.Action
-import org.gitee.orryx.core.wiki.Type
+import org.gitee.orryx.module.wiki.Action
+import org.gitee.orryx.module.wiki.Type
 import taboolib.module.kether.KetherParser
 import taboolib.module.kether.run
 import java.util.*

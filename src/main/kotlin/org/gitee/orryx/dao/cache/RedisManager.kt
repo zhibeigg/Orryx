@@ -4,12 +4,14 @@ import com.gitee.redischannel.RedisChannelPlugin
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.gitee.orryx.dao.pojo.PlayerJobPO
+import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.utils.playerDataTag
 import org.gitee.orryx.utils.playerJobDataTag
 import org.gitee.orryx.utils.playerJobSkillDataTag
+import org.gitee.orryx.utils.playerKeySettingDataTag
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common.platform.function.submitAsync
 import taboolib.common.util.unsafeLazy
@@ -100,16 +102,45 @@ class RedisManager: ISyncCacheManager {
         return future
     }
 
+    override fun getPlayerKeySetting(player: UUID): CompletableFuture<PlayerKeySettingPO?> {
+        val tag = playerKeySettingDataTag(player)
+        val future = CompletableFuture<PlayerKeySettingPO?>()
+        fun read() {
+            try {
+                var playerKeySettingPO = api.get(tag)?.let { Json.decodeFromString<PlayerKeySettingPO>(it) }
+                if (playerKeySettingPO == null) {
+                    playerKeySettingPO = IStorageManager.INSTANCE.getPlayerKey(player).join()
+                    playerKeySettingPO?.let { savePlayerKeySetting(player, it, false) }
+                } else {
+                    api.refreshExpire(tag, SECOND_6_HOURS, false)
+                }
+                future.complete(playerKeySettingPO)
+            } catch (e: Throwable) {
+                future.completeExceptionally(e)
+            }
+        }
+        if (isPrimaryThread) {
+            submitAsync { read() }
+        } else {
+            read()
+        }
+        return future
+    }
+
     override fun savePlayerProfile(player: UUID, playerProfilePO: PlayerProfilePO, async: Boolean) {
-        api.set(playerDataTag(player), Json.encodeToString(playerProfilePO), 900, async)
+        api.set(playerDataTag(player), Json.encodeToString(playerProfilePO), SECOND_12_HOURS, async)
     }
 
     override fun savePlayerJob(player: UUID, playerJobPO: PlayerJobPO, async: Boolean) {
-        api.set(playerJobDataTag(player, playerJobPO.job), Json.encodeToString(playerJobPO), 900, async)
+        api.set(playerJobDataTag(player, playerJobPO.job), Json.encodeToString(playerJobPO), SECOND_12_HOURS, async)
     }
 
     override fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO, async: Boolean) {
-        api.set(playerJobSkillDataTag(player, playerSkillPO.job, playerSkillPO.skill), Json.encodeToString(playerSkillPO), 600, async)
+        api.set(playerJobSkillDataTag(player, playerSkillPO.job, playerSkillPO.skill), Json.encodeToString(playerSkillPO), SECOND_6_HOURS, async)
+    }
+
+    override fun savePlayerKeySetting(player: UUID, playerKeySettingPO: PlayerKeySettingPO, async: Boolean) {
+        api.set(playerKeySettingDataTag(player), Json.encodeToString(playerKeySettingPO), SECOND_6_HOURS, async)
     }
 
     override fun removePlayerProfile(player: UUID, async: Boolean) {
@@ -122,6 +153,10 @@ class RedisManager: ISyncCacheManager {
 
     override fun removePlayerSkill(player: UUID, job: String, skill: String, async: Boolean) {
         api.remove(playerJobSkillDataTag(player, job, skill), async)
+    }
+
+    override fun removePlayerKeySetting(player: UUID, async: Boolean) {
+        api.remove(playerKeySettingDataTag(player), async)
     }
 
 }

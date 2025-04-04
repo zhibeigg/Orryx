@@ -12,29 +12,51 @@ import java.util.*
 @Ghost
 object DragonCoreCustomPacketSender : PacketSender() {
 
-    fun setPlayerAnimationController(player: Player, uuid: UUID, controllerYaml: String) {
-        sendPluginMessage(player, 29) { buffer ->
+    fun setPlayerAnimationController(viewer: Player, uuid: UUID, controllerYaml: String) {
+        sendPluginMessage(viewer, 29) { buffer ->
             buffer.writeUniqueId(uuid)
             buffer.writeString(controllerYaml)
         }
     }
 
-    fun removePlayerAnimationController(player: Player, uuid: UUID) {
-        sendPluginMessage(player, 29) { buffer ->
+    fun removePlayerAnimationController(viewer: Player, uuid: UUID) {
+        sendPluginMessage(viewer, 29) { buffer ->
             buffer.writeUniqueId(uuid)
             buffer.writeString("")
         }
     }
 
-    fun runPlayerAnimationControllerFunction(player: Player, function: String) {
-        sendPluginMessage(getNearPlayers(player), 36) { buffer ->
-            buffer.writeUniqueId(player.uniqueId)
+    fun runPlayerAnimationControllerFunction(viewer: Player, uuid: UUID, function: String) {
+        sendPluginMessage(viewer, 36) { buffer ->
+            buffer.writeUniqueId(uuid)
             buffer.writeString(function)
         }
     }
 
-    fun setEntityModelItemAnimation(player: Player, entity: UUID, animation: String, speed: Float) {
-        sendPluginMessage(player, 102) { buffer: PacketBuffer ->
+    fun setPlayerAnimation(viewer: Player, uuid: UUID, animation: String, speed: Float) {
+        sendPluginMessage(viewer, 27) { buffer: PacketBuffer ->
+            buffer.writeUniqueId(uuid)
+            buffer.writeString(animation)
+            buffer.writeFloat(speed)
+        }
+    }
+
+    fun removePlayerAnimation(viewer: Player, uuid: UUID) {
+        sendPluginMessage(viewer, 28) { buffer: PacketBuffer ->
+            buffer.writeUniqueId(uuid)
+            buffer.writeString("all")
+        }
+    }
+
+    fun removePlayerAnimation(viewer: Player, uuid: UUID, animation: String) {
+        sendPluginMessage(viewer, 28) { buffer: PacketBuffer ->
+            buffer.writeUniqueId(uuid)
+            buffer.writeString(animation)
+        }
+    }
+
+    fun setEntityModelItemAnimation(viewer: Player, entity: UUID, animation: String, speed: Float) {
+        sendPluginMessage(viewer, 102) { buffer: PacketBuffer ->
             buffer.writeUniqueId(entity)
             buffer.writeString(animation)
             buffer.writeFloat(speed)
@@ -42,6 +64,7 @@ object DragonCoreCustomPacketSender : PacketSender() {
     }
 
     fun sendKeyRegister(player: Player) {
+
         val list = Orryx.api().keyAPI.keySetting.let { listOf(it.aimConfirmKey(player), it.aimCancelKey(player)) }
         sendPluginMessage(player, 14) { buffer: PacketBuffer ->
             val set = (Config.fileMap["KeyConfig.yml"] as YamlConfiguration).getKeys(false)

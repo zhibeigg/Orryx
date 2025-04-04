@@ -10,7 +10,7 @@ import org.gitee.orryx.core.GameManager
 import org.gitee.orryx.core.common.timer.SkillTimer
 import org.gitee.orryx.core.kether.parameter.IParameter
 import org.gitee.orryx.core.kether.parameter.SkillParameter
-import org.gitee.orryx.core.mana.IManaManager
+import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.core.skill.skills.PassiveSkill
 import org.gitee.orryx.dao.cache.ISyncCacheManager
 import org.gitee.orryx.dao.cache.MemoryCache

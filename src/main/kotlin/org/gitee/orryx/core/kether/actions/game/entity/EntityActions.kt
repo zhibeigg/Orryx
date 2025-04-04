@@ -10,8 +10,8 @@ import org.gitee.orryx.core.kether.ScriptManager.addOrryxCloseable
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.core.targets.PlayerTarget
-import org.gitee.orryx.core.wiki.Action
-import org.gitee.orryx.core.wiki.Type
+import org.gitee.orryx.module.wiki.Action
+import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
 import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*

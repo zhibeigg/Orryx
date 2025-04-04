@@ -5,8 +5,6 @@ import org.gitee.orryx.api.interfaces.IKeyAPI
 import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.key.IGroup
-import org.gitee.orryx.core.profile.IPlayerKeySetting
-import org.gitee.orryx.core.profile.PlayerKeySetting
 import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.utils.getSkill
 import org.gitee.orryx.utils.job
@@ -16,8 +14,6 @@ import taboolib.common.platform.PlatformFactory
 import java.util.concurrent.CompletableFuture
 
 class KeyAPI: IKeyAPI {
-
-    override val keySetting: IPlayerKeySetting = PlatformFactory.getAPI<IPlayerKeySetting>()
 
     override fun bindSkillKeyOfGroup(skill: IPlayerSkill, group: IGroup, bindKey: IBindKey): CompletableFuture<Boolean> {
         return bindSkillKeyOfGroup(skill.player, skill.job, skill.key, group.key, bindKey.key)
@@ -43,7 +39,6 @@ class KeyAPI: IKeyAPI {
 
         @Awake(LifeCycle.CONST)
         fun init() {
-            PlatformFactory.registerAPI<IPlayerKeySetting>(PlayerKeySetting())
             PlatformFactory.registerAPI<IKeyAPI>(KeyAPI())
         }
 

@@ -4,8 +4,8 @@ import org.gitee.orryx.core.kether.ScriptManager.addOrryxCloseable
 import org.gitee.orryx.core.kether.ScriptManager.scriptParser
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.presets.SelectorPresetsLoaderManager
-import org.gitee.orryx.core.wiki.Action
-import org.gitee.orryx.core.wiki.Type
+import org.gitee.orryx.module.wiki.Action
+import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.ORRYX_NAMESPACE
 import org.gitee.orryx.utils.readContainer
 import org.gitee.orryx.utils.runSubScript

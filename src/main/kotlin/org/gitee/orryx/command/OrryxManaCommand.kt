@@ -1,6 +1,6 @@
 package org.gitee.orryx.command
 
-import org.gitee.orryx.core.mana.IManaManager
+import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.utils.bukkitPlayer
 import org.gitee.orryx.utils.debug
 import taboolib.common.platform.ProxyCommandSender

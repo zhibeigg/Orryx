@@ -3,17 +3,10 @@ package org.gitee.orryx.api.interfaces
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.key.IGroup
-import org.gitee.orryx.core.profile.IPlayerKeySetting
 import org.gitee.orryx.core.skill.IPlayerSkill
 import java.util.concurrent.CompletableFuture
 
 interface IKeyAPI {
-
-    /**
-     * 获取通用按键设定器
-     * @return 按键设置
-     * */
-    val keySetting: IPlayerKeySetting
 
     /**
      * 绑定技能到组的按键上

@@ -6,6 +6,7 @@ import com.github.benmanes.caffeine.cache.Scheduler
 import com.github.benmanes.caffeine.cache.stats.CacheStats
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
+import org.gitee.orryx.core.common.keyregister.PlayerKeySetting
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.job.PlayerJob
 import org.gitee.orryx.core.profile.IPlayerProfile
@@ -87,6 +88,20 @@ object MemoryCache {
             }
         }
 
+
+    private val playerKeyCache: AsyncLoadingCache<UUID, PlayerKeySetting> = Caffeine.newBuilder()
+        .initialCapacity(100)
+        .maximumSize(500)
+        .expireAfterAccess(20, TimeUnit.MINUTES)
+        .recordStats()
+        .scheduler(Scheduler.systemScheduler())
+        .buildAsync { uuid, _ ->
+            ISyncCacheManager.INSTANCE.getPlayerKeySetting(uuid).thenApply {
+                val player = Bukkit.getPlayer(uuid)?: return@thenApply null
+                it?.let { p -> PlayerKeySetting(player, p)} ?: PlayerKeySetting(player)
+            }
+        }
+
     @Awake(LifeCycle.DISABLE)
     private fun disable() {
         fun printStats(name: String, stats: CacheStats) {
@@ -95,6 +110,7 @@ object MemoryCache {
         printStats("玩家", playerProfileCache.synchronous().stats())
         printStats("职业", playerJobCache.synchronous().stats())
         printStats("技能", playerSkillCache.synchronous().stats())
+        printStats("按键", playerKeyCache.synchronous().stats())
     }
 
     fun getPlayerProfile(player: Player): CompletableFuture<IPlayerProfile> {
@@ -109,6 +125,10 @@ object MemoryCache {
         return playerSkillCache.get(playerJobSkillDataTag(player.uniqueId, job, skill))
     }
 
+    fun getPlayerKey(player: Player): CompletableFuture<PlayerKeySetting> {
+        return playerKeyCache.get(player.uniqueId)
+    }
+
     fun savePlayerProfile(playerProfile: IPlayerProfile) {
         playerProfileCache.put(playerProfile.player.uniqueId, CompletableFuture.completedFuture(playerProfile))
     }
@@ -121,16 +141,24 @@ object MemoryCache {
         playerSkillCache.put(playerJobSkillDataTag(playerSkill.player.uniqueId, playerSkill.job, playerSkill.key), CompletableFuture.completedFuture(playerSkill))
     }
 
+    fun savePlayerKeySetting(player: UUID, setting: PlayerKeySetting) {
+        playerKeyCache.put(player, CompletableFuture.completedFuture(setting))
+    }
+
     fun removePlayerProfile(player: UUID) {
         playerProfileCache.synchronous().invalidate(player)
     }
 
     fun removePlayerJob(player: UUID, job: String) {
-        playerProfileCache.synchronous().invalidate(playerJobDataTag(player, job))
+        playerJobCache.synchronous().invalidate(playerJobDataTag(player, job))
     }
 
     fun removePlayerSkill(player: UUID, job: String, skill: String) {
-        playerProfileCache.synchronous().invalidate(playerJobSkillDataTag(player, job, skill))
+        playerSkillCache.synchronous().invalidate(playerJobSkillDataTag(player, job, skill))
+    }
+
+    fun removePlayerKeySetting(player: UUID) {
+        playerKeyCache.synchronous().invalidate(player)
     }
 
 }

@@ -10,8 +10,8 @@ import org.gitee.orryx.api.events.player.job.OrryxPlayerJobLevelEvents
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillBindKeyEvent
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillUnBindKeyEvent
 import org.gitee.orryx.core.GameManager
-import org.gitee.orryx.core.experience.ExperienceLoaderManager
-import org.gitee.orryx.core.experience.IExperience
+import org.gitee.orryx.module.experience.ExperienceLoaderManager
+import org.gitee.orryx.module.experience.IExperience
 import org.gitee.orryx.core.job.ExperienceResult.*
 import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.key.IBindKey

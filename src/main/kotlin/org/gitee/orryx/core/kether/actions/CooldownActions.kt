@@ -5,8 +5,8 @@ import org.gitee.orryx.core.common.timer.StationTimer
 import org.gitee.orryx.core.kether.ScriptManager.scriptParser
 import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.kether.parameter.StationParameter
-import org.gitee.orryx.core.wiki.Action
-import org.gitee.orryx.core.wiki.Type
+import org.gitee.orryx.module.wiki.Action
+import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.ORRYX_NAMESPACE
 import org.gitee.orryx.utils.getParameter
 import org.gitee.orryx.utils.nextHeadActionOrNull

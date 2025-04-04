@@ -3,6 +3,7 @@ package org.gitee.orryx.dao.storage
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.dao.pojo.PlayerJobPO
+import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import taboolib.common.LifeCycle
@@ -81,6 +82,13 @@ interface IStorageManager {
     fun getPlayerSkills(player: UUID, job: String): CompletableFuture<List<PlayerSkillPO>>
 
     /**
+     * 从数据库获取按键数据列表
+     * @param player 玩家的UUID
+     * @return 按键数据列表
+     * */
+    fun getPlayerKey(player: UUID): CompletableFuture<PlayerKeySettingPO>
+
+    /**
      * 保存玩家数据到数据库
      * @param player 玩家的UUID
      * @param playerProfilePO 玩家数据
@@ -103,5 +111,13 @@ interface IStorageManager {
      * @param onSuccess 成功时执行
      * */
     fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO, onSuccess: () -> Unit)
+
+    /**
+     * 保存按键数据到数据库
+     * @param player 玩家的UUID
+     * @param playerKeySettingPO 按键数据
+     * @param onSuccess 成功时执行
+     * */
+    fun savePlayerKey(player: UUID, playerKeySettingPO: PlayerKeySettingPO, onSuccess: () -> Unit)
 
 }

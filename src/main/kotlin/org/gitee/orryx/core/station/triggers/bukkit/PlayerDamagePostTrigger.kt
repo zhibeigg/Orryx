@@ -4,9 +4,9 @@ import org.gitee.orryx.api.events.damage.OrryxDamageEvents
 import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.station.stations.IStation
 import org.gitee.orryx.core.station.triggers.AbstractEventTrigger
-import org.gitee.orryx.core.wiki.Trigger
-import org.gitee.orryx.core.wiki.TriggerGroup
-import org.gitee.orryx.core.wiki.Type
+import org.gitee.orryx.module.wiki.Trigger
+import org.gitee.orryx.module.wiki.TriggerGroup
+import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.abstract
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer

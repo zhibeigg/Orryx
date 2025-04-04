@@ -1,17 +1,16 @@
 package org.gitee.orryx.core.kether.actions
 
-import org.gitee.orryx.core.ai.OpenAI
 import org.gitee.orryx.core.kether.ScriptManager.combinationParser
 import org.gitee.orryx.core.reload.Reload
-import org.gitee.orryx.core.wiki.Action
-import org.gitee.orryx.core.wiki.Type
+import org.gitee.orryx.module.ai.OpenAI
+import org.gitee.orryx.module.wiki.Action
+import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.ORRYX_NAMESPACE
 import org.gitee.orryx.utils.bukkitPlayer
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.function.info
 import taboolib.common.util.unsafeLazy
-import taboolib.expansion.submitChain
 import taboolib.module.chat.colored
 import taboolib.module.configuration.Config
 import taboolib.module.configuration.ConfigFile
@@ -57,11 +56,7 @@ object AiActions {
         ).apply(it) { key, message ->
             future {
                 val npc = npcMap[key] ?: error("not found npc $key")
-                submitChain {
-                    async {
-                        OpenAI.npcChat(bukkitPlayer().name, npc.name, npc.system, message, npc.model, npc.maxTokens, npc.temperature)
-                    }
-                }
+                OpenAI.npcChat(bukkitPlayer().name, npc.name, npc.system, message, npc.model, npc.maxTokens, npc.temperature)
             }
         }
     }

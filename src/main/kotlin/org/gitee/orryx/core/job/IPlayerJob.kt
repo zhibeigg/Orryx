@@ -1,7 +1,7 @@
 package org.gitee.orryx.core.job
 
 import org.bukkit.entity.Player
-import org.gitee.orryx.core.experience.IExperience
+import org.gitee.orryx.module.experience.IExperience
 import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.key.IGroup
 import org.gitee.orryx.core.skill.IPlayerSkill

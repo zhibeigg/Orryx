@@ -4,8 +4,8 @@ import org.gitee.orryx.core.container.IContainer
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.ISelectorStream
 import org.gitee.orryx.core.targets.ITargetEntity
-import org.gitee.orryx.core.wiki.Selector
-import org.gitee.orryx.core.wiki.SelectorType
+import org.gitee.orryx.module.wiki.Selector
+import org.gitee.orryx.module.wiki.SelectorType
 import org.gitee.orryx.utils.bukkitPlayer
 import org.gitee.orryx.utils.toTarget
 import taboolib.module.kether.ScriptContext

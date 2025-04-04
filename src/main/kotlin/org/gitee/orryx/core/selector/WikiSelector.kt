@@ -1,6 +1,6 @@
 package org.gitee.orryx.core.selector
 
-import org.gitee.orryx.core.wiki.Selector
+import org.gitee.orryx.module.wiki.Selector
 
 interface WikiSelector {
 

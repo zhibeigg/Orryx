@@ -4,6 +4,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.dao.pojo.PlayerJobPO
+import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.utils.*
@@ -47,10 +48,16 @@ class MySqlManager: IStorageManager {
         primaryKeyForLegacy += listOf(UUID, JOB, SKILL)
     }
 
+    private val keyTable: Table<*, *> = Table("orryx_player_key_setting", host) {
+        add(UUID) { type(ColumnTypeSQL.CHAR, 36) { options(ColumnOptionSQL.PRIMARY_KEY) } }
+        add(KEY_SETTING) { type(ColumnTypeSQL.TEXT) }
+    }
+
     init {
         playerTable.createTable(dataSource)
         jobsTable.createTable(dataSource)
         skillsTable.createTable(dataSource)
+        keyTable.createTable(dataSource)
     }
 
     override fun getPlayerData(player: UUID): CompletableFuture<PlayerProfilePO?> {
@@ -152,6 +159,28 @@ class MySqlManager: IStorageManager {
         return future
     }
 
+    override fun getPlayerKey(player: UUID): CompletableFuture<PlayerKeySettingPO> {
+        val future = CompletableFuture<PlayerKeySettingPO>()
+        fun read() {
+            try {
+                future.complete(keyTable.select(dataSource) {
+                    where { UUID eq player.toString() }
+                    rows(KEY_SETTING)
+                }.firstOrNull {
+                    Json.decodeFromString<PlayerKeySettingPO>(getString(KEY_SETTING))
+                })
+            } catch (e: Throwable) {
+                future.completeExceptionally(e)
+            }
+        }
+        if (isPrimaryThread) {
+            submitAsync { read() }
+        } else {
+            read()
+        }
+        return future
+    }
+
     override fun savePlayerData(player: UUID, playerProfilePO: PlayerProfilePO, onSuccess: () -> Unit) {
         playerTable.transaction(dataSource) {
             insert(UUID, JOB, POINT, FLAGS) {
@@ -201,6 +230,20 @@ class MySqlManager: IStorageManager {
                     playerSkillPO.skill,
                     playerSkillPO.locked,
                     playerSkillPO.level
+                )
+            }
+        }.onSuccess { onSuccess() }
+    }
+
+    override fun savePlayerKey(player: UUID, playerKeySettingPO: PlayerKeySettingPO, onSuccess: () -> Unit) {
+        keyTable.transaction(dataSource) {
+            insert(UUID, KEY_SETTING) {
+                onDuplicateKeyUpdate {
+                    update(KEY_SETTING, Json.encodeToString(playerKeySettingPO))
+                }
+                value(
+                    player.toString(),
+                    Json.encodeToString(playerKeySettingPO)
                 )
             }
         }.onSuccess { onSuccess() }

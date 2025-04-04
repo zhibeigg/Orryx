@@ -3,9 +3,9 @@ package org.gitee.orryx.core.station.triggers.bukkit
 import org.bukkit.event.player.PlayerFishEvent
 import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
 import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
-import org.gitee.orryx.core.wiki.Trigger
-import org.gitee.orryx.core.wiki.TriggerGroup
-import org.gitee.orryx.core.wiki.Type
+import org.gitee.orryx.module.wiki.Trigger
+import org.gitee.orryx.module.wiki.TriggerGroup
+import org.gitee.orryx.module.wiki.Type
 import taboolib.module.kether.ScriptContext
 
 object PlayerFishTrigger: AbstractPlayerEventTrigger<PlayerFishEvent>() {
@@ -14,7 +14,7 @@ object PlayerFishTrigger: AbstractPlayerEventTrigger<PlayerFishEvent>() {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
-            .addParm(Type.STRING, "state", "钓鱼状态：BITE/CAUGHT_ENTITY/CAUGHT_FISH/FAILED_ATTEMPT/FISHING/IN_GROUND/REEL_IN")
+            .addParm(Type.STRING, "status", "钓鱼状态：BITE/CAUGHT_ENTITY/CAUGHT_FISH/FAILED_ATTEMPT/FISHING/IN_GROUND/REEL_IN")
             .addParm(Type.STRING, "hand", "获取此事件中使用的手：OFF_HAND/HAND")
             .addParm(Type.STRING, "hookState", "获取此鱼钩的当前状态：BOBBING/HOOKED_ENTITY/UNHOOKED")
             .addParm(Type.TARGET, "hookedEntity", "被钩中的实体")
@@ -36,7 +36,7 @@ object PlayerFishTrigger: AbstractPlayerEventTrigger<PlayerFishEvent>() {
 
     override fun onStart(context: ScriptContext, event: PlayerFishEvent, map: Map<String, Any?>) {
         super.onStart(context, event, map)
-        context["state"] = event.state.name
+        context["status"] = event.state.name
         context["hand"] = event.hand?.name
         context["hookState"] = event.hook.state.name
         context["hookedEntity"] = event.hook.hookedEntity?.let { AbstractBukkitEntity(it) }

@@ -3,9 +3,9 @@ package org.gitee.orryx.core.station.triggers.dungeonplus
 import org.gitee.orryx.core.station.Plugin
 import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.station.triggers.AbstractPipeEventTrigger
-import org.gitee.orryx.core.wiki.Trigger
-import org.gitee.orryx.core.wiki.TriggerGroup
-import org.gitee.orryx.core.wiki.Type
+import org.gitee.orryx.module.wiki.Trigger
+import org.gitee.orryx.module.wiki.TriggerGroup
+import org.gitee.orryx.module.wiki.Type
 import org.serverct.ersha.dungeon.common.api.event.DungeonEvent
 import org.serverct.ersha.dungeon.common.api.event.dungeon.DungeonEndEvent
 import org.serverct.ersha.dungeon.common.team.type.PlayerStateType

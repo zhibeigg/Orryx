@@ -25,9 +25,9 @@ object ScriptManager {
     val runningSkillScriptsMap by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { ConcurrentHashMap<UUID, PlayerRunningSpace>() }
     val runningStationScriptsMap by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { ConcurrentHashMap<UUID, PlayerRunningSpace>() }
 
-    val wikiActions by unsafeLazy { mutableListOf<org.gitee.orryx.core.wiki.Action>() }
-    val wikiSelectors by unsafeLazy { mutableListOf<org.gitee.orryx.core.wiki.Selector>() }
-    val wikiTriggers by unsafeLazy { mutableListOf<org.gitee.orryx.core.wiki.Trigger>() }
+    val wikiActions by unsafeLazy { mutableListOf<org.gitee.orryx.module.wiki.Action>() }
+    val wikiSelectors by unsafeLazy { mutableListOf<org.gitee.orryx.module.wiki.Selector>() }
+    val wikiTriggers by unsafeLazy { mutableListOf<org.gitee.orryx.module.wiki.Trigger>() }
 
     private val scriptMap by unsafeLazy { ConcurrentHashMap<String, Script>() }
     private val closeableMap by unsafeLazy { hashMapOf<String, ConcurrentMap<UUID, AutoCloseable>>() }
@@ -129,12 +129,12 @@ object ScriptManager {
         )
     }
 
-    fun <T> scriptParser(actions: Array<org.gitee.orryx.core.wiki.Action>, resolve: (QuestReader) -> QuestAction<T>): ScriptActionParser<T> {
+    fun <T> scriptParser(actions: Array<org.gitee.orryx.module.wiki.Action>, resolve: (QuestReader) -> QuestAction<T>): ScriptActionParser<T> {
         wikiActions += actions
         return ScriptActionParser(resolve)
     }
 
-    fun <T> combinationParser(action: org.gitee.orryx.core.wiki.Action, builder: ParserHolder.(Instance) -> App<Mu, Action<T>>): ScriptActionParser<T> {
+    fun <T> combinationParser(action: org.gitee.orryx.module.wiki.Action, builder: ParserHolder.(Instance) -> App<Mu, Action<T>>): ScriptActionParser<T> {
         wikiActions += action
         return combinationParser(builder)
     }

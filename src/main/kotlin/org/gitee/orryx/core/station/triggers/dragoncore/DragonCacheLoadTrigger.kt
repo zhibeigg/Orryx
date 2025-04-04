@@ -5,8 +5,8 @@ import org.gitee.orryx.core.station.Plugin
 import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.station.stations.IStation
 import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
-import org.gitee.orryx.core.wiki.Trigger
-import org.gitee.orryx.core.wiki.TriggerGroup
+import org.gitee.orryx.module.wiki.Trigger
+import org.gitee.orryx.module.wiki.TriggerGroup
 import taboolib.module.kether.ScriptContext
 
 @Plugin("DragonCore")

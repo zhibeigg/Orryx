@@ -1,7 +1,7 @@
 package org.gitee.orryx.command
 
 import org.bukkit.Bukkit
-import org.gitee.orryx.core.ui.IUIManager
+import org.gitee.orryx.module.ui.IUIManager
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.command.CommandBody
 import taboolib.common.platform.command.player

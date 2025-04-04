@@ -7,7 +7,7 @@ import org.bukkit.event.server.ServerCommandEvent
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.kether.ScriptManager
-import org.gitee.orryx.core.mana.IManaManager
+import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.core.reload.Reload
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent

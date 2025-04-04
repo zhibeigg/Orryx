@@ -5,9 +5,9 @@ import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.ISelectorStream
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.core.targets.ITargetLocation
-import org.gitee.orryx.core.wiki.Selector
-import org.gitee.orryx.core.wiki.SelectorType
-import org.gitee.orryx.core.wiki.Type
+import org.gitee.orryx.module.wiki.Selector
+import org.gitee.orryx.module.wiki.SelectorType
+import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.read
 import taboolib.module.kether.ScriptContext
 

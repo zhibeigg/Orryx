@@ -2,8 +2,8 @@ package org.gitee.orryx.core.station.triggers.bukkit
 
 import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.station.triggers.AbstractEventTrigger
-import org.gitee.orryx.core.wiki.Trigger
-import org.gitee.orryx.core.wiki.TriggerGroup
+import org.gitee.orryx.module.wiki.Trigger
+import org.gitee.orryx.module.wiki.TriggerGroup
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.platform.event.PlayerJumpEvent

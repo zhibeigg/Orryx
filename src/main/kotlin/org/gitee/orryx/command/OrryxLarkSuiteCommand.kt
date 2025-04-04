@@ -1,6 +1,6 @@
 package org.gitee.orryx.command
 
-import org.gitee.orryx.core.wiki.LarkSuite
+import org.gitee.orryx.module.wiki.LarkSuite
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.command.CommandBody
 import taboolib.common.platform.command.CommandHeader

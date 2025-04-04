@@ -3,8 +3,8 @@ package org.gitee.orryx.core.kether.actions.station
 import org.bukkit.event.Cancellable
 import org.gitee.orryx.core.kether.ScriptManager.scriptParser
 import org.gitee.orryx.core.kether.parameter.StationParameter
-import org.gitee.orryx.core.wiki.Action
-import org.gitee.orryx.core.wiki.Type
+import org.gitee.orryx.module.wiki.Action
+import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.ORRYX_NAMESPACE
 import org.gitee.orryx.utils.getParameter
 import taboolib.module.kether.*

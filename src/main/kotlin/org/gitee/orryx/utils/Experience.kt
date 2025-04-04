@@ -1,7 +1,7 @@
 package org.gitee.orryx.utils
 
 import org.bukkit.entity.Player
-import org.gitee.orryx.core.experience.IExperience
+import org.gitee.orryx.module.experience.IExperience
 import taboolib.common.platform.function.adaptCommandSender
 
 fun IExperience.getExperienceOfLevel(player: Player, level: Int): Int {

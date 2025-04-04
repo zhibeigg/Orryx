@@ -1,6 +1,6 @@
 package org.gitee.orryx.core.station
 
-import org.gitee.orryx.core.wiki.Trigger
+import org.gitee.orryx.module.wiki.Trigger
 
 interface WikiTrigger {
 

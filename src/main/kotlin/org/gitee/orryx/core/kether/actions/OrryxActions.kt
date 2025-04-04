@@ -5,8 +5,8 @@ import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.skill.SkillLoaderManager
-import org.gitee.orryx.core.wiki.Action
-import org.gitee.orryx.core.wiki.Type
+import org.gitee.orryx.module.wiki.Action
+import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
 import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*

@@ -2,8 +2,8 @@ package org.gitee.orryx.core.kether.actions.game
 
 import org.gitee.orryx.core.kether.ScriptManager.combinationParser
 import org.gitee.orryx.core.targets.ITargetEntity
-import org.gitee.orryx.core.wiki.Action
-import org.gitee.orryx.core.wiki.Type
+import org.gitee.orryx.module.wiki.Action
+import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
 import org.gitee.orryx.utils.raytrace.FluidHandling
 import org.gitee.orryx.utils.raytrace.RayTraceResult

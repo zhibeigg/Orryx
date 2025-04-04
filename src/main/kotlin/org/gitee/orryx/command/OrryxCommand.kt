@@ -15,7 +15,7 @@ import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
 import org.gitee.orryx.core.GameManager
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.job.JobLoaderManager
-import org.gitee.orryx.core.mana.IManaManager
+import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.core.reload.ReloadAPI
 import org.gitee.orryx.core.skill.SkillLoaderManager
 import org.gitee.orryx.core.targets.ITargetEntity

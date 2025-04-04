@@ -5,8 +5,8 @@ import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.ISelectorStream
 import org.gitee.orryx.core.station.Plugin
 import org.gitee.orryx.core.targets.PlayerTarget
-import org.gitee.orryx.core.wiki.Selector
-import org.gitee.orryx.core.wiki.SelectorType
+import org.gitee.orryx.module.wiki.Selector
+import org.gitee.orryx.module.wiki.SelectorType
 import org.gitee.orryx.utils.bukkitPlayer
 import org.serverct.ersha.dungeon.DungeonPlus
 import org.serverct.ersha.dungeon.common.team.type.PlayerStateType

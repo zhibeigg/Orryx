@@ -2,8 +2,8 @@ package org.gitee.orryx.core.kether.actions.math
 
 import org.gitee.orryx.core.kether.ScriptManager.combinationParser
 import org.gitee.orryx.core.kether.ScriptManager.scriptParser
-import org.gitee.orryx.core.wiki.Action
-import org.gitee.orryx.core.wiki.Type
+import org.gitee.orryx.module.wiki.Action
+import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.ORRYX_NAMESPACE
 import taboolib.module.kether.KetherParser
 import taboolib.module.kether.actionNow

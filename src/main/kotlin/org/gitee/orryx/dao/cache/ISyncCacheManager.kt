@@ -3,6 +3,7 @@ package org.gitee.orryx.dao.cache
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.dao.pojo.PlayerJobPO
+import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import taboolib.common.LifeCycle
@@ -84,6 +85,15 @@ interface ISyncCacheManager {
     fun getPlayerSkill(player: UUID, job: String, skill: String): CompletableFuture<PlayerSkillPO?>
 
     /**
+     * 从缓存获取按键数据
+     *
+     * 如果数据不存在将自动从storage中调用并保存到缓存
+     * @param player 玩家的UUID
+     * @return 按键数据
+     * */
+    fun getPlayerKeySetting(player: UUID): CompletableFuture<PlayerKeySettingPO?>
+
+    /**
      * 保存玩家数据到缓存
      * @param player 玩家的UUID
      * @param playerProfilePO 玩家数据
@@ -108,6 +118,14 @@ interface ISyncCacheManager {
     fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO, async: Boolean)
 
     /**
+     * 保存按键数据到缓存
+     * @param player 玩家的UUID
+     * @param playerKeySettingPO 按键数据
+     * @param async 是否异步
+     * */
+    fun savePlayerKeySetting(player: UUID, playerKeySettingPO: PlayerKeySettingPO, async: Boolean)
+
+    /**
      * 删除缓存中的玩家数据
      * @param player 玩家的UUID
      * @param async 是否异步
@@ -130,5 +148,12 @@ interface ISyncCacheManager {
      * @param async 是否异步
      * */
     fun removePlayerSkill(player: UUID, job: String, skill: String, async: Boolean)
+
+    /**
+     * 删除缓存中的按键数据
+     * @param player 玩家的UUID
+     * @param async 是否异步
+     * */
+    fun removePlayerKeySetting(player: UUID, async: Boolean)
 
 }

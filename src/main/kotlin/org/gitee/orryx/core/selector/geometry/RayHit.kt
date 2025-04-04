@@ -5,9 +5,9 @@ import org.bukkit.entity.Entity
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.ISelectorGeometry
 import org.gitee.orryx.core.targets.ITarget
-import org.gitee.orryx.core.wiki.Selector
-import org.gitee.orryx.core.wiki.SelectorType
-import org.gitee.orryx.core.wiki.Type
+import org.gitee.orryx.module.wiki.Selector
+import org.gitee.orryx.module.wiki.SelectorType
+import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
 import org.joml.RayAabIntersection
 import org.joml.Vector3d

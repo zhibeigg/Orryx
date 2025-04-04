@@ -6,8 +6,13 @@ import eos.moe.dragoncore.api.CoreAPI
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.common.keyregister.IKeyRegister
 import org.gitee.orryx.core.common.keyregister.KeyRegisterManager
+import org.gitee.orryx.core.common.keyregister.PlayerKeySetting
 import org.gitee.orryx.core.key.BindKeyLoader
-import org.gitee.orryx.core.ui.IUIManager
+import org.gitee.orryx.dao.cache.MemoryCache
+import org.gitee.orryx.module.ui.IUIManager
+
+const val MOUSE_LEFT = "MOUSE_LEFT"
+const val MOUSE_RIGHT = "MOUSE_RIGHT"
 
 fun keysRegister(keys: Collection<BindKeyLoader>) {
     if (DragonCorePlugin.isEnabled) {
@@ -55,5 +60,11 @@ fun Player.checkAndCast(key: String, timeout: Long, actionType: IKeyRegister. Ac
         if (it.key.split("+").contains(key)) {
             it.checkAndCast(this, timeout, actionType, sort)
         }
+    }
+}
+
+fun <T> Player.keySetting(func: (setting: PlayerKeySetting) -> T) {
+    MemoryCache.getPlayerKey(this).thenApply {
+        func(it)
     }
 }
