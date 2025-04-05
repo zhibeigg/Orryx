@@ -1,6 +1,7 @@
 package org.gitee.orryx.dao.cache
 
 import org.gitee.orryx.dao.pojo.PlayerJobPO
+import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.dao.storage.IStorageManager
@@ -21,6 +22,10 @@ class DisableManager: ISyncCacheManager {
         return IStorageManager.INSTANCE.getPlayerSkill(player, job, skill)
     }
 
+    override fun getPlayerKeySetting(player: UUID): CompletableFuture<PlayerKeySettingPO?> {
+        return IStorageManager.INSTANCE.getPlayerKey(player)
+    }
+
     override fun savePlayerProfile(player: UUID, playerProfilePO: PlayerProfilePO, async: Boolean) {
     }
 
@@ -30,6 +35,9 @@ class DisableManager: ISyncCacheManager {
     override fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO, async: Boolean) {
     }
 
+    override fun savePlayerKeySetting(player: UUID, playerKeySettingPO: PlayerKeySettingPO, async: Boolean) {
+    }
+
     override fun removePlayerProfile(player: UUID, async: Boolean) {
     }
 
@@ -37,6 +45,9 @@ class DisableManager: ISyncCacheManager {
     }
 
     override fun removePlayerSkill(player: UUID, job: String, skill: String, async: Boolean) {
+    }
+
+    override fun removePlayerKeySetting(player: UUID, async: Boolean) {
     }
 
 }

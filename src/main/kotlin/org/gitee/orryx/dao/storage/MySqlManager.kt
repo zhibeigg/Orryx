@@ -159,8 +159,8 @@ class MySqlManager: IStorageManager {
         return future
     }
 
-    override fun getPlayerKey(player: UUID): CompletableFuture<PlayerKeySettingPO> {
-        val future = CompletableFuture<PlayerKeySettingPO>()
+    override fun getPlayerKey(player: UUID): CompletableFuture<PlayerKeySettingPO?> {
+        val future = CompletableFuture<PlayerKeySettingPO?>()
         fun read() {
             try {
                 future.complete(keyTable.select(dataSource) {

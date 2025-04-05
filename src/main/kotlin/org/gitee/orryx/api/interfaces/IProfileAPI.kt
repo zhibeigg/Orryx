@@ -34,6 +34,35 @@ interface IProfileAPI {
     fun reduceSuperBody(player: Player, timeout: Long)
 
     /**
+     * 是否在无敌状态
+     * @return 是否在无敌状态
+     */
+    fun isInvincible(player: Player): Boolean
+
+    /**
+     * 设置无敌时间
+     * @param timeout 霸体时长
+     */
+    fun setInvincible(player: Player, timeout: Long)
+
+    /**
+     * 取消无敌
+     */
+    fun cancelInvincible(player: Player)
+
+    /**
+     * 延长无敌时间
+     * @param timeout 延长的霸体时长
+     */
+    fun addInvincible(player: Player, timeout: Long)
+
+    /**
+     * 减少无敌时间
+     * @param timeout 减少的霸体时长
+     */
+    fun reduceInvincible(player: Player, timeout: Long)
+
+    /**
      * 是否在免疫摔伤状态
      * @return 是否在免疫摔伤状态
      */
@@ -61,5 +90,34 @@ interface IProfileAPI {
      * @param timeout 减少的免疫摔伤时长
      */
     fun reduceSuperFoot(player: Player, timeout: Long)
+
+    /**
+     * 是否在格挡状态
+     * @return 是否在格挡状态
+     */
+    fun isBlock(player: Player): Boolean
+
+    /**
+     * 设置格挡时间
+     * @param timeout 格挡时长
+     */
+    fun setBlock(player: Player, timeout: Long)
+
+    /**
+     * 取消格挡
+     */
+    fun cancelBlock(player: Player)
+
+    /**
+     * 延长格挡时间
+     * @param timeout 延长的格挡时长
+     */
+    fun addBlock(player: Player, timeout: Long)
+
+    /**
+     * 减少格挡时间
+     * @param timeout 减少的格挡时长
+     */
+    fun reduceBlock(player: Player, timeout: Long)
 
 }

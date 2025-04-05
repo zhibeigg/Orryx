@@ -5,6 +5,7 @@ import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.api.events.OrryxSkillReloadEvent
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.core.skill.skills.*
+import org.gitee.orryx.module.state.StateManager
 import org.gitee.orryx.utils.*
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
@@ -15,7 +16,6 @@ import taboolib.module.chat.colored
 import taboolib.module.configuration.Configuration
 import taboolib.module.kether.Script
 import taboolib.module.kether.ScriptService
-import taboolib.module.kether.printKetherErrorMessage
 
 object SkillLoaderManager {
 
@@ -35,6 +35,7 @@ object SkillLoaderManager {
         if (OrryxSkillReloadEvent().call()) {
             silence = Orryx.config.getBoolean("Silence", false)
             skillMap.clear()
+            val castSkillMap = hashMapOf<String, ICastSkill>()
             files("skills", "操翻诸神拳.yml") { file ->
                 val configuration = Configuration.loadFromFile(file)
                 val type = (configuration.getString("Options.Type") ?: "Direct").uppercase()
@@ -47,8 +48,10 @@ object SkillLoaderManager {
                     else -> return@files
                 }
                 skillMap[skill.key] = skill
+                if (skill is ICastSkill) castSkillMap[skill.key] = skill
             }
             info("&e┣&7Skills loaded &e${skillMap.size} &a√".colored())
+            StateManager.reload(castSkillMap)
         }
     }
 

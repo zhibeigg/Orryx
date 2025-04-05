@@ -1,27 +1,14 @@
 package org.gitee.orryx.core.kether.actions.game
 
-import org.bukkit.entity.Player
-import org.bukkit.event.entity.EntityDamageEvent
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.core.kether.ScriptManager.scriptParser
 import org.gitee.orryx.core.targets.PlayerTarget
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
-import taboolib.common.platform.event.SubscribeEvent
 import taboolib.module.kether.*
 
 object PlayerProfileActions {
-
-    @SubscribeEvent
-    private fun drop(e: EntityDamageEvent) {
-        val player = e.entity as? Player ?: return
-        if (e.cause == EntityDamageEvent.DamageCause.FALL || e.cause == EntityDamageEvent.DamageCause.SUFFOCATION) {
-            if (Orryx.api().profileAPI.isSuperBody(player) || Orryx.api().profileAPI.isSuperFoot(player)) {
-                e.isCancelled = true
-            }
-        }
-    }
 
     @KetherParser(["superBody"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun superBody() = scriptParser(

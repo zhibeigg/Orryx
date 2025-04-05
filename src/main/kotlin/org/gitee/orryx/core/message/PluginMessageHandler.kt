@@ -15,10 +15,11 @@ import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.plugin.messaging.PluginMessageListener
-import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.compat.dragoncore.DragonCoreCustomPacketSender
 import org.gitee.orryx.utils.DragonCorePlugin
 import org.gitee.orryx.utils.GermPluginPlugin
+import org.gitee.orryx.utils.keySetting
+import org.gitee.orryx.utils.keySettingList
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.Ghost
@@ -69,22 +70,26 @@ object PluginMessageHandler {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     private fun onKeyPress(e: KeyPressEvent) {
         if (e.isCancelled) return
-        when (e.key.uppercase()) {
-            Orryx.api().keyAPI.keySetting.aimConfirmKey(e.player) -> handleConfirmation(e.player, true)
-            Orryx.api().keyAPI.keySetting.aimCancelKey(e.player) -> handleConfirmation(e.player, false)
-            else -> return
-        }.also { e.isCancelled = true }
+        e.player.keySetting {
+            when (e.key.uppercase()) {
+                it.aimConfirmKey -> handleConfirmation(e.player, true)
+                it.aimCancelKey -> handleConfirmation(e.player, false)
+                else -> return@keySetting
+            }.also { e.isCancelled = true }
+        }
     }
 
     @Ghost
     @SubscribeEvent(priority = EventPriority.LOWEST)
     private fun onKeyPress(e: GermKeyDownEvent) {
         if (e.isCancelled) return
-        when (e.keyType.simpleKey.uppercase()) {
-            Orryx.api().keyAPI.keySetting.aimConfirmKey(e.player) -> handleConfirmation(e.player, true)
-            Orryx.api().keyAPI.keySetting.aimCancelKey(e.player) -> handleConfirmation(e.player, false)
-            else -> return
-        }.also { e.isCancelled = true }
+        e.player.keySetting {
+            when (e.keyType.simpleKey.uppercase()) {
+                it.aimConfirmKey -> handleConfirmation(e.player, true)
+                it.aimCancelKey -> handleConfirmation(e.player, false)
+                else -> return@keySetting
+            }.also { e.isCancelled = true }
+        }
     }
 
     @SubscribeEvent
@@ -99,15 +104,22 @@ object PluginMessageHandler {
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     private fun onPlayerJoin(e: PlayerJoinEvent) {
-        if (GermPluginPlugin.isEnabled) {
-            GermPacketAPI.sendKeyRegister(e.player, KeyType.valueOf("KEY_${Orryx.api().keyAPI.keySetting.aimConfirmKey(e.player)}").keyId)
-            GermPacketAPI.sendKeyRegister(e.player, KeyType.valueOf("KEY_${Orryx.api().keyAPI.keySetting.aimCancelKey(e.player)}").keyId)
-        }
-        if (DragonCorePlugin.isEnabled) {
-            try {
-                DragonCoreCustomPacketSender.sendKeyRegister(e.player)
-            } catch (ex: Throwable) {
-                warning("DragonCore按键注册失败: ${ex.message}")
+        e.player.keySetting { keySetting ->
+            if (GermPluginPlugin.isEnabled) {
+                keySetting.keySettingList().forEach {
+                    try {
+                        GermPacketAPI.sendKeyRegister(e.player, KeyType.valueOf("KEY_${it}").keyId)
+                    } catch (ex: Throwable) {
+                        warning("GermPlugin 按键注册失败: ${ex.message}")
+                    }
+                }
+            }
+            if (DragonCorePlugin.isEnabled) {
+                try {
+                    DragonCoreCustomPacketSender.sendKeyRegister(e.player, keySetting.keySettingList())
+                } catch (ex: Throwable) {
+                    warning("DragonCore按键注册失败: ${ex.message}")
+                }
             }
         }
     }

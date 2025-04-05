@@ -8,12 +8,10 @@ import taboolib.library.configuration.ConfigurationSection
 
 class BindKeyLoader(override val key: String, val configurationSection: ConfigurationSection): IBindKey {
 
-    val keys: List<String> = key.split("+")
-
     override val sort: Int = configurationSection.getInt("sort")
 
-    override fun checkAndCast(player: Player, timeout: Long, actionType: IKeyRegister.ActionType, sort: Boolean): Boolean {
-        val boolean = KeyRegisterManager.getKeyRegister(player.uniqueId)?.isKeysInTimeout(keys, timeout, actionType, sort) ?: false
+    override fun checkAndCast(player: Player, key: List<String>, timeout: Long, actionType: IKeyRegister.ActionType, sort: Boolean): Boolean {
+        val boolean = KeyRegisterManager.getKeyRegister(player.uniqueId)?.isKeysInTimeout(key, timeout, actionType, sort) ?: false
         if (boolean) tryCast(player)
         return boolean
     }

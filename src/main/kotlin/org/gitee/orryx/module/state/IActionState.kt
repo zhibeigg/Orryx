@@ -14,11 +14,4 @@ interface IActionState {
      * */
     val script: Script?
 
-    /**
-     * 是否能过渡到下一个状态
-     * @param input 用于读取下一操作的输入键
-     * @return 是否能
-     * */
-    fun hasNext(input: String): Boolean
-
 }

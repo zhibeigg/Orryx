@@ -1,10 +1,12 @@
 package org.gitee.orryx.module.state.states
 
 import org.bukkit.entity.Player
+import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.compat.IAnimationBridge
 import org.gitee.orryx.module.state.IActionState
 import org.gitee.orryx.module.state.IRunningState
 import org.gitee.orryx.module.state.StateManager
+import org.gitee.orryx.module.state.states.DodgeState.Running
 import org.gitee.orryx.utils.getNearPlayers
 import org.gitee.orryx.utils.toLongPair
 import taboolib.common.platform.function.submit
@@ -17,17 +19,14 @@ class GeneralAttackState(override val key: String, configurationSection: Configu
 
     val animation: Animation = Animation(configurationSection.getConfigurationSection("Animation")!!)
 
+    val connection = configurationSection.getString("Connection").toLongPair("-")
+
     class Animation(configurationSection: ConfigurationSection) {
         val startKey = configurationSection.getString("Key")!!
         val duration = configurationSection.getLong("Duration")
-        val connection = configurationSection.getString("Connection").toLongPair("-")
     }
 
     override val script: Script? = configurationSection.getString("Action")?.let { StateManager.loadScript(this, it) }
-
-    override fun hasNext(input: String): Boolean {
-        TODO("Not yet implemented")
-    }
 
     class Running(val player: Player, override val state: GeneralAttackState): IRunningState {
 
@@ -44,7 +43,7 @@ class GeneralAttackState(override val key: String, configurationSection: Configu
             getNearPlayers(player) { viewer ->
                 IAnimationBridge.INSTANCE.setPlayerAnimation(viewer, player, state.animation.startKey, 1f)
             }
-            submit(delay = max(state.animation.duration, state.animation.connection.second)) {
+            submit(delay = max(state.animation.duration, state.connection.second)) {
                 stop = true
                 StateManager.callNext(player)
             }
@@ -53,7 +52,18 @@ class GeneralAttackState(override val key: String, configurationSection: Configu
         override fun stop() {
             task?.cancel()
             stop = true
-            StateManager.callNext(player)
+        }
+
+        override fun hasNext(runningState: IRunningState): Boolean {
+            if (stop) return true
+            return when (runningState) {
+                is DodgeState.Running -> true
+                is BlockState.Running -> true
+                is Running -> (System.currentTimeMillis() - startTimestamp) in state.connection.first until state.connection.second
+                is SkillState.Running -> true
+                is VertigoState.Running -> !Orryx.api().profileAPI.isSuperBody(player)
+                else -> false
+            }
         }
 
     }

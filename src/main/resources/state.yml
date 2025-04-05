@@ -16,6 +16,8 @@ GlobalStates:
   闪避:
     # 状态类型
     Type: "Dodge"
+    # 无敌帧时长 (毫秒)
+    Invincible: "200-1000"
     Animation:
       # 动作名
       Front: "前闪避"
@@ -24,13 +26,13 @@ GlobalStates:
       Right: "右闪避"
       # 动作时长 (毫秒)
       Duration: "500"
-      # 无敌帧时长 (毫秒)
-      Invincible: "200-1000"
     Action: |-
       tell 闪避
   翻滚:
     # 状态类型
     Type: "Dodge"
+    # 无敌帧时长 (毫秒)
+    Invincible: "200-1000"
     Animation:
       # 动作名
       Front: "前翻滚"
@@ -39,7 +41,5 @@ GlobalStates:
       Right: "右翻滚"
       # 动作时长 (毫秒)
       Duration: "1000"
-      # 无敌帧时长 (毫秒)
-      Invincible: "200-1000"
     Action: |-
       tell 翻滚

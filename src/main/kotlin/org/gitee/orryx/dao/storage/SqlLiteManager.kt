@@ -3,6 +3,7 @@ package org.gitee.orryx.dao.storage
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.gitee.orryx.dao.pojo.PlayerJobPO
+import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.utils.*
@@ -48,10 +49,16 @@ class SqlLiteManager: IStorageManager {
         primaryKeyForLegacy += listOf(UUID, JOB, SKILL)
     }
 
+    private val keyTable: Table<*, *> = Table("orryx_player_key_setting", host) {
+        add(UUID) { type(ColumnTypeSQLite.TEXT) { options(ColumnOptionSQLite.PRIMARY_KEY) } }
+        add(KEY_SETTING) { type(ColumnTypeSQLite.TEXT) }
+    }
+
     init {
         playerTable.createTable(dataSource)
         jobsTable.createTable(dataSource)
         skillsTable.createTable(dataSource)
+        keyTable.createTable(dataSource)
     }
 
     override fun getPlayerData(player: UUID): CompletableFuture<PlayerProfilePO?> {
@@ -153,6 +160,28 @@ class SqlLiteManager: IStorageManager {
         return future
     }
 
+    override fun getPlayerKey(player: UUID): CompletableFuture<PlayerKeySettingPO?> {
+        val future = CompletableFuture<PlayerKeySettingPO?>()
+        fun read() {
+            try {
+                future.complete(keyTable.select(dataSource) {
+                    where { UUID eq player.toString() }
+                    rows(KEY_SETTING)
+                }.firstOrNull {
+                    Json.decodeFromString<PlayerKeySettingPO>(getString(KEY_SETTING))
+                })
+            } catch (e: Throwable) {
+                future.completeExceptionally(e)
+            }
+        }
+        if (isPrimaryThread) {
+            submitAsync { read() }
+        } else {
+            read()
+        }
+        return future
+    }
+
     override fun savePlayerData(player: UUID, playerProfilePO: PlayerProfilePO, onSuccess: () -> Unit) {
         playerTable.transaction(dataSource) {
             if (select { where { UUID eq player.toString() } }.find()) {
@@ -213,6 +242,24 @@ class SqlLiteManager: IStorageManager {
                         playerSkillPO.skill,
                         playerSkillPO.locked,
                         playerSkillPO.level
+                    )
+                }
+            }
+        }.onSuccess { onSuccess() }
+    }
+
+    override fun savePlayerKey(player: UUID, playerKeySettingPO: PlayerKeySettingPO, onSuccess: () -> Unit) {
+        keyTable.transaction(dataSource) {
+            if (select { where { UUID eq player.toString() } }.find()) {
+                update {
+                    where { UUID eq player.toString() }
+                    set(KEY_SETTING, Json.encodeToString(playerKeySettingPO))
+                }
+            } else {
+                insert(UUID, KEY_SETTING) {
+                    value(
+                        player.toString(),
+                        Json.encodeToString(playerKeySettingPO)
                     )
                 }
             }

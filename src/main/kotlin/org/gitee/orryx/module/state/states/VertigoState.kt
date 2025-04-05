@@ -1,6 +1,7 @@
 package org.gitee.orryx.module.state.states
 
 import org.bukkit.entity.Player
+import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.compat.IAnimationBridge
 import org.gitee.orryx.module.state.IActionState
 import org.gitee.orryx.module.state.IRunningState
@@ -26,14 +27,7 @@ class VertigoState(override val key: String, configurationSection: Configuration
 
     override val script: Script? = configurationSection.getString("Action")?.let { StateManager.loadScript(this, it) }
 
-    override fun hasNext(input: String): Boolean {
-        return false
-    }
-
     class Running(val player: Player, override val state: VertigoState): IRunningState {
-
-        var startTimestamp: Long = 0
-            private set
 
         var stop: Boolean = false
             private set
@@ -41,7 +35,6 @@ class VertigoState(override val key: String, configurationSection: Configuration
         var task: PlatformExecutor.PlatformTask? = null
 
         override fun start() {
-            startTimestamp = System.currentTimeMillis()
             getNearPlayers(player) { viewer ->
                 IAnimationBridge.INSTANCE.setPlayerAnimation(viewer, player, state.animation.startKey, 1f)
             }
@@ -64,7 +57,18 @@ class VertigoState(override val key: String, configurationSection: Configuration
         override fun stop() {
             task?.cancel()
             stop = true
-            StateManager.callNext(player)
+        }
+
+        override fun hasNext(runningState: IRunningState): Boolean {
+            if (stop) return true
+            return when (runningState) {
+                is DodgeState.Running -> false
+                is BlockState.Running -> false
+                is GeneralAttackState.Running -> false
+                is SkillState.Running -> false
+                is Running -> !Orryx.api().profileAPI.isSuperBody(player)
+                else -> false
+            }
         }
 
     }

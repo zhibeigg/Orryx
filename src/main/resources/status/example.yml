@@ -9,49 +9,49 @@ States:
   长剑普攻0:
     # 状态类型
     Type: "General Attack"
+    # 衔接位置 (毫秒)
+    Connection: "1500-2000"
     Animation:
       # 动作名
       Key: "长剑普攻0"
       # 动作时长 (毫秒)
       Duration: "2000"
-      # 衔接位置 (毫秒)
-      Connection: "1500-2000"
   长剑普攻1:
     # 状态类型
     Type: "General Attack"
+    # 衔接位置 (毫秒)
+    Connection: "1500-2000"
     Animation:
       # 动作名
       Key: "长剑普攻1"
       # 动作时长 (毫秒)
       Duration: "2000"
-      # 衔接位置 (毫秒)
-      Connection: "1500-2000"
   长剑普攻2:
     # 状态类型
     Type: "General Attack"
+    # 衔接位置 (毫秒)
+    Connection: "1500-2000"
     Animation:
       # 动作名
       Key: "长剑普攻2"
       # 动作时长 (毫秒)
       Duration: "2000"
-      # 衔接位置 (毫秒)
-      Connection: "1500-2000"
   长剑招架:
     # 状态类型
     Type: "Block"
+    # 格挡检测 (毫秒)
+    Check: "200-800"
+    # 格挡成功后的无敌时间
+    Invincible: "200"
     Animation:
       # 动作名
       Key: "长剑招架"
       # 动作时长 (毫秒)
       Duration: "1000"
-      # 格挡检测 (毫秒)
-      Check: "200-800"
-      # 实际结束 (毫秒)
-      End: "800"
-action: |-
-  if check input == "MOUSE_RIGHT" then {
+Action: |-
+  if check &input == "MOUSE_RIGHT" then {
     next "长剑招架"
-  } else if check input == "MOUSE_LEFT" then {
+  } else if check &input == "MOUSE_LEFT" then {
     case state read [
       when [ null 长剑普攻2 ] -> {
         next "长剑普攻0"

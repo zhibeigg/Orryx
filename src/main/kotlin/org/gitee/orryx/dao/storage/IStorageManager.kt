@@ -86,7 +86,7 @@ interface IStorageManager {
      * @param player 玩家的UUID
      * @return 按键数据列表
      * */
-    fun getPlayerKey(player: UUID): CompletableFuture<PlayerKeySettingPO>
+    fun getPlayerKey(player: UUID): CompletableFuture<PlayerKeySettingPO?>
 
     /**
      * 保存玩家数据到数据库

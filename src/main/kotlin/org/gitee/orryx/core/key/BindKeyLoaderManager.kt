@@ -3,7 +3,6 @@ package org.gitee.orryx.core.key
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.utils.DEFAULT
-import org.gitee.orryx.utils.keysRegister
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.function.info
@@ -22,13 +21,11 @@ object BindKeyLoaderManager {
 
     @Reload(1)
     @Awake(LifeCycle.ENABLE)
-    @Suppress("Unchecked_cast")
     private fun reload() {
         keys.reload()
         bindKeyLoaderMap = keys.getConfigurationSection("Keys")?.getKeys(false)?.associate {
             it.uppercase() to BindKeyLoader(it.uppercase(), keys.getConfigurationSection("Keys.$it")!!)
         } ?: emptyMap()
-        keysRegister(bindKeyLoaderMap.values as Collection<BindKeyLoader>)
         groupMap = (Orryx.config.getStringList("Group") + DEFAULT).associateWith { GroupLoader(it) }
         info("&e┣&7Groups loaded &e${groupMap.size} &a√".colored())
         info("&e┣&7BindKeys loaded &e${bindKeyLoaderMap.size} &a√".colored())
