@@ -10,6 +10,7 @@ import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.dao.cache.Saveable
 import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
 import org.gitee.orryx.dao.storage.IStorageManager
+import org.gitee.orryx.utils.LEFT_MENU
 import org.gitee.orryx.utils.MOUSE_LEFT
 import org.gitee.orryx.utils.MOUSE_RIGHT
 import org.gitee.orryx.utils.bindKeys
@@ -21,7 +22,7 @@ class PlayerKeySetting(
     val aimCancelKey: String = MOUSE_RIGHT,
     val generalAttackKey: String = MOUSE_LEFT,
     val blockKey: String = MOUSE_RIGHT,
-    val dodgeKey: String = "alt",
+    val dodgeKey: String = LEFT_MENU,
     val extKeyMap: Map<String, String> = emptyMap()
 ): Saveable {
 

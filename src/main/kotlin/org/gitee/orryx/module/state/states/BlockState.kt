@@ -1,10 +1,10 @@
 package org.gitee.orryx.module.state.states
 
-import org.bukkit.entity.Player
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.compat.IAnimationBridge
 import org.gitee.orryx.module.state.IActionState
 import org.gitee.orryx.module.state.IRunningState
+import org.gitee.orryx.module.state.PlayerData
 import org.gitee.orryx.module.state.StateManager
 import org.gitee.orryx.utils.getNearPlayers
 import org.gitee.orryx.utils.toLongPair
@@ -28,7 +28,7 @@ class BlockState(override val key: String, configurationSection: ConfigurationSe
 
     override val script: Script? = configurationSection.getString("Action")?.let { StateManager.loadScript(this, it) }
 
-    class Running(val player: Player, override val state: BlockState): IRunningState {
+    class Running(val data: PlayerData, override val state: BlockState): IRunningState {
 
         var stop: Boolean = false
             private set
@@ -37,21 +37,21 @@ class BlockState(override val key: String, configurationSection: ConfigurationSe
 
         fun success() {
             task?.cancel()
-            getNearPlayers(player) { viewer ->
-                IAnimationBridge.INSTANCE.setPlayerAnimation(viewer, player, state.animation.success, 1f)
+            getNearPlayers(data.player) { viewer ->
+                IAnimationBridge.INSTANCE.setPlayerAnimation(viewer, data.player, state.animation.success, 1f)
             }
-            Orryx.api().profileAPI.setInvincible(player, state.invincible)
-            Orryx.api().profileAPI.cancelBlock(player)
+            Orryx.api().profileAPI.setInvincible(data.player, state.invincible)
+            Orryx.api().profileAPI.cancelBlock(data.player)
             stop = true
         }
 
         override fun start() {
-            getNearPlayers(player) { viewer ->
-                IAnimationBridge.INSTANCE.setPlayerAnimation(viewer, player, state.animation.key, 1f)
+            getNearPlayers(data.player) { viewer ->
+                IAnimationBridge.INSTANCE.setPlayerAnimation(viewer, data.player, state.animation.key, 1f)
             }
             task = submit(delay = state.animation.duration) {
                 stop = true
-                StateManager.callNext(player)
+                StateManager.callNext(data.player)
             }
         }
 
@@ -67,7 +67,7 @@ class BlockState(override val key: String, configurationSection: ConfigurationSe
                 is DodgeState.Running -> true
                 is GeneralAttackState.Running -> false
                 is SkillState.Running -> true
-                is VertigoState.Running -> !Orryx.api().profileAPI.isSuperBody(player)
+                is VertigoState.Running -> !Orryx.api().profileAPI.isSuperBody(data.player)
                 else -> false
             }
         }

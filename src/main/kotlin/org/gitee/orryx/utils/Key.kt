@@ -9,6 +9,7 @@ import org.gitee.orryx.module.ui.IUIManager
 
 const val MOUSE_LEFT = "MOUSE_LEFT"
 const val MOUSE_RIGHT = "MOUSE_RIGHT"
+const val LEFT_MENU = "LMENU"
 
 fun getTimeout(): Long {
     return IUIManager.INSTANCE.config.getLong("keyTime", 0)

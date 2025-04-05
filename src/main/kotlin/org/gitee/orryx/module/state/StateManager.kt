@@ -1,7 +1,9 @@
 package org.gitee.orryx.module.state
 
 import com.germ.germplugin.api.event.GermClientLinkedEvent
+import com.germ.germplugin.api.event.GermKeyDownEvent
 import eos.moe.dragoncore.api.event.KeyPressEvent
+import eos.moe.dragoncore.api.event.KeyReleaseEvent
 import eos.moe.dragoncore.api.gui.event.CustomPacketEvent
 import org.bukkit.entity.Player
 import org.bukkit.event.player.PlayerQuitEvent
@@ -26,6 +28,7 @@ import taboolib.module.configuration.ConfigFile
 import taboolib.module.configuration.Configuration
 import taboolib.module.kether.Script
 import taboolib.module.kether.ScriptService
+import taboolib.platform.util.onlinePlayers
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
@@ -66,10 +69,13 @@ object StateManager {
         files("status", "example.yml") { file ->
             statusMap[file.nameWithoutExtension] = Status(file.nameWithoutExtension, Configuration.loadFromFile(file))
         }
+        onlinePlayers.forEach {
+            autoCheckStatus(it)
+        }
     }
 
     fun load(key: String, configurationSection: ConfigurationSection): IActionState {
-        return when (val type = configurationSection.getString("Type")) {
+        return when (val type = configurationSection.getString("Type")?.uppercase()) {
             BLOCK_STATE -> BlockState(key, configurationSection)
             DODGE_STATE -> DodgeState(key, configurationSection)
             GENERAL_ATTACK_STATE -> GeneralAttackState(key, configurationSection)
@@ -98,6 +104,28 @@ object StateManager {
 
     @Ghost
     @SubscribeEvent
+    private fun release(e: KeyReleaseEvent) {
+        val data = playerDataMap.getOrPut(e.player.uniqueId) { PlayerData(e.player) }
+        if (data.nextInput == e.key) {
+            data.nextInput = null
+        }
+    }
+
+    @Ghost
+    @SubscribeEvent
+    private fun press(e: GermKeyDownEvent) {
+        val data = playerDataMap.getOrPut(e.player.uniqueId) { PlayerData(e.player) }
+        when(e.keyType.simpleKey) {
+            MoveState.FRONT.key -> data.moveState = MoveState.FRONT
+            MoveState.REAR.key -> data.moveState = MoveState.REAR
+            MoveState.LEFT.key -> data.moveState = MoveState.LEFT
+            MoveState.RIGHT.key -> data.moveState = MoveState.RIGHT
+        }
+        data.next(e.keyType.simpleKey)
+    }
+
+    @Ghost
+    @SubscribeEvent
     private fun join(e: CustomPacketEvent) {
         if (e.identifier == "DragonCore" && e.data.size == 1 && e.data[0] == "cache_loaded") {
             autoCheckStatus(e.player)
@@ -120,12 +148,14 @@ object StateManager {
         val status = statusMap.values.firstOrNull {
             player.eval(it.options.conditionAction, emptyMap()).getNow(false).cbool
         }
-        status?.also { data.setStatus(it) }
+        data.setStatus(status)
     }
 
     fun callNext(player: Player): CompletableFuture<IRunningState?>? {
         val data = playerDataMap.getOrPut(player.uniqueId) { PlayerData(player) }
-        return data.nextInput?.let { data.next(it) } ?: run {
+        return data.nextInput?.let {
+            data.next(it)
+        } ?: run {
             if (KeyRegisterManager.getKeyRegister(player.uniqueId)?.isKeyPress(MOUSE_LEFT) == true) {
                 data.next(MOUSE_LEFT)
             } else {
@@ -155,6 +185,10 @@ object StateManager {
 
     fun Player.statusData(): PlayerData {
         return playerDataMap.getOrPut(uniqueId) { PlayerData(this) }
+    }
+
+    fun getGlobalState(key: String): IActionState? {
+        return globalState[key]
     }
 
 }

@@ -1,10 +1,10 @@
 package org.gitee.orryx.module.state.states
 
-import org.bukkit.entity.Player
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.compat.IAnimationBridge
 import org.gitee.orryx.module.state.IActionState
 import org.gitee.orryx.module.state.IRunningState
+import org.gitee.orryx.module.state.PlayerData
 import org.gitee.orryx.module.state.StateManager
 import org.gitee.orryx.module.state.states.DodgeState.Running
 import org.gitee.orryx.utils.getNearPlayers
@@ -28,7 +28,7 @@ class GeneralAttackState(override val key: String, configurationSection: Configu
 
     override val script: Script? = configurationSection.getString("Action")?.let { StateManager.loadScript(this, it) }
 
-    class Running(val player: Player, override val state: GeneralAttackState): IRunningState {
+    class Running(val data: PlayerData, override val state: GeneralAttackState): IRunningState {
 
         var startTimestamp: Long = 0
             private set
@@ -40,12 +40,15 @@ class GeneralAttackState(override val key: String, configurationSection: Configu
 
         override fun start() {
             startTimestamp = System.currentTimeMillis()
-            getNearPlayers(player) { viewer ->
-                IAnimationBridge.INSTANCE.setPlayerAnimation(viewer, player, state.animation.startKey, 1f)
+            getNearPlayers(data.player) { viewer ->
+                IAnimationBridge.INSTANCE.setPlayerAnimation(viewer, data.player, state.animation.startKey, 1f)
             }
             submit(delay = max(state.animation.duration, state.connection.second)) {
                 stop = true
-                StateManager.callNext(player)
+                if (data.nowRunningState == this) {
+                    data.clearRunningState()
+                }
+                StateManager.callNext(data.player)
             }
         }
 
@@ -59,9 +62,9 @@ class GeneralAttackState(override val key: String, configurationSection: Configu
             return when (runningState) {
                 is DodgeState.Running -> true
                 is BlockState.Running -> true
-                is Running -> (System.currentTimeMillis() - startTimestamp) in state.connection.first until state.connection.second
+                is Running -> (System.currentTimeMillis() - startTimestamp) in state.connection.first * 50 until state.connection.second * 50
                 is SkillState.Running -> true
-                is VertigoState.Running -> !Orryx.api().profileAPI.isSuperBody(player)
+                is VertigoState.Running -> !Orryx.api().profileAPI.isSuperBody(data.player)
                 else -> false
             }
         }

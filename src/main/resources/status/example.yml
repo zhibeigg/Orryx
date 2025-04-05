@@ -1,66 +1,68 @@
 Options:
   Condition: |-
-    check oaVariables weapon == "长剑"
+    true
   # 当动作未播放结束之前,是否不允许滚轮切换手持物品
   CancelHeldEventWhenPlaying: true
-  controller: "长剑"
-  armourers: []
+  Controller: "长剑"
+  Armourers: []
 States:
   长剑普攻0:
     # 状态类型
     Type: "General Attack"
-    # 衔接位置 (毫秒)
-    Connection: "1500-2000"
+    # 衔接位置 (Tick)
+    Connection: "18-22"
     Animation:
       # 动作名
       Key: "长剑普攻0"
-      # 动作时长 (毫秒)
-      Duration: "2000"
+      # 动作时长 (Tick)
+      Duration: "20"
   长剑普攻1:
     # 状态类型
     Type: "General Attack"
-    # 衔接位置 (毫秒)
-    Connection: "1500-2000"
+    # 衔接位置 (Tick)
+    Connection: "18-22"
     Animation:
       # 动作名
       Key: "长剑普攻1"
-      # 动作时长 (毫秒)
-      Duration: "2000"
+      # 动作时长 (Tick)
+      Duration: "20"
   长剑普攻2:
     # 状态类型
     Type: "General Attack"
-    # 衔接位置 (毫秒)
-    Connection: "1500-2000"
+    # 衔接位置 (Tick)
+    Connection: "18-22"
     Animation:
       # 动作名
       Key: "长剑普攻2"
-      # 动作时长 (毫秒)
-      Duration: "2000"
+      # 动作时长 (Tick)
+      Duration: "20"
   长剑招架:
     # 状态类型
     Type: "Block"
-    # 格挡检测 (毫秒)
-    Check: "200-800"
+    # 格挡检测 (Tick)
+    Check: "4-16"
     # 格挡成功后的无敌时间
-    Invincible: "200"
+    Invincible: "4"
     Animation:
       # 动作名
       Key: "长剑招架"
-      # 动作时长 (毫秒)
-      Duration: "1000"
+      # 动作时长 (Tick)
+      Duration: "20"
+      # 成功格挡动作名
+      SuccessKey: "长剑招架"
 Action: |-
   if check &input == "MOUSE_RIGHT" then {
-    next "长剑招架"
+    running "长剑招架"
   } else if check &input == "MOUSE_LEFT" then {
-    case state read [
+    case state now [
       when [ null 长剑普攻2 ] -> {
-        next "长剑普攻0"
+        running "长剑普攻0"
       }
       when 长剑普攻0 -> {
-        next "长剑普攻1"
+        running "长剑普攻1"
       }
       when 长剑普攻1 -> {
-        next "长剑普攻2"
+        running "长剑普攻2"
       }
     ]
   }

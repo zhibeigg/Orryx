@@ -24,5 +24,19 @@ Orryx是免费的, 发行版本用于正常使用, 不含 TabooLib 本体。
 
 > 参数 -PDeleteCode 表示移除所有逻辑代码以减少体积。
 
+## 使用API
+
+```
+repositories {
+    maven("https://www.mcwar.cn/nexus/repository/maven-public/")
+}
+
+dependencies {
+    compileOnly("org.gitee.orryx:Orryx:{VERSION}:api")
+}
+```
+
+> {VERSION} 处填写版本号 如 1.0.0
+
 ## BStats
 [![](https://bstats.org/signatures/bukkit/Orryx.svg)](https://bstats.org/plugin/bukkit/Orryx/24289/)

@@ -10,7 +10,7 @@ import java.util.concurrent.CompletableFuture
 
 class Status(override val key: String, configuration: Configuration): IStatus {
 
-    val options = Options(configuration.getConfigurationSection("options")!!)
+    val options = Options(configuration.getConfigurationSection("Options")!!)
     val privateStates = mutableMapOf<String, IActionState>()
 
     init {
@@ -33,6 +33,7 @@ class Status(override val key: String, configuration: Configuration): IStatus {
             it.sender = adaptPlayer(playerData.player)
             it.id = UUID.randomUUID().toString()
             it["input"] = input
+            it["status"] = this
         }.runActions().thenApply {
             it as IRunningState?
         }

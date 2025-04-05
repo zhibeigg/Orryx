@@ -1,7 +1,6 @@
 package org.gitee.orryx.core.message
 
 import com.germ.germplugin.api.GermPacketAPI
-import com.germ.germplugin.api.KeyType
 import com.germ.germplugin.api.event.GermKeyDownEvent
 import com.google.common.io.ByteArrayDataInput
 import com.google.common.io.ByteArrayDataOutput
@@ -12,14 +11,11 @@ import org.bukkit.Location
 import org.bukkit.entity.Player
 import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
-import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.plugin.messaging.PluginMessageListener
-import org.gitee.orryx.compat.dragoncore.DragonCoreCustomPacketSender
 import org.gitee.orryx.utils.DragonCorePlugin
 import org.gitee.orryx.utils.GermPluginPlugin
 import org.gitee.orryx.utils.keySetting
-import org.gitee.orryx.utils.keySettingList
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.Ghost
@@ -100,28 +96,6 @@ object PluginMessageHandler {
             Action.RIGHT_CLICK_AIR, Action.RIGHT_CLICK_BLOCK -> handleConfirmation(e.player, false)
             else -> return
         }.also { e.isCancelled = true }
-    }
-
-    @SubscribeEvent(priority = EventPriority.HIGH)
-    private fun onPlayerJoin(e: PlayerJoinEvent) {
-        e.player.keySetting { keySetting ->
-            if (GermPluginPlugin.isEnabled) {
-                keySetting.keySettingList().forEach {
-                    try {
-                        GermPacketAPI.sendKeyRegister(e.player, KeyType.valueOf("KEY_${it}").keyId)
-                    } catch (ex: Throwable) {
-                        warning("GermPlugin 按键注册失败: ${ex.message}")
-                    }
-                }
-            }
-            if (DragonCorePlugin.isEnabled) {
-                try {
-                    DragonCoreCustomPacketSender.sendKeyRegister(e.player, keySetting.keySettingList())
-                } catch (ex: Throwable) {
-                    warning("DragonCore按键注册失败: ${ex.message}")
-                }
-            }
-        }
     }
 
     /* 公开API */

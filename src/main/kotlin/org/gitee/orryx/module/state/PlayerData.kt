@@ -30,11 +30,11 @@ class PlayerData(val player: Player) {
      * */
     fun next(input: String): CompletableFuture<IRunningState?>? {
         return status?.next(this, input)?.thenApply {
-            if (it == null || nowRunningState == null) {
+            if (it == null) {
                 nextInput = input
                 return@thenApply null
             }
-            if (nowRunningState!!.hasNext(it)) {
+            if (nowRunningState == null || nowRunningState!!.hasNext(it)) {
                 nowRunningState = it
                 it.start()
                 it.state.script?.also { runScript(it, input) }
@@ -46,6 +46,10 @@ class PlayerData(val player: Player) {
         }
     }
 
+    fun clearRunningState() {
+        nowRunningState = null
+    }
+
     private fun runScript(script: Script, input: String) {
         ScriptContext.create(script).also {
             it.sender = adaptPlayer(player)
@@ -54,7 +58,7 @@ class PlayerData(val player: Player) {
         }.runActions()
     }
 
-    fun setStatus(status: Status) {
+    fun setStatus(status: Status?) {
         this.status = status
     }
 
