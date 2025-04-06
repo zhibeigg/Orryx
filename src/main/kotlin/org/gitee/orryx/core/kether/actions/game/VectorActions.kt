@@ -82,7 +82,7 @@ object VectorActions {
 
     @KetherParser(["launch"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun actionLaunch() = combinationParser(
-        Action.new("Game原版游戏", "给予视角冲量", "launch", true)
+        Action.new("Game原版游戏", "给予视角冲量（不参考pitch）", "launch", true)
             .description("给予视角冲量")
             .addEntry("视角前方冲量大小", Type.DOUBLE, false)
             .addEntry("视角上方冲量大小", Type.DOUBLE, false)
@@ -104,6 +104,37 @@ object VectorActions {
                             entity.entity.velocity = entity.direction(x, y, z, false).add(entity.entity.velocity)
                         } else {
                             entity.entity.velocity = entity.direction(x, y, z, false)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @KetherParser(["direct"], namespace = ORRYX_NAMESPACE, shared = true)
+    private fun actionDirect() = combinationParser(
+        Action.new("Game原版游戏", "给予视角冲量（参考pitch）", "direct", true)
+            .description("给予视角冲量")
+            .addEntry("视角前方冲量大小", Type.DOUBLE, false)
+            .addEntry("视角上方冲量大小", Type.DOUBLE, false)
+            .addEntry("视角右方冲量大小", Type.DOUBLE, false)
+            .addEntry("是否叠加原冲量", Type.BOOLEAN, false)
+            .addContainerEntry(optional = true, default = "@self")
+    ) {
+        it.group(
+            double(),
+            double(),
+            double(),
+            bool(),
+            theyContainer(true)
+        ).apply(it) { x, y, z, additional, container ->
+            future {
+                ensureSync {
+                    container.orElse(self()).forEachInstance<ITargetEntity<*>> { entity ->
+                        if (additional) {
+                            entity.entity.velocity = entity.direction(x, y, z, true).add(entity.entity.velocity)
+                        } else {
+                            entity.entity.velocity = entity.direction(x, y, z, true)
                         }
                     }
                 }

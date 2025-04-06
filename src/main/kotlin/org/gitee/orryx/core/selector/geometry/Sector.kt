@@ -6,9 +6,7 @@ import org.gitee.orryx.core.targets.ITarget
 import org.gitee.orryx.module.wiki.Selector
 import org.gitee.orryx.module.wiki.SelectorType
 import org.gitee.orryx.module.wiki.Type
-import org.gitee.orryx.utils.getParameter
-import org.gitee.orryx.utils.read
-import org.gitee.orryx.utils.toTarget
+import org.gitee.orryx.utils.*
 import taboolib.common.platform.function.adaptLocation
 import taboolib.module.effect.createArc
 import taboolib.module.effect.createLine
@@ -32,17 +30,23 @@ object Sector: ISelectorGeometry {
         val origin = context.getParameter().origin ?: return emptyList()
 
         val r = parameter.read<Double>(0, 10.0)
-        val angle = parameter.read<Double>(1, 120.0)
+        val radians = Math.toRadians(parameter.read<Double>(1, 120.0))
         val h = parameter.read<Double>(2, 2.0)
         val offsetY = parameter.read<Double>(3, 0.0)
 
         val entities = origin.world.getNearbyEntities(origin.eyeLocation, r, r, r)
-        val dir = origin.location.direction.clone().normalize()
+        val dir = origin.location.direction.clone().setY(0).normalize()
 
         return entities.mapNotNull {
-            if (it.location.y <= origin.eyeLocation.y + h/2 + offsetY && it.location.y + it.height >= origin.eyeLocation.y - h/2 + offsetY) {
+            // 实体最低点 <= 原点最高点 && 实体最高点 >= 原点最低点
+            // -------
+            //          ----------
+            //
+            // -------
+            //          ----------
+            if (it.location.y <= (origin.eyeLocation.y + h / 2 + offsetY) && (it.location.y + it.height) >= (origin.eyeLocation.y - h / 2 + offsetY)) {
                 val vec = it.location.clone().apply { y = 0.0 }.toVector().subtract(origin.eyeLocation.clone().apply { y = 0.0 }.toVector())
-                if (dir.angle(vec) >= angle/2) {
+                if (dir.angle(vec) <= radians / 2) {
                     it.toTarget()
                 } else {
                     null
@@ -60,23 +64,25 @@ object Sector: ISelectorGeometry {
         val angle = parameter.read<Double>(1, 120.0)
         val h = parameter.read<Double>(2, 2.0)
         val offsetY = parameter.read<Double>(3, 0.0)
-        val dir = origin.location.direction.clone().normalize()
+        val dir = origin.location.direction.clone().setY(0)
 
         val up = createArc(
-            adaptLocation(origin.eyeLocation.clone().apply { y += (h/2 + offsetY) }),
-            startAngle = -angle/2,
-            angle = angle,
-            radius = r
+            adaptLocation(origin.eyeLocation.clone().apply { y += (h / 2 + offsetY) }),
+            startAngle = origin.location.yaw + 90 - angle / 2,
+            angle = origin.location.yaw + 90 + angle / 2,
+            radius = r,
+            step = 5.0
         ).calculateLocations()
         val down = createArc(
-            adaptLocation(origin.eyeLocation.clone().apply { y += (-h/2 + offsetY) }),
-            startAngle = -angle/2,
-            angle = angle,
-            radius = r
+            adaptLocation(origin.eyeLocation.clone().apply { y += (-h / 2 + offsetY) }),
+            startAngle = origin.location.yaw + 90 - angle / 2,
+            angle = origin.location.yaw + 90 + angle / 2,
+            radius = r,
+            step = 5.0
         ).calculateLocations()
 
-        val left = dir.clone().rotateAroundY(-angle/2).multiply(r)
-        val right = dir.clone().rotateAroundY(angle/2).multiply(r)
+        val left = dir.joml().normalize(r).rotateY(Math.toRadians(-angle/2)).bukkit()
+        val right = dir.joml().normalize(r).rotateY(Math.toRadians(angle/2)).bukkit()
 
         val leftUp = createLine(
             adaptLocation(origin.eyeLocation.clone().apply { y += (h/2 + offsetY) }),
@@ -94,8 +100,16 @@ object Sector: ISelectorGeometry {
             adaptLocation(origin.eyeLocation.clone().apply { y += (-h/2 + offsetY) }),
             adaptLocation(origin.eyeLocation.clone().apply { y += (-h/2 + offsetY) }.add(right))
         ).calculateLocations()
+        val leftPillar= createLine(
+            adaptLocation(origin.eyeLocation.clone().apply { y += (-h/2 + offsetY) }.add(left)),
+            adaptLocation(origin.eyeLocation.clone().apply { y += (h/2 + offsetY) }.add(left))
+        ).calculateLocations()
+        val rightPillar= createLine(
+            adaptLocation(origin.eyeLocation.clone().apply { y += (-h/2 + offsetY) }.add(right)),
+            adaptLocation(origin.eyeLocation.clone().apply { y += (h/2 + offsetY) }.add(right))
+        ).calculateLocations()
 
-        return up + down + leftUp + rightUp + leftDown + rightDown
+        return up + down + leftUp + rightUp + leftDown + rightDown + leftPillar + rightPillar
     }
 
 }
