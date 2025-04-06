@@ -5,6 +5,7 @@ import eos.moe.dragoncore.network.PacketBuffer
 import eos.moe.dragoncore.network.PacketSender
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
+import org.gitee.orryx.module.state.MoveState
 import taboolib.common.platform.Ghost
 import java.util.*
 
@@ -65,7 +66,7 @@ object DragonCoreCustomPacketSender : PacketSender() {
     fun sendKeyRegister(player: Player, list: List<String>) {
         sendPluginMessage(player, 14) { buffer: PacketBuffer ->
             val set = (Config.fileMap["KeyConfig.yml"] as YamlConfiguration).getKeys(false)
-            set.addAll(Config.registeredKeys + list)
+            set.addAll(Config.registeredKeys + list + MoveState.entries.map { it.key })
             buffer.writeInt(set.size)
             val var2: Iterator<*> = set.iterator()
             while (var2.hasNext()) {

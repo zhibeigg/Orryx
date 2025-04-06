@@ -14,13 +14,13 @@ import taboolib.common.platform.function.submit
 import taboolib.common.platform.service.PlatformExecutor
 import taboolib.library.configuration.ConfigurationSection
 import taboolib.module.kether.Script
-import kotlin.math.max
 
 class DodgeState(override val key: String, configurationSection: ConfigurationSection): IActionState {
 
     val animation: Animation = Animation(configurationSection.getConfigurationSection("Animation")!!)
 
     val invincible = configurationSection.getString("Invincible").toLongPair("-")
+    val connection = configurationSection.getString("Connection").toLongPair("-")
 
     class Animation(configurationSection: ConfigurationSection) {
         val front = configurationSection.getString("Front")!!
@@ -34,12 +34,17 @@ class DodgeState(override val key: String, configurationSection: ConfigurationSe
 
     class Running(val data: PlayerData, override val state: DodgeState): IRunningState {
 
+        var startTimestamp: Long = 0
+            private set
+
         var stop: Boolean = false
             private set
 
-        var task: PlatformExecutor.PlatformTask? = null
+        var task0: PlatformExecutor.PlatformTask? = null
+        var task1: PlatformExecutor.PlatformTask? = null
 
         override fun start() {
+            startTimestamp = System.currentTimeMillis()
             val key = when(data.moveState) {
                 FRONT -> state.animation.front
                 REAR -> state.animation.rear
@@ -49,26 +54,40 @@ class DodgeState(override val key: String, configurationSection: ConfigurationSe
             getNearPlayers(data.player) { viewer ->
                 IAnimationBridge.INSTANCE.setPlayerAnimation(viewer, data.player, key, 1f)
             }
-            task = submit(delay = state.invincible.first) {
-                if (!Orryx.api().profileAPI.isInvincible(data.player)) {
-                    Orryx.api().profileAPI.setInvincible(data.player, state.invincible.second - state.invincible.first)
+            if(state.connection.first != 0L) {
+                task1 = submit(delay = state.connection.first) {
+                    StateManager.callNext(data.player)
                 }
-                task = submit(delay = max(state.invincible.second - state.invincible.first, state.animation.duration - state.invincible.first)) {
+            }
+            task0 = submit(delay = state.invincible.first) {
+                if (!Orryx.api().profileAPI.isInvincible(data.player)) {
+                    Orryx.api().profileAPI.setInvincible(data.player, (state.invincible.second - state.invincible.first) * 50)
+                }
+                task0 = submit(delay = state.animation.duration - state.invincible.first) {
                     stop = true
                     StateManager.callNext(data.player)
+                    val lessTime = state.connection.second - state.animation.duration
+                    if (lessTime > 0) {
+                        submit(delay = lessTime) {
+                            if (data.nowRunningState == this@Running) {
+                                data.clearRunningState()
+                            }
+                        }
+                    }
                 }
             }
         }
 
         override fun stop() {
-            task?.cancel()
+            task0?.cancel()
+            task1?.cancel()
             stop = true
         }
 
         override fun hasNext(runningState: IRunningState): Boolean {
             if (stop) return true
             return when (runningState) {
-                is Running -> false
+                is Running -> (System.currentTimeMillis() - startTimestamp) in state.connection.first * 50 until state.connection.second * 50
                 is BlockState.Running -> false
                 is GeneralAttackState.Running -> false
                 is SkillState.Running -> true

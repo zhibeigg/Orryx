@@ -71,8 +71,6 @@ object OrientedBoundingBox: ISelectorGeometry {
         val entities = origin.world.getNearbyEntities(obbCenterLocation, radius, radius, radius)
 
         return entities.filter { entity ->
-            if (entity == origin.getSource()) return@filter false
-
             val entityLoc = entity.location
             val aabbCenter = Vector(entityLoc.x, entityLoc.y + entity.height / 2, entityLoc.z)
             val aabbExtents = Triple(entity.width / 2, entity.height / 2, entity.width / 2)

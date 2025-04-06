@@ -3,39 +3,41 @@ Options:
     true
   # 当动作未播放结束之前,是否不允许滚轮切换手持物品
   CancelHeldEventWhenPlaying: true
+  # 龙核动作控制器
   Controller: "长剑"
+  # 时装
   Armourers: []
 States:
   长剑普攻0:
     # 状态类型
     Type: "General Attack"
     # 衔接位置 (Tick)
-    Connection: "18-22"
+    Connection: "10-20"
     Animation:
       # 动作名
       Key: "长剑普攻0"
       # 动作时长 (Tick)
-      Duration: "20"
+      Duration: "18"
   长剑普攻1:
     # 状态类型
     Type: "General Attack"
     # 衔接位置 (Tick)
-    Connection: "18-22"
+    Connection: "10-20"
     Animation:
       # 动作名
       Key: "长剑普攻1"
       # 动作时长 (Tick)
-      Duration: "20"
+      Duration: "18"
   长剑普攻2:
     # 状态类型
     Type: "General Attack"
     # 衔接位置 (Tick)
-    Connection: "18-22"
+    Connection: "12-20"
     Animation:
       # 动作名
       Key: "长剑普攻2"
       # 动作时长 (Tick)
-      Duration: "20"
+      Duration: "18"
   长剑招架:
     # 状态类型
     Type: "Block"
@@ -47,22 +49,73 @@ States:
       # 动作名
       Key: "长剑招架"
       # 动作时长 (Tick)
-      Duration: "20"
+      Duration: "18"
       # 成功格挡动作名
       SuccessKey: "长剑招架"
+  闪避:
+    # 状态类型
+    Type: "Dodge"
+    # 无敌帧时长 (Tick)
+    Invincible: "0-10"
+    # 衔接位置 (Tick) 不写就无法衔接
+    Connection: "8-15"
+    Animation:
+      # 动作名
+      Front: "长剑闪避前"
+      Rear: "长剑闪避后"
+      Left: "长剑闪避左"
+      Right: "长剑闪避右"
+      # 动作时长 (Tick)
+      Duration: "12"
+    Action: |-
+      case state move [
+        when FRONT -> launch 0.5 0 0 true
+        when REAR -> launch -0.8 0 0 true
+        when LEFT -> launch 0 0 -0.5 true
+        when RIGHT -> launch 0 0 0.5 true
+      ]
+  翻滚:
+    # 状态类型
+    Type: "Dodge"
+    # 无敌帧时长 (Tick)
+    Invincible: "4-10"
+    Animation:
+      # 动作名
+      Front: "长剑翻滚前"
+      Rear: "长剑翻滚后"
+      Left: "长剑翻滚前"
+      Right: "长剑翻滚前"
+      # 动作时长 (Tick)
+      Duration: "12"
+    Action: |-
+      case state move [
+        when FRONT -> launch 1 0 0 true
+        when REAR -> launch -1.5 0 0 true
+        when LEFT -> launch 0 0 -1 true
+        when RIGHT -> launch 0 0 1 true
+      ]
 Action: |-
-  if check &input == "MOUSE_RIGHT" then {
-    running "长剑招架"
-  } else if check &input == "MOUSE_LEFT" then {
-    case state now [
-      when [ null 长剑普攻2 ] -> {
-        running "长剑普攻0"
-      }
-      when 长剑普攻0 -> {
-        running "长剑普攻1"
-      }
-      when 长剑普攻1 -> {
-        running "长剑普攻2"
-      }
-    ]
-  }
+  case &input [
+    when keySetting block -> running "长剑招架"
+    when keySetting generalAttack -> {
+      case state now [
+        when 长剑普攻2 -> {
+          running "长剑普攻0"
+        }
+        when 长剑普攻0 -> {
+          running "长剑普攻1"
+        }
+        when 长剑普攻1 -> {
+          running "长剑普攻2"
+        }
+        else running "长剑普攻0"
+      ]
+    }
+    when keySetting dodge -> {
+      tell state move
+      case state now [
+        when 闪避 -> running "翻滚"
+        else running "闪避"
+      ]
+    }
+  ]

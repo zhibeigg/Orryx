@@ -3,7 +3,6 @@ package org.gitee.orryx.module.state
 import com.germ.germplugin.api.event.GermClientLinkedEvent
 import com.germ.germplugin.api.event.GermKeyDownEvent
 import eos.moe.dragoncore.api.event.KeyPressEvent
-import eos.moe.dragoncore.api.event.KeyReleaseEvent
 import eos.moe.dragoncore.api.gui.event.CustomPacketEvent
 import org.bukkit.entity.Player
 import org.bukkit.event.player.PlayerQuitEvent
@@ -17,6 +16,7 @@ import org.gitee.orryx.utils.*
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.Ghost
+import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.info
 import taboolib.common.platform.function.warning
@@ -53,7 +53,7 @@ object StateManager {
             globalState[it] = load(it, state.getConfigurationSection("GlobalStates.$it")!!)
         }
         skillMap.forEach { (t, u) ->
-            globalState[t] = SkillState(t, u)
+            globalState[t] = SkillState(u)
         }
         info("&e┣&7GlobalState loaded &e${globalState.size} &a√".colored())
     }
@@ -90,38 +90,31 @@ object StateManager {
     }
 
     @Ghost
-    @SubscribeEvent
-    private fun press(e: KeyPressEvent) {
+    @SubscribeEvent(EventPriority.LOWEST, ignoreCancelled = false)
+    private fun move(e: KeyPressEvent) {
         val data = playerDataMap.getOrPut(e.player.uniqueId) { PlayerData(e.player) }
-        when(e.key) {
-            MoveState.FRONT.key -> data.moveState = MoveState.FRONT
-            MoveState.REAR.key -> data.moveState = MoveState.REAR
-            MoveState.LEFT.key -> data.moveState = MoveState.LEFT
-            MoveState.RIGHT.key -> data.moveState = MoveState.RIGHT
-        }
-        data.next(e.key)
+        data.updateMoveState(e.key)
     }
 
     @Ghost
     @SubscribeEvent
-    private fun release(e: KeyReleaseEvent) {
+    private fun press(e: KeyPressEvent) {
         val data = playerDataMap.getOrPut(e.player.uniqueId) { PlayerData(e.player) }
-        if (data.nextInput == e.key) {
-            data.nextInput = null
-        }
+        data.tryNext(e.key)
+    }
+
+    @Ghost
+    @SubscribeEvent(EventPriority.LOWEST, ignoreCancelled = false)
+    private fun move(e: GermKeyDownEvent) {
+        val data = playerDataMap.getOrPut(e.player.uniqueId) { PlayerData(e.player) }
+        data.updateMoveState(e.keyType.simpleKey)
     }
 
     @Ghost
     @SubscribeEvent
     private fun press(e: GermKeyDownEvent) {
         val data = playerDataMap.getOrPut(e.player.uniqueId) { PlayerData(e.player) }
-        when(e.keyType.simpleKey) {
-            MoveState.FRONT.key -> data.moveState = MoveState.FRONT
-            MoveState.REAR.key -> data.moveState = MoveState.REAR
-            MoveState.LEFT.key -> data.moveState = MoveState.LEFT
-            MoveState.RIGHT.key -> data.moveState = MoveState.RIGHT
-        }
-        data.next(e.keyType.simpleKey)
+        data.tryNext(e.keyType.simpleKey)
     }
 
     @Ghost
@@ -154,14 +147,14 @@ object StateManager {
     fun callNext(player: Player): CompletableFuture<IRunningState?>? {
         val data = playerDataMap.getOrPut(player.uniqueId) { PlayerData(player) }
         return data.nextInput?.let {
-            data.next(it)
-        } ?: run {
-            if (KeyRegisterManager.getKeyRegister(player.uniqueId)?.isKeyPress(MOUSE_LEFT) == true) {
-                data.next(MOUSE_LEFT)
+            data.tryNext(it)
+        } ?: player.keySetting {
+            if (KeyRegisterManager.getKeyRegister(player.uniqueId)?.isKeyPress(it.generalAttackKey) == true) {
+                data.tryNext(it.generalAttackKey)
             } else {
                 null
             }
-        }
+        }.getNow(null)
     }
 
     fun loadScript(state: IActionState, action: String): Script? {

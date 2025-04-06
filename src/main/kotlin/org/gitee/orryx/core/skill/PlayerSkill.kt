@@ -2,6 +2,7 @@ package org.gitee.orryx.core.skill
 
 import kotlinx.coroutines.launch
 import org.bukkit.entity.Player
+import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillCastEvents
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillClearEvents
@@ -10,13 +11,12 @@ import org.gitee.orryx.core.GameManager
 import org.gitee.orryx.core.common.timer.SkillTimer
 import org.gitee.orryx.core.kether.parameter.IParameter
 import org.gitee.orryx.core.kether.parameter.SkillParameter
-import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.core.skill.skills.PassiveSkill
 import org.gitee.orryx.dao.cache.ISyncCacheManager
 import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.dao.storage.IStorageManager
-import org.gitee.orryx.utils.SILENCE_TAG
+import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.utils.castSkill
 import org.gitee.orryx.utils.orryxProfile
 import org.gitee.orryx.utils.runCustomAction
@@ -59,7 +59,7 @@ class PlayerSkill(
         //被动技能
         if (skill is PassiveSkill) return CompletableFuture.completedFuture(CastResult.PASSIVE)
         //沉默
-        if (!SkillTimer.hasNext(player, SILENCE_TAG)) return CompletableFuture.completedFuture(CastResult.SILENCE)
+        if (Orryx.api().profileAPI.isSilence(player)) return CompletableFuture.completedFuture(CastResult.SILENCE)
         //冷却
         if (!SkillTimer.hasNext(player, key)) return CompletableFuture.completedFuture(CastResult.COOLDOWN)
         //法力

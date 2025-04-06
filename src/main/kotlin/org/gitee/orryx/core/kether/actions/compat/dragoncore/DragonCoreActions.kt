@@ -4,21 +4,18 @@ import eos.moe.armourers.api.DragonAPI
 import eos.moe.armourers.api.PlayerSkinUpdateEvent
 import eos.moe.dragoncore.network.PacketSender
 import ink.ptms.adyeshach.core.Adyeshach
+import ink.ptms.adyeshach.core.entity.EntityInstance
 import ink.ptms.adyeshach.core.entity.EntityTypes
-import org.bukkit.craftbukkit.v1_12_R1.CraftWorld
-import org.bukkit.craftbukkit.v1_12_R1.entity.CraftArmorStand
-import org.bukkit.entity.ArmorStand
-import org.bukkit.event.entity.CreatureSpawnEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.gitee.orryx.api.adapters.IEntity
 import org.gitee.orryx.api.adapters.entity.AbstractAdyeshachEntity
-import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
 import org.gitee.orryx.compat.dragoncore.DragonCoreCustomPacketSender
 import org.gitee.orryx.core.common.task.SimpleTimeoutTask
 import org.gitee.orryx.core.container.Container
 import org.gitee.orryx.core.kether.ScriptManager.addOrryxCloseable
 import org.gitee.orryx.core.kether.ScriptManager.scriptParser
 import org.gitee.orryx.core.targets.ITargetEntity
+import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.core.targets.PlayerTarget
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
@@ -30,7 +27,6 @@ import taboolib.common5.util.parseUUID
 import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*
 import taboolib.platform.util.onlinePlayers
-import taboolib.platform.util.setMeta
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
@@ -75,11 +71,11 @@ object DragonCoreActions {
                 .addEntry("发送标识符", Type.SYMBOL, false, head = "send")
                 .addEntry("粒子ID", Type.STRING, false)
                 .addEntry("粒子文件名", Type.STRING, false)
-                .addEntry("x,y,z或者实体UUID", Type.STRING, false)
                 .addEntry("x,y,z旋转角度", Type.STRING, false, "0,0,0", head = "rotation")
                 .addEntry("x,y,z平移位置", Type.VECTOR, false, "0,0,0", head = "translate")
-                .addEntry("存活时长tick", Type.STRING, false, "100", head = "timeout")
-                .addContainerEntry("可视玩家", true, "@server", "viewers"),
+                .addEntry("存活时长tick", Type.INT, false, "100", head = "timeout")
+                .addContainerEntry("可视玩家", true, "@server", "viewers")
+                .addContainerEntry("生成位置或者绑定实体", true, "@self"),
             Action.new("DragonCore附属语句", "移除暴雪粒子", "dragoncore", true)
                 .description("移除暴雪粒子")
                 .addEntry("粒子标识符", Type.SYMBOL, false, head = "effect/particle")
@@ -398,22 +394,36 @@ object DragonCoreActions {
     private fun sendEffect(reader: QuestReader): ScriptAction<Any?> {
         val id = reader.nextParsedAction()
         val name = reader.nextParsedAction()
-        val posOrEntityUUID = reader.nextParsedAction()
         val rotation = reader.nextHeadAction("rotation", "0,0,0")
         val translate = reader.nextHeadAction("translate", "")
         val lifeTime = reader.nextHeadAction("timeout", "100")
         val viewers = reader.nextHeadActionOrNull(arrayOf("viewers"))
+        val they = reader.nextTheyContainerOrNull()
 
         return actionNow {
             run(id).str { id ->
                 run(name).str { name ->
-                    run(posOrEntityUUID).str { posOrEntityUUID ->
-                        run(rotation).str { rotation ->
-                            run(translate).vector { translate ->
-                                run(lifeTime).int { lifeTime ->
-                                    container(viewers, serverPlayerContainer) {container ->
-                                        container.forEachInstance<PlayerTarget> { player ->
-                                            PacketSender.addParticle(player.getSource(), name, id, posOrEntityUUID, rotation, translate.dragonString(), lifeTime)
+                    run(rotation).str { rotation ->
+                        run(translate).vector { translate ->
+                            run(lifeTime).int { lifeTime ->
+                                container(viewers, serverPlayerContainer) { container0 ->
+                                    containerOrSelf(they) { container1 ->
+                                        val target = container1.firstInstance<ITargetLocation<*>>()
+                                        val posOrEntityUUID = if (target is ITargetEntity<*>) {
+                                            target.entity.uniqueId.toString()
+                                        } else {
+                                            "${target.location.x},${target.location.y},${target.location.z}"
+                                        }
+                                        container0.forEachInstance<PlayerTarget> { player ->
+                                            PacketSender.addParticle(
+                                                player.getSource(),
+                                                name,
+                                                id,
+                                                posOrEntityUUID,
+                                                rotation,
+                                                translate.dragonString(),
+                                                lifeTime
+                                            )
                                         }
                                     }
                                 }
@@ -972,7 +982,7 @@ object DragonCoreActions {
                         val iterator = effectMap[target.entity.uniqueId]?.iterator() ?: return@forEachInstance
                         while (iterator.hasNext()) {
                             val modelEffect = iterator.next()
-                            if (modelEffect.entity.entity.customName == key) {
+                            if (modelEffect.entity.getSource().id == key) {
                                 SimpleTimeoutTask.cancel(modelEffect.simpleTimeoutTask)
                             }
                         }
@@ -982,36 +992,37 @@ object DragonCoreActions {
         }
     }
 
-    class ModelEffect(val owner: UUID, val entity: ITargetEntity<*>) {
+    class ModelEffect(val owner: UUID, val entity: ITargetEntity<EntityInstance>) {
         lateinit var simpleTimeoutTask: SimpleTimeoutTask
     }
 
     private fun sendModelEffect(entity: IEntity, key: String, model: String, timeout: Long): ModelEffect {
-        val effect: ITargetEntity<*> = when(entity) {
-            is AbstractBukkitEntity, is PlayerTarget -> {
-                val craftWorld = entity.world as CraftWorld
-                val effectEntity = craftWorld.addEntity<CraftArmorStand>(
-                    craftWorld.createEntity(entity.location, ArmorStand::class.java),
-                    CreatureSpawnEvent.SpawnReason.CUSTOM
-                ) {
-                    it.customName = key
-                    it.setMeta(IGNORE_HIT, true)
-                    it.setGravity(false)
-                    it.isSilent = true
-                    it.isInvulnerable = true
-                    it.isMarker = true
-                }
-                entity.getBukkitEntity()?.addPassenger(effectEntity)
-                AbstractBukkitEntity(effectEntity)
-            }
-
-            is AbstractAdyeshachEntity -> {
-                val instance = Adyeshach.api().getPublicEntityManager().create(EntityTypes.ARMOR_STAND, entity.location)
-                AbstractAdyeshachEntity(instance)
-            }
-
-            else -> error("使用了不支持modelEffect的实体类型")
+        val instance = Adyeshach.api().getPublicEntityManager().create(EntityTypes.ARMOR_STAND, entity.location) {
+            it.id = key
         }
+        val effect: ITargetEntity<EntityInstance> = AbstractAdyeshachEntity(instance)
+//        when(entity) {
+//            is AbstractBukkitEntity, is PlayerTarget -> {
+//                val craftWorld = entity.world as CraftWorld
+//                val effectEntity = craftWorld.addEntity<CraftArmorStand>(
+//                    craftWorld.createEntity(entity.location, ArmorStand::class.java),
+//                    CreatureSpawnEvent.SpawnReason.CUSTOM
+//                ) {
+//                    it.customName = key
+//                    it.setMeta(IGNORE_HIT, true)
+//                    it.setGravity(false)
+//                    it.isSilent = true
+//                    it.isInvulnerable = true
+//                    it.isMarker = true
+//                }
+//                AbstractBukkitEntity(effectEntity)
+//            }
+//
+//            is AbstractAdyeshachEntity -> {
+//            }
+//
+//            else -> error("使用了不支持modelEffect的实体类型")
+//        }
         onlinePlayers.forEach { player ->
             PacketSender.setEntityModel(player, effect.entity.uniqueId, model)
             PacketSender.sendEntityLocationBind(player, effect.entity.uniqueId, entity.uniqueId, 0.0f, 0.0f, 0.0f, true, true)

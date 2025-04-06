@@ -11,7 +11,9 @@ import taboolib.common.platform.function.submit
 import taboolib.common.platform.service.PlatformExecutor
 import taboolib.module.kether.Script
 
-class SkillState(override val key: String, val skill: ICastSkill): IActionState {
+class SkillState(val skill: ICastSkill): IActionState {
+
+    override val key: String = skill.key
 
     override val script: Script? = null
 

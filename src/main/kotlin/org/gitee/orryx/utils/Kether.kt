@@ -4,6 +4,7 @@ import org.bukkit.entity.Player
 import org.bukkit.util.Vector
 import org.gitee.orryx.api.adapters.IVector
 import org.gitee.orryx.api.adapters.vector.AbstractVector
+import org.gitee.orryx.core.common.keyregister.PlayerKeySetting
 import org.gitee.orryx.core.container.Container
 import org.gitee.orryx.core.container.IContainer
 import org.gitee.orryx.core.kether.ScriptManager
@@ -52,6 +53,12 @@ internal fun ScriptContext.bukkitPlayer(): Player {
 
 internal fun ScriptFrame.self(): IContainer {
     return bukkitPlayer().readContainer(script())!!
+}
+
+internal fun <T> ScriptFrame.keySetting(func: (setting: PlayerKeySetting) -> T): CompletableFuture<T> {
+    return bukkitPlayer().keySetting {
+        func(it)
+    }
 }
 
 internal fun QuestReader.nextHeadActionOrNull(array: Array<out String>): ParsedAction<*>? {

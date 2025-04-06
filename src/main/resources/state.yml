@@ -7,39 +7,9 @@ GlobalStates:
       Start-Key: "被击晕"
       Loop-Key: "被击晕循环"
       End-Key: "被击晕起身"
-      # 开始动作时长 (毫秒)
-      Start-Duration: "500"
-      # 眩晕时长 (毫秒)
-      Loop-Duration: "1000"
-      # 起身动作时长 (毫秒)
-      End-Duration: "1000"
-  闪避:
-    # 状态类型
-    Type: "Dodge"
-    # 无敌帧时长 (毫秒)
-    Invincible: "200-1000"
-    Animation:
-      # 动作名
-      Front: "前闪避"
-      Rear: "后闪避"
-      Left: "左闪避"
-      Right: "右闪避"
-      # 动作时长 (毫秒)
-      Duration: "500"
-    Action: |-
-      tell 闪避
-  翻滚:
-    # 状态类型
-    Type: "Dodge"
-    # 无敌帧时长 (毫秒)
-    Invincible: "200-1000"
-    Animation:
-      # 动作名
-      Front: "前翻滚"
-      Rear: "后翻滚"
-      Left: "左翻滚"
-      Right: "右翻滚"
-      # 动作时长 (毫秒)
-      Duration: "1000"
-    Action: |-
-      tell 翻滚
+      # 开始动作时长 (Tick)
+      Start-Duration: "10"
+      # 眩晕时长 (Tick)
+      Loop-Duration: "20"
+      # 起身动作时长 (Tick)
+      End-Duration: "20"

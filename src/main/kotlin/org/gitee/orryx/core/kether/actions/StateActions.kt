@@ -14,10 +14,7 @@ import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.ORRYX_NAMESPACE
 import org.gitee.orryx.utils.bukkitPlayer
 import org.gitee.orryx.utils.ensureSync
-import taboolib.module.kether.KetherParser
-import taboolib.module.kether.actionNow
-import taboolib.module.kether.script
-import taboolib.module.kether.switch
+import taboolib.module.kether.*
 
 object StateActions {
 
@@ -34,8 +31,8 @@ object StateActions {
             future {
                 ensureSync {
                     val data = script().bukkitPlayer().statusData()
-                    val status = script().get<Status>("status")
-                    val actionState = status?.privateStates?.get(state) ?: StateManager.getGlobalState(state)
+                    val status = data.status as? Status ?: return@ensureSync null
+                    val actionState = status.privateStates[state] ?: StateManager.getGlobalState(state)
                     when (actionState) {
                         is BlockState -> BlockState.Running(data, actionState)
                         is DodgeState -> DodgeState.Running(data, actionState)
@@ -58,7 +55,12 @@ object StateActions {
             Action.new("State状态机", "获取当前移动方向", "state", true)
                 .description("获取当前移动方向")
                 .addEntry("当前占位符", Type.SYMBOL, false, head = "move")
-                .result("移动方向", Type.STRING)
+                .result("移动方向", Type.STRING),
+            Action.new("State状态机", "强制执行下一状态", "state", true)
+                .description("强制执行指定下一状态")
+                .addEntry("下一占位符", Type.SYMBOL, false, head = "next")
+                .addEntry("状态名", Type.STRING)
+                .result("运动状态", Type.STATE)
         )
     ) {
         it.switch {
@@ -70,6 +72,27 @@ object StateActions {
             case("move") {
                 actionNow {
                     script().bukkitPlayer().statusData().moveState.name
+                }
+            }
+            case("next") {
+                val state = nextParsedAction()
+                actionFuture { future ->
+                    run(state).str { state ->
+                        ensureSync {
+                            val data = script().bukkitPlayer().statusData()
+                            val status = data.status as? Status ?: return@ensureSync
+                            val actionState = status.privateStates[state] ?: StateManager.getGlobalState(state)
+                            val running = when (actionState) {
+                                is BlockState -> BlockState.Running(data, actionState)
+                                is DodgeState -> DodgeState.Running(data, actionState)
+                                is GeneralAttackState -> GeneralAttackState.Running(data, actionState)
+                                is VertigoState -> VertigoState.Running(data, actionState)
+                                else -> null
+                            }
+                            running?.let { it1 -> data.next(it1) }
+                            future.complete(running)
+                        }
+                    }
                 }
             }
         }

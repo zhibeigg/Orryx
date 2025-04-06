@@ -3,6 +3,7 @@ package org.gitee.orryx.utils
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.api.events.player.skill.OrryxClearSkillLevelAndBackPointEvent
+import org.gitee.orryx.api.events.player.state.OrryxPlayerStateSkillEvents
 import org.gitee.orryx.core.common.timer.SkillTimer
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.kether.KetherScript
@@ -17,7 +18,9 @@ import org.gitee.orryx.core.skill.skills.DirectSkill
 import org.gitee.orryx.core.skill.skills.PressingAimSkill
 import org.gitee.orryx.core.skill.skills.PressingSkill
 import org.gitee.orryx.dao.cache.MemoryCache
-import taboolib.common.platform.ProxyCommandSender
+import org.gitee.orryx.module.state.StateManager
+import org.gitee.orryx.module.state.StateManager.statusData
+import org.gitee.orryx.module.state.states.SkillState
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common5.cdouble
@@ -33,8 +36,6 @@ const val PRESSING_AIM = "Pressing Aim"
 const val PASSIVE = "Passive"
 
 const val DEFAULT_PICTURE = "default"
-
-const val SILENCE_TAG = "Orryx@Silence"
 
 var silence: Boolean = Orryx.config.getBoolean("Silence", false)
     internal set
@@ -157,8 +158,8 @@ fun IPlayerSkill.getIcon(): String {
     return skill.icon.getIcon(player, SkillParameter(key, player, level))
 }
 
-fun consume(player: Player, parameter: SkillParameter) {
-    parameter.silence(adaptPlayer(player))
+fun ICastSkill.consume(player: Player, parameter: SkillParameter) {
+    silence(parameter, player)
     SkillTimer.reset(player, parameter)
 }
 
@@ -174,7 +175,7 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean
             PluginMessageHandler.requestAiming(player, key, DEFAULT_PICTURE, aimMin, aimMax, aimRadius, maxTick) { aimInfo ->
                 aimInfo.getOrNull()?.let {
                     if (it.skillId == skill.key) {
-                        if (consume) consume(player, parameter)
+                        if (consume) skill.consume(player, parameter)
                         parameter.origin = it.location.toTarget()
                         parameter.runSkillAction(
                             mapOf(
@@ -189,7 +190,7 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean
             }
         }
         is DirectSkill -> {
-            if (consume) consume(player, parameter)
+            if (consume) skill.consume(player, parameter)
             parameter.runSkillAction()
         }
         is DirectAimSkill -> {
@@ -199,7 +200,7 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean
                 aimInfo.onSuccess {
                     if (it.skillId == skill.key) {
                         parameter.origin = it.location.toTarget()
-                        if (consume) consume(player, parameter)
+                        if (consume) skill.consume(player, parameter)
                         parameter.runSkillAction(
                             mapOf(
                                 "aimRadius" to aimRadius,
@@ -253,15 +254,21 @@ fun IPlayerSkill.clearLevel(): CompletableFuture<SkillLevelResult> {
     return setLevel(skill.minLevel)
 }
 
-fun SkillParameter.silence(sender: ProxyCommandSender): Long {
-    return silence(sender, silenceValue(true))
-}
-
-fun silence(sender: ProxyCommandSender, timeout: Long): Long {
+fun ICastSkill.silence(skillParameter: SkillParameter, player: Player): Long {
+    val timeout = skillParameter.silenceValue(true)
     if (timeout >= 0) {
-        SkillTimer.set(sender, SILENCE_TAG, timeout)
+        player.statusData().also {
+            val state = SkillState.Running(it, StateManager.getGlobalState(key)!! as SkillState, timeout / 50)
+            val event = OrryxPlayerStateSkillEvents.Pre(player, skillParameter, timeout, state)
+            if (event.call()) {
+                it.next(event.state)
+                Orryx.api().profileAPI.setSilence(player, event.silence)
+                OrryxPlayerStateSkillEvents.Post(player, skillParameter, event.silence, event.state).call()
+            }
+            return event.silence
+        }
     } else {
-        SkillTimer.set(sender, SILENCE_TAG, 0)
+        Orryx.api().profileAPI.cancelSilence(player)
+        return 0
     }
-    return timeout
 }

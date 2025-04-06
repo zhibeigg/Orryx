@@ -6,6 +6,7 @@ import org.gitee.orryx.core.common.keyregister.KeyRegisterManager
 import org.gitee.orryx.core.common.keyregister.PlayerKeySetting
 import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.module.ui.IUIManager
+import java.util.concurrent.CompletableFuture
 
 const val MOUSE_LEFT = "MOUSE_LEFT"
 const val MOUSE_RIGHT = "MOUSE_RIGHT"
@@ -45,8 +46,8 @@ fun Player.checkAndCast(key: String, timeout: Long, actionType: IKeyRegister. Ac
     }
 }
 
-fun <T> Player.keySetting(func: (setting: PlayerKeySetting) -> T) {
-    MemoryCache.getPlayerKey(this).thenApply {
+fun <T> Player.keySetting(func: (setting: PlayerKeySetting) -> T): CompletableFuture<T> {
+    return MemoryCache.getPlayerKey(this).thenApply {
         func(it)
     }
 }

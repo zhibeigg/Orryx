@@ -35,6 +35,7 @@ object Range: ISelectorGeometry {
 
         val entities = origin.world.getNearbyEntities(origin.eyeLocation, r, r, r)
         return entities.mapNotNull {
+            if (it == origin.getSource()) return@mapNotNull it.toTarget()
             if (it is LivingEntity) {
                 val dir = it.eyeLocation.toVector().subtract(origin.eyeLocation.toVector()).normalize().multiply(r)
                 ray.set(origin.eyeLocation.x.cfloat, origin.eyeLocation.y.cfloat, origin.eyeLocation.z.cfloat, dir.x.cfloat, dir.y.cfloat, dir.z.cfloat)

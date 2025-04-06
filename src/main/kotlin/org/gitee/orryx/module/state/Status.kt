@@ -33,7 +33,6 @@ class Status(override val key: String, configuration: Configuration): IStatus {
             it.sender = adaptPlayer(playerData.player)
             it.id = UUID.randomUUID().toString()
             it["input"] = input
-            it["status"] = this
         }.runActions().thenApply {
             it as IRunningState?
         }

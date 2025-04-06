@@ -12,6 +12,7 @@ import taboolib.common.platform.function.submit
 import taboolib.common.platform.service.PlatformExecutor
 import taboolib.library.configuration.ConfigurationSection
 import taboolib.module.kether.Script
+import kotlin.math.max
 
 class BlockState(override val key: String, configurationSection: ConfigurationSection): IActionState {
 
@@ -40,7 +41,7 @@ class BlockState(override val key: String, configurationSection: ConfigurationSe
             getNearPlayers(data.player) { viewer ->
                 IAnimationBridge.INSTANCE.setPlayerAnimation(viewer, data.player, state.animation.success, 1f)
             }
-            Orryx.api().profileAPI.setInvincible(data.player, state.invincible)
+            Orryx.api().profileAPI.setInvincible(data.player, state.invincible * 50)
             Orryx.api().profileAPI.cancelBlock(data.player)
             stop = true
         }
@@ -49,9 +50,12 @@ class BlockState(override val key: String, configurationSection: ConfigurationSe
             getNearPlayers(data.player) { viewer ->
                 IAnimationBridge.INSTANCE.setPlayerAnimation(viewer, data.player, state.animation.key, 1f)
             }
-            task = submit(delay = state.animation.duration) {
-                stop = true
-                StateManager.callNext(data.player)
+            task = submit(delay = state.check.first) {
+                Orryx.api().profileAPI.setBlock(data.player, (state.check.second - state.check.first) * 50)
+                task = submit(delay = max(state.animation.duration - state.check.first, state.check.second - state.check.first)) {
+                    stop = true
+                    StateManager.callNext(data.player)
+                }
             }
         }
 

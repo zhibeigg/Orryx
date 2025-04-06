@@ -74,7 +74,7 @@ object ContextActions {
         }.value
         it.mark()
         val method = when (it.nextToken()) {
-            "to", "=" -> ParameterOperator.Method.MODIFY
+            "set", "to", "=" -> ParameterOperator.Method.MODIFY
             "add", "increase", "+" -> ParameterOperator.Method.INCREASE
             "sub", "decrease", "-" -> ParameterOperator.Method.DECREASE
             else -> {
