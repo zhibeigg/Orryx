@@ -2,6 +2,7 @@ package org.gitee.orryx.module.state.states
 
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.compat.IAnimationBridge
+import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.module.state.IActionState
 import org.gitee.orryx.module.state.IRunningState
 import org.gitee.orryx.module.state.PlayerData
@@ -12,6 +13,7 @@ import taboolib.common.platform.function.submit
 import taboolib.common.platform.service.PlatformExecutor
 import taboolib.library.configuration.ConfigurationSection
 import taboolib.module.kether.Script
+import taboolib.module.kether.ScriptContext
 import kotlin.math.max
 
 class BlockState(override val key: String, configurationSection: ConfigurationSection): IActionState {
@@ -31,10 +33,11 @@ class BlockState(override val key: String, configurationSection: ConfigurationSe
 
     class Running(val data: PlayerData, override val state: BlockState): IRunningState {
 
-        var stop: Boolean = false
+        override var stop: Boolean = false
             private set
 
-        var task: PlatformExecutor.PlatformTask? = null
+        private var task: PlatformExecutor.PlatformTask? = null
+        private var context: ScriptContext? = null
 
         fun success() {
             task?.cancel()
@@ -50,6 +53,7 @@ class BlockState(override val key: String, configurationSection: ConfigurationSe
             getNearPlayers(data.player) { viewer ->
                 IAnimationBridge.INSTANCE.setPlayerAnimation(viewer, data.player, state.animation.key, 1f)
             }
+            state.runScript(data) { context = this }
             task = submit(delay = state.check.first) {
                 Orryx.api().profileAPI.setBlock(data.player, (state.check.second - state.check.first) * 50)
                 task = submit(delay = max(state.animation.duration - state.check.first, state.check.second - state.check.first)) {
@@ -61,6 +65,10 @@ class BlockState(override val key: String, configurationSection: ConfigurationSe
 
         override fun stop() {
             task?.cancel()
+            context?.apply {
+                terminate()
+                ScriptManager.cleanUp(id)
+            }
             stop = true
         }
 

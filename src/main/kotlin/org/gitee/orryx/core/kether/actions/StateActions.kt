@@ -54,8 +54,12 @@ object StateActions {
                 .result("状态名", Type.STRING),
             Action.new("State状态机", "获取当前移动方向", "state", true)
                 .description("获取当前移动方向")
-                .addEntry("当前占位符", Type.SYMBOL, false, head = "move")
+                .addEntry("移动占位符", Type.SYMBOL, false, head = "move")
                 .result("移动方向", Type.STRING),
+            Action.new("State状态机", "自动检测Status条件更新", "state", true)
+                .description("自动检测Status条件并更新Status")
+                .addEntry("更新占位符", Type.SYMBOL, false, head = "update")
+                .result("适配的Status名", Type.STRING),
             Action.new("State状态机", "强制执行下一状态", "state", true)
                 .description("强制执行指定下一状态")
                 .addEntry("下一占位符", Type.SYMBOL, false, head = "next")
@@ -72,6 +76,11 @@ object StateActions {
             case("move") {
                 actionNow {
                     script().bukkitPlayer().statusData().moveState.name
+                }
+            }
+            case("update") {
+                actionNow {
+                    StateManager.autoCheckStatus(script().bukkitPlayer())?.key
                 }
             }
             case("next") {

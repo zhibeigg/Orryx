@@ -19,10 +19,10 @@ class SkillState(val skill: ICastSkill): IActionState {
 
     class Running(val data: PlayerData, override val state: SkillState, val duration: Long): IRunningState {
 
-        var stop: Boolean = false
+        override var stop: Boolean = false
             private set
 
-        var task: PlatformExecutor.PlatformTask? = null
+        private var task: PlatformExecutor.PlatformTask? = null
 
         override fun start() {
             task = submit(delay = duration) {

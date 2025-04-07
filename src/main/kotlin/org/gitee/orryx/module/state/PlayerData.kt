@@ -1,11 +1,11 @@
 package org.gitee.orryx.module.state
 
 import org.bukkit.entity.Player
+import org.gitee.orryx.compat.dragoncore.DragonCoreCustomPacketSender
 import org.gitee.orryx.core.common.keyregister.KeyRegisterManager
+import org.gitee.orryx.module.state.StateManager.getController
+import org.gitee.orryx.module.state.StateManager.statusDataList
 import org.gitee.orryx.module.state.states.BlockState
-import taboolib.common.platform.function.adaptPlayer
-import taboolib.module.kether.Script
-import taboolib.module.kether.ScriptContext
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
@@ -15,6 +15,8 @@ class PlayerData(val player: Player) {
         private set
 
     private var changeMoveState = MoveState.FRONT
+
+    val cacheJoiner = hashSetOf<UUID>()
 
     //移动方向
     val moveState: MoveState
@@ -44,7 +46,6 @@ class PlayerData(val player: Player) {
                 nextInput = null
                 nowRunningState = it
                 it.start()
-                it.state.script?.also { script -> runScript(script) }
                 it
             } else {
                 nextInput = input
@@ -63,22 +64,30 @@ class PlayerData(val player: Player) {
         nextInput = null
         nowRunningState = running
         running.start()
-        running.state.script?.also { script -> runScript(script) }
     }
 
     fun clearRunningState() {
         nowRunningState = null
     }
 
-    private fun runScript(script: Script) {
-        ScriptContext.create(script).also {
-            it.sender = adaptPlayer(player)
-            it.id = UUID.randomUUID().toString()
-        }.runActions()
-    }
-
     fun setStatus(status: Status?) {
         this.status = status
+        if (status != null) {
+            val controller = getController(status.options.controller) ?: return
+            DragonCoreCustomPacketSender.setPlayerAnimationController(player, player.uniqueId, controller.saveToString())
+            statusDataList().forEach {
+                if (player.uniqueId in it.cacheJoiner) {
+                    DragonCoreCustomPacketSender.setPlayerAnimationController(it.player, player.uniqueId, controller.saveToString())
+                }
+            }
+        } else {
+            DragonCoreCustomPacketSender.removePlayerAnimationController(player, player.uniqueId)
+            statusDataList().forEach {
+                if (player.uniqueId in it.cacheJoiner) {
+                    DragonCoreCustomPacketSender.removePlayerAnimationController(it.player, player.uniqueId)
+                }
+            }
+        }
     }
 
     fun updateMoveState(input: String) {

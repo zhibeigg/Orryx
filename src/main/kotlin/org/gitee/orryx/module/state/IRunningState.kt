@@ -8,6 +8,11 @@ interface IRunningState {
     val state: IActionState
 
     /**
+     * 是否已结束
+     * */
+    val stop: Boolean
+
+    /**
      * 开始此状态
      * */
     fun start()

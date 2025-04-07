@@ -22,9 +22,11 @@ import java.util.*
 object KeyRegisterManager {
 
     private val keyRegisterMap by unsafeLazy { hashMapOf<UUID, KeyRegister>() }
+    private val players = hashSetOf<UUID>()
 
     @SubscribeEvent
     private fun onJoin(e: PlayerJoinEvent) {
+        players.add(e.player.uniqueId)
         keyRegisterMap[e.player.uniqueId] = KeyRegister(e.player)
     }
 
@@ -35,7 +37,9 @@ object KeyRegisterManager {
 
     @SubscribeEvent(priority = EventPriority.LOW)
     private fun onPlayerJoin(e: EntityJoinWorldEvent) {
-        sendKeyRegister(e.player)
+        if (players.remove(e.player.uniqueId)) {
+            sendKeyRegister(e.player)
+        }
     }
 
     @Reload(2)

@@ -30,7 +30,7 @@ class ProfileAPI: IProfileAPI {
 
     override fun setSuperBody(player: Player, timeout: Long) {
         superBodyMap.getOrPut(player.uniqueId) { SuperBodyInfo(0) }.timeout = System.currentTimeMillis() + timeout
-        player.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE)?.addModifier(superBodyModifier)
+        addKnockBackResistance(player)
     }
 
     override fun cancelSuperBody(player: Player) {
@@ -47,7 +47,7 @@ class ProfileAPI: IProfileAPI {
                 it.timeout = System.currentTimeMillis() + timeout
             }
         }
-        player.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE)?.addModifier(superBodyModifier)
+        addKnockBackResistance(player)
     }
 
     override fun reduceSuperBody(player: Player, timeout: Long) {
@@ -57,6 +57,12 @@ class ProfileAPI: IProfileAPI {
                 superBodyMap.remove(player.uniqueId)
                 player.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE)?.removeModifier(superBodyModifier)
             }
+        }
+    }
+
+    private fun addKnockBackResistance(player: Player) {
+        if (player.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE)?.modifiers?.contains(superBodyModifier) != true) {
+            player.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE)?.addModifier(superBodyModifier)
         }
     }
 

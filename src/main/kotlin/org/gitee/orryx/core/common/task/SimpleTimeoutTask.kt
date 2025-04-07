@@ -27,13 +27,13 @@ open class SimpleTimeoutTask(val tick: Long, open val closed: () -> Unit = EMPTY
             }
         }
 
-        fun cancel(simpleTask: SimpleTimeoutTask) {
+        fun cancel(simpleTask: SimpleTimeoutTask, running: Boolean = true) {
             cache -= simpleTask
             simpleTask.task.cancel()
             // 如果已经结束了
             if (simpleTask.future.isDone) return
             simpleTask.future.complete(null)
-            simpleTask.closed()
+            if (running) simpleTask.closed()
         }
 
         fun SimpleTimeoutTask.register(): SimpleTimeoutTask {
