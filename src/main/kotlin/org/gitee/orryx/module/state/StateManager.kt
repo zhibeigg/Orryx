@@ -165,13 +165,9 @@ object StateManager {
                     val invisible = e.data[1].cbool
                     if (invisible) {
                         val tick = e.data[2].clong
-                        playerInvisibleHandTaskMap[e.player.uniqueId]?.let { SimpleTimeoutTask.cancel(it) }
-                        playerInvisibleHandTaskMap[e.player.uniqueId] = SimpleTimeoutTask.createSimpleTask(tick) {
-                            PacketSender.setEntityModelItemAnimation(e.player, "invisible", 1.0f)
-                        }
+                        setInvisibleHand(e.player, tick)
                     } else {
-                        playerInvisibleHandTaskMap[e.player.uniqueId]?.let { SimpleTimeoutTask.cancel(it) }
-                        PacketSender.setEntityModelItemAnimation(e.player, "idle", 1.0f)
+                        cancelInvisibleHand(e.player)
                     }
                 }
             }
@@ -202,7 +198,19 @@ object StateManager {
     @SubscribeEvent
     private fun updateArmourers(e: PlayerSkinUpdateEvent) {
         val status = e.player.statusData().status as? Status ?: return
-        e.skinList.addAll(status.options.armourers)
+        e.skinList.addAll(status.options.getArmourers(e.player))
+    }
+
+    internal fun setInvisibleHand(player: Player, tick: Long) {
+        playerInvisibleHandTaskMap[player.uniqueId]?.let { SimpleTimeoutTask.cancel(it) }
+        playerInvisibleHandTaskMap[player.uniqueId] = SimpleTimeoutTask.createSimpleTask(tick) {
+            PacketSender.setEntityModelItemAnimation(player, "invisible", 1.0f)
+        }
+    }
+
+    internal fun cancelInvisibleHand(player: Player) {
+        playerInvisibleHandTaskMap[player.uniqueId]?.let { SimpleTimeoutTask.cancel(it) }
+        PacketSender.setEntityModelItemAnimation(player, "idle", 1.0f)
     }
 
     fun autoCheckStatus(player: Player): Status? {

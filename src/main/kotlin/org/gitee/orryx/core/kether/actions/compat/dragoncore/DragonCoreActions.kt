@@ -6,6 +6,7 @@ import eos.moe.dragoncore.network.PacketSender
 import ink.ptms.adyeshach.core.Adyeshach
 import ink.ptms.adyeshach.core.entity.EntityInstance
 import ink.ptms.adyeshach.core.entity.EntityTypes
+import org.bukkit.Bukkit
 import org.bukkit.event.player.PlayerQuitEvent
 import org.gitee.orryx.api.adapters.IEntity
 import org.gitee.orryx.api.adapters.entity.AbstractAdyeshachEntity
@@ -17,6 +18,7 @@ import org.gitee.orryx.core.kether.ScriptManager.scriptParser
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.core.targets.PlayerTarget
+import org.gitee.orryx.module.state.StateManager
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
@@ -64,6 +66,11 @@ object DragonCoreActions {
                 .addEntry("armourers标识符", Type.SYMBOL, false, head = "armourers")
                 .addEntry("清除标识符", Type.SYMBOL, false, head = "clear")
                 .addEntry("时装名", Type.STRING, true, "ALL")
+                .addContainerEntry(optional = true, default = "@self"),
+            Action.new("DragonCore附属语句", "更新时装", "dragoncore", true)
+                .description("清除临时时装")
+                .addEntry("armourers标识符", Type.SYMBOL, false, head = "armourers")
+                .addEntry("更新标识符", Type.SYMBOL, false, head = "update")
                 .addContainerEntry(optional = true, default = "@self"),
             Action.new("DragonCore附属语句", "发送暴雪粒子", "dragoncore", true)
                 .description("发送暴雪粒子")
@@ -260,13 +267,19 @@ object DragonCoreActions {
                 .addEntry("移除标识符", Type.SYMBOL, false, head = "remove")
                 .addEntry("实体唯一ID", Type.STRING, false)
                 .addContainerEntry("绑定的实体", true, "@self"),
+            Action.new("DragonCore附属语句", "隐藏玩家手持武器", "dragoncore", true)
+                .description("隐藏玩家手持武器")
+                .addEntry("隐藏手持标识符", Type.SYMBOL, false, head = "invisibleHand")
+                .addEntry("隐藏时间 0 为取消", Type.LONG, false)
+                .addContainerEntry("取消的玩家", true, "@self")
         )
     ) {
         it.switch {
             case("armourers") {
-                when (it.expects("send", "clear")) {
+                when (it.expects("send", "clear", "update")) {
                     "send" -> sendArmourers(it)
                     "clear" -> clearArmourers(it)
+                    "update" -> updateArmourers(it)
                     else -> error("龙核armourers书写错误")
                 }
             }
@@ -333,6 +346,7 @@ object DragonCoreActions {
                     else -> error("龙核modelEffect书写错误")
                 }
             }
+            case("invisibleHand") { invisibleHand(it) }
         }
     }
 
@@ -386,6 +400,18 @@ object DragonCoreActions {
                             DragonAPI.updatePlayerSkin(player.getSource())
                         }
                     }
+                }
+            }
+        }
+    }
+
+    private fun updateArmourers(reader: QuestReader): ScriptAction<Any?> {
+        val container = reader.nextTheyContainerOrNull()
+
+        return actionNow {
+            containerOrSelf(container) { container ->
+                container.forEachInstance<PlayerTarget> { player ->
+                    DragonAPI.updatePlayerSkin(player.getSource())
                 }
             }
         }
@@ -788,8 +814,15 @@ object DragonCoreActions {
             run(uuid).str { uuid ->
                 run(function).str { function ->
                     containerOrSelf(players) {
-                        it.forEachInstance<PlayerTarget> { player ->
-                            PacketSender.runEntityAnimationFunction(player.getSource(), uuid.parseUUID(), function)
+                        val id = uuid.parseUUID()!!
+                        if (Bukkit.getPlayer(id) != null) {
+                            it.forEachInstance<PlayerTarget> { player ->
+                                DragonCoreCustomPacketSender.runPlayerAnimationControllerFunction(player.getSource(), id, function)
+                            }
+                        } else {
+                            it.forEachInstance<PlayerTarget> { player ->
+                                PacketSender.runEntityAnimationFunction(player.getSource(), id, function)
+                            }
                         }
                     }
                 }
@@ -1037,6 +1070,28 @@ object DragonCoreActions {
             effect.entity.remove()
         }
         return modelEffect
+    }
+
+    private fun invisibleHand(reader: QuestReader): ScriptAction<Any?> {
+        val tick = reader.nextParsedAction()
+        val players = reader.nextTheyContainerOrNull()
+        return actionNow {
+            run(tick).long { tick ->
+                if (tick > 0) {
+                    containerOrSelf(players) { container ->
+                        container.forEachInstance<PlayerTarget> { target ->
+                            StateManager.setInvisibleHand(target.getSource(), tick)
+                        }
+                    }
+                } else {
+                    containerOrSelf(players) { container ->
+                        container.forEachInstance<PlayerTarget> { target ->
+                            StateManager.cancelInvisibleHand(target.getSource())
+                        }
+                    }
+                }
+            }
+        }
     }
 
 }

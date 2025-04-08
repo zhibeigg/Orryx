@@ -1,5 +1,7 @@
 package org.gitee.orryx.module.state
 
+import org.bukkit.entity.Player
+import org.gitee.orryx.utils.parse
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.library.configuration.ConfigurationSection
 import taboolib.module.configuration.Configuration
@@ -23,7 +25,11 @@ class Status(override val key: String, configuration: Configuration): IStatus {
         val conditionAction  = configurationSection.getString("Condition")!!
         val cancelHeldEventWhenPlaying = configurationSection.getBoolean("CancelHeldEventWhenPlaying", true)
         val controller = configurationSection.getString("Controller")!!
-        val armourers = configurationSection.getStringList("Armourers")
+        private val armourers = configurationSection.getStringList("Armourers")
+
+        fun getArmourers(player: Player): List<String> {
+            return player.parse(armourers, emptyMap())
+        }
     }
 
     val script: Script = StateManager.loadScript(this, configuration.getString("Action")!!)
