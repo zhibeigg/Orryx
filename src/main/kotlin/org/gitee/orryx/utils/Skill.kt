@@ -108,6 +108,12 @@ internal fun Player.getSkill(job: IPlayerJob, skill: String, create: Boolean = f
     return getSkill(job.key, skill, create)
 }
 
+fun <T> Player.skill(job: IPlayerJob, skill: String, create: Boolean = false, function: (IPlayerSkill) -> T): CompletableFuture<T?> {
+    return getSkill(job, skill, create).thenApply {
+        it?.let { it1 -> function(it1) }
+    }
+}
+
 fun <T> Player.skill(job: String, skill: String, create: Boolean = false, function: (IPlayerSkill) -> T): CompletableFuture<T?> {
     return getSkill(job, skill, create).thenApply {
         it?.let { it1 -> function(it1) }
@@ -214,14 +220,16 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean
     }
 }
 
-fun IPlayerSkill.tryCast() {
+fun IPlayerSkill.tryCast(): CompletableFuture<CastResult> {
     val parameter = parameter()
-    castCheck(parameter).thenApply {
+    val result = castCheck(parameter)
+    result.thenAccept {
         if (!silence) it.sendLang(player)
         if (it.isSuccess()) {
             cast(parameter, true)
         }
     }
+    return result
 }
 
 fun CastResult.isSuccess(): Boolean {

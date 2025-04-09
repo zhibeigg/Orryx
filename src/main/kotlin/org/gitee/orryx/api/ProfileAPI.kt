@@ -8,7 +8,9 @@ import org.bukkit.event.player.PlayerQuitEvent
 import org.gitee.orryx.api.events.damage.DamageType
 import org.gitee.orryx.api.events.damage.OrryxDamageEvents
 import org.gitee.orryx.api.interfaces.IProfileAPI
+import org.gitee.orryx.core.profile.IPlayerProfile
 import org.gitee.orryx.module.state.StateManager.statusData
+import org.gitee.orryx.utils.orryxProfile
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.PlatformFactory
@@ -17,8 +19,13 @@ import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.util.unsafeLazy
 import taboolib.platform.util.onlinePlayers
 import java.util.*
+import java.util.concurrent.CompletableFuture
 
 class ProfileAPI: IProfileAPI {
+
+    override fun <T> modifyProfile(player: Player, function: (skill: IPlayerProfile) -> T): CompletableFuture<T?> {
+        return player.orryxProfile(function)
+    }
 
     override fun isSuperBody(player: Player): Boolean {
         return (superBodyMap[player.uniqueId]?.timeout ?: return false) >= System.currentTimeMillis()

@@ -1,8 +1,19 @@
 package org.gitee.orryx.api.interfaces
 
 import org.bukkit.entity.Player
+import org.gitee.orryx.core.profile.IPlayerProfile
+import java.util.concurrent.CompletableFuture
 
 interface IProfileAPI {
+
+    /**
+     * 获取玩家信息并进行操作
+     *
+     * @param player 玩家
+     * @param function 获取到玩家信息后执行
+     * @return [function]的返回值
+     * */
+    fun <T> modifyProfile(player: Player, function: (skill: IPlayerProfile) -> T) : CompletableFuture<T?>
 
     /**
      * 是否在霸体状态

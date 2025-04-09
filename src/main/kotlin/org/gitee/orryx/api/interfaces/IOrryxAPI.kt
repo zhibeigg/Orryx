@@ -10,4 +10,8 @@ interface IOrryxAPI {
 
     val profileAPI: IProfileAPI
 
+    val jobAPI: IJobAPI
+
+    val skillAPI: ISkillAPI
+
 }
