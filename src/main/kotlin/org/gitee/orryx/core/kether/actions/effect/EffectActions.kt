@@ -9,10 +9,10 @@ import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
-import taboolib.common.platform.ProxyParticle
 import taboolib.common.platform.function.adaptLocation
 import taboolib.common5.cint
 import taboolib.library.kether.QuestReader
+import taboolib.library.xseries.XParticle
 import taboolib.module.kether.*
 import java.awt.Color
 
@@ -230,7 +230,7 @@ object EffectActions {
                 run(size).float { size ->
                     val data = color.split(" ")
                     val effectBuilder = effectBuilder() ?: return@float
-                    effectBuilder.dustData = ProxyParticle.DustData(Color(data[0].cint, data[1].cint, data[2].cint), size)
+                    effectBuilder.dustData = ParticleData.DustData(Color(data[0].cint, data[1].cint, data[2].cint), size)
                 }
             }
         }
@@ -248,7 +248,7 @@ object EffectActions {
                         val toData = toColor.split(" ")
                         val effectBuilder = effectBuilder() ?: return@float
                         effectBuilder.dustTransitionData =
-                            ProxyParticle.DustTransitionData(
+                            ParticleData.DustTransitionData(
                                 Color(data[0].cint, data[1].cint, data[2].cint),
                                 Color(toData[0].cint, toData[1].cint, toData[2].cint),
                                 size
@@ -272,7 +272,7 @@ object EffectActions {
                         run(lore).str { lore ->
                             run(customModelData).int end@{ customModelData ->
                                 val effectBuilder = effectBuilder() ?: return@end
-                                effectBuilder.itemData = ProxyParticle.ItemData(material, data, name, listOf(lore), customModelData)
+                                effectBuilder.itemData = ParticleData.ItemData(material, data, name, listOf(lore), customModelData)
                             }
                         }
                     }
@@ -288,7 +288,7 @@ object EffectActions {
             run(material).str { material ->
                 run(data).int { data ->
                     val effectBuilder = effectBuilder() ?: return@int
-                    effectBuilder.blockData = ProxyParticle.BlockData(material, data)
+                    effectBuilder.blockData = ParticleData.BlockData(material, data)
                 }
             }
         }
@@ -303,8 +303,8 @@ object EffectActions {
                 run(arrivalTime).int { arrivalTime ->
                     container(destination, self()) end@{
                         val effectBuilder = effectBuilder() ?: return@end
-                        val des = it.firstInstanceOrNull<ITargetEntity<*>>()?.entity?.uniqueId?.let { uuid -> ProxyParticle.VibrationData.EntityDestination(uuid) } ?: ProxyParticle.VibrationData.LocationDestination(adaptLocation(it.firstInstance<ITargetLocation<*>>().location))
-                        effectBuilder.vibrationData = ProxyParticle.VibrationData(
+                        val des = it.firstInstanceOrNull<ITargetEntity<*>>()?.entity?.uniqueId?.let { uuid -> ParticleData.VibrationData.EntityDestination(uuid) } ?: ParticleData.VibrationData.LocationDestination(adaptLocation(it.firstInstance<ITargetLocation<*>>().location))
+                        effectBuilder.vibrationData = ParticleData.VibrationData(
                             adaptLocation(origin.firstInstance<ITargetLocation<*>>().location),
                             des,
                             arrivalTime
@@ -341,7 +341,7 @@ object EffectActions {
                         "period" -> effectBuilder.period = it.read(0, 1)
                         "count" -> effectBuilder.count = it.read(0, 1)
                         "speed" -> effectBuilder.speed = it.read(0, 0.0)
-                        "particle" -> effectBuilder.particle = it.read(0, ProxyParticle.DUST)
+                        "particle" -> effectBuilder.particle = it.read(0, XParticle.DUST)
                         "type" -> effectBuilder.type = it.read(0, EffectType.ARC)
                         "startangle" -> effectBuilder.startAngle = it.read(0, 0.0)
                         "angle" -> effectBuilder.angle = it.read(0, 30.0)

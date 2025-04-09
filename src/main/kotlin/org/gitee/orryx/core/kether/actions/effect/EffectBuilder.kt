@@ -4,13 +4,13 @@ import org.gitee.orryx.api.adapters.IVector
 import org.gitee.orryx.api.adapters.vector.AbstractVector
 import org.gitee.orryx.core.kether.actions.effect.EffectType.ARC
 import org.joml.Matrix3d
-import taboolib.common.platform.ProxyParticle
 import taboolib.common.util.unsafeLazy
+import taboolib.library.xseries.XParticle
 
 class EffectBuilder {
 
     var type: EffectType = ARC
-    var particle: ProxyParticle = ProxyParticle.DUST
+    var particle: XParticle = XParticle.DUST
     var period: Long = 1
     var step: Double = 0.2
     var count: Int = 1
@@ -40,15 +40,18 @@ class EffectBuilder {
     var range: Double = 1.0
 
     //DustData
-    var dustData: ProxyParticle.DustData? = null
+    var dustData: ParticleData.DustData? = null
     //DustTransitionData
-    var dustTransitionData: ProxyParticle.DustTransitionData? = null
+    var dustTransitionData: ParticleData.DustTransitionData? = null
     //ItemData
-    var itemData: ProxyParticle.ItemData? = null
+    var itemData: ParticleData.ItemData? = null
     //BlockData
-    var blockData: ProxyParticle.BlockData? = null
+    var blockData: ParticleData.BlockData? = null
     //VibrationData
-    var vibrationData: ProxyParticle.VibrationData? = null
+    var vibrationData: ParticleData.VibrationData? = null
+
+    val data: ParticleData?
+        get() = dustData ?: dustTransitionData ?: itemData ?: blockData ?: vibrationData
 
     val locations by unsafeLazy { mutableListOf<Pair<Int, EffectOrigin>>() }
 

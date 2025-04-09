@@ -69,7 +69,7 @@ taboolib {
     relocate("org.joml", "org.gitee.orryx.joml")
     relocate("com.larksuite.oapi", "org.gitee.orryx.larksuite.oapi")
     version {
-        taboolib = "6.2.2"
+        taboolib = "6.2.3-0b616a8"
         coroutines = "1.8.0"
     }
 }

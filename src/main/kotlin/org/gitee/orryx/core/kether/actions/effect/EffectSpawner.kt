@@ -4,7 +4,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
+import org.bukkit.*
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
+import org.bukkit.material.MaterialData
 import org.gitee.orryx.core.container.IContainer
 import org.gitee.orryx.core.kether.actions.effect.EffectType.*
 import org.gitee.orryx.core.targets.ITargetEntity
@@ -12,7 +15,6 @@ import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.utils.*
 import org.joml.Matrix3d
 import org.joml.Vector3d
-import taboolib.common.platform.ProxyParticle
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common.util.Location
 import taboolib.common5.cdouble
@@ -22,6 +24,7 @@ import taboolib.module.effect.shape.NStar
 import taboolib.module.effect.shape.OctagonalStar
 import taboolib.module.effect.shape.Pyramid
 import taboolib.module.effect.shape.Ray.RayStopType
+import taboolib.platform.util.toBukkitLocation
 import java.util.concurrent.CompletableFuture
 
 class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick: Long = 1, val mode: SpawnerType = SpawnerType.PLAY, val origins: IContainer, val viewers: IContainer): ParticleSpawner {
@@ -55,7 +58,7 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
     override fun spawn(location: Location) {
         viewers.forEachInstance<ITargetEntity<Player>> { target ->
             adaptPlayer(target.getSource()).sendParticle(
-                builder.particle,
+                builder.particle.name,
                 location,
                 taboolib.common.util.Vector(builder.offset.x(), builder.offset.y(), builder.offset.z()),
                 builder.count,
@@ -65,8 +68,62 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
         }
     }
 
-    private fun getParticleData(): ProxyParticle.Data? {
-        return builder.dustData ?: builder.dustTransitionData ?: builder.itemData ?: builder.blockData ?: builder.vibrationData
+    private fun getParticleData(): Any? {
+        return when (val data = builder.data) {
+            // 渐变红石
+            is ParticleData.DustTransitionData -> {
+                Particle.DustTransition(
+                    Color.fromRGB(data.color.red, data.color.green, data.color.blue),
+                    Color.fromRGB(data.toColor.red, data.toColor.blue, data.toColor.green),
+                    data.size
+                )
+            }
+            // 红石
+            is ParticleData.DustData -> {
+                Particle.DustOptions(Color.fromRGB(data.color.red, data.color.green, data.color.blue), data.size)
+            }
+            // 物品
+            is ParticleData.ItemData -> {
+                val item = ItemStack(Material.valueOf(data.material))
+                val itemMeta = item.itemMeta!!
+                itemMeta.setDisplayName(data.name)
+                itemMeta.lore = data.lore
+                try {
+                    itemMeta.setCustomModelData(data.customModelData)
+                } catch (ignored: NoSuchMethodError) {
+                }
+                item.itemMeta = itemMeta
+                if (data.data != 0) {
+                    item.durability = data.data.toShort()
+                }
+                item
+            }
+            // 方块
+            is ParticleData.BlockData -> {
+                if (builder.particle.get()?.dataType == MaterialData::class.java) {
+                    MaterialData(Material.valueOf(data.material), data.data.toByte())
+                } else {
+                    Material.valueOf(data.material).createBlockData()
+                }
+            }
+            // 震动（不知道怎么翻译，来自 1.17+）
+            is ParticleData.VibrationData -> {
+                Vibration(
+                    data.origin.toBukkitLocation(), when (val destination = data.destination) {
+                        // 坐标
+                        is ParticleData.VibrationData.LocationDestination -> {
+                            Vibration.Destination.BlockDestination(destination.location.toBukkitLocation())
+                        }
+                        // 实体
+                        is ParticleData.VibrationData.EntityDestination -> {
+                            Vibration.Destination.EntityDestination(Bukkit.getEntity(destination.entity)!!)
+                        }
+                    },
+                    data.arrivalTime
+                )
+            }
+            else -> null
+        }
     }
 
     fun build(origin: EffectOrigin): OrryxParticleObj {

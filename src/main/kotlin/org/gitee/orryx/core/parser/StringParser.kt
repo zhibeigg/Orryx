@@ -6,10 +6,11 @@ import org.gitee.orryx.core.selector.ISelectorGeometry
 import org.gitee.orryx.core.selector.ISelectorStream
 import org.gitee.orryx.core.selector.SelectorInit
 import org.gitee.orryx.utils.bukkitPlayer
-import taboolib.common.platform.ProxyParticle
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common.platform.function.info
+import taboolib.common.util.Vector
 import taboolib.common.util.unsafeLazy
+import taboolib.library.xseries.XParticle
 import taboolib.module.kether.ScriptContext
 
 class StringParser(val value: String) {
@@ -63,7 +64,7 @@ class StringParser(val value: String) {
             when(val selector = SelectorInit.getSelector(entry.head.uppercase())) {
                 is ISelectorGeometry -> {
                     selector.aFrameShowLocations(context, entry).forEach {
-                        ProxyParticle.DUST.sendTo(adaptPlayer(context.bukkitPlayer()), it)
+                        adaptPlayer(context.bukkitPlayer()).sendParticle(XParticle.DUST.name, it, Vector(), 1, 0.0, null)
                     }
                 }
                 null -> {

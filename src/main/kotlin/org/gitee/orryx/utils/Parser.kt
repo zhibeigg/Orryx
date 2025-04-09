@@ -1,11 +1,11 @@
 package org.gitee.orryx.utils
 
-import org.bukkit.Material
 import org.gitee.orryx.core.kether.actions.effect.EffectType
 import org.gitee.orryx.core.parser.StringParser
-import taboolib.common.platform.ProxyParticle
 import taboolib.common.platform.function.warning
 import taboolib.common5.*
+import taboolib.library.xseries.XMaterial
+import taboolib.library.xseries.XParticle
 
 internal inline fun <reified T> StringParser.Entry.read(index: Int, def: T): T {
     val value = body.getOrNull(index) ?: return def
@@ -16,24 +16,28 @@ internal inline fun <reified T> StringParser.Entry.read(index: Int, def: T): T {
         Boolean::class -> value.cbool
         Double::class -> value.cdouble
         Float::class -> value.cfloat
-        ProxyParticle::class -> try {
-            ProxyParticle.valueOf(value.uppercase())
+
+        XParticle::class -> try {
+            XParticle.of(value.uppercase())
         } catch (e: Exception) {
             warning("not found ProxyParticle")
-            ProxyParticle.valueOf("DUST")
+            XParticle.DUST
         }
+
         EffectType::class -> try {
             EffectType.valueOf(value.uppercase())
         } catch (e: Exception) {
             warning("not found EffectType")
-            EffectType.valueOf("ARC")
+            EffectType.ARC
         }
-        Material::class -> try {
-            Material.valueOf(value.uppercase())
+
+        XMaterial::class -> try {
+            XMaterial.matchXMaterial(value.uppercase())
         } catch (e: Exception) {
             warning("not found Material")
-            Material.valueOf("STONE")
+            XMaterial.STONE
         }
+
         else -> value
     } as T
 }

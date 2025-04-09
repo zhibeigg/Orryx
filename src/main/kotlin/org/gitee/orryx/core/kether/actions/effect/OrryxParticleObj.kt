@@ -31,9 +31,7 @@ class OrryxParticleObj(var effectOrigin: EffectOrigin, val obj: ParticleObj, val
             } else {
                 obj.alwaysShowAsync()
             }
-            submit(delay = 2) {
-                createTask()
-            }
+            createTask()
         }
     }
 
