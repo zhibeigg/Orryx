@@ -1,5 +1,6 @@
 package org.gitee.orryx.core.job
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.OrryxAPI
@@ -10,8 +11,6 @@ import org.gitee.orryx.api.events.player.job.OrryxPlayerJobLevelEvents
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillBindKeyEvent
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillUnBindKeyEvent
 import org.gitee.orryx.core.GameManager
-import org.gitee.orryx.module.experience.ExperienceLoaderManager
-import org.gitee.orryx.module.experience.IExperience
 import org.gitee.orryx.core.job.ExperienceResult.*
 import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.key.IBindKey
@@ -22,6 +21,8 @@ import org.gitee.orryx.dao.cache.ISyncCacheManager
 import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.dao.pojo.PlayerJobPO
 import org.gitee.orryx.dao.storage.IStorageManager
+import org.gitee.orryx.module.experience.ExperienceLoaderManager
+import org.gitee.orryx.module.experience.IExperience
 import org.gitee.orryx.utils.*
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common.util.unsafeLazy
@@ -258,7 +259,7 @@ class PlayerJob(
     override fun save(async: Boolean, callback: () -> Unit) {
         val data = createPO()
         if (async && !GameManager.shutdown) {
-            OrryxAPI.saveScope.launch {
+            OrryxAPI.saveScope.launch(Dispatchers.async) {
                 IStorageManager.INSTANCE.savePlayerJob(player.uniqueId, data) {
                     ISyncCacheManager.INSTANCE.removePlayerJob(player.uniqueId, key, false)
                     MemoryCache.removePlayerJob(player.uniqueId, key)

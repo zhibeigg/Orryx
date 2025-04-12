@@ -7,8 +7,8 @@ import org.bukkit.event.server.ServerCommandEvent
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.kether.ScriptManager
-import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.core.reload.Reload
+import org.gitee.orryx.module.mana.IManaManager
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.info
@@ -55,7 +55,8 @@ object GameManager {
         info("&e┣&7Storage禁止异步 &a√".colored())
         ScriptManager.terminateAllSkills()
         info("&e┣&7终止所有玩家技能 &a√".colored())
-        OrryxAPI.saveScope.cancel()
+        OrryxAPI.saveScope.cancel("服务器关闭")
+        OrryxAPI.effectScope.cancel("服务器关闭")
         info("&e┣&7协程域终止 &a√".colored())
         info("&e┣&7延迟2Tick后关闭服务器 &a√".colored())
         submit(delay = 2) {

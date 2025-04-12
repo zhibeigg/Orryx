@@ -1,12 +1,13 @@
 package org.gitee.orryx.api
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import org.gitee.orryx.api.interfaces.*
+import org.gitee.orryx.utils.async
 import taboolib.common.env.RuntimeDependencies
 import taboolib.common.env.RuntimeDependency
 import taboolib.common.platform.PlatformFactory
-import taboolib.expansion.AsyncDispatcher
 import taboolib.module.kether.KetherScriptLoader
 
 @RuntimeDependencies(
@@ -47,8 +48,8 @@ class OrryxAPI: IOrryxAPI {
 
         val ketherScriptLoader by lazy { KetherScriptLoader() }
 
-        internal val saveScope = CoroutineScope(AsyncDispatcher + SupervisorJob())
-
+        internal val saveScope = CoroutineScope(Dispatchers.async + SupervisorJob())
+        internal val effectScope = CoroutineScope(Dispatchers.async + SupervisorJob())
     }
 
 }

@@ -10,16 +10,18 @@ import com.lark.oapi.service.docx.v1.enums.BlockBlockTypeEnum
 import com.lark.oapi.service.docx.v1.model.*
 import com.lark.oapi.service.wiki.v2.model.MoveDocsToWikiSpaceNodeReq
 import com.lark.oapi.service.wiki.v2.model.MoveDocsToWikiSpaceNodeReqBody
+import kotlinx.coroutines.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.core.kether.ScriptManager
+import org.gitee.orryx.utils.async
 import org.gitee.orryx.utils.debug
+import taboolib.common.LifeCycle
+import taboolib.common.platform.Awake
 import taboolib.common.platform.function.info
 import taboolib.common.platform.function.pluginId
 import taboolib.common.platform.function.pluginVersion
-import taboolib.expansion.Chain
-import taboolib.expansion.submitChain
 import taboolib.module.chat.colored
 import java.util.concurrent.TimeUnit
 import kotlin.text.Charsets.UTF_8
@@ -43,13 +45,20 @@ object LarkSuite {
         Client.newBuilder(appId, appSecret).requestTimeout(30, TimeUnit.MINUTES).build()
     }
 
+    private val wikiScope by lazy { CoroutineScope(Dispatchers.async + SupervisorJob()) }
+
+    @Awake(LifeCycle.DISABLE)
+    private fun disable() {
+        wikiScope.cancel("服务器关闭")
+    }
+
     fun createDocument() {
-        submitChain {
+        wikiScope.launch {
             info("&e┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━".colored())
             info("&e┣&7新文档$pluginId-$pluginVersion-(自生成) 开始创建".colored())
 
-            val token = getToken(this) ?: return@submitChain
-            val documentId = async {
+            val token = getToken() ?: return@launch
+            val documentId = withContext(Dispatchers.IO) {
                 // 创建请求对象
                 val req = CreateDocumentReq.newBuilder()
                     .createDocumentReqBody(
@@ -79,14 +88,14 @@ object LarkSuite {
                             )
                         )
                     )
-                    return@async null
+                    return@withContext null
                 }
                 info("&e┣&7空文档 创建成功 &a√".colored())
                 JsonParser().parse(String(resp.rawResponse.body, UTF_8)).asJsonObject["data"].asJsonObject["document"].asJsonObject["document_id"].asString
             }
             documentId?.let {
-                move(token, it, this)
-                createDocumentBlocks(token, it, this)
+                move(token, it)
+                createDocumentBlocks(token, it)
             }
 
             info("&e┣&7新文档已创建成功 &a√".colored())
@@ -95,8 +104,8 @@ object LarkSuite {
         }
     }
 
-    private suspend fun move(token: String, documentId: String, chain: Chain<*>) {
-        chain.async {
+    private suspend fun move(token: String, documentId: String) {
+        withContext(Dispatchers.IO) {
             val req = MoveDocsToWikiSpaceNodeReq.newBuilder()
                 .spaceId(spaceId)
                 .moveDocsToWikiSpaceNodeReqBody(
@@ -130,8 +139,8 @@ object LarkSuite {
         }
     }
 
-    private suspend fun getToken(chain: Chain<*>): String? {
-        return chain.async {
+    private suspend fun getToken(): String? {
+        return withContext(Dispatchers.IO) {
             // 创建请求对象
             val req = InternalTenantAccessTokenReq.newBuilder()
                 .internalTenantAccessTokenReqBody(
@@ -156,36 +165,36 @@ object LarkSuite {
                         Json.encodeToJsonElement(String(resp.rawResponse.body, UTF_8))
                     )
                 )
-                return@async null
+                return@withContext null
             }
 
             JsonParser().parse(String(resp.rawResponse.body, UTF_8)).asJsonObject.get("tenant_access_token").asString
         }
     }
 
-    private suspend fun createDocumentBlocks(token: String, documentId: String, chain: Chain<*>) {
+    private suspend fun createDocumentBlocks(token: String, documentId: String) {
         val actionGroup = ScriptManager.wikiActions.groupBy { it.group }
         val selectorsGroup = ScriptManager.wikiSelectors.groupBy { it.type }
         val triggersGroup = ScriptManager.wikiTriggers.groupBy { it.group }
         debug(actionGroup.mapValues { it.value.map { action -> action.name } })
         debug(selectorsGroup.mapValues { it.value.map { selector -> selector.name } })
         debug(triggersGroup.mapValues { it.value.map { trigger -> trigger.key } })
-        createPs(token, documentId, chain)
+        createPs(token, documentId)
         actionGroup.forEach { (g, u) ->
-            createGroup(token, g, u, documentId, chain)
+            createGroup(token, g, u, documentId)
         }
-        createSelectorHanging(token, documentId, chain)
+        createSelectorHanging(token, documentId)
         selectorsGroup.forEach { (g, u) ->
-            createSelectorType(token, g, u, documentId, chain)
+            createSelectorType(token, g, u, documentId)
         }
-        createTriggerHanging(token, documentId, chain)
+        createTriggerHanging(token, documentId)
         triggersGroup.forEach { (g, u) ->
-            createTriggerType(token, g, u, documentId, chain)
+            createTriggerType(token, g, u, documentId)
         }
     }
 
-    private suspend fun createPs(token: String, documentId: String, chain: Chain<*>) {
-        chain.async {
+    private suspend fun createPs(token: String, documentId: String) {
+        withContext(Dispatchers.IO) {
             val req = CreateDocumentBlockChildrenReq.newBuilder()
                 .documentId(documentId)
                 .blockId(documentId)
@@ -249,14 +258,14 @@ object LarkSuite {
                         String(resp.rawResponse.body, UTF_8)
                     )
                 )
-                return@async
+                return@withContext
             }
         }
     }
 
-    private suspend fun createGroup(token: String, group: String, list: List<Action>, documentId: String, chain: Chain<*>) {
+    private suspend fun createGroup(token: String, group: String, list: List<Action>, documentId: String) {
         val keyGroup = list.groupBy { it.key }
-        chain.async {
+        withContext(Dispatchers.IO) {
             val req = CreateDocumentBlockChildrenReq.newBuilder()
                 .documentId(documentId)
                 .blockId(documentId)
@@ -305,22 +314,29 @@ object LarkSuite {
                         String(resp.rawResponse.body, UTF_8)
                     )
                 )
-                return@async
+                return@withContext
             }
             info("&e┣┳&7Group: $group 创建成功 &a√".colored())
-        }
-        val l = keyGroup.toList()
-        l.forEach {
-            if (l.last() == it) {
-                createKey(token, it.first, it.second, documentId, chain, l.size > 1, true)
-            } else {
-                createKey(token, it.first, it.second, documentId, chain, l.size > 1, false)
+            val l = keyGroup.toList()
+            l.forEach {
+                if (l.last() == it) {
+                    createKey(token, it.first, it.second, documentId, l.size > 1, true)
+                } else {
+                    createKey(token, it.first, it.second, documentId, l.size > 1, false)
+                }
             }
         }
     }
 
-    private suspend fun createKey(token: String, key: String, list: List<Action>, documentId: String, chain: Chain<*>, change: Boolean, last: Boolean) {
-        chain.async {
+    private suspend fun createKey(
+        token: String,
+        key: String,
+        list: List<Action>,
+        documentId: String,
+        change: Boolean,
+        last: Boolean
+    ) {
+        withContext(Dispatchers.IO) {
             val req = CreateDocumentBlockChildrenReq.newBuilder()
                 .documentId(documentId)
                 .blockId(documentId)
@@ -369,7 +385,7 @@ object LarkSuite {
                         String(resp.rawResponse.body, UTF_8)
                     )
                 )
-                return@async
+                return@withContext
             }
             if (last) {
                 info("&e┃┗┳&7Key: $key 创建成功 &a√".colored())
@@ -378,7 +394,7 @@ object LarkSuite {
             }
         }
         list.forEach {
-            createAction(token, it, documentId, chain)
+            coroutineScope { createAction(token, it, documentId) }
             if (change && !last) {
                 if (list.last() == it) {
                     info("&e┃┃┗&7Action: ${it.name} 创建成功 &a√".colored())
@@ -395,8 +411,8 @@ object LarkSuite {
         }
     }
 
-    private suspend fun createAction(token: String, action: Action, documentId: String, chain: Chain<*>) {
-        chain.async {
+    private suspend fun createAction(token: String, action: Action, documentId: String) {
+        withContext(Dispatchers.IO) {
             val blocks = action.createBlocks()
             val req = CreateDocumentBlockDescendantReq.newBuilder()
                 .documentId(documentId)
@@ -429,13 +445,13 @@ object LarkSuite {
                         String(resp.rawResponse.body, UTF_8)
                     )
                 )
-                return@async
+                return@withContext
             }
         }
     }
 
-    private suspend fun createSelectorHanging(token: String, documentId: String, chain: Chain<*>) {
-        chain.async {
+    private suspend fun createSelectorHanging(token: String, documentId: String) {
+        withContext(Dispatchers.IO) {
             val req = CreateDocumentBlockChildrenReq.newBuilder()
                 .documentId(documentId)
                 .blockId(documentId)
@@ -484,13 +500,13 @@ object LarkSuite {
                         String(resp.rawResponse.body, UTF_8)
                     )
                 )
-                return@async
+                return@withContext
             }
         }
     }
 
-    private suspend fun createSelectorType(token: String, type: SelectorType, list: List<Selector>, documentId: String, chain: Chain<*>) {
-        chain.async {
+    private suspend fun createSelectorType(token: String, type: SelectorType, list: List<Selector>, documentId: String) {
+        withContext(Dispatchers.IO) {
             val req = CreateDocumentBlockChildrenReq.newBuilder()
                 .documentId(documentId)
                 .blockId(documentId)
@@ -544,21 +560,21 @@ object LarkSuite {
                         String(resp.rawResponse.body, UTF_8)
                     )
                 )
-                return@async
+                return@withContext
             }
             info("&e┣┳&7SelectorType: ${type.name} 创建成功 &a√".colored())
         }
         list.forEach {
             if (list.last() == it) {
-                createSelector(token, it, documentId, chain, true)
+                coroutineScope { createSelector(token, it, documentId, true) }
             } else {
-                createSelector(token, it, documentId, chain, false)
+                coroutineScope { createSelector(token, it, documentId, false) }
             }
         }
     }
 
-    private suspend fun createSelector(token: String, selector: Selector, documentId: String, chain: Chain<*>, last: Boolean) {
-        chain.async {
+    private suspend fun createSelector(token: String, selector: Selector, documentId: String, last: Boolean) {
+        withContext(Dispatchers.IO) {
             val blocks = selector.createBlocks()
             val req = CreateDocumentBlockDescendantReq.newBuilder()
                 .documentId(documentId)
@@ -591,7 +607,7 @@ object LarkSuite {
                         String(resp.rawResponse.body, UTF_8)
                     )
                 )
-                return@async
+                return@withContext
             }
             if (last) {
                 info("&e┃┗&7Selector: ${selector.name} 创建成功 &a√".colored())
@@ -601,8 +617,8 @@ object LarkSuite {
         }
     }
 
-    private suspend fun createTriggerHanging(token: String, documentId: String, chain: Chain<*>) {
-        chain.async {
+    private suspend fun createTriggerHanging(token: String, documentId: String) {
+       withContext(Dispatchers.IO) {
             val req = CreateDocumentBlockChildrenReq.newBuilder()
                 .documentId(documentId)
                 .blockId(documentId)
@@ -651,13 +667,13 @@ object LarkSuite {
                         String(resp.rawResponse.body, UTF_8)
                     )
                 )
-                return@async
+                return@withContext
             }
         }
     }
 
-    private suspend fun createTriggerType(token: String, group: TriggerGroup, list: List<Trigger>, documentId: String, chain: Chain<*>) {
-        chain.async {
+    private suspend fun createTriggerType(token: String, group: TriggerGroup, list: List<Trigger>, documentId: String) {
+        withContext(Dispatchers.IO) {
             val req = CreateDocumentBlockChildrenReq.newBuilder()
                 .documentId(documentId)
                 .blockId(documentId)
@@ -708,21 +724,21 @@ object LarkSuite {
                         String(resp.rawResponse.body, UTF_8)
                     )
                 )
-                return@async
+                return@withContext
             }
             info("&e┣┳&7TriggerGroup: ${group.value} 创建成功 &a√".colored())
         }
         list.forEach {
             if (list.last() == it) {
-                createTrigger(token, it, documentId, chain, true)
+                coroutineScope { createTrigger(token, it, documentId, true) }
             } else {
-                createTrigger(token, it, documentId, chain, false)
+                coroutineScope { createTrigger(token, it, documentId, false) }
             }
         }
     }
 
-    private suspend fun createTrigger(token: String, trigger: Trigger, documentId: String, chain: Chain<*>, last: Boolean) {
-        chain.async {
+    private suspend fun createTrigger(token: String, trigger: Trigger, documentId: String, last: Boolean) {
+        withContext(Dispatchers.IO) {
             val blocks = trigger.createBlocks()
             val req = CreateDocumentBlockDescendantReq.newBuilder()
                 .documentId(documentId)
@@ -755,7 +771,7 @@ object LarkSuite {
                         String(resp.rawResponse.body, UTF_8)
                     )
                 )
-                return@async
+                return@withContext
             }
             if (last) {
                 info("&e┃┗&7Trigger: ${trigger.key} 创建成功 &a√".colored())

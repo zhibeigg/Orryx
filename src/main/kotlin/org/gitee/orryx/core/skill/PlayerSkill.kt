@@ -1,5 +1,6 @@
 package org.gitee.orryx.core.skill
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.Orryx
@@ -17,6 +18,7 @@ import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.module.mana.IManaManager
+import org.gitee.orryx.utils.async
 import org.gitee.orryx.utils.castSkill
 import org.gitee.orryx.utils.orryxProfile
 import org.gitee.orryx.utils.runCustomAction
@@ -162,7 +164,7 @@ class PlayerSkill(
     override fun save(async: Boolean, callback: () -> Unit) {
         val data = createPO()
         if (async && !GameManager.shutdown) {
-            OrryxAPI.saveScope.launch {
+            OrryxAPI.saveScope.launch(Dispatchers.async) {
                 IStorageManager.INSTANCE.savePlayerSkill(player.uniqueId, data) {
                     ISyncCacheManager.INSTANCE.removePlayerSkill(player.uniqueId, job, key, false)
                     MemoryCache.removePlayerSkill(player.uniqueId, job, key)

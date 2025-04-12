@@ -1,5 +1,6 @@
 package org.gitee.orryx.core.common.keyregister
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.OrryxAPI
@@ -10,10 +11,7 @@ import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.dao.cache.Saveable
 import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
 import org.gitee.orryx.dao.storage.IStorageManager
-import org.gitee.orryx.utils.LEFT_MENU
-import org.gitee.orryx.utils.MOUSE_LEFT
-import org.gitee.orryx.utils.MOUSE_RIGHT
-import org.gitee.orryx.utils.bindKeys
+import org.gitee.orryx.utils.*
 
 class PlayerKeySetting(
     val player: Player,
@@ -54,7 +52,7 @@ class PlayerKeySetting(
     override fun save(async: Boolean, callback: () -> Unit) {
         val data = createPO()
         if (async && !GameManager.shutdown) {
-            OrryxAPI.saveScope.launch {
+            OrryxAPI.saveScope.launch(Dispatchers.async) {
                 IStorageManager.INSTANCE.savePlayerKey(player.uniqueId, data) {
                     ISyncCacheManager.INSTANCE.removePlayerKeySetting(player.uniqueId, false)
                     MemoryCache.removePlayerKeySetting(player.uniqueId)

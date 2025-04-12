@@ -1,5 +1,6 @@
 package org.gitee.orryx.core.profile
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.OrryxAPI
@@ -11,6 +12,7 @@ import org.gitee.orryx.dao.cache.ISyncCacheManager
 import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.storage.IStorageManager
+import org.gitee.orryx.utils.async
 import org.gitee.orryx.utils.toSerializable
 import taboolib.common.platform.function.isPrimaryThread
 import java.util.concurrent.ConcurrentMap
@@ -113,7 +115,7 @@ class PlayerProfile(
     override fun save(async: Boolean, callback: () -> Unit) {
         val data = createPO()
         if (async && !GameManager.shutdown) {
-            OrryxAPI.saveScope.launch {
+            OrryxAPI.saveScope.launch(Dispatchers.async) {
                 IStorageManager.INSTANCE.savePlayerData(player.uniqueId, data) {
                     ISyncCacheManager.INSTANCE.removePlayerProfile(player.uniqueId, false)
                     MemoryCache.removePlayerProfile(player.uniqueId)

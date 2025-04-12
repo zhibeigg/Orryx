@@ -1,6 +1,6 @@
 package org.gitee.orryx.core.kether.actions.effect
 
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
@@ -8,6 +8,7 @@ import org.bukkit.*
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.material.MaterialData
+import org.gitee.orryx.api.OrryxAPI.Companion.effectScope
 import org.gitee.orryx.core.container.IContainer
 import org.gitee.orryx.core.kether.actions.effect.EffectType.*
 import org.gitee.orryx.core.targets.ITargetEntity
@@ -18,7 +19,6 @@ import org.joml.Vector3d
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common.util.Location
 import taboolib.common5.cdouble
-import taboolib.expansion.AsyncDispatcher
 import taboolib.module.effect.*
 import taboolib.module.effect.shape.NStar
 import taboolib.module.effect.shape.OctagonalStar
@@ -37,7 +37,7 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
         }
 
     fun start() {
-        CoroutineScope(AsyncDispatcher).launch {
+        effectScope.launch(Dispatchers.async) {
             effects.map { effect ->
                 async {
                     effect.start()
