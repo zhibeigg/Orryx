@@ -8,7 +8,6 @@ import taboolib.common.platform.function.disablePlugin
 import taboolib.common.platform.function.info
 import taboolib.common.platform.function.registerLifeCycleTask
 import taboolib.module.chat.colored
-import taboolib.platform.bukkit.Parallel
 
 object OrryxPlugin : Plugin() {
 
@@ -23,7 +22,6 @@ object OrryxPlugin : Plugin() {
         }
     }
 
-    @Parallel(runOn = LifeCycle.ENABLE)
     override fun onEnable() {
         info("&e┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".colored())
         info("&e┃&a _____                                                  ".colored())

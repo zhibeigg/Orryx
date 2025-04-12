@@ -64,7 +64,7 @@ object PipeActions {
                     }
                 }
                 if (triggers != null) {
-                    pipe.brokeTriggers(*triggers.split(",").toTypedArray())
+                    pipe.brokeTriggers(*triggers.uppercase().split(",").toTypedArray())
                 }
                 if (onPeriod != null) {
                     pipe.periodTask(period ?: 1) {

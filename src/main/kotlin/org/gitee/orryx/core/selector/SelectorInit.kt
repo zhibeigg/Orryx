@@ -20,23 +20,21 @@ object SelectorInit: ClassVisitor(3) {
     }
 
     override fun visitStart(clazz: ReflexClass) {
-        clazz.toClassOrNull()?.let { clazzClass ->
-            if (ISelector::class.java.isAssignableFrom(clazzClass)) {
-                clazz.getInstance().let { instance ->
-                    if (instance is ISelector) {
-                        if (instance is WikiSelector) {
-                            ScriptManager.wikiSelectors += instance.wiki
-                        }
-                        clazz.getAnnotationIfPresent(Plugin::class.java)?.let { annotation ->
-                            val pluginEnabled =
-                                Bukkit.getPluginManager().isPluginEnabled(annotation.property<String>("plugin")!!)
-                            debug("&e┣&7Selector loaded &e${instance.keys.map { it }} ${if (pluginEnabled) "&a√" else "&4×"}")
-                            if (!pluginEnabled) return
-                        } ?: run {
-                            debug("&e┣&7Selector loaded &e${instance.keys.map { it }} &a√")
-                        }
-                        selectors.add(instance)
+        if (ISelector::class.java.isAssignableFrom(clazz.toClass())) {
+            clazz.getInstance().let { instance ->
+                if (instance is ISelector) {
+                    if (instance is WikiSelector) {
+                        ScriptManager.wikiSelectors += instance.wiki
                     }
+                    clazz.getAnnotationIfPresent(Plugin::class.java)?.let { annotation ->
+                        val pluginEnabled =
+                            Bukkit.getPluginManager().isPluginEnabled(annotation.property<String>("plugin")!!)
+                        debug("&e┣&7Selector loaded &e${instance.keys.map { it }} ${if (pluginEnabled) "&a√" else "&4×"}")
+                        if (!pluginEnabled) return
+                    } ?: run {
+                        debug("&e┣&7Selector loaded &e${instance.keys.map { it }} &a√")
+                    }
+                    selectors.add(instance)
                 }
             }
         }

@@ -10,7 +10,7 @@ class StationLoader(override val key: String, val configuration: Configuration):
 
     val options by unsafeLazy { configuration.getConfigurationSection("Options") ?: error("中转站${key}位于${configuration.file}未书写Options") }
 
-    override val event: String = options.getString("Event") ?: error("中转站${key}位于${configuration.file}未书写Event")
+    override val event: String = options.getString("Event")?.uppercase() ?: error("中转站${key}位于${configuration.file}未书写Event")
 
     override val baffleAction: String? = options.getString("BaffleAction")
 

@@ -1,6 +1,5 @@
 package org.gitee.orryx.core.station.stations
 
-import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.common.timer.StationTimer
@@ -8,14 +7,11 @@ import org.gitee.orryx.core.kether.PlayerRunningSpace
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.kether.parameter.StationParameter
 import org.gitee.orryx.core.reload.Reload
-import org.gitee.orryx.core.station.Plugin
-import org.gitee.orryx.core.station.WikiTrigger
-import org.gitee.orryx.utils.debug
+import org.gitee.orryx.core.station.TriggerManager
 import org.gitee.orryx.utils.files
 import org.gitee.orryx.utils.getBytes
 import org.gitee.orryx.utils.orryxEnvironmentNamespaces
 import taboolib.common.LifeCycle
-import taboolib.common.inject.ClassVisitor
 import taboolib.common.platform.Awake
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.event.EventPriority
@@ -25,24 +21,16 @@ import taboolib.common.platform.function.registerBukkitListener
 import taboolib.common.platform.function.unregisterListener
 import taboolib.common.platform.function.warning
 import taboolib.common.util.unsafeLazy
-import taboolib.library.reflex.ReflexClass
 import taboolib.module.chat.colored
 import taboolib.module.configuration.Configuration
 import taboolib.module.kether.Script
 import taboolib.module.kether.ScriptContext
 import taboolib.module.kether.ScriptService
-import taboolib.module.kether.printKetherErrorMessage
 
-@Awake
-object StationLoaderManager: ClassVisitor(3) {
+object StationLoaderManager {
 
-    private val triggers by unsafeLazy { hashMapOf<String, IStationTrigger<*>>() }
     private val stationMap by unsafeLazy { hashMapOf<String, IStation>() }
     private val listenerList by unsafeLazy { mutableListOf<ProxyListener>() }
-
-    override fun getLifeCycle(): LifeCycle {
-        return LifeCycle.INIT
-    }
 
     internal fun getStationLoader(stationLoader: String): IStation? {
         return stationMap[stationLoader]
@@ -64,7 +52,7 @@ object StationLoaderManager: ClassVisitor(3) {
             stationMap[station.key] = station
         }
         autoRegister()
-        info("&e┣&7Triggers loaded &e${triggers.size} &a√".colored())
+        info("&e┣&7Triggers loaded &e${TriggerManager.stationTriggersMap.size} &a√".colored())
         info("&e┣&7Stations loaded &e${stationMap.size} &a√".colored())
     }
 
@@ -78,30 +66,10 @@ object StationLoaderManager: ClassVisitor(3) {
         }
     }
 
-    override fun visitStart(clazz: ReflexClass) {
-        if (IStationTrigger::class.java.isAssignableFrom(clazz.toClass())) {
-            (clazz.getInstance() as? WikiTrigger)?.also { ScriptManager.wikiTriggers.add(it.wiki) }
-            val instance = try {
-                clazz.getInstance() as? IStationTrigger<*> ?: return
-            } catch (_: Throwable) {
-                return
-            }
-            if (clazz.hasAnnotation(Plugin::class.java)) {
-                val annotation = clazz.getAnnotation(Plugin::class.java)
-                val pluginEnabled = Bukkit.getPluginManager().isPluginEnabled(annotation.property<String>("plugin")!!)
-                debug("&e┣&7StationTrigger loaded &e${instance.event} ${if (pluginEnabled) "&a√" else "&4×"}")
-                if (!pluginEnabled) return
-            } else {
-                debug("&e┣&7StationTrigger loaded &e${instance.event} &a√")
-            }
-            triggers[instance.event] = instance
-        }
-    }
-
     private fun autoRegister() {
         val events = stationMap.map { it.value.event }.distinct()
         events.forEach { event ->
-            val trigger = triggers[event] ?: return@forEach
+            val trigger = TriggerManager.stationTriggersMap[event] ?: return@forEach
             val list = stationMap.filter { it.value.event == event }.values
             list.groupBy { it.priority }.forEach { (priority, sub) ->
                 sub.sortedByDescending { it.weight }.also {

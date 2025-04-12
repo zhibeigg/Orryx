@@ -27,7 +27,7 @@ class PipeTask(
             complete()
         }
         periodTask?.start(this)
-        PipeManager.addPipeTask(this)
+        PipeTaskManager.addPipeTask(this)
     }
 
     override fun broke(): CompletableFuture<Any?> {
@@ -41,7 +41,7 @@ class PipeTask(
     fun close(func: (IPipeTask) -> CompletableFuture<Any?>): CompletableFuture<Any?> {
         completedTask.cancel()
         periodTask?.cancel(this)
-        PipeManager.removePipeTask(this)
+        PipeTaskManager.removePipeTask(this)
         if (result.isDone) return result
         return func(this).thenApply {
             result.complete(it)
