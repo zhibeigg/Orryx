@@ -2,6 +2,7 @@ package org.gitee.orryx.core.kether
 
 import com.mojang.datafixers.kinds.App
 import org.bukkit.event.player.PlayerQuitEvent
+import org.gitee.orryx.api.OrryxAPI.Companion.ketherScriptLoader
 import org.gitee.orryx.core.kether.parameter.IParameter
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.utils.PARAMETER
@@ -98,8 +99,8 @@ object ScriptManager {
 
     fun runScript(sender: ProxyCommandSender, parameter: IParameter, action: String, context: (ScriptContext.() -> Unit)? = null): CompletableFuture<Any?> {
         val uuid = UUID.randomUUID().toString()
-        val script = scriptMap.computeIfAbsent(action) {
-            KetherScriptLoader().load(ScriptService, "orryx_temp_${uuid}", getBytes(it), orryxEnvironmentNamespaces)
+        val script = scriptMap.getOrPut(action) {
+            ketherScriptLoader.load(ScriptService, "orryx_temp_${uuid}", getBytes(action), orryxEnvironmentNamespaces)
         }
         return ScriptContext.create(script).also {
             context?.invoke(it)

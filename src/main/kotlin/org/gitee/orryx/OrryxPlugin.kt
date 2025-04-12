@@ -2,22 +2,15 @@ package org.gitee.orryx
 
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.api.OrryxAPI
-import org.gitee.orryx.core.skill.SkillLoaderManager
 import taboolib.common.LifeCycle
-import taboolib.common.platform.Platform
 import taboolib.common.platform.Plugin
 import taboolib.common.platform.function.disablePlugin
 import taboolib.common.platform.function.info
 import taboolib.common.platform.function.registerLifeCycleTask
 import taboolib.module.chat.colored
-import taboolib.module.metrics.Metrics
-import taboolib.module.metrics.charts.SingleLineChart
-import taboolib.platform.BukkitPlugin
+import taboolib.platform.bukkit.Parallel
 
 object OrryxPlugin : Plugin() {
-
-    internal lateinit var metrics: Metrics
-        private set
 
     init {
         registerLifeCycleTask(LifeCycle.INIT) {
@@ -30,11 +23,8 @@ object OrryxPlugin : Plugin() {
         }
     }
 
+    @Parallel(runOn = LifeCycle.ENABLE)
     override fun onEnable() {
-        metrics = Metrics(24289, BukkitPlugin.getInstance().description.version, Platform.BUKKIT)
-        metrics.addCustomChart(SingleLineChart("skills") {
-            SkillLoaderManager.getSkills().size
-        })
         info("&e┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".colored())
         info("&e┃&a _____                                                  ".colored())
         info("&e┃&a/\\  __`\\                                              ".colored())
