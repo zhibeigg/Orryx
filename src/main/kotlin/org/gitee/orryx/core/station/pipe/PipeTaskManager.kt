@@ -1,33 +1,41 @@
 package org.gitee.orryx.core.station.pipe
 
+import kotlinx.coroutines.launch
+import org.gitee.orryx.api.OrryxAPI.Companion.pluginScope
 import org.gitee.orryx.core.station.TriggerManager
+import taboolib.common.platform.event.ProxyListener
 import taboolib.common.platform.function.registerBukkitListener
 import taboolib.common.platform.function.unregisterListener
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 object PipeTaskManager {
 
-    private val pipeTaskMap by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { hashMapOf<UUID, IPipeTask>() }
+    private val pipeTaskMap = ConcurrentHashMap<UUID, IPipeTask>()
 
     fun addPipeTask(task: IPipeTask) {
-        task.brokeTriggers.forEach {
-            val trigger = TriggerManager.pipeTriggersMap[it] ?: error("PipeTask UUID: ${task.uuid}发现写入不存在的trigger: $it")
-            registerListener(trigger)
+        task.brokeTriggers.forEach { triggerKey ->
+            pluginScope.launch {
+                val trigger = TriggerManager.pipeTriggersMap[triggerKey] ?: error("PipeTask UUID: ${task.uuid}发现写入不存在的trigger: $triggerKey")
+                if (trigger.listener == null) {
+                    synchronized(trigger) {
+                        if (trigger.listener == null) {
+                            trigger.listener = registerBukkitListener(trigger)
+                        }
+                    }
+                }
+            }
         }
         pipeTaskMap[task.uuid] = task
     }
 
-    private fun <E> registerListener(trigger: IPipeTrigger<E>) {
-        if (trigger.listener == null) {
-            trigger.listener = registerBukkitListener(trigger.clazz) { event ->
-                val iterator = pipeTaskMap.values.iterator()
-                while (iterator.hasNext()) {
-                    val next = iterator.next()
-                    if (trigger.event in next.brokeTriggers && trigger.onCheck(next, event, emptyMap())) {
-                        next.scriptContext?.let { trigger.onStart(it, event, emptyMap()) }
-                        next.broke().whenComplete { _, _ ->
-                            next.scriptContext?.let { trigger.onEnd(it, event, emptyMap()) }
-                        }
+    private fun <E> registerBukkitListener(trigger: IPipeTrigger<E>): ProxyListener {
+        return registerBukkitListener(trigger.clazz) { event ->
+            pipeTaskMap.values.forEach { pipeTask ->
+                if (trigger.event in pipeTask.brokeTriggers && trigger.onCheck(pipeTask, event, emptyMap())) {
+                    pipeTask.scriptContext?.let { trigger.onStart(it, event, emptyMap()) }
+                    pipeTask.broke().whenComplete { _, _ ->
+                        pipeTask.scriptContext?.let { trigger.onEnd(it, event, emptyMap()) }
                     }
                 }
             }
@@ -44,15 +52,18 @@ object PipeTaskManager {
     }
 
     private fun checkListener() {
-        val triggers = pipeTaskMap.flatMap { it.value.brokeTriggers }.distinct()
-        TriggerManager.pipeTriggersMap.filter {
-            it.key !in triggers
-        }.forEach { (_, listener) ->
-            listener.listener?.also {
-                unregisterListener(it)
-                listener.listener = null
+        val activeTriggers = pipeTaskMap.values.flatMap { it.brokeTriggers }.toSet()
+        TriggerManager.pipeTriggersMap.values.forEach { trigger ->
+            pluginScope.launch {
+                synchronized(trigger) {
+                    // 再次检查是否有任务使用该Trigger
+                    val isStillInactive = activeTriggers.none { it == trigger.event }
+                    if (isStillInactive && trigger.listener != null) {
+                        unregisterListener(trigger.listener!!)
+                        trigger.listener = null
+                    }
+                }
             }
         }
     }
-
 }

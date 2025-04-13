@@ -57,6 +57,7 @@ object GameManager {
         info("&e┣&7终止所有玩家技能 &a√".colored())
         OrryxAPI.saveScope.cancel("服务器关闭")
         OrryxAPI.effectScope.cancel("服务器关闭")
+        OrryxAPI.pluginScope.cancel("服务器关闭")
         info("&e┣&7协程域终止 &a√".colored())
         info("&e┣&7延迟2Tick后关闭服务器 &a√".colored())
         submit(delay = 2) {

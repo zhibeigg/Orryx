@@ -5,6 +5,8 @@ import taboolib.common.platform.service.PlatformExecutor
 import taboolib.module.kether.ScriptContext
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.locks.ReentrantLock
 
 class PipeTask(
     override val uuid: UUID,
@@ -14,7 +16,7 @@ class PipeTask(
     override val onBrock: (IPipeTask) -> CompletableFuture<Any?>,
     override val onComplete: (IPipeTask) -> CompletableFuture<Any?>,
     override val periodTask: IPipePeriodTask?
-): IPipeTask {
+) : IPipeTask {
 
     override val startStamp: Long = System.currentTimeMillis()
 
@@ -22,12 +24,20 @@ class PipeTask(
 
     private var completedTask: PlatformExecutor.PlatformTask
 
+    private val closed = AtomicBoolean(false)
+    private val taskLock = ReentrantLock()
+
     init {
-        completedTask = submit(delay = timeout) {
-            complete()
+        taskLock.lock()
+        try {
+            completedTask = submit(delay = timeout) {
+                complete()
+            }
+            periodTask?.start(this)
+            PipeTaskManager.addPipeTask(this)
+        } finally {
+            taskLock.unlock()
         }
-        periodTask?.start(this)
-        PipeTaskManager.addPipeTask(this)
     }
 
     override fun broke(): CompletableFuture<Any?> {
@@ -38,14 +48,19 @@ class PipeTask(
         return close(onComplete)
     }
 
-    fun close(func: (IPipeTask) -> CompletableFuture<Any?>): CompletableFuture<Any?> {
-        completedTask.cancel()
-        periodTask?.cancel(this)
-        PipeTaskManager.removePipeTask(this)
-        if (result.isDone) return result
-        return func(this).thenApply {
-            result.complete(it)
+    private fun close(func: (IPipeTask) -> CompletableFuture<Any?>): CompletableFuture<Any?> {
+        if (!closed.compareAndSet(false, true)) return result
+
+        taskLock.lock()
+        try {
+            completedTask.cancel()
+            periodTask?.cancel(this)
+            PipeTaskManager.removePipeTask(this)
+            return func(this).whenComplete { _, _ ->
+                result.complete(null)
+            }
+        } finally {
+            taskLock.unlock()
         }
     }
-
 }

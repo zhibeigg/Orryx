@@ -50,6 +50,7 @@ class OrryxAPI: IOrryxAPI {
 
         internal val saveScope = CoroutineScope(Dispatchers.async + SupervisorJob())
         internal val effectScope = CoroutineScope(Dispatchers.async + SupervisorJob())
+        internal val pluginScope = CoroutineScope(Dispatchers.async + SupervisorJob())
     }
 
 }
