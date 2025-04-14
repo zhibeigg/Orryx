@@ -30,7 +30,7 @@ object ReloadAPI: IReloadAPI, ClassVisitor(3) {
             methodList += ReloadFunction(
                 method,
                 owner.getInstance() ?: return,
-                method.getAnnotation(Reload::class.java).property<Int>("weight")!!
+                method.getAnnotation(Reload::class.java).enum("weight")
             )
             debug("&e┣&7Reload loaded &e${method.owner.name}/${method.name} &a√")
         }
@@ -41,7 +41,6 @@ object ReloadAPI: IReloadAPI, ClassVisitor(3) {
         if (event.call()) {
             info("&e┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".colored())
             Orryx.config.reload()
-            debug = Orryx.config.getBoolean("Debug")
             val extensions = event.getFunctions()
             val weights = (methodList.map { it.weight } + extensions.map { it.weight }).distinct()
             weights.sorted().forEach { weight ->

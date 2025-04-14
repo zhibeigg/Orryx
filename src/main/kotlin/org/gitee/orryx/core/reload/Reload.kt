@@ -6,4 +6,4 @@ package org.gitee.orryx.core.reload
  * */
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class Reload(val weight: Int = 0)
+annotation class Reload(val weight: Int)

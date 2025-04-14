@@ -37,8 +37,7 @@ const val PASSIVE = "Passive"
 
 const val DEFAULT_PICTURE = "default"
 
-var silence: Boolean = Orryx.config.getBoolean("Silence", false)
-    internal set
+val silence: Boolean by ReloadableLazy({ Orryx.config }) { Orryx.config.getBoolean("Silence", false) }
 
 internal fun SkillParameter.runSkillAction(map: Map<String, Any> = emptyMap()) {
     SkillLoaderManager.getSkillLoader(skill ?: return)?.let { skill ->

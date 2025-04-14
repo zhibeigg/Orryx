@@ -10,7 +10,6 @@ import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.utils.*
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common.platform.function.submitAsync
-import taboolib.common.util.unsafeLazy
 import taboolib.module.database.ColumnOptionSQL
 import taboolib.module.database.ColumnTypeSQL
 import taboolib.module.database.Table
@@ -20,8 +19,8 @@ import java.util.concurrent.CompletableFuture
 
 class MySqlManager: IStorageManager {
 
-    private val host by unsafeLazy { Orryx.config.getHost("Database.sql") }
-    private val dataSource by unsafeLazy { host.createDataSource() }
+    private val host by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { Orryx.config.getHost("Database.sql") }
+    private val dataSource by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { host.createDataSource() }
 
     private val playerTable: Table<*, *> = Table("orryx_player", host) {
         add(UUID) { type(ColumnTypeSQL.CHAR, 36) { options(ColumnOptionSQL.PRIMARY_KEY) } }

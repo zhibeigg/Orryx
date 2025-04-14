@@ -17,7 +17,6 @@ class Plugin(val name: String, val extensionFunction: () -> Unit = {}) {
             console().sendLang("hook-false", name)
         }
     }
-
 }
 
 val AdyeshachPlugin = Plugin("Adyeshach")

@@ -1,6 +1,5 @@
 package org.gitee.orryx.core.skill
 
-import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.api.events.OrryxSkillReloadEvent
 import org.gitee.orryx.core.reload.Reload
@@ -33,7 +32,6 @@ object SkillLoaderManager {
     @Awake(LifeCycle.ENABLE)
     private fun reload() {
         if (OrryxSkillReloadEvent().call()) {
-            silence = Orryx.config.getBoolean("Silence", false)
             skillMap.clear()
             val castSkillMap = hashMapOf<String, ICastSkill>()
             files("skills", "操翻诸神拳.yml") { file ->

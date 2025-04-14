@@ -5,7 +5,7 @@ import taboolib.common.platform.PlatformFactory
 import taboolib.common.platform.service.PlatformIO
 import taboolib.module.chat.colored
 
-var debug: Boolean = Orryx.config.getBoolean("Debug")
+val debug: Boolean by ReloadableLazy({ Orryx.config }) { Orryx.config.getBoolean("Debug") }
 
 fun debug(vararg message: Any?) {
     if (debug) PlatformFactory.getService<PlatformIO>().info(*message.map { "&6[debug] $it".colored() }.toTypedArray())

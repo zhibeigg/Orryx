@@ -16,6 +16,8 @@ ManaReginTick: 20
 DisableHunger: false
 # 释放技能时是否静默
 Silence: false
+# 是否需要同步原版经验
+SyncExperience: true
 UI:
   # ！修改后需要重启
   # bukkit/germplugin/dragoncore
