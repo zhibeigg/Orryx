@@ -1,23 +1,23 @@
-#中转站设置
+# 中转站设置
 Options:
-  #监听的事件
+  # 监听的事件
   Event: "Async Player Chat"
-  #冷却间隔 Tick
+  # 冷却间隔 Tick
   BaffleAction: |-
     math add [ 1 1 ]
-  #执行权重 从数字大的开始运行 默认0
+  # 执行权重 从数字大的开始运行 默认0
   Weight: 1
-  #中转站监听事件优先级
-  #LOWEST,LOW,NORMAL,HIGH,HIGHEST,MONITOR
-  #默认NORMAL
+  # 中转站监听事件优先级
+  # LOWEST,LOW,NORMAL,HIGH,HIGHEST,MONITOR
+  # 默认NORMAL
   Priority: "normal"
-  #中转站监听事件是否跳过被取消事件
-  #默认false
+  # 中转站监听事件是否跳过被取消事件
+  # 默认false
   IgnoreCancelled: false
   Variables:
-    #前置延迟变量 大小写不敏感
+    # 前置延迟变量 大小写不敏感
     Fuck: 5
-#执行语句
+# 执行语句
 Actions: |-
   tell &message
   tell lazy fuck

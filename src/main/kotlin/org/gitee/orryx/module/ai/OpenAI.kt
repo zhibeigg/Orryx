@@ -13,15 +13,18 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.gitee.orryx.api.Orryx
+import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.module.wiki.LarkSuite
+import org.gitee.orryx.utils.ReloadableLazy
 import org.gitee.orryx.utils.debug
+import java.time.Duration
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-
 object OpenAI {
 
-    private val client: OkHttpClient by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { OkHttpClient().newBuilder().build() }
+    private val client: OkHttpClient by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { OkHttpClient().newBuilder().callTimeout(Duration.of(1, ChronoUnit.MINUTES)).build() }
     private val json = Json {
         ignoreUnknownKeys = true  // 忽略未知键
     }
@@ -29,11 +32,14 @@ object OpenAI {
     private val npcChatCache = Caffeine.newBuilder()
         .initialCapacity(20)
         .maximumSize(100)
-        .expireAfterAccess(5, TimeUnit.MINUTES)
+        .expireAfterAccess(10, TimeUnit.MINUTES)
         .scheduler(Scheduler.systemScheduler())
-        .build<String, MutableList<SendMessage>> {
-            mutableListOf()
-        }
+        .build<String, MutableList<SendMessage>>()
+
+    @Reload(0)
+    private fun reload() {
+        npcChatCache.invalidateAll()
+    }
 
     // 请求参数模型
     @Serializable
@@ -84,51 +90,40 @@ object OpenAI {
         val content: String
     )
 
-    @Serializable
-    data class Content(
-        val token: String
-    )
-
-    private val API_KEY
-        get() = Orryx.config.getString("OpenAI.ApiKey") ?: error("未配置OpenAI ApiKey")
-
-    private val BASE_URL
-        get() = Orryx.config.getString("OpenAI.BaseUrl") ?: error("未配置OpenAI BaseUrl")
+    private val API_KEY by ReloadableLazy({ Orryx.config }) { Orryx.config.getString("OpenAI.ApiKey") ?: error("未配置OpenAI ApiKey") }
+    private val BASE_URL by ReloadableLazy({ Orryx.config }) { Orryx.config.getString("OpenAI.BaseUrl") ?: error("未配置OpenAI BaseUrl") }
 
     fun npcChat(player: String, npc: String, npcDescription: String, message: String, model: String, maxTokens: Int, temperature: Double): CompletableFuture<String> {
         val mediaType = MediaType.parse("application/json")
 
-        val context = npcChatCache.get("$player@$npc")
-
-        val list = mutableListOf<SendMessage>()
-
-        list += SendMessage(role = "system", content = npcDescription, name = npc)
-        context?.forEach {
-            list += it
-        }
-        val userMessage = SendMessage(role = "user", content = message, name = player)
-        list += userMessage
-
-        val requestBody = OpenAIRequest(
-            model = model,
-            maxTokens = maxTokens,
-            messages = list,
-            temperature = temperature
-        )
-
+        val context = npcChatCache.get("$player@$npc") { mutableListOf(SendMessage(role = "system", content = npcDescription, name = npc)) }!!
         val future = CompletableFuture<String>()
+
         LarkSuite.ioScope.launch(Dispatchers.IO) {
-            val jsonBody = json.encodeToString(requestBody)
+            synchronized(context) {
+                if (context.size > 5) {
+                    // 清除除了 system 后面的第一条信息
+                    context.removeAt(1)
+                }
+                val userMessage = SendMessage(role = "user", content = message, name = player)
+                context += userMessage
 
-            val request = Request.Builder()
-                .url("$BASE_URL/chat/completions")
-                .addHeader("Content-Type", "application/json")
-                .addHeader("Accept", "application/json")
-                .addHeader("Authorization", "Bearer $API_KEY")
-                .post(RequestBody.create(mediaType, jsonBody))
-                .build()
+                val requestBody = OpenAIRequest(
+                    model = model,
+                    maxTokens = maxTokens,
+                    messages = context,
+                    temperature = temperature
+                )
+                val jsonBody = json.encodeToString(requestBody)
 
-            try {
+                val request = Request.Builder()
+                    .url("$BASE_URL/chat/completions")
+                    .addHeader("Content-Type", "application/json")
+                    .addHeader("Accept", "application/json")
+                    .addHeader("Authorization", "Bearer $API_KEY")
+                    .post(RequestBody.create(mediaType, jsonBody))
+                    .build()
+
                 val response = client.newCall(request).execute()
                 if (response.isSuccessful) {
                     val responseBody = response.body()!!.string()
@@ -136,18 +131,18 @@ object OpenAI {
 
                     // 提取回复内容
                     val reply = openAIResponse.choices.first().message
-                    npcChatCache.put("$player@$npc", (list + SendMessage(reply.role, reply.content, npc)).toMutableList())
+                    npcChatCache.put("$player@$npc", (context + SendMessage(reply.role, reply.content, npc)).toMutableList())
                     future.complete(reply.content)
                     debug("完成了一次 AI 调用，本次消耗 ${openAIResponse.usage.totalTokens} Token （ 用户侧: ${openAIResponse.usage.promptTokens}， AI侧: ${openAIResponse.usage.completionTokens} ）")
                 } else {
                     future.complete("请求失败，请重试")
                 }
-            } catch (e: Exception) {
-                future.completeExceptionally(e)
-                e.printStackTrace()
+            }
+        }.invokeOnCompletion {
+            if (!future.isDone) {
+                future.completeExceptionally(it)
             }
         }
         return future
     }
-
 }
