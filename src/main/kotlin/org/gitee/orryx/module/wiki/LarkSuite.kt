@@ -15,7 +15,6 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.core.kether.ScriptManager
-import org.gitee.orryx.utils.async
 import org.gitee.orryx.utils.debug
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
@@ -45,15 +44,15 @@ object LarkSuite {
         Client.newBuilder(appId, appSecret).requestTimeout(30, TimeUnit.MINUTES).build()
     }
 
-    private val wikiScope by lazy { CoroutineScope(Dispatchers.async + SupervisorJob()) }
+    internal val ioScope by lazy { CoroutineScope(Dispatchers.IO + SupervisorJob()) }
 
     @Awake(LifeCycle.DISABLE)
     private fun disable() {
-        wikiScope.cancel("服务器关闭")
+        ioScope.cancel("服务器关闭")
     }
 
     fun createDocument() {
-        wikiScope.launch {
+        ioScope.launch(Dispatchers.IO) {
             info("&e┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━".colored())
             info("&e┣&7新文档$pluginId-$pluginVersion-(自生成) 开始创建".colored())
 

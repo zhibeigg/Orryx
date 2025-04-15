@@ -6,12 +6,15 @@ import com.lark.oapi.okhttp.MediaType
 import com.lark.oapi.okhttp.OkHttpClient
 import com.lark.oapi.okhttp.Request
 import com.lark.oapi.okhttp.RequestBody
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.gitee.orryx.api.Orryx
-import taboolib.common.platform.function.submitAsync
+import org.gitee.orryx.module.wiki.LarkSuite
+import org.gitee.orryx.utils.debug
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
@@ -19,13 +22,16 @@ import java.util.concurrent.TimeUnit
 object OpenAI {
 
     private val client: OkHttpClient by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { OkHttpClient().newBuilder().build() }
+    private val json = Json {
+        ignoreUnknownKeys = true  // 忽略未知键
+    }
 
     private val npcChatCache = Caffeine.newBuilder()
         .initialCapacity(20)
         .maximumSize(100)
         .expireAfterAccess(5, TimeUnit.MINUTES)
         .scheduler(Scheduler.systemScheduler())
-        .build<String, MutableList<Message>> {
+        .build<String, MutableList<SendMessage>> {
             mutableListOf()
         }
 
@@ -35,29 +41,52 @@ object OpenAI {
         val model: String,
         @SerialName("max_tokens")
         val maxTokens: Int,
-        val messages: List<Message>,
+        val messages: List<SendMessage>,
         val temperature: Double = 1.0
-    )
-
-    @Serializable
-    data class Message(
-        val role: String,
-        val content: String,
-        val name: String?,
     )
 
     // 响应解析模型
     @Serializable
     data class OpenAIResponse(
         val id: String,
-        val choices: List<Choice>
+        val choices: List<Choice>,
+        val usage: Usage
+    )
+
+    @Serializable
+    data class Usage(
+        @SerialName("completion_tokens")
+        val completionTokens: Int,
+        @SerialName("prompt_tokens")
+        val promptTokens: Int,
+        @SerialName("total_tokens")
+        val totalTokens: Int
     )
 
     @Serializable
     data class Choice(
-        val message: Message,
+        val index: Int,
         @SerialName("finish_reason")
-        val finishReason: String
+        val finishReason: String,
+        val message: Message
+    )
+
+    @Serializable
+    data class SendMessage(
+        val role: String,
+        val content: String,
+        val name: String?
+    )
+
+    @Serializable
+    data class Message(
+        val role: String,
+        val content: String
+    )
+
+    @Serializable
+    data class Content(
+        val token: String
     )
 
     private val API_KEY
@@ -71,13 +100,13 @@ object OpenAI {
 
         val context = npcChatCache.get("$player@$npc")
 
-        val list = mutableListOf<Message>()
+        val list = mutableListOf<SendMessage>()
 
-        list += Message(role = "system", content = npcDescription, name = npc)
+        list += SendMessage(role = "system", content = npcDescription, name = npc)
         context?.forEach {
             list += it
         }
-        val userMessage = Message(role = "user", content = message, name = player)
+        val userMessage = SendMessage(role = "user", content = message, name = player)
         list += userMessage
 
         val requestBody = OpenAIRequest(
@@ -88,8 +117,8 @@ object OpenAI {
         )
 
         val future = CompletableFuture<String>()
-        submitAsync {
-            val jsonBody = Json.encodeToString(requestBody)
+        LarkSuite.ioScope.launch(Dispatchers.IO) {
+            val jsonBody = json.encodeToString(requestBody)
 
             val request = Request.Builder()
                 .url("$BASE_URL/chat/completions")
@@ -103,17 +132,19 @@ object OpenAI {
                 val response = client.newCall(request).execute()
                 if (response.isSuccessful) {
                     val responseBody = response.body()!!.string()
-                    val openAIResponse = Json.decodeFromString<OpenAIResponse>(responseBody)
+                    val openAIResponse = json.decodeFromString<OpenAIResponse>(responseBody)
 
                     // 提取回复内容
                     val reply = openAIResponse.choices.first().message
-                    npcChatCache.put("$player@$npc", (list + reply).toMutableList())
+                    npcChatCache.put("$player@$npc", (list + SendMessage(reply.role, reply.content, npc)).toMutableList())
                     future.complete(reply.content)
+                    debug("完成了一次 AI 调用，本次消耗 ${openAIResponse.usage.totalTokens} Token （ 用户侧: ${openAIResponse.usage.promptTokens}， AI侧: ${openAIResponse.usage.completionTokens} ）")
                 } else {
                     future.complete("请求失败，请重试")
                 }
             } catch (e: Exception) {
                 future.completeExceptionally(e)
+                e.printStackTrace()
             }
         }
         return future
