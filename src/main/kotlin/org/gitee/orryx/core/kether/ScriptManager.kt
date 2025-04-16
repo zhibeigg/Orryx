@@ -89,12 +89,17 @@ object ScriptManager {
     }
 
     fun runScript(sender: ProxyCommandSender, parameter: IParameter, script: Script, context: (ScriptContext.() -> Unit)? = null): CompletableFuture<Any?> {
-        return ScriptContext.create(script).also {
-            context?.invoke(it)
-            it.sender = sender
-            it.id = UUID.randomUUID().toString()
-            it[PARAMETER] = parameter
-        }.runActions()
+        return try {
+            ScriptContext.create(script).also {
+                context?.invoke(it)
+                it.sender = sender
+                it.id = UUID.randomUUID().toString()
+                it[PARAMETER] = parameter
+            }.runActions()
+        } catch (e: Throwable) {
+            e.printKetherErrorMessage()
+            CompletableFuture.completedFuture(null)
+        }
     }
 
     fun runScript(sender: ProxyCommandSender, parameter: IParameter, action: String, context: (ScriptContext.() -> Unit)? = null): CompletableFuture<Any?> {
@@ -102,32 +107,50 @@ object ScriptManager {
         val script = scriptMap.getOrPut(action) {
             ketherScriptLoader.load(ScriptService, "orryx_temp_${uuid}", getBytes(action), orryxEnvironmentNamespaces)
         }
-        return ScriptContext.create(script).also {
-            context?.invoke(it)
-            it.sender = sender
-            it.id = uuid
-            it[PARAMETER] = parameter
-        }.runActions()
+
+        return try {
+            ScriptContext.create(script).also {
+                context?.invoke(it)
+                it.sender = sender
+                it.id = uuid
+                it[PARAMETER] = parameter
+            }.runActions()
+        } catch (e: Throwable) {
+            e.printKetherErrorMessage()
+            CompletableFuture.completedFuture(null)
+        }
     }
 
     fun parseScript(sender: ProxyCommandSender, parameter: IParameter, actions: String, context: (ScriptContext.() -> Unit)? = null): String {
-        return KetherFunction.parse(
-            actions,
-            ScriptOptions.builder().sandbox(false).namespace(namespace = orryxEnvironmentNamespaces).sender(sender = sender).context {
-                context?.invoke(this)
-                this[PARAMETER] = parameter
-            }.build()
-        )
+        return try {
+            KetherFunction.parse(
+                actions,
+                ScriptOptions.builder().sandbox(false).namespace(namespace = orryxEnvironmentNamespaces)
+                    .sender(sender = sender).context {
+                    context?.invoke(this)
+                    this[PARAMETER] = parameter
+                }.build()
+            )
+        } catch (e: Throwable) {
+            e.printKetherErrorMessage()
+            "none-error"
+        }
     }
 
     fun parseScript(sender: ProxyCommandSender, parameter: IParameter, actions: List<String>, context: (ScriptContext.() -> Unit)? = null): List<String> {
-        return KetherFunction.parse(
-            actions,
-            ScriptOptions.builder().sandbox(false).namespace(namespace = orryxEnvironmentNamespaces).sender(sender = sender).context {
-                context?.invoke(this)
-                this[PARAMETER] = parameter
-            }.build()
-        )
+        return try {
+            KetherFunction.parse(
+                actions,
+                ScriptOptions.builder().sandbox(false).namespace(namespace = orryxEnvironmentNamespaces)
+                    .sender(sender = sender).context {
+                    context?.invoke(this)
+                    this[PARAMETER] = parameter
+                }.build()
+            )
+        } catch (e: Throwable) {
+            e.printKetherErrorMessage()
+            listOf("none-error")
+        }
     }
 
     fun <T> scriptParser(actions: Array<org.gitee.orryx.module.wiki.Action>, resolve: (QuestReader) -> QuestAction<T>): ScriptActionParser<T> {
