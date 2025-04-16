@@ -33,7 +33,7 @@ class SkillParameter(val skill: String?, val player: Player, var level: Int = 1)
         fun getAndSetValue(): Any? {
             val value = getSkill()?.variables?.get(key)?.let { ScriptManager.runScript(proxyCommandSender, this, it).orNull() }
             if (value == null) {
-                warning("未找到技能${skill}的变量$key")
+                warning("未找到技能 $skill 的变量 $key ")
                 return null
             } else {
                 lazies[key] = value

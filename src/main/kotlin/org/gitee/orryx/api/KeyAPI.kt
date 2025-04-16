@@ -31,9 +31,9 @@ class KeyAPI: IKeyAPI {
         return future
     }
 
-    override fun getGroup(key: String): IGroup = BindKeyLoaderManager.getGroup(key) ?: error("未找到组${key}请在config中配置")
+    override fun getGroup(key: String): IGroup = BindKeyLoaderManager.getGroup(key) ?: error("未找到组 $key 请在 config.yml 中配置")
 
-    override fun getBindKey(key: String): IBindKey = BindKeyLoaderManager.getBindKey(key) ?: error("未找到绑定按键${key}请在keys中配置")
+    override fun getBindKey(key: String): IBindKey = BindKeyLoaderManager.getBindKey(key) ?: error("未找到绑定按键 $key 请在 keys.yml 中配置")
 
     companion object {
 

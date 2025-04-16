@@ -29,7 +29,7 @@ class StationParameter<E>(val stationLoader: String, val sender: ProxyCommandSen
         fun getAndSetValue(): Any? {
             val value = getStation().variables[key]?.let { ScriptManager.runScript(sender, this, it).orNull() }
             if (value == null) {
-                warning("未找到中转站${stationLoader}的变量$key")
+                warning("未找到中转站 $stationLoader 的变量 $key")
                 return null
             } else {
                 lazies[key] = value
