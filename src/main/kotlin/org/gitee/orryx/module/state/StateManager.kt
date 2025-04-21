@@ -269,5 +269,4 @@ object StateManager {
     fun getController(key: String): Configuration? {
         return controllerMap[key]
     }
-
 }

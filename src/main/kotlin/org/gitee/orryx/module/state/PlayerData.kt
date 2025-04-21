@@ -1,5 +1,6 @@
 package org.gitee.orryx.module.state
 
+import eos.moe.armourers.api.DragonAPI
 import org.bukkit.entity.Player
 import org.gitee.orryx.compat.dragoncore.DragonCoreCustomPacketSender
 import org.gitee.orryx.core.common.keyregister.KeyRegisterManager
@@ -88,6 +89,7 @@ class PlayerData(val player: Player) {
                 }
             }
         }
+        DragonAPI.updatePlayerSkin(player)
     }
 
     fun updateMoveState(input: String) {
