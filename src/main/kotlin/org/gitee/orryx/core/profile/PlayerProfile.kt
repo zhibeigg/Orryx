@@ -1,6 +1,7 @@
 package org.gitee.orryx.core.profile
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.OrryxAPI
@@ -14,7 +15,9 @@ import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.utils.async
 import org.gitee.orryx.utils.toSerializable
+import taboolib.common.platform.function.info
 import taboolib.common.platform.function.isPrimaryThread
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentMap
 
 class PlayerProfile(
@@ -96,14 +99,12 @@ class PlayerProfile(
     override fun setJob(job: IPlayerJob) {
         if (OrryxPlayerJobChangeEvents.Pre(player, job).call()) {
             privateJob = job.key
-            var var1 = 0
-            save {
-                var1 ++
-                if (var1 == 2) OrryxPlayerJobChangeEvents.Post(player, job).call()
-            }
-            job.save {
-                var1 ++
-                if (var1 == 2) OrryxPlayerJobChangeEvents.Post(player, job).call()
+            val future0 = CompletableFuture<Void>()
+            val future1 = CompletableFuture<Void>()
+            save { future0.complete(null) }
+            job.save { future1.complete(null) }
+            CompletableFuture.allOf(future0, future1).thenAccept {
+                OrryxPlayerJobChangeEvents.Post(player, job).call()
             }
         }
     }
@@ -130,5 +131,4 @@ class PlayerProfile(
             }
         }
     }
-
 }

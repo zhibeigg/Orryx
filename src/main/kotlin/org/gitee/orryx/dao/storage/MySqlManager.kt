@@ -184,6 +184,7 @@ class MySqlManager: IStorageManager {
         playerTable.transaction(dataSource) {
             insert(UUID, JOB, POINT, FLAGS) {
                 onDuplicateKeyUpdate {
+                    update(JOB, playerProfilePO.job ?: "null")
                     update(POINT, playerProfilePO.point)
                     update(FLAGS, Json.encodeToString(playerProfilePO.flags))
                 }

@@ -9,6 +9,8 @@ import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.utils.ReloadableLazy
+import taboolib.common.LifeCycle
+import taboolib.common.platform.Awake
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.info
@@ -49,14 +51,17 @@ object GameManager {
         info("&e┣&7Storage禁止异步 &a√".colored())
         ScriptManager.terminateAllSkills()
         info("&e┣&7终止所有玩家技能 &a√".colored())
-        OrryxAPI.saveScope.cancel("服务器关闭")
-        OrryxAPI.effectScope.cancel("服务器关闭")
-        OrryxAPI.pluginScope.cancel("服务器关闭")
-        info("&e┣&7协程域终止 &a√".colored())
         info("&e┣&7延迟2Tick后关闭服务器 &a√".colored())
         submit(delay = 2) {
             Bukkit.getServer().shutdown()
         }
     }
 
+    @Awake(LifeCycle.DISABLE)
+    private fun disabled() {
+        OrryxAPI.saveScope.cancel("服务器关闭")
+        OrryxAPI.effectScope.cancel("服务器关闭")
+        OrryxAPI.pluginScope.cancel("服务器关闭")
+        info("&e┣&7协程域终止 &a√".colored())
+    }
 }

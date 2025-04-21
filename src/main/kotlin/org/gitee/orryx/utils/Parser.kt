@@ -18,22 +18,22 @@ internal inline fun <reified T> StringParser.Entry.read(index: Int, def: T): T {
         Float::class -> value.cfloat
 
         XParticle::class -> try {
-            XParticle.of(value.uppercase())
-        } catch (e: Exception) {
+            XParticle.of(value.uppercase()).get()
+        } catch (_: Throwable) {
             warning("not found ProxyParticle")
             XParticle.DUST
         }
 
         EffectType::class -> try {
             EffectType.valueOf(value.uppercase())
-        } catch (e: Exception) {
+        } catch (_: Throwable) {
             warning("not found EffectType")
             EffectType.ARC
         }
 
         XMaterial::class -> try {
-            XMaterial.matchXMaterial(value.uppercase())
-        } catch (e: Exception) {
+            XMaterial.matchXMaterial(value.uppercase()).get()
+        } catch (_: Throwable) {
             warning("not found Material")
             XMaterial.STONE
         }

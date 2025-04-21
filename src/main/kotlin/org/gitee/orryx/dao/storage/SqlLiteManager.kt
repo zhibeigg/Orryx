@@ -187,6 +187,7 @@ class SqlLiteManager: IStorageManager {
             if (select { where { UUID eq player.toString() } }.find()) {
                 update {
                     where { UUID eq player.toString() }
+                    set(JOB, playerProfilePO.job)
                     set(POINT, playerProfilePO.point)
                     set(FLAGS, Json.encodeToString(playerProfilePO.flags))
                 }

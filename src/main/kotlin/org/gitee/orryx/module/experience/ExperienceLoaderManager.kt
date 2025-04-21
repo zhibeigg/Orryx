@@ -16,6 +16,7 @@ import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.info
 import taboolib.common.util.unsafeLazy
+import taboolib.common5.cdouble
 import taboolib.common5.cfloat
 import taboolib.module.chat.colored
 import taboolib.module.configuration.Configuration
@@ -66,6 +67,10 @@ object ExperienceLoaderManager {
     private fun sync(player: Player, job: IPlayerJob) {
         if (!syncExperience) return
         player.level = job.level
-        player.exp = (job.experienceOfLevel.cfloat / job.maxExperienceOfLevel.cfloat).coerceIn(0.0f, 1.0f)
+        if (job.maxExperienceOfLevel == 0) {
+            player.exp = 0.0f
+        } else {
+            player.exp = (job.experienceOfLevel.cfloat / job.maxExperienceOfLevel.cfloat).coerceIn(0.0f, 1.0f)
+        }
     }
 }
