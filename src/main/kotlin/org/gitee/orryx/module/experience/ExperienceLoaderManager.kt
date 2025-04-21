@@ -66,6 +66,6 @@ object ExperienceLoaderManager {
     private fun sync(player: Player, job: IPlayerJob) {
         if (!syncExperience) return
         player.level = job.level
-        player.exp = (job.experienceOfLevel.cfloat / job.maxExperienceOfLevel.cfloat)
+        player.exp = (job.experienceOfLevel.cfloat / job.maxExperienceOfLevel.cfloat).coerceIn(0.0f, 1.0f)
     }
 }

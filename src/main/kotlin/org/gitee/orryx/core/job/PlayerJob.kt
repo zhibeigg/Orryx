@@ -60,7 +60,7 @@ class PlayerJob(
         get() = getExperience().maxLevel
 
     override val maxExperienceOfLevel: Int
-        get() = getExperience().getExperienceOfLevel(player, experience)
+        get() = getExperience().getExperienceOfLevel(player, level)
 
     override fun createPO(): PlayerJobPO {
         return PlayerJobPO(player.uniqueId, key, experience, group, bindKeyOfGroupToMap(bindKeyOfGroup))

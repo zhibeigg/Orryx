@@ -52,9 +52,11 @@ Options:
     tell "尝试释放时检测"
     true
   Variables:
-    #释放消耗法力值
+    # 释放后的沉默时间
+    Silence: 5
+    # 释放消耗法力值
     Mana: 5
-    #释放冷却时间
+    # 释放冷却时间
     Cooldown: 5
 Actions: |-
   # 创建5个粒子的矩阵

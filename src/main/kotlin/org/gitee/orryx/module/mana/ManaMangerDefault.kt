@@ -48,7 +48,7 @@ class ManaMangerDefault: IManaManager {
             player.job { job ->
                 val event = OrryxPlayerManaEvents.Up.Pre(player, profile, mana)
                 if (event.call()) {
-                    profile.setFlag(MANA_FLAG, (profile.getFlag(MANA_FLAG)?.value.cdouble + event.mana).coerceAtLeast(0.0).coerceAtMost(job.getMaxMana()).flag(true), false)
+                    profile.setFlag(MANA_FLAG, (profile.getFlag(MANA_FLAG)?.value.cdouble + event.mana).coerceIn(0.0, job.getMaxMana()).flag(true), false)
                     save(player, profile) {
                         future.complete(ManaResult.SUCCESS)
                         OrryxPlayerManaEvents.Up.Post(player, profile, event.mana)
@@ -71,7 +71,7 @@ class ManaMangerDefault: IManaManager {
                 val event = OrryxPlayerManaEvents.Down.Pre(player, profile, mana)
                 if (event.call()) {
                     val less = profile.getFlag(MANA_FLAG)?.value.cdouble - event.mana
-                    profile.setFlag(MANA_FLAG, less.coerceAtLeast(0.0).coerceAtMost(job.getMaxMana()).flag(true), false)
+                    profile.setFlag(MANA_FLAG, less.coerceIn(0.0, job.getMaxMana()).flag(true), false)
                     save(player, profile) {
                         future.complete(
                             if (less >= 0) {

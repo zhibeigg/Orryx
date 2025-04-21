@@ -35,7 +35,7 @@ fun IExperience.getLevelAndLessExp(player: Player, experience: Int): Pair<Int, I
 
 fun IExperience.getExperienceUntilLevel(player: Player, level: Int): Int {
     var experience = 0
-    for (i in minLevel until level.coerceAtLeast(minLevel).coerceAtMost(maxLevel)) {
+    for (i in minLevel until level.coerceIn(minLevel, maxLevel)) {
         experience += getExperienceOfLevel(player, i)
     }
     return experience

@@ -50,7 +50,7 @@ object Annular : ISelectorGeometry {
                         (max + offset).coerceAtLeast(min)
                     ) && !it.eyeLocation.isInRound(
                         location,
-                        (min - offset).coerceAtLeast(0.0).coerceAtMost(max)
+                        (min - offset).coerceIn(0.0, max)
                     ) && location.y in (location.y - high / 2)..(location.y + high / 2)
                 ) {
                     list += it.toTarget()
