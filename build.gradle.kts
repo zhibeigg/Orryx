@@ -1,4 +1,5 @@
 import io.izzel.taboolib.gradle.*
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val publishUsername: String by project
@@ -8,8 +9,8 @@ val build: String by project
 plugins {
     java
     `maven-publish`
-    kotlin("jvm") version "1.9.24"
-    kotlin("plugin.serialization") version "1.9.24"
+    kotlin("jvm") version "2.1.20"
+    kotlin("plugin.serialization") version "2.1.20"
     id("io.izzel.taboolib") version "2.0.23"
     id("org.jetbrains.dokka") version "2.0.0"
 }
@@ -90,8 +91,8 @@ dependencies {
     compileOnly("ink.ptms.adyeshach:plugin:2.0.26:api")
     compileOnly("org.eldergod.ext:DragonCore:2.6.2.9")
     compileOnly("org.eldergod.ext:GermPlugin:4.4.1-5")
-    compileOnly("org.eldergod.ext:MythicMobs:4.11.0")
     compileOnly("org.eldergod.ext:DragonArmourers:6.72")
+    compileOnly("org.eldergod.ext:MythicMobs:4.11.0")
     compileOnly("org.eldergod.ext:GDDTitle:2.1")
     compileOnly("org.eldergod.ext:GlowAPI:1.4.6")
     compileOnly("org.eldergod.ext:OriginAttribute:1.1.4")
@@ -100,8 +101,8 @@ dependencies {
     compileOnly("org.eldergod.ext:packetevents:2.7.0")
     compileOnly("org.eldergod.ext:ProtocolLib:5.3.0")
 
-    taboo("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3") { isTransitive = false }
-    taboo("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3") { isTransitive = false }
+    taboo("org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.1") { isTransitive = false }
+    taboo("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1") { isTransitive = false }
     taboo("org.apache.commons:commons-jexl3:3.4.0")
     compileOnly("com.github.ben-manes.caffeine:caffeine:2.9.3")
     compileOnly("org.joml:joml:1.10.7")
@@ -124,9 +125,9 @@ tasks.withType<Jar> {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = "1.8"
-        freeCompilerArgs = listOf("-Xjvm-default=all")
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_1_8)
+        freeCompilerArgs.set(listOf("-Xjvm-default=all"))
     }
 }
 

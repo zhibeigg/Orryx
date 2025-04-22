@@ -82,7 +82,7 @@ open class BukkitSkillHud(override val viewer: Player, override val owner: Playe
                         amount = i + 1
                         hideAll()
                         unique()
-                        material.parseMaterial()?.maxDurability?.let {
+                        material.get()?.maxDurability?.let {
                             val percent = skillCooldownMap[owner.uniqueId]?.get(skill.key)?.percent(owner) ?: 1.0
                             if (percent < 1) {
                                 damage = (it.cdouble * percent).cint
