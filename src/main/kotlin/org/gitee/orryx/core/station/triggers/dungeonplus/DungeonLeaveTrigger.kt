@@ -1,5 +1,6 @@
 package org.gitee.orryx.core.station.triggers.dungeonplus
 
+import com.eatthepath.uuid.FastUUID
 import org.gitee.orryx.core.station.Plugin
 import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.station.triggers.AbstractPipeEventTrigger
@@ -34,7 +35,7 @@ object DungeonLeaveTrigger: AbstractPipeEventTrigger<DungeonEvent>() {
     override fun onStart(context: ScriptContext, event: DungeonEvent, map: Map<String, Any?>) {
         super.onStart(context, event, map)
         context["dungeonName"] = event.dungeon.dungeonName
-        context["dungeonUUID"] = event.dungeon.dungeonUuid.toString()
+        context["dungeonUUID"] = FastUUID.toString(event.dungeon.dungeonUuid)
         context["params"] = event.dungeon.params
     }
 

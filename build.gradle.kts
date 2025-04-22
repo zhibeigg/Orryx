@@ -69,6 +69,7 @@ taboolib {
     relocate("com.github.benmanes.caffeine", "org.gitee.orryx.caffeine")
     relocate("org.joml", "org.gitee.orryx.joml")
     relocate("com.larksuite.oapi", "org.gitee.orryx.larksuite.oapi")
+    relocate("com.eatthepath.uuid", "org.gitee.orryx.eatthepath.uuid")
     version {
         taboolib = "6.2.3-8cc2f66"
         coroutines = "1.8.0"
@@ -107,6 +108,7 @@ dependencies {
     compileOnly("com.github.ben-manes.caffeine:caffeine:2.9.3")
     compileOnly("org.joml:joml:1.10.7")
     compileOnly("com.larksuite.oapi:oapi-sdk:2.4.7")
+    compileOnly("com.eatthepath:fast-uuid:0.2.0")
     //compileOnly("io.lettuce:lettuce-core:6.3.2.RELEASE")
 
     testCompileOnly("com.github.ben-manes.caffeine:caffeine:2.9.3")

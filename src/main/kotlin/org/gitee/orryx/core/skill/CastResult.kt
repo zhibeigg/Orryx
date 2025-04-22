@@ -6,7 +6,7 @@ import taboolib.platform.util.sendLang
 
 enum class CastResult {
 
-    SUCCESS, PARAMETER, MANA_NOT_ENOUGH, CHECK_ACTION_FAILED, SILENCE, COOLDOWN, CANCELED, PASSIVE;
+    SUCCESS, PARAMETER, MANA_NOT_ENOUGH, CHECK_ACTION_FAILED, SILENCE, COOLDOWN, CANCELED, PASSIVE, PRESSING, AIMING;
 
     fun sendLang(player: Player) {
         when(this) {
@@ -17,8 +17,9 @@ enum class CastResult {
             SILENCE -> player.sendLang("silence")
             COOLDOWN -> player.sendLang("cooldown")
             CANCELED -> player.sendLang("canceled")
+            PRESSING -> player.sendLang("pressing")
+            AIMING -> player.sendLang("aiming")
             PASSIVE -> warning("请勿尝试释放被动技能")
         }
     }
-
 }

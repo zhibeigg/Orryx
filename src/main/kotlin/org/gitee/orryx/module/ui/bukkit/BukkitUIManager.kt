@@ -120,5 +120,4 @@ class BukkitUIManager: IUIManager {
         config.reload()
         setting = Setting(config)
     }
-
 }

@@ -31,13 +31,12 @@ class GermPluginUIManager: IUIManager {
         val castType: IKeyRegister.ActionType = IKeyRegister.ActionType.valueOf(config.getString("ActionType", "press")!!.uppercase())
 
         val joinOpenHud: Boolean = config.getBoolean("JoinOpenHud", true)
-
     }
 
     init {
         releaseResourceFile("ui/germplugin/OrryxSkillUI.yml")
         releaseResourceFile("ui/germplugin/OrryxSkillHUD.yml")
-        org.gitee.orryx.module.ui.germplugin.GermPluginSkillHud.skillHUDConfiguration = YamlConfiguration.loadConfiguration(File(getDataFolder(), "ui/germplugin/OrryxSkillHUD.yml"))
+        GermPluginSkillHud.skillHUDConfiguration = YamlConfiguration.loadConfiguration(File(getDataFolder(), "ui/germplugin/OrryxSkillHUD.yml"))
         GermPluginSkillUI.skillUIConfiguration = YamlConfiguration.loadConfiguration(File(getDataFolder(), "ui/germplugin/OrryxSkillHUD.yml"))
 
         registerBukkitListener(GermKeyDownEvent::class.java, EventPriority.MONITOR) { e ->
@@ -59,7 +58,7 @@ class GermPluginUIManager: IUIManager {
         }
 
         registerBukkitListener(PlayerQuitEvent::class.java) { e ->
-            org.gitee.orryx.module.ui.germplugin.GermPluginSkillHud.getViewerHud(e.player)?.close()
+            GermPluginSkillHud.getViewerHud(e.player)?.close()
         }
     }
 
@@ -68,16 +67,15 @@ class GermPluginUIManager: IUIManager {
     }
 
     override fun createSkillHUD(viewer: Player, owner: Player): ISkillHud {
-        return org.gitee.orryx.module.ui.germplugin.GermPluginSkillHud(viewer, owner)
+        return GermPluginSkillHud(viewer, owner)
     }
 
     override fun getSkillHUD(viewer: Player): ISkillHud? {
-        return org.gitee.orryx.module.ui.germplugin.GermPluginSkillHud.getViewerHud(viewer)
+        return GermPluginSkillHud.getViewerHud(viewer)
     }
 
     override fun reload() {
         config.reload()
         setting = Setting(config)
     }
-
 }

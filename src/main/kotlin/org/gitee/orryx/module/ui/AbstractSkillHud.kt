@@ -30,5 +30,4 @@ abstract class AbstractSkillHud(override val viewer: Player, override val owner:
         }
         return future
     }
-
 }

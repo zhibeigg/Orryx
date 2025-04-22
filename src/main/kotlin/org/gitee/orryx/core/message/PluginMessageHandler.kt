@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap
 object PluginMessageHandler {
 
     private const val CHANNEL_NAME = "orryxmod:main"
-    private val pendingRequests = ConcurrentHashMap<UUID, Pair<Double, CompletableFuture<AimInfo>>>()
+    internal val pendingRequests = ConcurrentHashMap<UUID, Pair<Double, CompletableFuture<AimInfo>>>()
 
     private val isLegacyVersion by unsafeLazy { MinecraftVersion.versionId == 11202 }
 

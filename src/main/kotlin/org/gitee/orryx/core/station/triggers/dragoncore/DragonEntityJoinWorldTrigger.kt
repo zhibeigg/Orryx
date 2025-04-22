@@ -1,5 +1,6 @@
 package org.gitee.orryx.core.station.triggers.dragoncore
 
+import com.eatthepath.uuid.FastUUID
 import eos.moe.dragoncore.api.event.EntityJoinWorldEvent
 import ink.ptms.adyeshach.core.Adyeshach
 import org.bukkit.Bukkit
@@ -33,10 +34,10 @@ object DragonEntityJoinWorldTrigger: AbstractPlayerEventTrigger<EntityJoinWorldE
 
     override fun onStart(context: ScriptContext, event: EntityJoinWorldEvent, map: Map<String, Any?>) {
         super.onStart(context, event, map)
-        context["entityUUID"] = event.entityUUID.toString()
+        context["entityUUID"] = FastUUID.toString(event.entityUUID)
         val bukkit = Bukkit.getEntity(event.entityUUID)?.abstract()
         val ady = if (AdyeshachPlugin.isEnabled) {
-            Adyeshach.api().getEntityFinder().getEntityFromUniqueId(event.entityUUID.toString(), event.player)?.abstract()
+            Adyeshach.api().getEntityFinder().getEntityFromUniqueId(FastUUID.toString(event.entityUUID), event.player)?.abstract()
         } else {
             null
         }

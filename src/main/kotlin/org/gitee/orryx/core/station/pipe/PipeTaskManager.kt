@@ -32,10 +32,10 @@ object PipeTaskManager {
     private fun <E> registerBukkitListener(trigger: IPipeTrigger<E>): ProxyListener {
         return registerBukkitListener(trigger.clazz) { event ->
             pipeTaskMap.values.forEach { pipeTask ->
-                if (trigger.event in pipeTask.brokeTriggers && trigger.onCheck(pipeTask, event, emptyMap())) {
-                    pipeTask.scriptContext?.let { trigger.onStart(it, event, emptyMap()) }
+                if (trigger.event in pipeTask.brokeTriggers && trigger.onCheck(pipeTask, event, pipeTask.scriptContext?.rootFrame()?.variables()?.toMap() ?: emptyMap())) {
+                    pipeTask.scriptContext?.let { trigger.onStart(it, event, pipeTask.scriptContext?.rootFrame()?.variables()?.toMap() ?: emptyMap()) }
                     pipeTask.broke().whenComplete { _, _ ->
-                        pipeTask.scriptContext?.let { trigger.onEnd(it, event, emptyMap()) }
+                        pipeTask.scriptContext?.let { trigger.onEnd(it, event, pipeTask.scriptContext?.rootFrame()?.variables()?.toMap() ?: emptyMap()) }
                     }
                 }
             }

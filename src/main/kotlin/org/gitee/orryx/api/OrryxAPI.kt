@@ -28,6 +28,12 @@ import taboolib.module.kether.KetherScriptLoader
         test = "!org.gitee.orryx.larksuite.oapi.Client",
         relocate = ["!com.larksuite.oapi", "!org.gitee.orryx.larksuite.oapi"],
         transitive = false
+    ),
+    RuntimeDependency(
+        "!com.eatthepath:fast-uuid:0.2.0",
+        test = "!org.gitee.orryx.eatthepath.uuid.FastUUID",
+        relocate = ["!com.eatthepath.uuid", "!org.gitee.orryx.eatthepath.uuid"],
+        transitive = false
     )
 )
 class OrryxAPI: IOrryxAPI {

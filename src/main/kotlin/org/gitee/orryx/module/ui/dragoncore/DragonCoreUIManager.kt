@@ -12,10 +12,12 @@ import org.gitee.orryx.core.common.keyregister.IKeyRegister
 import org.gitee.orryx.module.ui.ISkillHud
 import org.gitee.orryx.module.ui.ISkillUI
 import org.gitee.orryx.module.ui.IUIManager
+import org.gitee.orryx.utils.ReloadableLazy
 import org.gitee.orryx.utils.keyPress
 import org.gitee.orryx.utils.keyRelease
 import org.gitee.orryx.utils.loadFromFile
 import org.gitee.orryx.utils.orryxProfile
+import org.gitee.orryx.utils.parseUUID
 import taboolib.common.platform.function.getDataFolder
 import taboolib.common.platform.function.registerBukkitListener
 import taboolib.common.platform.function.releaseResourceFile
@@ -32,7 +34,6 @@ class DragonCoreUIManager: IUIManager {
         val castType: IKeyRegister.ActionType = IKeyRegister.ActionType.valueOf(config.getString("ActionType", "press")!!.uppercase())
 
         val joinOpenHud: Boolean = config.getBoolean("JoinOpenHud", true)
-
     }
 
     init {
@@ -70,7 +71,7 @@ class DragonCoreUIManager: IUIManager {
                 }
                 "OrryxSelectSkill" -> {
                     if (e.data.size == 2) {
-                        val owner = Bukkit.getPlayer(java.util.UUID.fromString(e.data[0])) ?: return@registerBukkitListener
+                        val owner = Bukkit.getPlayer(e.data[0].parseUUID()!!) ?: return@registerBukkitListener
                         val skill = e.data[1]
 
                         if (e.player == owner || e.player.isOp) {
@@ -80,7 +81,7 @@ class DragonCoreUIManager: IUIManager {
                 }
                 "OrryxBindSkill" -> {
                     if (e.data.size == 4) {
-                        val owner = Bukkit.getPlayer(java.util.UUID.fromString(e.data[0])) ?: return@registerBukkitListener
+                        val owner = Bukkit.getPlayer(e.data[0].parseUUID()!!) ?: return@registerBukkitListener
                         val group = e.data[1]
                         val bindKey = e.data[2]
                         val skill = e.data[3]
@@ -92,7 +93,7 @@ class DragonCoreUIManager: IUIManager {
                 }
                 "OrryxUnBindSkill" -> {
                     if (e.data.size == 3) {
-                        val owner = Bukkit.getPlayer(java.util.UUID.fromString(e.data[0])) ?: return@registerBukkitListener
+                        val owner = Bukkit.getPlayer(e.data[0].parseUUID()!!) ?: return@registerBukkitListener
                         val group = e.data[1]
                         val skill = e.data[2]
 
@@ -101,7 +102,7 @@ class DragonCoreUIManager: IUIManager {
                 }
                 "OrryxUpgradeSkill" -> {
                     if (e.data.size == 2) {
-                        val owner = Bukkit.getPlayer(java.util.UUID.fromString(e.data[0])) ?: return@registerBukkitListener
+                        val owner = Bukkit.getPlayer(e.data[0].parseUUID()!!) ?: return@registerBukkitListener
                         val skill = e.data[1]
 
                         DragonCoreSkillUI.upgrade(e.player, owner, skill)
@@ -131,5 +132,4 @@ class DragonCoreUIManager: IUIManager {
         config.reload()
         setting = Setting(config)
     }
-
 }

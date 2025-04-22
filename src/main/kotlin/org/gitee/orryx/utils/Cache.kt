@@ -1,6 +1,5 @@
 package org.gitee.orryx.utils
 
-import taboolib.common5.util.parseUUID
 import java.util.*
 
 const val PLAYER_DATA = "orryx_player_data_"

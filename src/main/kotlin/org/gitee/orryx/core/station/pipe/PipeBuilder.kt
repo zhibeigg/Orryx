@@ -14,7 +14,7 @@ class PipeBuilder {
     private var onComplete: (IPipeTask) -> CompletableFuture<Any?> = { CompletableFuture.completedFuture(it) }
     private var periodTask: IPipePeriodTask? = null
 
-    fun build(): IPipeTask {
+    fun build(): PipeTask {
         return PipeTask(uuid, scriptContext, brokeTriggers, timeout ?: error("创建PipeTask时未设置timeout"), onBrock, onComplete, periodTask)
     }
 
@@ -52,5 +52,4 @@ class PipeBuilder {
         this.periodTask = PipePeriodTask(period, func)
         return this
     }
-
 }

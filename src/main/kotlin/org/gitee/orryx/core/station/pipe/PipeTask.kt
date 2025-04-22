@@ -48,7 +48,7 @@ class PipeTask(
         return close(onComplete)
     }
 
-    private fun close(func: (IPipeTask) -> CompletableFuture<Any?>): CompletableFuture<Any?> {
+    internal fun close(func: (IPipeTask) -> CompletableFuture<Any?>): CompletableFuture<Any?> {
         if (!closed.compareAndSet(false, true)) return result
 
         taskLock.lock()

@@ -58,7 +58,6 @@ interface IUIManager {
             fun isOver(player: Player): Boolean {
                 return SkillTimer.getCountdown(player, skill) <= 0L
             }
-
         }
 
         private fun updateAll(player: Player) {
@@ -153,9 +152,8 @@ interface IUIManager {
 
         @Reload(1)
         private fun reload() {
-            INSTANCE.config.reload()
+            INSTANCE.reload()
         }
-
     }
 
     /**
@@ -190,5 +188,4 @@ interface IUIManager {
      * 重载
      * */
     fun reload()
-
 }

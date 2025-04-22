@@ -45,7 +45,6 @@ open class BukkitSkillHud(override val viewer: Player, override val owner: Playe
                 }
             }
         }
-
     }
 
     override fun open() {
@@ -114,5 +113,4 @@ open class BukkitSkillHud(override val viewer: Player, override val owner: Playe
             }
         }
     }
-
 }

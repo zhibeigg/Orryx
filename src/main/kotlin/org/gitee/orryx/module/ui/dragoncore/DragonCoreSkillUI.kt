@@ -116,7 +116,6 @@ class DragonCoreSkillUI(override val viewer: Player, override val owner: Player)
                 }
             }
         }
-
     }
 
     override fun open() {
@@ -125,7 +124,6 @@ class DragonCoreSkillUI(override val viewer: Player, override val owner: Player)
     }
 
     override fun update() {
-        Companion.update(viewer, owner)
+        update(viewer, owner)
     }
-
 }

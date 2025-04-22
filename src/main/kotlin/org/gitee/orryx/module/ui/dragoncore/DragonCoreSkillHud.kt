@@ -46,7 +46,6 @@ open class DragonCoreSkillHud(override val viewer: Player, override val owner: P
                 it.value[player.uniqueId]
             }
         }
-
     }
 
     override fun update() {
@@ -90,5 +89,4 @@ open class DragonCoreSkillHud(override val viewer: Player, override val owner: P
             dragonSkillHudMap.remove(owner.uniqueId)
         }
     }
-
 }

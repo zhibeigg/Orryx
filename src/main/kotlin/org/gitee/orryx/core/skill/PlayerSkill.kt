@@ -12,6 +12,7 @@ import org.gitee.orryx.core.GameManager
 import org.gitee.orryx.core.common.timer.SkillTimer
 import org.gitee.orryx.core.kether.parameter.IParameter
 import org.gitee.orryx.core.kether.parameter.SkillParameter
+import org.gitee.orryx.core.message.PluginMessageHandler
 import org.gitee.orryx.core.skill.skills.PassiveSkill
 import org.gitee.orryx.dao.cache.ISyncCacheManager
 import org.gitee.orryx.dao.cache.MemoryCache
@@ -58,18 +59,22 @@ class PlayerSkill(
     override fun castCheck(parameter: IParameter): CompletableFuture<CastResult> {
         if (parameter !is SkillParameter) return CompletableFuture.completedFuture(CastResult.PARAMETER)
         val skill = skill
-        //被动技能
+        // 被动技能
         if (skill is PassiveSkill) return CompletableFuture.completedFuture(CastResult.PASSIVE)
-        //沉默
+        // 蓄力技能
+        if (PressSkillManager.pressTaskMap.containsKey(player.uniqueId)) return CompletableFuture.completedFuture(CastResult.PRESSING)
+        // 指向性技能
+        if (PluginMessageHandler.pendingRequests.containsKey(player.uniqueId)) return CompletableFuture.completedFuture(CastResult.AIMING)
+        // 沉默
         if (Orryx.api().profileAPI.isSilence(player)) return CompletableFuture.completedFuture(CastResult.SILENCE)
-        //冷却
+        // 冷却
         if (!SkillTimer.hasNext(player, key)) return CompletableFuture.completedFuture(CastResult.COOLDOWN)
-        //法力
+        // 法力
         return IManaManager.INSTANCE.haveMana(player, parameter.manaValue()).thenApply { mana ->
             if (!mana) return@thenApply CastResult.MANA_NOT_ENOUGH
-            //脚本检测
+            // 脚本检测
             if ((skill as? ICastSkill)?.castCheckAction?.let { parameter.runCustomAction(it, mapOf()).orNull().cbool } == false) return@thenApply CastResult.CHECK_ACTION_FAILED
-            //事件
+            // 事件
             if (!OrryxPlayerSkillCastEvents.Check(player, this, parameter).call()) return@thenApply CastResult.CANCELED
             return@thenApply CastResult.SUCCESS
         }

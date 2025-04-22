@@ -51,5 +51,4 @@ interface ISkillHud {
      * @return 倒计时(毫秒)
      * */
     fun getCountdown(skill: IPlayerSkill): Long
-
 }

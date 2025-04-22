@@ -1,6 +1,6 @@
 package org.gitee.orryx.dao.storage
 
-import kotlinx.serialization.encodeToString
+import com.eatthepath.uuid.FastUUID
 import kotlinx.serialization.json.Json
 import org.gitee.orryx.dao.pojo.PlayerJobPO
 import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
@@ -25,32 +25,32 @@ class SqlLiteManager: IStorageManager {
     private val dataSource by unsafeLazy { host.createDataSource() }
 
     private val playerTable: Table<*, *> = Table("orryx_player", host) {
-        add(UUID) { type(ColumnTypeSQLite.TEXT) { options(ColumnOptionSQLite.PRIMARY_KEY) } }
+        add(PLAYER_UUID) { type(ColumnTypeSQLite.TEXT) { options(ColumnOptionSQLite.PRIMARY_KEY) } }
         add(JOB) { type(ColumnTypeSQLite.TEXT) }
         add(POINT) { type(ColumnTypeSQLite.INTEGER) }
         add(FLAGS) { type(ColumnTypeSQLite.TEXT) }
     }
 
     private val jobsTable: Table<*, *> = Table("orryx_player_jobs", host) {
-        add(UUID) { type(ColumnTypeSQLite.TEXT) }
+        add(PLAYER_UUID) { type(ColumnTypeSQLite.TEXT) }
         add(JOB) { type(ColumnTypeSQLite.TEXT) }
         add(EXPERIENCE) { type(ColumnTypeSQLite.INTEGER) }
         add(GROUP) { type(ColumnTypeSQLite.TEXT) }
         add(BIND_KEY_OF_GROUP) { type(ColumnTypeSQLite.TEXT) }
-        primaryKeyForLegacy += listOf(UUID, JOB)
+        primaryKeyForLegacy += listOf(PLAYER_UUID, JOB)
     }
 
     private val skillsTable: Table<*, *> = Table("orryx_player_job_skills", host) {
-        add(UUID) { type(ColumnTypeSQLite.TEXT) }
+        add(PLAYER_UUID) { type(ColumnTypeSQLite.TEXT) }
         add(JOB) { type(ColumnTypeSQLite.TEXT) }
         add(SKILL) { type(ColumnTypeSQLite.TEXT) }
         add(LOCKED) { type(ColumnTypeSQLite.BLOB) }
         add(LEVEL) { type(ColumnTypeSQLite.INTEGER) }
-        primaryKeyForLegacy += listOf(UUID, JOB, SKILL)
+        primaryKeyForLegacy += listOf(PLAYER_UUID, JOB, SKILL)
     }
 
     private val keyTable: Table<*, *> = Table("orryx_player_key_setting", host) {
-        add(UUID) { type(ColumnTypeSQLite.TEXT) { options(ColumnOptionSQLite.PRIMARY_KEY) } }
+        add(PLAYER_UUID) { type(ColumnTypeSQLite.TEXT) { options(ColumnOptionSQLite.PRIMARY_KEY) } }
         add(KEY_SETTING) { type(ColumnTypeSQLite.TEXT) }
     }
 
@@ -66,7 +66,7 @@ class SqlLiteManager: IStorageManager {
         fun read() {
             try {
                 future.complete(playerTable.select(dataSource) {
-                    where { UUID eq player.toString() }
+                    where { PLAYER_UUID eq FastUUID.toString(player) }
                     rows(JOB, POINT, FLAGS)
                 }.firstOrNull {
                     PlayerProfilePO(
@@ -93,7 +93,7 @@ class SqlLiteManager: IStorageManager {
         fun read() {
             try {
                 future.complete(jobsTable.select(dataSource) {
-                    where { UUID eq player.toString() and (JOB eq job) }
+                    where { PLAYER_UUID eq FastUUID.toString(player) and (JOB eq job) }
                     rows(EXPERIENCE, GROUP, BIND_KEY_OF_GROUP)
                 }.firstOrNull {
                     PlayerJobPO(
@@ -121,7 +121,7 @@ class SqlLiteManager: IStorageManager {
         fun read() {
             try {
                 future.complete(skillsTable.select(dataSource) {
-                    where { UUID eq player.toString() and (JOB eq job) and (SKILL eq skill) }
+                    where { PLAYER_UUID eq FastUUID.toString(player) and (JOB eq job) and (SKILL eq skill) }
                     rows(LOCKED, LEVEL)
                 }.firstOrNull {
                     PlayerSkillPO(player, job, skill, getBoolean(LOCKED), getInt(LEVEL))
@@ -143,7 +143,7 @@ class SqlLiteManager: IStorageManager {
         fun read() {
             try {
                 future.complete(skillsTable.select(dataSource) {
-                    where { UUID eq player.toString() and (JOB eq job) }
+                    where { PLAYER_UUID eq FastUUID.toString(player) and (JOB eq job) }
                     rows(SKILL, LOCKED, LEVEL)
                 }.map {
                     PlayerSkillPO(player, job, getString(SKILL), getBoolean(LOCKED), getInt(LEVEL))
@@ -165,7 +165,7 @@ class SqlLiteManager: IStorageManager {
         fun read() {
             try {
                 future.complete(keyTable.select(dataSource) {
-                    where { UUID eq player.toString() }
+                    where { PLAYER_UUID eq FastUUID.toString(player) }
                     rows(KEY_SETTING)
                 }.firstOrNull {
                     Json.decodeFromString<PlayerKeySettingPO>(getString(KEY_SETTING))
@@ -184,17 +184,17 @@ class SqlLiteManager: IStorageManager {
 
     override fun savePlayerData(player: UUID, playerProfilePO: PlayerProfilePO, onSuccess: () -> Unit) {
         playerTable.transaction(dataSource) {
-            if (select { where { UUID eq player.toString() } }.find()) {
+            if (select { where { PLAYER_UUID eq FastUUID.toString(player) } }.find()) {
                 update {
-                    where { UUID eq player.toString() }
+                    where { PLAYER_UUID eq FastUUID.toString(player) }
                     set(JOB, playerProfilePO.job)
                     set(POINT, playerProfilePO.point)
                     set(FLAGS, Json.encodeToString(playerProfilePO.flags))
                 }
             } else {
-                insert(UUID, JOB, POINT, FLAGS) {
+                insert(PLAYER_UUID, JOB, POINT, FLAGS) {
                     value(
-                        player.toString(),
+                        FastUUID.toString(player),
                         playerProfilePO.job,
                         playerProfilePO.point,
                         Json.encodeToString(playerProfilePO.flags)
@@ -206,17 +206,17 @@ class SqlLiteManager: IStorageManager {
 
     override fun savePlayerJob(player: UUID, playerJobPO: PlayerJobPO, onSuccess: () -> Unit) {
         jobsTable.transaction(dataSource) {
-            if (select { where { UUID eq player.toString() and (JOB eq playerJobPO.job) } }.find()) {
+            if (select { where { PLAYER_UUID eq FastUUID.toString(player) and (JOB eq playerJobPO.job) } }.find()) {
                 update {
-                    where { UUID eq player.toString() and (JOB eq playerJobPO.job) }
+                    where { PLAYER_UUID eq FastUUID.toString(player) and (JOB eq playerJobPO.job) }
                     set(EXPERIENCE, playerJobPO.experience)
                     set(GROUP, playerJobPO.group)
                     set(BIND_KEY_OF_GROUP, Json.encodeToString(playerJobPO.bindKeyOfGroup))
                 }
             } else {
-                insert(UUID, JOB, EXPERIENCE, GROUP, BIND_KEY_OF_GROUP) {
+                insert(PLAYER_UUID, JOB, EXPERIENCE, GROUP, BIND_KEY_OF_GROUP) {
                     value(
-                        player.toString(),
+                        FastUUID.toString(player),
                         playerJobPO.job,
                         playerJobPO.experience,
                         playerJobPO.group,
@@ -229,16 +229,16 @@ class SqlLiteManager: IStorageManager {
 
     override fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO, onSuccess: () -> Unit) {
         skillsTable.transaction(dataSource) {
-            if (select { where { UUID eq player.toString() and (JOB eq playerSkillPO.job) and (SKILL eq playerSkillPO.skill) } }.find()) {
+            if (select { where { PLAYER_UUID eq FastUUID.toString(player) and (JOB eq playerSkillPO.job) and (SKILL eq playerSkillPO.skill) } }.find()) {
                 update {
-                    where { UUID eq player.toString() and (JOB eq playerSkillPO.job) and (SKILL eq playerSkillPO.skill) }
+                    where { PLAYER_UUID eq FastUUID.toString(player) and (JOB eq playerSkillPO.job) and (SKILL eq playerSkillPO.skill) }
                     set(LOCKED, playerSkillPO.locked)
                     set(LEVEL, playerSkillPO.level)
                 }
             } else {
-                insert(UUID, JOB, SKILL, LOCKED, LEVEL) {
+                insert(PLAYER_UUID, JOB, SKILL, LOCKED, LEVEL) {
                     value(
-                        player.toString(),
+                        FastUUID.toString(player),
                         playerSkillPO.job,
                         playerSkillPO.skill,
                         playerSkillPO.locked,
@@ -251,15 +251,15 @@ class SqlLiteManager: IStorageManager {
 
     override fun savePlayerKey(player: UUID, playerKeySettingPO: PlayerKeySettingPO, onSuccess: () -> Unit) {
         keyTable.transaction(dataSource) {
-            if (select { where { UUID eq player.toString() } }.find()) {
+            if (select { where { PLAYER_UUID eq FastUUID.toString(player) } }.find()) {
                 update {
-                    where { UUID eq player.toString() }
+                    where { PLAYER_UUID eq FastUUID.toString(player) }
                     set(KEY_SETTING, Json.encodeToString(playerKeySettingPO))
                 }
             } else {
-                insert(UUID, KEY_SETTING) {
+                insert(PLAYER_UUID, KEY_SETTING) {
                     value(
-                        player.toString(),
+                        FastUUID.toString(player),
                         Json.encodeToString(playerKeySettingPO)
                     )
                 }

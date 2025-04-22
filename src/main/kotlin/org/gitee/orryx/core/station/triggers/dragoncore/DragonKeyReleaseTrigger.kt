@@ -38,5 +38,4 @@ object DragonKeyReleaseTrigger: AbstractPlayerEventTrigger<KeyReleaseEvent>() {
         super.onStart(context, event, map)
         context["key"] = event.key
     }
-
 }

@@ -42,7 +42,6 @@ open class GermPluginSkillHud(override val viewer: Player, override val owner: P
         }
 
         internal lateinit var skillHUDConfiguration: YamlConfiguration
-
     }
 
     protected open lateinit var screen: GermGuiScreen
@@ -273,5 +272,4 @@ open class GermPluginSkillHud(override val viewer: Player, override val owner: P
             }
         }
     }
-
 }

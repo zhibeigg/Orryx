@@ -5,8 +5,10 @@ import org.gitee.orryx.core.kether.ScriptManager.combinationParser
 import org.gitee.orryx.core.station.pipe.PipeBuilder
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
+import org.gitee.orryx.utils.parseUUID
 import taboolib.module.kether.KetherParser
 import taboolib.module.kether.run
+import taboolib.module.kether.script
 import java.util.*
 
 object PipeActions {
@@ -51,7 +53,8 @@ object PipeActions {
         ).apply(it) { uuid, timeout, triggers, onComplete, onBrock, onPeriod, period ->
             future {
                 val pipe = PipeBuilder()
-                    .uuid(UUID.fromString(uuid))
+                    .uuid(uuid.parseUUID()!!)
+                    .scriptContext(script())
                     .timeout(timeout)
                 if (onComplete != null) {
                     pipe.onComplete {

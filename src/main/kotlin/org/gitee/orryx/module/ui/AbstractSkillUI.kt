@@ -64,5 +64,4 @@ abstract class AbstractSkillUI(override val viewer: Player, override val owner: 
         }
         return future
     }
-
 }

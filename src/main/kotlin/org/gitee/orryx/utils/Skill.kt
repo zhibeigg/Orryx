@@ -17,6 +17,8 @@ import org.gitee.orryx.core.skill.skills.DirectAimSkill
 import org.gitee.orryx.core.skill.skills.DirectSkill
 import org.gitee.orryx.core.skill.skills.PressingAimSkill
 import org.gitee.orryx.core.skill.skills.PressingSkill
+import org.gitee.orryx.core.station.pipe.IPipeTask
+import org.gitee.orryx.core.station.pipe.PipeBuilder
 import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.module.state.StateManager
 import org.gitee.orryx.module.state.StateManager.statusData
@@ -27,6 +29,7 @@ import taboolib.common5.cdouble
 import taboolib.common5.clong
 import taboolib.module.kether.extend
 import taboolib.module.kether.orNull
+import java.util.*
 import java.util.concurrent.CompletableFuture
 
 const val DIRECT = "Direct"
@@ -170,7 +173,27 @@ fun ICastSkill.consume(player: Player, parameter: SkillParameter) {
 
 fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean = true) {
     when(val skill = this) {
-        is PressingSkill -> parameter.runSkillAction(mapOf("pressTick" to 1))
+        is PressingSkill -> {
+            if (PressSkillManager.pressTaskMap.containsKey(player.uniqueId)) return
+            val maxPressTick = parameter.runCustomAction(skill.maxPressTickAction).orNull().clong
+            val time = System.currentTimeMillis()
+            PressSkillManager.pressTaskMap[player.uniqueId] = key to PipeBuilder()
+                .uuid(UUID.randomUUID())
+                .timeout(maxPressTick)
+                .periodTask(period) {
+                    parameter.runCustomAction(skill.pressPeriodAction, mapOf("pressTick" to (System.currentTimeMillis() - time) / 50))
+                }.onComplete {
+                    if (consume) skill.consume(player, parameter)
+                    parameter.runSkillAction(mapOf("pressTick" to maxPressTick))
+                    PressSkillManager.pressTaskMap.remove(player.uniqueId)
+                    CompletableFuture.completedFuture(null)
+                }.onBrock {
+                    if (consume) skill.consume(player, parameter)
+                    parameter.runSkillAction(mapOf("pressTick" to (System.currentTimeMillis() - time) / 50))
+                    PressSkillManager.pressTaskMap.remove(player.uniqueId)
+                    CompletableFuture.completedFuture(null)
+                }.build()
+        }
         is PressingAimSkill -> {
             val aimRadius = parameter.runCustomAction(skill.aimRadiusAction).orNull().cdouble
             val aimMin = parameter.runCustomAction(skill.aimMinAction).orNull().cdouble

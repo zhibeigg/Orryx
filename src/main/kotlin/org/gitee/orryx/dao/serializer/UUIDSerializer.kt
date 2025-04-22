@@ -6,6 +6,7 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import org.gitee.orryx.utils.parseUUID
 import java.util.*
 
 object UUIDSerializer : KSerializer<UUID> {
@@ -18,7 +19,7 @@ object UUIDSerializer : KSerializer<UUID> {
     }
 
     override fun deserialize(decoder: Decoder): UUID {
-        return UUID.fromString(decoder.decodeString())
+        return decoder.decodeString().parseUUID()!!
     }
 
 }

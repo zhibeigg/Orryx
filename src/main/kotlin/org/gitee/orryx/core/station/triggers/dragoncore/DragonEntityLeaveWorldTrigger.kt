@@ -1,5 +1,6 @@
 package org.gitee.orryx.core.station.triggers.dragoncore
 
+import com.eatthepath.uuid.FastUUID
 import eos.moe.dragoncore.api.event.EntityLeaveWorldEvent
 import ink.ptms.adyeshach.core.Adyeshach
 import org.bukkit.Bukkit
@@ -36,7 +37,7 @@ object DragonEntityLeaveWorldTrigger: AbstractPlayerEventTrigger<EntityLeaveWorl
         context["entityUUID"] = event.entityUUID
         val bukkit = Bukkit.getEntity(event.entityUUID)?.abstract()
         val ady = if (AdyeshachPlugin.isEnabled) {
-            Adyeshach.api().getEntityFinder().getEntityFromUniqueId(event.entityUUID.toString(), event.player)?.abstract()
+            Adyeshach.api().getEntityFinder().getEntityFromUniqueId(FastUUID.toString(event.entityUUID), event.player)?.abstract()
         } else {
             null
         }

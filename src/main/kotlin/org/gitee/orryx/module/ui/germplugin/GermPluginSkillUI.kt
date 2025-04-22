@@ -23,7 +23,6 @@ open class GermPluginSkillUI(override val viewer: Player, override val owner: Pl
             if (IUIManager.INSTANCE !is GermPluginUIManager) return
             skillUIConfiguration = YamlConfiguration.loadConfiguration(File(getDataFolder(), "ui/germplugin/OrryxSkillUI.yml"))
         }
-
     }
 
     override fun open() {
@@ -208,5 +207,4 @@ open class GermPluginSkillUI(override val viewer: Player, override val owner: Pl
             }
         }
     }
-
 }

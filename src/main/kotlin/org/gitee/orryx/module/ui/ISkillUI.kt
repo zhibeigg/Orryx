@@ -63,5 +63,4 @@ interface ISkillUI {
      * @return 是否成功
      * */
     fun clearAllAndBackPoint(): CompletableFuture<Boolean>
-
 }

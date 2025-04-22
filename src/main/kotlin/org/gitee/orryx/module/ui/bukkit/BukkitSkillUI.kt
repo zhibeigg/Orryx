@@ -61,7 +61,6 @@ open class BukkitSkillUI(override val viewer: Player, override val owner: Player
             if (IUIManager.INSTANCE !is BukkitUIManager) return
             ui = UI(IUIManager.INSTANCE.config.getConfigurationSection("SkillUI")!!)
         }
-
     }
 
     protected open var cursorSkill: IPlayerSkill? = null
@@ -262,5 +261,4 @@ open class BukkitSkillUI(override val viewer: Player, override val owner: Player
             }
         }
     }
-
 }
