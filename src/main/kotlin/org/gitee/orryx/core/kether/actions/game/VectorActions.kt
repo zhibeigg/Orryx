@@ -142,6 +142,35 @@ object VectorActions {
         }
     }
 
+    @KetherParser(["drag"], namespace = ORRYX_NAMESPACE, shared = false)
+    private fun actionDrag() = combinationParser(
+        Action.new("Game原版游戏", "向原点聚拢", "drag", false)
+            .description("给予向原点聚拢的冲量")
+            .addEntry("冲量大小系数", Type.DOUBLE, false)
+            .addEntry("是否叠加原冲量", Type.BOOLEAN, false)
+            .addContainerEntry(optional = true, default = "@self")
+    ) {
+        it.group(
+            double(),
+            bool(),
+            theyContainer(true)
+        ).apply(it) { mul, additional, container ->
+            future {
+                val origin = script().getParameter().origin ?: return@future completedFuture(null)
+                ensureSync {
+                    container.orElse(self()).forEachInstance<ITargetEntity<*>> { entity ->
+                        val vector = origin.location.toVector().subtract(entity.entity.location.toVector()).multiply(mul)
+                        if (additional) {
+                            entity.entity.velocity = vector.add(entity.entity.velocity)
+                        } else {
+                            entity.entity.velocity = vector
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     @KetherParser(["velocity"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun actionVelocity() = combinationParser(
         Action.new("Game原版游戏", "改变目标速度", "velocity", true)
