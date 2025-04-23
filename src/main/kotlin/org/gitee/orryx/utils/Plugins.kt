@@ -31,6 +31,8 @@ val MythicMobsPlugin = Plugin("MythicMobs")
 
 val RedisChannelPlugin = Plugin("RedisChannel")
 
+val NodensPlugin = Plugin("Nodens")
+
 val OriginAttributePlugin = Plugin("OriginAttribute")
 
 val AttributePlusPlugin = Plugin("AttributePlus")

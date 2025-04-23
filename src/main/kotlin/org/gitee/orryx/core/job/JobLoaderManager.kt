@@ -31,5 +31,4 @@ object JobLoaderManager {
         }
         info("&e┣&7Jobs loaded &e${jobLoaderMap.size} &a√".colored())
     }
-
 }

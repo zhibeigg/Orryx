@@ -44,5 +44,4 @@ interface IJob {
      * 职业的经验算法选择
      * */
     val experience: String
-
 }

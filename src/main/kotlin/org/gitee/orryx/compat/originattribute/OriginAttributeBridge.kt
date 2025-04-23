@@ -72,7 +72,5 @@ class OriginAttributeBridge: IAttributeBridge {
 
         override val isValid: Boolean
             get() = timeout == -1L || countdown > 0L
-
     }
-
 }

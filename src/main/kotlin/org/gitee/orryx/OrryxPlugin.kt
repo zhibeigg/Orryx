@@ -39,5 +39,4 @@ object OrryxPlugin : Plugin() {
     override fun onDisable() {
         info("&eOrryx &a卸载".colored())
     }
-
 }

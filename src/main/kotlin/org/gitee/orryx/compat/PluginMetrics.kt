@@ -32,5 +32,4 @@ object PluginMetrics {
             map
         })
     }
-
 }

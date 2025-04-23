@@ -21,5 +21,4 @@ class JobLoader(override val key: String, val configuration: Configuration): IJo
     override val upgradePointActions: String = options.getString("UpgradePointActions", "0")!!
 
     override val experience: String = options.getString("Experience", "default")!!
-
 }

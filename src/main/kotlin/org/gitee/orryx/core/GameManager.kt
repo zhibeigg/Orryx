@@ -2,14 +2,21 @@ package org.gitee.orryx.core
 
 import kotlinx.coroutines.cancel
 import org.bukkit.Bukkit
+import org.bukkit.entity.Player
 import org.bukkit.event.entity.FoodLevelChangeEvent
+import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.server.ServerCommandEvent
+import org.gitee.nodens.core.IAttributeGroup
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.api.OrryxAPI
+import org.gitee.orryx.api.events.player.job.OrryxPlayerJobChangeEvents
+import org.gitee.orryx.api.events.player.job.OrryxPlayerJobLevelEvents
+import org.gitee.orryx.compat.IAttributeBridge
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.utils.ConfigLazy
 import org.gitee.orryx.utils.ReloadableLazy
+import org.gitee.orryx.utils.job
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.event.EventPriority
@@ -24,6 +31,34 @@ object GameManager {
 
     private val disabledHunger by ConfigLazy(Orryx.config) { Orryx.config.getBoolean("DisableHunger") }
     var shutdown: Boolean = false
+
+    private const val ORRYX_JOB_ATTRIBUTE = "ORRYX@JOB@ATTRIBUTE"
+
+    @SubscribeEvent
+    private fun onPlayerJoin(e: PlayerJoinEvent) {
+        updateJobAttribute(e.player)
+    }
+
+    @SubscribeEvent
+    private fun onJobChange(e: OrryxPlayerJobChangeEvents.Post) {
+        updateJobAttribute(e.player)
+    }
+
+    @SubscribeEvent
+    private fun onLevelUp(e: OrryxPlayerJobLevelEvents.Up) {
+        updateJobAttribute(e.player)
+    }
+
+    @SubscribeEvent
+    private fun onLevelDown(e: OrryxPlayerJobLevelEvents.Down) {
+        updateJobAttribute(e.player)
+    }
+
+    private fun updateJobAttribute(player: Player) {
+        player.job {
+            IAttributeBridge.INSTANCE.addAttribute(player, ORRYX_JOB_ATTRIBUTE, it.getAttributes())
+        }
+    }
 
     @SubscribeEvent(EventPriority.MONITOR)
     private fun hunger(e: FoodLevelChangeEvent) {

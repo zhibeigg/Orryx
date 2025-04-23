@@ -17,6 +17,7 @@ object HookManager {
         GermPluginPlugin.load()
         MythicMobsPlugin.load()
         RedisChannelPlugin.load()
+        NodensPlugin.load()
         OriginAttributePlugin.load()
         AttributePlusPlugin.load()
         PacketEventsPlugin.load()
@@ -26,5 +27,4 @@ object HookManager {
         GlowAPIPlugin.load()
         DungeonPlusPlugin.load()
     }
-
 }
