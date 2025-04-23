@@ -26,7 +26,7 @@ object GddTitleActions {
             now {
                 val sender = player().name
                 they.orElse(self()).forEachInstance<PlayerTarget> { player ->
-                    GDDTitleAPI.sendTitle(player.getSource(), title.replace("@sender", sender).replace("@player", player.name), i, s, o)
+                    GDDTitleAPI.sendTitle(player.getSource(), title.replace("@sender", sender).replace("@player", player.name), i*50, s*50, o*50)
                 }
             }
         }
@@ -48,7 +48,7 @@ object GddTitleActions {
             now {
                 val sender = player().name
                 they.orElse(self()).forEachInstance<PlayerTarget> { player ->
-                    GDDTitleAPI.sendAction(player.getSource(), action.replace("@sender", sender).replace("@player", player.name), i, s, o)
+                    GDDTitleAPI.sendAction(player.getSource(), action.replace("@sender", sender).replace("@player", player.name), i*50, s*50, o*50)
                 }
             }
         }
