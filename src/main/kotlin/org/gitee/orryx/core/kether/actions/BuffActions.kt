@@ -5,7 +5,6 @@ import org.bukkit.entity.Player
 import org.bukkit.event.player.PlayerQuitEvent
 import org.gitee.orryx.core.common.task.SimpleTimeoutTask
 import org.gitee.orryx.core.common.task.SimpleTimeoutTask.Companion.register
-import org.gitee.orryx.core.kether.ScriptManager.scriptParser
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.core.targets.PlayerTarget
 import org.gitee.orryx.module.wiki.Action
@@ -123,24 +122,22 @@ object BuffActions {
 
     @KetherParser(["buff"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun buff() = scriptParser(
-        arrayOf(
-            Action.new("Orryx Profile玩家信息", "设置状态效果", "buff", true)
-                .description("设置玩家状态效果")
-                .addEntry("发送标识符", Type.SYMBOL, false, head = "send")
-                .addEntry("buff名", Type.STRING, false)
-                .addEntry("持续时长", Type.LONG, true)
-                .addContainerEntry(optional = true, default = "@self"),
-            Action.new("Orryx Profile玩家信息", "清除状态效果", "buff", true)
-                .description("清除玩家状态效果")
-                .addEntry("清除标识符", Type.SYMBOL, false, head = "clear")
-                .addEntry("buff名", Type.STRING, true, "ALL")
-                .addContainerEntry(optional = true, default = "@self"),
-            Action.new("Orryx Profile玩家信息", "是否有状态效果", "buff", true)
-                .description("检测玩家是否有状态效果")
-                .addEntry("检测标识符", Type.SYMBOL, false, head = "has")
-                .addEntry("buff名", Type.STRING, false)
-                .addContainerEntry(optional = true, default = "@self")
-        )
+        Action.new("Orryx Profile玩家信息", "设置状态效果", "buff", true)
+            .description("设置玩家状态效果")
+            .addEntry("发送标识符", Type.SYMBOL, false, head = "send")
+            .addEntry("buff名", Type.STRING, false)
+            .addEntry("持续时长", Type.LONG, true)
+            .addContainerEntry(optional = true, default = "@self"),
+        Action.new("Orryx Profile玩家信息", "清除状态效果", "buff", true)
+            .description("清除玩家状态效果")
+            .addEntry("清除标识符", Type.SYMBOL, false, head = "clear")
+            .addEntry("buff名", Type.STRING, true, "ALL")
+            .addContainerEntry(optional = true, default = "@self"),
+        Action.new("Orryx Profile玩家信息", "是否有状态效果", "buff", true)
+            .description("检测玩家是否有状态效果")
+            .addEntry("检测标识符", Type.SYMBOL, false, head = "has")
+            .addEntry("buff名", Type.STRING, false)
+            .addContainerEntry(optional = true, default = "@self")
     ) {
         it.switch {
             case("send") {
@@ -205,6 +202,5 @@ object BuffActions {
             }
         }
     }
-
 }
 

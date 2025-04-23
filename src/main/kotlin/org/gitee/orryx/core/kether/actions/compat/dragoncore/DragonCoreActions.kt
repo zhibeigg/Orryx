@@ -14,7 +14,6 @@ import org.gitee.orryx.compat.dragoncore.DragonCoreCustomPacketSender
 import org.gitee.orryx.core.common.task.SimpleTimeoutTask
 import org.gitee.orryx.core.container.Container
 import org.gitee.orryx.core.kether.ScriptManager.addOrryxCloseable
-import org.gitee.orryx.core.kether.ScriptManager.scriptParser
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.core.targets.PlayerTarget
@@ -52,226 +51,224 @@ object DragonCoreActions {
 
     @KetherParser(["dragoncore", "dragon"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun dragonCore() = scriptParser(
-        arrayOf(
-            Action.new("DragonCore附属语句", "设置临时时装", "dragoncore", true)
-                .description("设置临时时装")
-                .addEntry("armourers标识符", Type.SYMBOL, false, head = "armourers")
-                .addEntry("发送标识符", Type.SYMBOL, false, head = "send")
-                .addEntry("时装名", Type.STRING, false)
-                .addEntry("临时时长", Type.LONG, true, "100", "timeout")
-                .addContainerEntry(optional = true, default = "@self"),
-            Action.new("DragonCore附属语句", "清除临时时装", "dragoncore", true)
-                .description("清除临时时装")
-                .addEntry("armourers标识符", Type.SYMBOL, false, head = "armourers")
-                .addEntry("清除标识符", Type.SYMBOL, false, head = "clear")
-                .addEntry("时装名", Type.STRING, true, "ALL")
-                .addContainerEntry(optional = true, default = "@self"),
-            Action.new("DragonCore附属语句", "更新时装", "dragoncore", true)
-                .description("清除临时时装")
-                .addEntry("armourers标识符", Type.SYMBOL, false, head = "armourers")
-                .addEntry("更新标识符", Type.SYMBOL, false, head = "update")
-                .addContainerEntry(optional = true, default = "@self"),
-            Action.new("DragonCore附属语句", "发送暴雪粒子", "dragoncore", true)
-                .description("发送暴雪粒子")
-                .addEntry("粒子标识符", Type.SYMBOL, false, head = "effect/particle")
-                .addEntry("发送标识符", Type.SYMBOL, false, head = "send")
-                .addEntry("粒子ID", Type.STRING, false)
-                .addEntry("粒子文件名", Type.STRING, false)
-                .addEntry("x,y,z旋转角度", Type.STRING, false, "0,0,0", head = "rotation")
-                .addEntry("x,y,z平移位置", Type.VECTOR, false, "0,0,0", head = "translate")
-                .addEntry("存活时长tick", Type.INT, false, "100", head = "timeout")
-                .addContainerEntry("可视玩家", true, "@server", "viewers")
-                .addContainerEntry("生成位置或者绑定实体", true, "@self"),
-            Action.new("DragonCore附属语句", "移除暴雪粒子", "dragoncore", true)
-                .description("移除暴雪粒子")
-                .addEntry("粒子标识符", Type.SYMBOL, false, head = "effect/particle")
-                .addEntry("移除标识符", Type.SYMBOL, false, head = "remove")
-                .addEntry("粒子ID", Type.STRING, false)
-                .addContainerEntry("可视玩家", true, "@server"),
-            Action.new("DragonCore附属语句", "清除暴雪粒子", "dragoncore", true)
-                .description("清除暴雪粒子")
-                .addEntry("粒子标识符", Type.SYMBOL, false, head = "effect/particle")
-                .addEntry("清除标识符", Type.SYMBOL, false, head = "clear")
-                .addContainerEntry("可视玩家", true, "@self"),
-            Action.new("DragonCore附属语句", "设置玩家动作", "dragoncore", true)
-                .description("设置玩家动作")
-                .addEntry("动作标识符", Type.SYMBOL, false, head = "animation/ani")
-                .addEntry("设置标识符", Type.SYMBOL, false, head = "set/to")
-                .addEntry("玩家标识符", Type.SYMBOL, false, head = "player")
-                .addEntry("动作名", Type.STRING, false)
-                .addEntry("动作速度", Type.FLOAT, false)
-                .addContainerEntry("设置玩家", true, "@self"),
-            Action.new("DragonCore附属语句", "移除玩家动作", "dragoncore", true)
-                .description("移除玩家动作")
-                .addEntry("动作标识符", Type.SYMBOL, false, head = "animation/ani")
-                .addEntry("移除标识符", Type.SYMBOL, false, head = "remove")
-                .addEntry("玩家标识符", Type.SYMBOL, false, head = "player")
-                .addContainerEntry("移除玩家", true, "@self"),
-            Action.new("DragonCore附属语句", "设置实体动作", "dragoncore", true)
-                .description("设置实体动作")
-                .addEntry("动作标识符", Type.SYMBOL, false, head = "animation/ani")
-                .addEntry("设置标识符", Type.SYMBOL, false, head = "set/to")
-                .addEntry("实体标识符", Type.SYMBOL, false, head = "entity")
-                .addEntry("动作名", Type.STRING, false)
-                .addEntry("过渡时间", Type.INT, false)
-                .addEntry("动作速度", Type.FLOAT, false)
-                .addContainerEntry("设置实体", false)
-                .addContainerEntry("可视玩家", true, "@server", "viewers"),
-            Action.new("DragonCore附属语句", "移除实体动作", "dragoncore", true)
-                .description("移除实体动作")
-                .addEntry("动作标识符", Type.SYMBOL, false, head = "animation/ani")
-                .addEntry("移除标识符", Type.SYMBOL, false, head = "remove")
-                .addEntry("实体标识符", Type.SYMBOL, false, head = "entity")
-                .addEntry("动作名", Type.STRING, false)
-                .addEntry("过渡时间", Type.INT, false)
-                .addContainerEntry("设置实体", false)
-                .addContainerEntry("可视玩家", true, "@server", "viewers"),
-            Action.new("DragonCore附属语句", "设置玩家手持物品动作", "dragoncore", true)
-                .description("设置玩家手持物品动作")
-                .addEntry("动作标识符", Type.SYMBOL, false, head = "animation/ani")
-                .addEntry("设置标识符", Type.SYMBOL, false, head = "set")
-                .addEntry("物品标识符", Type.SYMBOL, false, head = "item")
-                .addEntry("动作名", Type.STRING, false)
-                .addEntry("动作速度", Type.FLOAT, false)
-                .addContainerEntry("设置实体", true, "@self")
-                .addContainerEntry("可视玩家", true, "@server", "viewers"),
-            Action.new("DragonCore附属语句", "设置方块动作", "dragoncore", true)
-                .description("设置方块动作")
-                .addEntry("动作标识符", Type.SYMBOL, false, head = "animation/ani")
-                .addEntry("设置标识符", Type.SYMBOL, false, head = "set")
-                .addEntry("方块标识符", Type.SYMBOL, false, head = "block")
-                .addEntry("动作名", Type.STRING, false)
-                .addEntry("xyz位置", Type.VECTOR, false)
-                .addContainerEntry("可视玩家", true, "@self", "viewers"),
-            Action.new("DragonCore附属语句", "播放音乐", "dragoncore", true)
-                .description("播放音乐")
-                .addEntry("音乐标识符", Type.SYMBOL, false, head = "sound")
-                .addEntry("发送标识符", Type.SYMBOL, false, head = "send")
-                .addEntry("音乐唯一ID", Type.STRING, false)
-                .addEntry("音乐文件位置", Type.STRING, false)
-                .addEntry("播放类型", Type.STRING, false)
-                .addEntry("播放世界位置向量", Type.VECTOR, true, "可听玩家眼睛位置", "loc")
-                .addEntry("是否循环", Type.BOOLEAN, true, head = "loop", default = "false")
-                .addEntry("声音大小", Type.FLOAT, true, head = "by/with", default = "1.0")
-                .addEntry("声音音调", Type.FLOAT, true, default = "1.0")
-                .addContainerEntry("可听玩家", true, "@self"),
-            Action.new("DragonCore附属语句", "停止播放音乐", "dragoncore", true)
-                .description("停止播放音乐")
-                .addEntry("音乐唯一ID", Type.STRING, false)
-                .addContainerEntry("可听玩家", true, "@self"),
-            Action.new("DragonCore附属语句", "运行龙核GUI方法", "dragoncore", true)
-                .description("运行龙核GUI方法")
-                .addEntry("方法标识符", Type.SYMBOL, false, head = "function/func")
-                .addEntry("gui标识符", Type.SYMBOL, false, head = "gui")
-                .addEntry("gui名字", Type.STRING, false)
-                .addEntry("方法语句", Type.STRING, false)
-                .addEntry("是否异步执行", Type.BOOLEAN, false)
-                .addContainerEntry("客户端参与执行的玩家", true, "@self"),
-            Action.new("DragonCore附属语句", "运行龙核动作控制器方法", "dragoncore", true)
-                .description("运行龙核动作控制器方法")
-                .addEntry("方法标识符", Type.SYMBOL, false, head = "function/func")
-                .addEntry("动作标识符", Type.SYMBOL, false, head = "animation/ani")
-                .addEntry("执行实体UUID", Type.STRING, false)
-                .addEntry("方法语句", Type.STRING, false)
-                .addContainerEntry("客户端参与执行的玩家", true, "@self"),
-            Action.new("DragonCore附属语句", "运行龙核headTag方法", "dragoncore", true)
-                .description("运行龙核headTag方法")
-                .addEntry("方法标识符", Type.SYMBOL, false, head = "function/func")
-                .addEntry("tag标识符", Type.SYMBOL, false, head = "headtag/tag")
-                .addEntry("执行实体UUID", Type.STRING, false)
-                .addEntry("方法语句", Type.STRING, false)
-                .addContainerEntry("客户端参与执行的玩家", true, "@self"),
-            Action.new("DragonCore附属语句", "打开GUI", "dragoncore", true)
-                .description("打开龙核Gui")
-                .addEntry("gui标识符", Type.SYMBOL, false, head = "gui")
-                .addEntry("gui名字", Type.STRING, false)
-                .addContainerEntry("打开GUI的玩家", true, "@self"),
-            Action.new("DragonCore附属语句", "打开HUD", "dragoncore", true)
-                .description("打开龙核HUD")
-                .addEntry("hud标识符", Type.SYMBOL, false, head = "hud")
-                .addEntry("hud名字", Type.STRING, false)
-                .addContainerEntry("打开HUD的玩家", true, "@self"),
-            Action.new("DragonCore附属语句", "发送同步papi数据", "dragoncore", true)
-                .description("发送同步placeholder数据")
-                .addEntry("placeholder标识符", Type.SYMBOL, false, head = "placeholder/papi")
-                .addEntry("发送标识符", Type.SYMBOL, false, head = "send")
-                .addEntry("存储了的数据的键，用逗号隔开", Type.STRING, false)
-                .addContainerEntry("发送数据的玩家", true, "@self")
-                .example("dragon papi send a,b,c they \"@self\""),
-            Action.new("DragonCore附属语句", "删除papi数据", "dragoncore", true)
-                .description("删除客户端placeholder数据")
-                .addEntry("placeholder标识符", Type.SYMBOL, false, head = "placeholder/papi")
-                .addEntry("删除标识符", Type.SYMBOL, false, head = "delete/remove")
-                .addEntry("删除的键", Type.STRING, false)
-                .addEntry("是否检测startWith键", Type.BOOLEAN, false)
-                .addContainerEntry("删除数据的玩家", true, "@self")
-                .example("dragon papi delete a,b,c they \"@self\""),
-            Action.new("DragonCore附属语句", "设置headTag", "dragoncore", true)
-                .description("设置实体的headTag")
-                .addEntry("headTag标识符", Type.SYMBOL, false, head = "headtag/tag")
-                .addEntry("设置标识符", Type.SYMBOL, false, head = "set/to")
-                .addEntry("设置的实体uuid", Type.STRING, false)
-                .addEntry("匹配名", Type.STRING, false)
-                .addContainerEntry("可视玩家", true, "@self", "viewers"),
-            Action.new("DragonCore附属语句", "移除headTag", "dragoncore", true)
-                .description("移除实体的headTag")
-                .addEntry("headTag标识符", Type.SYMBOL, false, head = "headtag/tag")
-                .addEntry("移除标识符", Type.SYMBOL, false, head = "remove")
-                .addEntry("移除的实体uuid", Type.STRING, false)
-                .addContainerEntry("可视玩家", true, "@self", "viewers"),
-            Action.new("DragonCore附属语句", "设置实体模型", "dragoncore", true)
-                .description("设置实体模型")
-                .addEntry("模型标识符", Type.SYMBOL, false, head = "model")
-                .addEntry("设置标识符", Type.SYMBOL, false, head = "set/to")
-                .addEntry("设置的实体uuid", Type.STRING, false)
-                .addEntry("匹配名", Type.STRING, false)
-                .addContainerEntry("可视玩家", true, "@self", "viewers"),
-            Action.new("DragonCore附属语句", "移除实体模型", "dragoncore", true)
-                .description("移除实体模型")
-                .addEntry("模型标识符", Type.SYMBOL, false, head = "model")
-                .addEntry("移除标识符", Type.SYMBOL, false, head = "remove")
-                .addEntry("移除的实体uuid", Type.STRING, false)
-                .addContainerEntry("可视玩家", true, "@self", "viewers"),
-            Action.new("DragonCore附属语句", "设置视角", "dragoncore", true)
-                .description("设置第几人称视角")
-                .addEntry("视角标识符", Type.SYMBOL, false, head = "view")
-                .addEntry("视角(1,2,3)", Type.INT, false)
-                .addContainerEntry("设置人称的玩家", true, "@self"),
-            Action.new("DragonCore附属语句", "设置windows窗口标题", "dragoncore", true)
-                .description("设置windows窗口标题")
-                .addEntry("窗口title标识符", Type.SYMBOL, false, head = "title")
-                .addEntry("标题", Type.STRING, false)
-                .addContainerEntry("设置标题的玩家", true, "@self"),
-            Action.new("DragonCore附属语句", "虚拟绑定实体位置", "dragoncore", true)
-                .description("虚拟绑定实体位置")
-                .addEntry("绑定标识符", Type.SYMBOL, false, head = "bindEntity/bind")
-                .addEntry("被绑定的实体UUID", Type.STRING, false)
-                .addEntry("绑定到的实体UUID", Type.STRING, false)
-                .addEntry("偏移向量", Type.VECTOR, false)
-                .addEntry("是否绑定yaw角", Type.BOOLEAN, false)
-                .addEntry("是否绑定pitch角", Type.BOOLEAN, false)
-                .addContainerEntry("可视玩家", true, "@self", "viewers"),
-            Action.new("DragonCore附属语句", "实体模型特效绑定", "dragoncore", true)
-                .description("实体模型特效绑定，脚本运行时间必须大于延迟消失时间，若提前停止将会直接回收实体")
-                .addEntry("实体模型标识符", Type.SYMBOL, false, head = "modelEffect")
-                .addEntry("创建标识符", Type.SYMBOL, false, head = "create")
-                .addEntry("实体唯一ID", Type.STRING, false)
-                .addEntry("模型匹配名", Type.STRING, false)
-                .addEntry("延迟消失时间", Type.LONG, false)
-                .addContainerEntry("绑定实体", true, "@self")
-                .result("绑定的实体容器", Type.CONTAINER),
-            Action.new("DragonCore附属语句", "实体模型特效移除", "dragoncore", true)
-                .description("实体模型特效移除")
-                .addEntry("实体模型标识符", Type.SYMBOL, false, head = "modelEffect")
-                .addEntry("移除标识符", Type.SYMBOL, false, head = "remove")
-                .addEntry("实体唯一ID", Type.STRING, false)
-                .addContainerEntry("绑定的实体", true, "@self"),
-            Action.new("DragonCore附属语句", "隐藏玩家手持武器", "dragoncore", true)
-                .description("隐藏玩家手持武器")
-                .addEntry("隐藏手持标识符", Type.SYMBOL, false, head = "invisibleHand")
-                .addEntry("隐藏时间 0 为取消", Type.LONG, false)
-                .addContainerEntry("取消的玩家", true, "@self")
-        )
+        Action.new("DragonCore附属语句", "设置临时时装", "dragoncore", true)
+            .description("设置临时时装")
+            .addEntry("armourers标识符", Type.SYMBOL, false, head = "armourers")
+            .addEntry("发送标识符", Type.SYMBOL, false, head = "send")
+            .addEntry("时装名", Type.STRING, false)
+            .addEntry("临时时长", Type.LONG, true, "100", "timeout")
+            .addContainerEntry(optional = true, default = "@self"),
+        Action.new("DragonCore附属语句", "清除临时时装", "dragoncore", true)
+            .description("清除临时时装")
+            .addEntry("armourers标识符", Type.SYMBOL, false, head = "armourers")
+            .addEntry("清除标识符", Type.SYMBOL, false, head = "clear")
+            .addEntry("时装名", Type.STRING, true, "ALL")
+            .addContainerEntry(optional = true, default = "@self"),
+        Action.new("DragonCore附属语句", "更新时装", "dragoncore", true)
+            .description("清除临时时装")
+            .addEntry("armourers标识符", Type.SYMBOL, false, head = "armourers")
+            .addEntry("更新标识符", Type.SYMBOL, false, head = "update")
+            .addContainerEntry(optional = true, default = "@self"),
+        Action.new("DragonCore附属语句", "发送暴雪粒子", "dragoncore", true)
+            .description("发送暴雪粒子")
+            .addEntry("粒子标识符", Type.SYMBOL, false, head = "effect/particle")
+            .addEntry("发送标识符", Type.SYMBOL, false, head = "send")
+            .addEntry("粒子ID", Type.STRING, false)
+            .addEntry("粒子文件名", Type.STRING, false)
+            .addEntry("x,y,z旋转角度", Type.STRING, false, "0,0,0", head = "rotation")
+            .addEntry("x,y,z平移位置", Type.VECTOR, false, "0,0,0", head = "translate")
+            .addEntry("存活时长tick", Type.INT, false, "100", head = "timeout")
+            .addContainerEntry("可视玩家", true, "@server", "viewers")
+            .addContainerEntry("生成位置或者绑定实体", true, "@self"),
+        Action.new("DragonCore附属语句", "移除暴雪粒子", "dragoncore", true)
+            .description("移除暴雪粒子")
+            .addEntry("粒子标识符", Type.SYMBOL, false, head = "effect/particle")
+            .addEntry("移除标识符", Type.SYMBOL, false, head = "remove")
+            .addEntry("粒子ID", Type.STRING, false)
+            .addContainerEntry("可视玩家", true, "@server"),
+        Action.new("DragonCore附属语句", "清除暴雪粒子", "dragoncore", true)
+            .description("清除暴雪粒子")
+            .addEntry("粒子标识符", Type.SYMBOL, false, head = "effect/particle")
+            .addEntry("清除标识符", Type.SYMBOL, false, head = "clear")
+            .addContainerEntry("可视玩家", true, "@self"),
+        Action.new("DragonCore附属语句", "设置玩家动作", "dragoncore", true)
+            .description("设置玩家动作")
+            .addEntry("动作标识符", Type.SYMBOL, false, head = "animation/ani")
+            .addEntry("设置标识符", Type.SYMBOL, false, head = "set/to")
+            .addEntry("玩家标识符", Type.SYMBOL, false, head = "player")
+            .addEntry("动作名", Type.STRING, false)
+            .addEntry("动作速度", Type.FLOAT, false)
+            .addContainerEntry("设置玩家", true, "@self"),
+        Action.new("DragonCore附属语句", "移除玩家动作", "dragoncore", true)
+            .description("移除玩家动作")
+            .addEntry("动作标识符", Type.SYMBOL, false, head = "animation/ani")
+            .addEntry("移除标识符", Type.SYMBOL, false, head = "remove")
+            .addEntry("玩家标识符", Type.SYMBOL, false, head = "player")
+            .addContainerEntry("移除玩家", true, "@self"),
+        Action.new("DragonCore附属语句", "设置实体动作", "dragoncore", true)
+            .description("设置实体动作")
+            .addEntry("动作标识符", Type.SYMBOL, false, head = "animation/ani")
+            .addEntry("设置标识符", Type.SYMBOL, false, head = "set/to")
+            .addEntry("实体标识符", Type.SYMBOL, false, head = "entity")
+            .addEntry("动作名", Type.STRING, false)
+            .addEntry("过渡时间", Type.INT, false)
+            .addEntry("动作速度", Type.FLOAT, false)
+            .addContainerEntry("设置实体", false)
+            .addContainerEntry("可视玩家", true, "@server", "viewers"),
+        Action.new("DragonCore附属语句", "移除实体动作", "dragoncore", true)
+            .description("移除实体动作")
+            .addEntry("动作标识符", Type.SYMBOL, false, head = "animation/ani")
+            .addEntry("移除标识符", Type.SYMBOL, false, head = "remove")
+            .addEntry("实体标识符", Type.SYMBOL, false, head = "entity")
+            .addEntry("动作名", Type.STRING, false)
+            .addEntry("过渡时间", Type.INT, false)
+            .addContainerEntry("设置实体", false)
+            .addContainerEntry("可视玩家", true, "@server", "viewers"),
+        Action.new("DragonCore附属语句", "设置玩家手持物品动作", "dragoncore", true)
+            .description("设置玩家手持物品动作")
+            .addEntry("动作标识符", Type.SYMBOL, false, head = "animation/ani")
+            .addEntry("设置标识符", Type.SYMBOL, false, head = "set")
+            .addEntry("物品标识符", Type.SYMBOL, false, head = "item")
+            .addEntry("动作名", Type.STRING, false)
+            .addEntry("动作速度", Type.FLOAT, false)
+            .addContainerEntry("设置实体", true, "@self")
+            .addContainerEntry("可视玩家", true, "@server", "viewers"),
+        Action.new("DragonCore附属语句", "设置方块动作", "dragoncore", true)
+            .description("设置方块动作")
+            .addEntry("动作标识符", Type.SYMBOL, false, head = "animation/ani")
+            .addEntry("设置标识符", Type.SYMBOL, false, head = "set")
+            .addEntry("方块标识符", Type.SYMBOL, false, head = "block")
+            .addEntry("动作名", Type.STRING, false)
+            .addEntry("xyz位置", Type.VECTOR, false)
+            .addContainerEntry("可视玩家", true, "@self", "viewers"),
+        Action.new("DragonCore附属语句", "播放音乐", "dragoncore", true)
+            .description("播放音乐")
+            .addEntry("音乐标识符", Type.SYMBOL, false, head = "sound")
+            .addEntry("发送标识符", Type.SYMBOL, false, head = "send")
+            .addEntry("音乐唯一ID", Type.STRING, false)
+            .addEntry("音乐文件位置", Type.STRING, false)
+            .addEntry("播放类型", Type.STRING, false)
+            .addEntry("播放世界位置向量", Type.VECTOR, true, "可听玩家眼睛位置", "loc")
+            .addEntry("是否循环", Type.BOOLEAN, true, head = "loop", default = "false")
+            .addEntry("声音大小", Type.FLOAT, true, head = "by/with", default = "1.0")
+            .addEntry("声音音调", Type.FLOAT, true, default = "1.0")
+            .addContainerEntry("可听玩家", true, "@self"),
+        Action.new("DragonCore附属语句", "停止播放音乐", "dragoncore", true)
+            .description("停止播放音乐")
+            .addEntry("音乐唯一ID", Type.STRING, false)
+            .addContainerEntry("可听玩家", true, "@self"),
+        Action.new("DragonCore附属语句", "运行龙核GUI方法", "dragoncore", true)
+            .description("运行龙核GUI方法")
+            .addEntry("方法标识符", Type.SYMBOL, false, head = "function/func")
+            .addEntry("gui标识符", Type.SYMBOL, false, head = "gui")
+            .addEntry("gui名字", Type.STRING, false)
+            .addEntry("方法语句", Type.STRING, false)
+            .addEntry("是否异步执行", Type.BOOLEAN, false)
+            .addContainerEntry("客户端参与执行的玩家", true, "@self"),
+        Action.new("DragonCore附属语句", "运行龙核动作控制器方法", "dragoncore", true)
+            .description("运行龙核动作控制器方法")
+            .addEntry("方法标识符", Type.SYMBOL, false, head = "function/func")
+            .addEntry("动作标识符", Type.SYMBOL, false, head = "animation/ani")
+            .addEntry("执行实体UUID", Type.STRING, false)
+            .addEntry("方法语句", Type.STRING, false)
+            .addContainerEntry("客户端参与执行的玩家", true, "@self"),
+        Action.new("DragonCore附属语句", "运行龙核headTag方法", "dragoncore", true)
+            .description("运行龙核headTag方法")
+            .addEntry("方法标识符", Type.SYMBOL, false, head = "function/func")
+            .addEntry("tag标识符", Type.SYMBOL, false, head = "headtag/tag")
+            .addEntry("执行实体UUID", Type.STRING, false)
+            .addEntry("方法语句", Type.STRING, false)
+            .addContainerEntry("客户端参与执行的玩家", true, "@self"),
+        Action.new("DragonCore附属语句", "打开GUI", "dragoncore", true)
+            .description("打开龙核Gui")
+            .addEntry("gui标识符", Type.SYMBOL, false, head = "gui")
+            .addEntry("gui名字", Type.STRING, false)
+            .addContainerEntry("打开GUI的玩家", true, "@self"),
+        Action.new("DragonCore附属语句", "打开HUD", "dragoncore", true)
+            .description("打开龙核HUD")
+            .addEntry("hud标识符", Type.SYMBOL, false, head = "hud")
+            .addEntry("hud名字", Type.STRING, false)
+            .addContainerEntry("打开HUD的玩家", true, "@self"),
+        Action.new("DragonCore附属语句", "发送同步papi数据", "dragoncore", true)
+            .description("发送同步placeholder数据")
+            .addEntry("placeholder标识符", Type.SYMBOL, false, head = "placeholder/papi")
+            .addEntry("发送标识符", Type.SYMBOL, false, head = "send")
+            .addEntry("存储了的数据的键，用逗号隔开", Type.STRING, false)
+            .addContainerEntry("发送数据的玩家", true, "@self")
+            .example("dragon papi send a,b,c they \"@self\""),
+        Action.new("DragonCore附属语句", "删除papi数据", "dragoncore", true)
+            .description("删除客户端placeholder数据")
+            .addEntry("placeholder标识符", Type.SYMBOL, false, head = "placeholder/papi")
+            .addEntry("删除标识符", Type.SYMBOL, false, head = "delete/remove")
+            .addEntry("删除的键", Type.STRING, false)
+            .addEntry("是否检测startWith键", Type.BOOLEAN, false)
+            .addContainerEntry("删除数据的玩家", true, "@self")
+            .example("dragon papi delete a,b,c they \"@self\""),
+        Action.new("DragonCore附属语句", "设置headTag", "dragoncore", true)
+            .description("设置实体的headTag")
+            .addEntry("headTag标识符", Type.SYMBOL, false, head = "headtag/tag")
+            .addEntry("设置标识符", Type.SYMBOL, false, head = "set/to")
+            .addEntry("设置的实体uuid", Type.STRING, false)
+            .addEntry("匹配名", Type.STRING, false)
+            .addContainerEntry("可视玩家", true, "@self", "viewers"),
+        Action.new("DragonCore附属语句", "移除headTag", "dragoncore", true)
+            .description("移除实体的headTag")
+            .addEntry("headTag标识符", Type.SYMBOL, false, head = "headtag/tag")
+            .addEntry("移除标识符", Type.SYMBOL, false, head = "remove")
+            .addEntry("移除的实体uuid", Type.STRING, false)
+            .addContainerEntry("可视玩家", true, "@self", "viewers"),
+        Action.new("DragonCore附属语句", "设置实体模型", "dragoncore", true)
+            .description("设置实体模型")
+            .addEntry("模型标识符", Type.SYMBOL, false, head = "model")
+            .addEntry("设置标识符", Type.SYMBOL, false, head = "set/to")
+            .addEntry("设置的实体uuid", Type.STRING, false)
+            .addEntry("匹配名", Type.STRING, false)
+            .addContainerEntry("可视玩家", true, "@self", "viewers"),
+        Action.new("DragonCore附属语句", "移除实体模型", "dragoncore", true)
+            .description("移除实体模型")
+            .addEntry("模型标识符", Type.SYMBOL, false, head = "model")
+            .addEntry("移除标识符", Type.SYMBOL, false, head = "remove")
+            .addEntry("移除的实体uuid", Type.STRING, false)
+            .addContainerEntry("可视玩家", true, "@self", "viewers"),
+        Action.new("DragonCore附属语句", "设置视角", "dragoncore", true)
+            .description("设置第几人称视角")
+            .addEntry("视角标识符", Type.SYMBOL, false, head = "view")
+            .addEntry("视角(1,2,3)", Type.INT, false)
+            .addContainerEntry("设置人称的玩家", true, "@self"),
+        Action.new("DragonCore附属语句", "设置windows窗口标题", "dragoncore", true)
+            .description("设置windows窗口标题")
+            .addEntry("窗口title标识符", Type.SYMBOL, false, head = "title")
+            .addEntry("标题", Type.STRING, false)
+            .addContainerEntry("设置标题的玩家", true, "@self"),
+        Action.new("DragonCore附属语句", "虚拟绑定实体位置", "dragoncore", true)
+            .description("虚拟绑定实体位置")
+            .addEntry("绑定标识符", Type.SYMBOL, false, head = "bindEntity/bind")
+            .addEntry("被绑定的实体UUID", Type.STRING, false)
+            .addEntry("绑定到的实体UUID", Type.STRING, false)
+            .addEntry("偏移向量", Type.VECTOR, false)
+            .addEntry("是否绑定yaw角", Type.BOOLEAN, false)
+            .addEntry("是否绑定pitch角", Type.BOOLEAN, false)
+            .addContainerEntry("可视玩家", true, "@self", "viewers"),
+        Action.new("DragonCore附属语句", "实体模型特效绑定", "dragoncore", true)
+            .description("实体模型特效绑定，脚本运行时间必须大于延迟消失时间，若提前停止将会直接回收实体")
+            .addEntry("实体模型标识符", Type.SYMBOL, false, head = "modelEffect")
+            .addEntry("创建标识符", Type.SYMBOL, false, head = "create")
+            .addEntry("实体唯一ID", Type.STRING, false)
+            .addEntry("模型匹配名", Type.STRING, false)
+            .addEntry("延迟消失时间", Type.LONG, false)
+            .addContainerEntry("绑定实体", true, "@self")
+            .result("绑定的实体容器", Type.CONTAINER),
+        Action.new("DragonCore附属语句", "实体模型特效移除", "dragoncore", true)
+            .description("实体模型特效移除")
+            .addEntry("实体模型标识符", Type.SYMBOL, false, head = "modelEffect")
+            .addEntry("移除标识符", Type.SYMBOL, false, head = "remove")
+            .addEntry("实体唯一ID", Type.STRING, false)
+            .addContainerEntry("绑定的实体", true, "@self"),
+        Action.new("DragonCore附属语句", "隐藏玩家手持武器", "dragoncore", true)
+            .description("隐藏玩家手持武器")
+            .addEntry("隐藏手持标识符", Type.SYMBOL, false, head = "invisibleHand")
+            .addEntry("隐藏时间 0 为取消", Type.LONG, false)
+            .addContainerEntry("取消的玩家", true, "@self")
     ) {
         it.switch {
             case("armourers") {
@@ -494,7 +491,7 @@ object DragonCoreActions {
     }
 
     private fun setAnimation(reader: QuestReader): ScriptAction<Any?> {
-        return when(reader.expects("player", "entity", "item", "block")) {
+        return when (reader.expects("player", "entity", "item", "block")) {
             "player" -> setPlayerAnimation(reader)
             "entity" -> setModelEntityAnimation(reader)
             "item" -> setItemAnimation(reader)
@@ -504,7 +501,7 @@ object DragonCoreActions {
     }
 
     private fun removeAnimation(reader: QuestReader): ScriptAction<Any?> {
-        return when(reader.expects("player", "entity")) {
+        return when (reader.expects("player", "entity")) {
             "player" -> removePlayerAnimation(reader)
             "entity" -> removeModelEntityAnimation(reader)
             else -> error("龙核remove animation类型错误")
@@ -553,13 +550,19 @@ object DragonCoreActions {
                 run(transitionTime).int { transitionTime ->
                     run(speed).float { speed ->
                         entities ?: error("龙核动作无设置实体")
-                        containerOrSelf(entities) {entities ->
-                            container(viewers, serverPlayerContainer) {viewers ->
+                        containerOrSelf(entities) { entities ->
+                            container(viewers, serverPlayerContainer) { viewers ->
                                 val players = viewers.get<PlayerTarget>()
                                 entities.forEachInstance<ITargetEntity<*>> { target ->
                                     if (target is PlayerTarget) return@forEachInstance
                                     players.forEach { viewer ->
-                                        PacketSender.setModelEntityAnimation(viewer.getSource(), target.entity.uniqueId, animation, transitionTime*50, speed)
+                                        PacketSender.setModelEntityAnimation(
+                                            viewer.getSource(),
+                                            target.entity.uniqueId,
+                                            animation,
+                                            transitionTime * 50,
+                                            speed
+                                        )
                                     }
                                 }
                             }
@@ -586,7 +589,12 @@ object DragonCoreActions {
                             entities.forEachInstance<ITargetEntity<*>> { target ->
                                 if (target is PlayerTarget) return@forEachInstance
                                 players.forEach { viewer ->
-                                    PacketSender.removeModelEntityAnimation(viewer.getSource(), target.entity.uniqueId, animation, transitionTime*50)
+                                    PacketSender.removeModelEntityAnimation(
+                                        viewer.getSource(),
+                                        target.entity.uniqueId,
+                                        animation,
+                                        transitionTime * 50
+                                    )
                                 }
                             }
                         }
@@ -605,12 +613,17 @@ object DragonCoreActions {
         return actionNow {
             run(animation).str { animation ->
                 run(speed).float { speed ->
-                    containerOrSelf(entities) {entities ->
-                        container(viewers, serverPlayerContainer) {viewers ->
+                    containerOrSelf(entities) { entities ->
+                        container(viewers, serverPlayerContainer) { viewers ->
                             val players = viewers.get<PlayerTarget>()
                             entities.forEachInstance<ITargetEntity<*>> { entity ->
                                 players.forEach { player ->
-                                    DragonCoreCustomPacketSender.setEntityModelItemAnimation(player.getSource(), entity.entity.uniqueId, animation, speed)
+                                    DragonCoreCustomPacketSender.setEntityModelItemAnimation(
+                                        player.getSource(),
+                                        entity.entity.uniqueId,
+                                        animation,
+                                        speed
+                                    )
                                 }
                             }
                         }
@@ -630,7 +643,13 @@ object DragonCoreActions {
                 run(xyz).vector { xyz ->
                     containerOrSelf(viewers) { players ->
                         players.forEachInstance<PlayerTarget> { player ->
-                            PacketSender.setBlockAnimation(player.getSource(), xyz.x().toInt(), xyz.y().toInt(), xyz.z().toInt(), animation)
+                            PacketSender.setBlockAnimation(
+                                player.getSource(),
+                                xyz.x().toInt(),
+                                xyz.y().toInt(),
+                                xyz.z().toInt(),
+                                animation
+                            )
                         }
                     }
                 }
@@ -758,7 +777,9 @@ object DragonCoreActions {
             run(keys).str { keys ->
                 containerOrSelf(players) {
                     it.forEachInstance<PlayerTarget> { player ->
-                        PacketSender.sendSyncPlaceholder(player.getSource(), keys.split(",").associateWith { key -> script().get<String>(key) })
+                        PacketSender.sendSyncPlaceholder(
+                            player.getSource(),
+                            keys.split(",").associateWith { key -> script().get<String>(key) })
                     }
                 }
             }
@@ -816,7 +837,11 @@ object DragonCoreActions {
                         val id = uuid.parseUUID()!!
                         if (Bukkit.getPlayer(id) != null) {
                             it.forEachInstance<PlayerTarget> { player ->
-                                DragonCoreCustomPacketSender.runPlayerAnimationControllerFunction(player.getSource(), id, function)
+                                DragonCoreCustomPacketSender.runPlayerAnimationControllerFunction(
+                                    player.getSource(),
+                                    id,
+                                    function
+                                )
                             }
                         } else {
                             it.forEachInstance<PlayerTarget> { player ->
@@ -959,7 +984,16 @@ object DragonCoreActions {
                             run(bindPitch).bool { pitch ->
                                 containerOrSelf(viewers) {
                                     it.forEachInstance<PlayerTarget> { player ->
-                                        PacketSender.sendEntityLocationBind(player.getSource(), uuid.parseUUID(), owner.parseUUID(), vector.x().cfloat, vector.y().cfloat, vector.z().cfloat, yaw, pitch)
+                                        PacketSender.sendEntityLocationBind(
+                                            player.getSource(),
+                                            uuid.parseUUID(),
+                                            owner.parseUUID(),
+                                            vector.x().cfloat,
+                                            vector.y().cfloat,
+                                            vector.z().cfloat,
+                                            yaw,
+                                            pitch
+                                        )
                                     }
                                 }
                             }
@@ -980,13 +1014,14 @@ object DragonCoreActions {
             run(key).str { key ->
                 run(model).str { model ->
                     run(timeout).long { timeout ->
-                        containerOrSelf(they) {container ->
+                        containerOrSelf(they) { container ->
                             ensureSync {
                                 container.mapInstance<ITargetEntity<*>, ModelEffect> { target ->
                                     sendModelEffect(target.entity, key, model, timeout)
                                 }
                             }.thenAccept {
-                                addOrryxCloseable(CompletableFuture.allOf(*it.map { modelEffect -> modelEffect.simpleTimeoutTask.future }.toTypedArray())) {
+                                addOrryxCloseable(CompletableFuture.allOf(*it.map { modelEffect -> modelEffect.simpleTimeoutTask.future }
+                                    .toTypedArray())) {
                                     it.forEach { modelEffect0 ->
                                         effectMap[modelEffect0.owner]?.removeIf { modelEffect1 ->
                                             modelEffect0 == modelEffect1
@@ -1009,7 +1044,7 @@ object DragonCoreActions {
 
         return actionNow {
             run(key).str { key ->
-                containerOrSelf(they) {container ->
+                containerOrSelf(they) { container ->
                     container.forEachInstance<ITargetEntity<*>> { target ->
                         val iterator = effectMap[target.entity.uniqueId]?.iterator() ?: return@forEachInstance
                         while (iterator.hasNext()) {
@@ -1057,7 +1092,16 @@ object DragonCoreActions {
 //        }
         onlinePlayers.forEach { player ->
             PacketSender.setEntityModel(player, effect.entity.uniqueId, model)
-            PacketSender.sendEntityLocationBind(player, effect.entity.uniqueId, entity.uniqueId, 0.0f, 0.0f, 0.0f, true, true)
+            PacketSender.sendEntityLocationBind(
+                player,
+                effect.entity.uniqueId,
+                entity.uniqueId,
+                0.0f,
+                0.0f,
+                0.0f,
+                true,
+                true
+            )
         }
         val modelEffect = ModelEffect(entity.uniqueId, effect)
         effectMap.getOrPut(entity.uniqueId) { mutableListOf() }.add(modelEffect)
@@ -1092,5 +1136,4 @@ object DragonCoreActions {
             }
         }
     }
-
 }

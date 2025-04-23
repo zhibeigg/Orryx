@@ -1,10 +1,10 @@
 package org.gitee.orryx.core.kether.actions.math
 
-import org.gitee.orryx.core.kether.ScriptManager.combinationParser
-import org.gitee.orryx.core.kether.ScriptManager.scriptParser
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.ORRYX_NAMESPACE
+import org.gitee.orryx.utils.combinationParser
+import org.gitee.orryx.utils.scriptParser
 import taboolib.module.kether.KetherParser
 import taboolib.module.kether.actionNow
 import kotlin.math.*
@@ -239,11 +239,9 @@ object MathActions {
 
     @KetherParser(["natural"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun actionNatural() = scriptParser(
-        arrayOf(
-            Action.new("Math数学运算", "自然对数函数的底数", "natural", true)
-                .description("自然对数函数的底数")
-                .result("自然对数函数的底数", Type.DOUBLE)
-        )
+        Action.new("Math数学运算", "自然对数函数的底数", "natural", true)
+            .description("自然对数函数的底数")
+            .result("自然对数函数的底数", Type.DOUBLE)
     ) {
         actionNow {
             E
@@ -252,15 +250,12 @@ object MathActions {
 
     @KetherParser(["pi"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun actionPI() = scriptParser(
-        arrayOf(
-            Action.new("Math数学运算", "圆周率", "pi", true)
-                .description("圆周率")
-                .result("圆周率", Type.DOUBLE)
-        )
+        Action.new("Math数学运算", "圆周率", "pi", true)
+            .description("圆周率")
+            .result("圆周率", Type.DOUBLE)
     ) {
         actionNow {
             PI
         }
     }
-
 }

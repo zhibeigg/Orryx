@@ -1,7 +1,5 @@
 package org.gitee.orryx.core.kether.actions
 
-import org.gitee.orryx.core.kether.ScriptManager.combinationParser
-import org.gitee.orryx.core.kether.ScriptManager.scriptParser
 import org.gitee.orryx.module.state.StateManager
 import org.gitee.orryx.module.state.StateManager.statusData
 import org.gitee.orryx.module.state.Status
@@ -13,7 +11,9 @@ import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.ORRYX_NAMESPACE
 import org.gitee.orryx.utils.bukkitPlayer
+import org.gitee.orryx.utils.combinationParser
 import org.gitee.orryx.utils.ensureSync
+import org.gitee.orryx.utils.scriptParser
 import taboolib.module.kether.*
 
 object StateActions {
@@ -47,25 +47,23 @@ object StateActions {
 
     @KetherParser(["state"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun actionState() = scriptParser(
-        arrayOf(
-            Action.new("State状态机", "获取当前运行的状态名", "state", true)
-                .description("获取当前运行的状态名")
-                .addEntry("当前占位符", Type.SYMBOL, false, head = "now")
-                .result("状态名", Type.STRING),
-            Action.new("State状态机", "获取当前移动方向", "state", true)
-                .description("获取当前移动方向")
-                .addEntry("移动占位符", Type.SYMBOL, false, head = "move")
-                .result("移动方向", Type.STRING),
-            Action.new("State状态机", "自动检测Status条件更新", "state", true)
-                .description("自动检测Status条件并更新Status")
-                .addEntry("更新占位符", Type.SYMBOL, false, head = "update")
-                .result("适配的Status名", Type.STRING),
-            Action.new("State状态机", "强制执行下一状态", "state", true)
-                .description("强制执行指定下一状态")
-                .addEntry("下一占位符", Type.SYMBOL, false, head = "next")
-                .addEntry("状态名", Type.STRING)
-                .result("运动状态", Type.STATE)
-        )
+        Action.new("State状态机", "获取当前运行的状态名", "state", true)
+            .description("获取当前运行的状态名")
+            .addEntry("当前占位符", Type.SYMBOL, false, head = "now")
+            .result("状态名", Type.STRING),
+        Action.new("State状态机", "获取当前移动方向", "state", true)
+            .description("获取当前移动方向")
+            .addEntry("移动占位符", Type.SYMBOL, false, head = "move")
+            .result("移动方向", Type.STRING),
+        Action.new("State状态机", "自动检测Status条件更新", "state", true)
+            .description("自动检测Status条件并更新Status")
+            .addEntry("更新占位符", Type.SYMBOL, false, head = "update")
+            .result("适配的Status名", Type.STRING),
+        Action.new("State状态机", "强制执行下一状态", "state", true)
+            .description("强制执行指定下一状态")
+            .addEntry("下一占位符", Type.SYMBOL, false, head = "next")
+            .addEntry("状态名", Type.STRING)
+            .result("运动状态", Type.STATE)
     ) {
         it.switch {
             case("now") {
@@ -106,5 +104,4 @@ object StateActions {
             }
         }
     }
-
 }

@@ -1,11 +1,11 @@
 package org.gitee.orryx.core.kether.actions
 
 import org.gitee.orryx.core.kether.ScriptManager.addOrryxCloseable
-import org.gitee.orryx.core.kether.ScriptManager.scriptParser
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.ORRYX_NAMESPACE
 import org.gitee.orryx.utils.ensureSync
+import org.gitee.orryx.utils.scriptParser
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common.platform.function.submit
 import taboolib.module.kether.KetherParser
@@ -17,11 +17,9 @@ object Actions {
 
     @KetherParser(["wait", "delay", "sleep"], namespace = ORRYX_NAMESPACE)
     private fun actionWait() = scriptParser(
-        arrayOf(
-            Action.new("普通语句", "延迟delay", "wait/delay/sleep")
-                .description("延迟多少Tick")
-                .addEntry("tick", Type.LONG)
-        )
+        Action.new("普通语句", "延迟delay", "wait/delay/sleep")
+            .description("延迟多少Tick")
+            .addEntry("tick", Type.LONG)
     ) {
         val ticks = it.nextParsedAction()
         actionFuture { f ->
@@ -36,31 +34,27 @@ object Actions {
 
     @KetherParser(["sync"], namespace = ORRYX_NAMESPACE)
     private fun actionSync() = scriptParser(
-        arrayOf(
-            Action.new("普通语句", "同步Sync", "sync")
-                .description("将语句在主线程运行并等待返回")
-                .addEntry("actions", Type.ANY)
-        )
+        Action.new("普通语句", "同步Sync", "sync")
+            .description("将语句在主线程运行并等待返回")
+            .addEntry("actions", Type.ANY)
     ) {
         val action = it.nextParsedAction()
-        actionFuture {future ->
+        actionFuture { future ->
             ensureSync { run(action).thenAccept { value -> future.complete(value) } }
         }
     }
 
     @KetherParser(["contains"], namespace = ORRYX_NAMESPACE)
     private fun actionContains() = scriptParser(
-        arrayOf(
-            Action.new("普通语句", "是否包含", "contains")
-                .description("Iterable或者String是否包含value")
-                .addEntry("Iterable或者String", Type.ANY)
-                .addEntry("value", Type.ANY)
-                .result("是否包含", Type.BOOLEAN)
-        )
+        Action.new("普通语句", "是否包含", "contains")
+            .description("Iterable或者String是否包含value")
+            .addEntry("Iterable或者String", Type.ANY)
+            .addEntry("value", Type.ANY)
+            .result("是否包含", Type.BOOLEAN)
     ) {
         val check = it.nextParsedAction()
         val value = it.nextParsedAction()
-        actionFuture {future ->
+        actionFuture { future ->
             run(check).thenAccept { check ->
                 run(value).thenAccept { value ->
                     future.complete(
@@ -74,5 +68,4 @@ object Actions {
             }
         }
     }
-
 }

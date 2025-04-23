@@ -4,7 +4,6 @@ import io.lumine.xikage.mythicmobs.MythicMobs
 import io.lumine.xikage.mythicmobs.adapters.bukkit.BukkitAdapter
 import org.bukkit.entity.Entity
 import org.bukkit.entity.LivingEntity
-import org.gitee.orryx.core.kether.ScriptManager.scriptParser
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.core.targets.PlayerTarget
 import org.gitee.orryx.module.wiki.Action
@@ -17,46 +16,44 @@ object MythicMobsActions {
 
     @KetherParser(["mythicmobs", "mythic", "mob"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun dragonCore() = scriptParser(
-        arrayOf(
-            Action.new("MythicMobs附属语句", "嘲讽怪物", "mythicmobs", true)
-                .description("嘲讽怪物")
-                .addEntry("嘲讽标识符", Type.SYMBOL, false, head = "taunt")
-                .addContainerEntry("被嘲讽的怪物", optional = false, head = null)
-                .addContainerEntry("嘲讽者", true, "@self"),
-            Action.new("MythicMobs附属语句", "添加仇恨值", "mythicmobs", true)
-                .description("添加仇恨值")
-                .addEntry("仇恨表标识符", Type.SYMBOL, false, head = "threat")
-                .addEntry("添加标识符", Type.SYMBOL, false, head = "add")
-                .addEntry("仇恨值", Type.DOUBLE, optional = false)
-                .addContainerEntry("怪物", optional = false, head = null)
-                .addContainerEntry("目标", true, "@self"),
-            Action.new("MythicMobs附属语句", "减少仇恨值", "mythicmobs", true)
-                .description("减少仇恨值")
-                .addEntry("仇恨表标识符", Type.SYMBOL, false, head = "threat")
-                .addEntry("减少标识符", Type.SYMBOL, false, head = "take")
-                .addEntry("仇恨值", Type.DOUBLE, optional = false)
-                .addContainerEntry("怪物", optional = false, head = null)
-                .addContainerEntry("目标", true, "@self"),
-            Action.new("MythicMobs附属语句", "设置仇恨值", "mythicmobs", true)
-                .description("设置仇恨值")
-                .addEntry("仇恨表标识符", Type.SYMBOL, false, head = "threat")
-                .addEntry("设置标识符", Type.SYMBOL, false, head = "set")
-                .addEntry("仇恨值", Type.DOUBLE, optional = false)
-                .addContainerEntry("怪物", optional = false, head = null)
-                .addContainerEntry("目标", true, "@self"),
-            Action.new("MythicMobs附属语句", "释放MM技能", "mythicmobs", true)
-                .description("释放MythicMobs技能")
-                .addEntry("释放标识符", Type.SYMBOL, false, head = "cast")
-                .addEntry("技能名", Type.STRING, optional = false)
-                .addEntry("技能强度", Type.FLOAT, optional = false)
-                .addContainerEntry("怪物", true, "@self", "trigger")
-                .addContainerEntry("目标", true, "@self"),
-        )
+        Action.new("MythicMobs附属语句", "嘲讽怪物", "mythicmobs", true)
+            .description("嘲讽怪物")
+            .addEntry("嘲讽标识符", Type.SYMBOL, false, head = "taunt")
+            .addContainerEntry("被嘲讽的怪物", optional = false, head = null)
+            .addContainerEntry("嘲讽者", true, "@self"),
+        Action.new("MythicMobs附属语句", "添加仇恨值", "mythicmobs", true)
+            .description("添加仇恨值")
+            .addEntry("仇恨表标识符", Type.SYMBOL, false, head = "threat")
+            .addEntry("添加标识符", Type.SYMBOL, false, head = "add")
+            .addEntry("仇恨值", Type.DOUBLE, optional = false)
+            .addContainerEntry("怪物", optional = false, head = null)
+            .addContainerEntry("目标", true, "@self"),
+        Action.new("MythicMobs附属语句", "减少仇恨值", "mythicmobs", true)
+            .description("减少仇恨值")
+            .addEntry("仇恨表标识符", Type.SYMBOL, false, head = "threat")
+            .addEntry("减少标识符", Type.SYMBOL, false, head = "take")
+            .addEntry("仇恨值", Type.DOUBLE, optional = false)
+            .addContainerEntry("怪物", optional = false, head = null)
+            .addContainerEntry("目标", true, "@self"),
+        Action.new("MythicMobs附属语句", "设置仇恨值", "mythicmobs", true)
+            .description("设置仇恨值")
+            .addEntry("仇恨表标识符", Type.SYMBOL, false, head = "threat")
+            .addEntry("设置标识符", Type.SYMBOL, false, head = "set")
+            .addEntry("仇恨值", Type.DOUBLE, optional = false)
+            .addContainerEntry("怪物", optional = false, head = null)
+            .addContainerEntry("目标", true, "@self"),
+        Action.new("MythicMobs附属语句", "释放MM技能", "mythicmobs", true)
+            .description("释放MythicMobs技能")
+            .addEntry("释放标识符", Type.SYMBOL, false, head = "cast")
+            .addEntry("技能名", Type.STRING, optional = false)
+            .addEntry("技能强度", Type.FLOAT, optional = false)
+            .addContainerEntry("怪物", true, "@self", "trigger")
+            .addContainerEntry("目标", true, "@self"),
     ) {
         it.switch {
             case("taunt") { taunt(it) }
             case("threat") {
-                when(it.expects("add", "sub", "set", "+", "-", "=")) {
+                when (it.expects("add", "sub", "set", "+", "-", "=")) {
                     "add", "+" -> addThreat(it)
                     "take", "-" -> takeThreat(it)
                     "set", "=" -> setThreat(it)
@@ -73,8 +70,8 @@ object MythicMobsActions {
         val they = reader.nextTheyContainerOrNull()
 
         return actionNow {
-            container(mobs) {mobs ->
-                containerOrSelf(they) {they ->
+            container(mobs) { mobs ->
+                containerOrSelf(they) { they ->
                     val players = they.get<PlayerTarget>()
                     ensureSync {
                         mobs.forEachInstance<ITargetEntity<Entity>> { target ->
@@ -95,8 +92,8 @@ object MythicMobsActions {
 
         return actionFuture { future ->
             run(amount).double { amount ->
-                container(mobs) {mobs ->
-                    containerOrSelf(they) {they ->
+                container(mobs) { mobs ->
+                    containerOrSelf(they) { they ->
                         val players = they.get<PlayerTarget>()
                         ensureSync {
                             mobs.forEachInstance<ITargetEntity<Entity>> { target ->
@@ -119,8 +116,8 @@ object MythicMobsActions {
 
         return actionFuture { future ->
             run(amount).double { amount ->
-                container(mobs) {mobs ->
-                    containerOrSelf(they) {they ->
+                container(mobs) { mobs ->
+                    containerOrSelf(they) { they ->
                         val players = they.get<PlayerTarget>()
                         ensureSync {
                             mobs.forEachInstance<ITargetEntity<Entity>> { target ->
@@ -143,8 +140,8 @@ object MythicMobsActions {
 
         return actionFuture { future ->
             run(amount).double { amount ->
-                container(mobs) {mobs ->
-                    containerOrSelf(they) {they ->
+                container(mobs) { mobs ->
+                    containerOrSelf(they) { they ->
                         val players = they.get<PlayerTarget>()
                         ensureSync {
                             mobs.forEachInstance<ITargetEntity<Entity>> { target ->
@@ -181,8 +178,8 @@ object MythicMobsActions {
 
         return actionFuture { future ->
             run(signal).str { signal ->
-                container(mobs) {mobs ->
-                    containerOrSelf(they) {they ->
+                container(mobs) { mobs ->
+                    containerOrSelf(they) { they ->
                         val players = they.get<PlayerTarget>()
                         ensureSync {
                             mobs.forEachInstance<ITargetEntity<Entity>> { target ->
@@ -242,5 +239,4 @@ object MythicMobsActions {
             }
         }
     }
-
 }

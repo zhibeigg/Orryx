@@ -152,20 +152,4 @@ object ScriptManager {
             listOf("none-error")
         }
     }
-
-    fun <T> scriptParser(actions: Array<org.gitee.orryx.module.wiki.Action>, resolve: (QuestReader) -> QuestAction<T>): ScriptActionParser<T> {
-        wikiActions += actions
-        return ScriptActionParser(resolve)
-    }
-
-    fun <T> combinationParser(action: org.gitee.orryx.module.wiki.Action, builder: ParserHolder.(Instance) -> App<Mu, Action<T>>): ScriptActionParser<T> {
-        wikiActions += action
-        return combinationParser(builder)
-    }
-
-    fun <T> combinationParser(builder: ParserHolder.(Instance) -> App<Mu, Action<T>>): ScriptActionParser<T> {
-        val parser = build(builder(ParserHolder, instance()))
-        return ScriptActionParser { parser.resolve<T>(this) }
-    }
-
 }

@@ -1,12 +1,12 @@
 package org.gitee.orryx.core.kether.actions
 
-import org.gitee.orryx.core.kether.ScriptManager.combinationParser
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.module.ai.OpenAI
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.ORRYX_NAMESPACE
 import org.gitee.orryx.utils.bukkitPlayer
+import org.gitee.orryx.utils.combinationParser
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.function.info

@@ -2,7 +2,6 @@ package org.gitee.orryx.core.kether.actions.effect
 
 import org.gitee.orryx.core.container.Container
 import org.gitee.orryx.core.kether.ScriptManager.addOrryxCloseable
-import org.gitee.orryx.core.kether.ScriptManager.scriptParser
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.core.targets.ITargetLocation
@@ -39,38 +38,36 @@ object EffectActions {
      * */
     @KetherParser(["effect"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun effect() = scriptParser(
-        arrayOf(
-            Action.new("Effect粒子效果", "显示粒子", "effect", true)
-                .description("创建粒子生成器并显示粒子")
-                .addEntry("显示占位符", Type.SYMBOL, head = "show")
-                .addEntry("粒子效果构建器", Type.EFFECT)
-                .addEntry("粒子显示时长，默认单次", Type.LONG, true, "1", "duration")
-                .addEntry("粒子显示周期", Type.LONG, true, "1", "period")
-                .addContainerEntry("粒子显示位置", true, default = "@self")
-                .addContainerEntry("粒子可视者", true, default = "@world", head = "viewer")
-                .result("粒子生成器", Type.EFFECT_SPAWNER),
-            Action.new("Effect粒子效果", "停止显示粒子", "effect", true)
-                .description("停止显示粒子")
-                .addEntry("停止显示占位符", Type.SYMBOL, head = "stop")
-                .addEntry("粒子生成器", Type.EFFECT_SPAWNER)
-                .result("粒子生成器", Type.EFFECT_SPAWNER),
-            Action.new("Effect粒子效果", "创建临时粒子效果构建器", "effect", true)
-                .description("创建临时粒子效果构建器")
-                .addEntry("临时占位符", Type.SYMBOL, head = "temp")
-                .addEntry("画板语句", Type.ANY)
-                .result("粒子效果构建器", Type.EFFECT),
-            Action.new("Effect粒子效果", "创建指定名粒子效果构建器", "effect", true)
-                .description("创建指定名粒子效果构建器，并存储到键名中")
-                .addEntry("创建占位符", Type.SYMBOL, head = "create/new")
-                .addEntry("画板语句", Type.ANY)
-                .result("粒子效果构建器", Type.EFFECT),
-            Action.new("Effect粒子效果", "微调粒子效果构建器", "effect", true)
-                .description("微调粒子效果构建器")
-                .addEntry("微调占位符", Type.SYMBOL, head = "trim")
-                .addEntry("特效构建器", Type.EFFECT)
-                .addEntry("画板语句", Type.ANY)
-                .result("粒子效果构建器", Type.EFFECT)
-        )
+        Action.new("Effect粒子效果", "显示粒子", "effect", true)
+            .description("创建粒子生成器并显示粒子")
+            .addEntry("显示占位符", Type.SYMBOL, head = "show")
+            .addEntry("粒子效果构建器", Type.EFFECT)
+            .addEntry("粒子显示时长，默认单次", Type.LONG, true, "1", "duration")
+            .addEntry("粒子显示周期", Type.LONG, true, "1", "period")
+            .addContainerEntry("粒子显示位置", true, default = "@self")
+            .addContainerEntry("粒子可视者", true, default = "@world", head = "viewer")
+            .result("粒子生成器", Type.EFFECT_SPAWNER),
+        Action.new("Effect粒子效果", "停止显示粒子", "effect", true)
+            .description("停止显示粒子")
+            .addEntry("停止显示占位符", Type.SYMBOL, head = "stop")
+            .addEntry("粒子生成器", Type.EFFECT_SPAWNER)
+            .result("粒子生成器", Type.EFFECT_SPAWNER),
+        Action.new("Effect粒子效果", "创建临时粒子效果构建器", "effect", true)
+            .description("创建临时粒子效果构建器")
+            .addEntry("临时占位符", Type.SYMBOL, head = "temp")
+            .addEntry("画板语句", Type.ANY)
+            .result("粒子效果构建器", Type.EFFECT),
+        Action.new("Effect粒子效果", "创建指定名粒子效果构建器", "effect", true)
+            .description("创建指定名粒子效果构建器，并存储到键名中")
+            .addEntry("创建占位符", Type.SYMBOL, head = "create/new")
+            .addEntry("画板语句", Type.ANY)
+            .result("粒子效果构建器", Type.EFFECT),
+        Action.new("Effect粒子效果", "微调粒子效果构建器", "effect", true)
+            .description("微调粒子效果构建器")
+            .addEntry("微调占位符", Type.SYMBOL, head = "trim")
+            .addEntry("特效构建器", Type.EFFECT)
+            .addEntry("画板语句", Type.ANY)
+            .result("粒子效果构建器", Type.EFFECT)
     ) {
         it.switch {
             case("show") {
@@ -94,68 +91,66 @@ object EffectActions {
 
     @KetherParser(["draw"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun draw() = scriptParser(
-        arrayOf(
-            Action.new("Effect粒子效果", "设置粒子参数", "draw", true)
-                .description("设置粒子基础参数")
-                .addEntry("粒子占位符", Type.SYMBOL, head = "particle")
-                .addEntry("粒子基础参数", Type.STRING)
-                .result("无返回值", Type.NULL),
-            Action.new("Effect粒子效果", "设置贝塞尔曲线途经点", "draw", true)
-                .description("设置贝塞尔曲线途经点")
-                .addEntry("途经点占位符", Type.SYMBOL, head = "locations")
-                .addContainerEntry("贝塞尔曲线途经点")
-                .result("无返回值", Type.NULL),
-            Action.new("Effect粒子效果", "设置变换矩阵", "draw", true)
-                .description("设置变换矩阵")
-                .addEntry("矩阵变换占位符", Type.SYMBOL, head = "transform")
-                .addEntry("矩阵", Type.MATRIX)
-                .result("无返回值", Type.NULL),
-            Action.new("Effect粒子效果", "设置红石粒子数据", "draw", true)
-                .description("设置红石粒子数据")
-                .addEntry("红石数据占位符", Type.SYMBOL, head = "dustData")
-                .addEntry("粒子颜色color \"255 255 255\"", Type.STRING)
-                .addEntry("粒子大小size", Type.FLOAT)
-                .result("无返回值", Type.NULL),
-            Action.new("Effect粒子效果", "设置DustTransitionData", "draw", true)
-                .description("设置DustTransitionData")
-                .addEntry("占位符", Type.SYMBOL, head = "dustTransitionData")
-                .addEntry("粒子颜色color \"255 255 255\"", Type.STRING)
-                .addEntry("粒子颜色toColor \"255 255 255\"", Type.STRING)
-                .addEntry("粒子大小size", Type.FLOAT)
-                .result("无返回值", Type.NULL),
-            Action.new("Effect粒子效果", "设置ItemData", "draw", true)
-                .description("设置ItemData")
-                .addEntry("占位符", Type.SYMBOL, head = "itemData")
-                .addEntry("材质名", Type.STRING)
-                .addEntry("data", Type.INT)
-                .addEntry("物品名字", Type.STRING)
-                .addEntry("物品描述", Type.STRING)
-                .addEntry("customModelData", Type.INT)
-                .result("无返回值", Type.NULL),
-            Action.new("Effect粒子效果", "设置BlockData", "draw", true)
-                .description("设置BlockData")
-                .addEntry("占位符", Type.SYMBOL, head = "blockData")
-                .addEntry("材质名", Type.STRING)
-                .addEntry("data", Type.INT)
-                .result("无返回值", Type.NULL),
-            Action.new("Effect粒子效果", "设置VibrationData", "draw", true)
-                .description("设置VibrationData")
-                .addEntry("占位符", Type.SYMBOL, head = "vibrationData")
-                .addEntry("origin", Type.CONTAINER)
-                .addEntry("到达时间", Type.INT)
-                .addContainerEntry("目标", true, default = "@self")
-                .result("无返回值", Type.NULL),
-            Action.new("Effect粒子效果", "设置偏移向量", "draw", true)
-                .description("设置偏移向量")
-                .addEntry("占位符", Type.SYMBOL, head = "offset")
-                .addEntry("vector", Type.VECTOR)
-                .result("无返回值", Type.NULL),
-            Action.new("Effect粒子效果", "设置位移向量", "draw", true)
-                .description("设置位移向量")
-                .addEntry("占位符", Type.SYMBOL, head = "translate")
-                .addEntry("vector", Type.VECTOR)
-                .result("无返回值", Type.NULL)
-        )
+        Action.new("Effect粒子效果", "设置粒子参数", "draw", true)
+            .description("设置粒子基础参数")
+            .addEntry("粒子占位符", Type.SYMBOL, head = "particle")
+            .addEntry("粒子基础参数", Type.STRING)
+            .result("无返回值", Type.NULL),
+        Action.new("Effect粒子效果", "设置贝塞尔曲线途经点", "draw", true)
+            .description("设置贝塞尔曲线途经点")
+            .addEntry("途经点占位符", Type.SYMBOL, head = "locations")
+            .addContainerEntry("贝塞尔曲线途经点")
+            .result("无返回值", Type.NULL),
+        Action.new("Effect粒子效果", "设置变换矩阵", "draw", true)
+            .description("设置变换矩阵")
+            .addEntry("矩阵变换占位符", Type.SYMBOL, head = "transform")
+            .addEntry("矩阵", Type.MATRIX)
+            .result("无返回值", Type.NULL),
+        Action.new("Effect粒子效果", "设置红石粒子数据", "draw", true)
+            .description("设置红石粒子数据")
+            .addEntry("红石数据占位符", Type.SYMBOL, head = "dustData")
+            .addEntry("粒子颜色color \"255 255 255\"", Type.STRING)
+            .addEntry("粒子大小size", Type.FLOAT)
+            .result("无返回值", Type.NULL),
+        Action.new("Effect粒子效果", "设置DustTransitionData", "draw", true)
+            .description("设置DustTransitionData")
+            .addEntry("占位符", Type.SYMBOL, head = "dustTransitionData")
+            .addEntry("粒子颜色color \"255 255 255\"", Type.STRING)
+            .addEntry("粒子颜色toColor \"255 255 255\"", Type.STRING)
+            .addEntry("粒子大小size", Type.FLOAT)
+            .result("无返回值", Type.NULL),
+        Action.new("Effect粒子效果", "设置ItemData", "draw", true)
+            .description("设置ItemData")
+            .addEntry("占位符", Type.SYMBOL, head = "itemData")
+            .addEntry("材质名", Type.STRING)
+            .addEntry("data", Type.INT)
+            .addEntry("物品名字", Type.STRING)
+            .addEntry("物品描述", Type.STRING)
+            .addEntry("customModelData", Type.INT)
+            .result("无返回值", Type.NULL),
+        Action.new("Effect粒子效果", "设置BlockData", "draw", true)
+            .description("设置BlockData")
+            .addEntry("占位符", Type.SYMBOL, head = "blockData")
+            .addEntry("材质名", Type.STRING)
+            .addEntry("data", Type.INT)
+            .result("无返回值", Type.NULL),
+        Action.new("Effect粒子效果", "设置VibrationData", "draw", true)
+            .description("设置VibrationData")
+            .addEntry("占位符", Type.SYMBOL, head = "vibrationData")
+            .addEntry("origin", Type.CONTAINER)
+            .addEntry("到达时间", Type.INT)
+            .addContainerEntry("目标", true, default = "@self")
+            .result("无返回值", Type.NULL),
+        Action.new("Effect粒子效果", "设置偏移向量", "draw", true)
+            .description("设置偏移向量")
+            .addEntry("占位符", Type.SYMBOL, head = "offset")
+            .addEntry("vector", Type.VECTOR)
+            .result("无返回值", Type.NULL),
+        Action.new("Effect粒子效果", "设置位移向量", "draw", true)
+            .description("设置位移向量")
+            .addEntry("占位符", Type.SYMBOL, head = "translate")
+            .addEntry("vector", Type.VECTOR)
+            .result("无返回值", Type.NULL)
     ) {
         it.switch {
             case("particle") {
@@ -230,7 +225,8 @@ object EffectActions {
                 run(size).float { size ->
                     val data = color.split(" ")
                     val effectBuilder = effectBuilder() ?: return@float
-                    effectBuilder.dustData = ParticleData.DustData(Color(data[0].cint, data[1].cint, data[2].cint), size)
+                    effectBuilder.dustData =
+                        ParticleData.DustData(Color(data[0].cint, data[1].cint, data[2].cint), size)
                 }
             }
         }
@@ -272,7 +268,8 @@ object EffectActions {
                         run(lore).str { lore ->
                             run(customModelData).int end@{ customModelData ->
                                 val effectBuilder = effectBuilder() ?: return@end
-                                effectBuilder.itemData = ParticleData.ItemData(material, data, name, listOf(lore), customModelData)
+                                effectBuilder.itemData =
+                                    ParticleData.ItemData(material, data, name, listOf(lore), customModelData)
                             }
                         }
                     }
@@ -303,7 +300,10 @@ object EffectActions {
                 run(arrivalTime).int { arrivalTime ->
                     container(destination, self()) end@{
                         val effectBuilder = effectBuilder() ?: return@end
-                        val des = it.firstInstanceOrNull<ITargetEntity<*>>()?.entity?.uniqueId?.let { uuid -> ParticleData.VibrationData.EntityDestination(uuid) } ?: ParticleData.VibrationData.LocationDestination(adaptLocation(it.firstInstance<ITargetLocation<*>>().location))
+                        val des = it.firstInstanceOrNull<ITargetEntity<*>>()?.entity?.uniqueId?.let { uuid ->
+                            ParticleData.VibrationData.EntityDestination(uuid)
+                        }
+                            ?: ParticleData.VibrationData.LocationDestination(adaptLocation(it.firstInstance<ITargetLocation<*>>().location))
                         effectBuilder.vibrationData = ParticleData.VibrationData(
                             adaptLocation(origin.firstInstance<ITargetLocation<*>>().location),
                             des,
@@ -323,7 +323,7 @@ object EffectActions {
                 var index = 0
                 it.forEachInstance<ITargetLocation<*>> { target ->
                     effectBuilder.locations.add(index to EffectOrigin(target))
-                    index ++
+                    index++
                 }
             }
         }
@@ -336,7 +336,7 @@ object EffectActions {
                 val effectBuilder = effectBuilder() ?: return@str
                 StringParser(data).entries.forEach {
                     val head = it.head.lowercase()
-                    when(head) {
+                    when (head) {
                         "step" -> effectBuilder.step = it.read(0, 0.2)
                         "period" -> effectBuilder.period = it.read(0, 1)
                         "count" -> effectBuilder.count = it.read(0, 1)
@@ -450,5 +450,4 @@ object EffectActions {
             }
         }
     }
-
 }

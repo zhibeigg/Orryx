@@ -1,10 +1,10 @@
 package org.gitee.orryx.core.kether.actions
 
 import org.gitee.orryx.core.container.Container
-import org.gitee.orryx.core.kether.ScriptManager.combinationParser
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.ORRYX_NAMESPACE
+import org.gitee.orryx.utils.combinationParser
 import org.gitee.orryx.utils.container
 import org.gitee.orryx.utils.orElse
 import org.gitee.orryx.utils.theyContainer
@@ -91,5 +91,4 @@ object ContainerActions {
             }
         }
     }
-
 }

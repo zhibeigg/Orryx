@@ -4,7 +4,6 @@ import org.bukkit.entity.LivingEntity
 import org.gitee.orryx.api.events.damage.DamageType
 import org.gitee.orryx.compat.DefaultAttributeBridge
 import org.gitee.orryx.compat.IAttributeBridge
-import org.gitee.orryx.core.kether.ScriptManager.combinationParser
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
@@ -67,6 +66,4 @@ object DamageActions {
             }
         }
     }
-
-
 }

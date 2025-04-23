@@ -1,5 +1,6 @@
 package org.gitee.orryx.utils
 
+import com.mojang.datafixers.kinds.App
 import org.bukkit.entity.Player
 import org.bukkit.util.Vector
 import org.gitee.orryx.api.adapters.IVector
@@ -8,6 +9,7 @@ import org.gitee.orryx.core.common.keyregister.PlayerKeySetting
 import org.gitee.orryx.core.container.Container
 import org.gitee.orryx.core.container.IContainer
 import org.gitee.orryx.core.kether.ScriptManager
+import org.gitee.orryx.core.kether.ScriptManager.wikiActions
 import org.gitee.orryx.core.kether.actions.effect.EffectBuilder
 import org.gitee.orryx.core.kether.actions.effect.EffectSpawner
 import org.gitee.orryx.core.kether.parameter.SkillParameter
@@ -22,12 +24,17 @@ import taboolib.common.platform.function.submit
 import taboolib.library.kether.ParsedAction
 import taboolib.library.kether.Parser
 import taboolib.library.kether.Parser.Action
+import taboolib.library.kether.Parser.Instance
+import taboolib.library.kether.Parser.Mu
+import taboolib.library.kether.Parser.instance
+import taboolib.library.kether.QuestAction
 import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*
 import taboolib.module.kether.ParserHolder.command
 import taboolib.module.kether.ParserHolder.option
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.CompletableFuture
+import kotlin.collections.plusAssign
 
 const val ORRYX_NAMESPACE = "Orryx"
 
@@ -266,4 +273,19 @@ fun <T> ensureSync(func: () -> T): CompletableFuture<T> {
         submit { future.complete(func()) }
         return future
     }
+}
+
+fun <T> scriptParser(vararg actions: org.gitee.orryx.module.wiki.Action, resolve: (QuestReader) -> QuestAction<T>): ScriptActionParser<T> {
+    wikiActions += actions
+    return ScriptActionParser(resolve)
+}
+
+fun <T> combinationParser(action: org.gitee.orryx.module.wiki.Action, builder: ParserHolder.(Instance) -> App<Mu, Action<T>>): ScriptActionParser<T> {
+    wikiActions += action
+    return combinationParser(builder)
+}
+
+fun <T> combinationParser(builder: ParserHolder.(Instance) -> App<Mu, Action<T>>): ScriptActionParser<T> {
+    val parser = Parser.build(builder(ParserHolder, instance()))
+    return ScriptActionParser { parser.resolve<T>(this) }
 }

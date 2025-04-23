@@ -1,6 +1,5 @@
 package org.gitee.orryx.core.kether.actions
 
-import org.gitee.orryx.core.kether.ScriptManager.combinationParser
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
@@ -42,5 +41,4 @@ object RayTraceActions {
             }
         }
     }
-
 }

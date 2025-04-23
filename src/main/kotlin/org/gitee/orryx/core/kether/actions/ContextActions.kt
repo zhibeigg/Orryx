@@ -1,7 +1,5 @@
 package org.gitee.orryx.core.kether.actions
 
-import org.gitee.orryx.core.kether.ScriptManager.combinationParser
-import org.gitee.orryx.core.kether.ScriptManager.scriptParser
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
@@ -36,7 +34,9 @@ object ContextActions {
             now {
                 val sender = script().sender
                 container.readContainer(script())?.forEachInstance<ITargetEntity<*>> { target ->
-                    script().sender = target.entity.getBukkitLivingEntity()?.let { entity -> adaptCommandSender(entity) } ?: return@forEachInstance
+                    script().sender =
+                        target.entity.getBukkitLivingEntity()?.let { entity -> adaptCommandSender(entity) }
+                            ?: return@forEachInstance
                     run(action)
                 }
                 script().sender = sender
@@ -46,27 +46,25 @@ object ContextActions {
 
     @KetherParser(["parameter", "parm"], namespace = ORRYX_NAMESPACE)
     private fun parameter() = scriptParser(
-        arrayOf(
-            Action.new("上下文", "读取parameter参数", "parameter/parm")
-                .description("获取指定parameter参数")
-                .addEntry("目标参数", Type.STRING)
-                .result("获取的参数", Type.ANY),
-            Action.new("上下文", "设置parameter参数", "parameter/parm")
-                .description("设置指定parameter参数")
-                .addEntry("目标参数", Type.STRING)
-                .addEntry("设置标识符", Type.SYMBOL, head = "set/to/=")
-                .addEntry("目标参数", Type.ANY),
-            Action.new("上下文", "加parameter参数", "parameter/parm")
-                .description("加指定parameter参数")
-                .addEntry("目标参数", Type.STRING)
-                .addEntry("加标识符", Type.SYMBOL, head = "add/increase/+")
-                .addEntry("目标参数", Type.ANY),
-            Action.new("上下文", "减parameter参数", "parameter/parm")
-                .description("减指定parameter参数")
-                .addEntry("目标参数", Type.STRING)
-                .addEntry("减标识符", Type.SYMBOL, head = "sub/decrease/-")
-                .addEntry("目标参数", Type.ANY)
-        )
+        Action.new("上下文", "读取parameter参数", "parameter/parm")
+            .description("获取指定parameter参数")
+            .addEntry("目标参数", Type.STRING)
+            .result("获取的参数", Type.ANY),
+        Action.new("上下文", "设置parameter参数", "parameter/parm")
+            .description("设置指定parameter参数")
+            .addEntry("目标参数", Type.STRING)
+            .addEntry("设置标识符", Type.SYMBOL, head = "set/to/=")
+            .addEntry("目标参数", Type.ANY),
+        Action.new("上下文", "加parameter参数", "parameter/parm")
+            .description("加指定parameter参数")
+            .addEntry("目标参数", Type.STRING)
+            .addEntry("加标识符", Type.SYMBOL, head = "add/increase/+")
+            .addEntry("目标参数", Type.ANY),
+        Action.new("上下文", "减parameter参数", "parameter/parm")
+            .description("减指定parameter参数")
+            .addEntry("目标参数", Type.STRING)
+            .addEntry("减标识符", Type.SYMBOL, head = "sub/decrease/-")
+            .addEntry("目标参数", Type.ANY)
     ) {
         val key = it.nextToken()
         val operator = registerOperators.entries.first { (name, _) ->
@@ -99,5 +97,4 @@ object ContextActions {
             }
         }
     }
-
 }
