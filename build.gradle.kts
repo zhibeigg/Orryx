@@ -65,15 +65,15 @@ taboolib {
             name("Nodens").optional(true)
         }
     }
-    relocate("kotlinx.serialization", "org.gitee.orryx.serialization")
     relocate("org.apache.commons.jexl3", "org.gitee.orryx.jexl3")
     relocate("com.github.benmanes.caffeine", "org.gitee.orryx.caffeine")
     relocate("org.joml", "org.gitee.orryx.joml")
     relocate("com.larksuite.oapi", "org.gitee.orryx.larksuite.oapi")
     relocate("com.eatthepath.uuid", "org.gitee.orryx.eatthepath.uuid")
+    relocate("kotlinx.serialization", "org.gitee.orryx.serialization")
     version {
         taboolib = "6.2.3-8cc2f66"
-        coroutines = "1.10.2"
+        coroutines = "1.8.0"
     }
 }
 
@@ -104,13 +104,11 @@ dependencies {
     compileOnly("org.eldergod.ext:packetevents:2.7.0")
     compileOnly("org.eldergod.ext:ProtocolLib:5.3.0")
 
-    taboo("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
-    taboo("org.apache.commons:commons-jexl3:3.4.0")
+    compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
     compileOnly("com.github.ben-manes.caffeine:caffeine:2.9.3")
     compileOnly("org.joml:joml:1.10.7")
     compileOnly("com.larksuite.oapi:oapi-sdk:2.4.7")
     compileOnly("com.eatthepath:fast-uuid:0.2.0")
-    //compileOnly("io.lettuce:lettuce-core:6.3.2.RELEASE")
 
     testCompileOnly("com.github.ben-manes.caffeine:caffeine:2.9.3")
 
