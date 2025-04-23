@@ -39,7 +39,7 @@ object ActionJexl3 {
             it.expects("dynamic")
             val expression = it.nextParsedAction()
             actionTake { run(expression).str { exp -> jexl.createExpression(exp).evaluate(createMapContext()) } }
-        } catch (ex: Throwable) {
+        } catch (_: Throwable) {
             it.reset()
             val expression = jexl.createExpression(it.nextToken())
             actionNow { expression.evaluate(createMapContext()) }
@@ -62,7 +62,7 @@ object ActionJexl3 {
             it.expects("dynamic")
             val script = it.nextParsedAction()
             actionTake { run(script).str { exp -> jexl.createScript(exp).execute(createMapContext()) } }
-        } catch (ex: Throwable) {
+        } catch (_: Throwable) {
             it.reset()
             val script = jexl.createScript(it.nextToken())
             actionNow { script.execute(createMapContext()) }

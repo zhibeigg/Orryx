@@ -34,7 +34,7 @@ class Description(val description: List<String>) {
                 reader.replaceNested(it) { str, startPos ->
                     val pre = runScript(sender, skillParameter, str).orNull()
                     val next = runScript(sender, skillParameter.apply { level += 1 }, str).orNull()
-                    "$pre$descriptionSplit&r${getFormatAtPosition(it, startPos)}$next&r"
+                    "$pre$descriptionSplit&r${getFormatAtPosition(it.colored(), startPos)}$next&r"
                 }
             }
         }

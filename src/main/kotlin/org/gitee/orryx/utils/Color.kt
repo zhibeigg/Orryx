@@ -34,7 +34,7 @@ fun getFormatAtPosition(text: String, position: Int): String {
     val builder = StringBuilder()
     getColorsAtPosition(text, position).forEach {
         builder.append(COLOR_CHAR)
-        builder.append(it)
+        builder.append(it.char)
     }
     return builder.toString()
 }

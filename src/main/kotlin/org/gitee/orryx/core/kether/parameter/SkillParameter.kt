@@ -31,7 +31,11 @@ class SkillParameter(val skill: String?, val player: Player, var level: Int = 1)
 
     override fun getVariable(key: String, lazy: Boolean): Any? {
         fun getAndSetValue(): Any? {
-            val value = getSkill()?.variables?.get(key)?.let { ScriptManager.runScript(proxyCommandSender, this, it).orNull() }
+            val value = getSkill()?.variables?.get(key)?.let {
+                ScriptManager.runScript(proxyCommandSender, this, it) {
+                    set("level", level)
+                }.orNull()
+            }
             if (value == null) {
                 warning("未找到技能 $skill 的变量 $key ")
                 return null
