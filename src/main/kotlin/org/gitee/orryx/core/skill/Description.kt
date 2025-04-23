@@ -5,6 +5,7 @@ import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.core.kether.ScriptManager.parseScript
 import org.gitee.orryx.core.kether.ScriptManager.runScript
 import org.gitee.orryx.core.kether.parameter.SkillParameter
+import org.gitee.orryx.utils.ConfigLazy
 import org.gitee.orryx.utils.ReloadableLazy
 import org.gitee.orryx.utils.getFormatAtPosition
 import org.gitee.orryx.utils.reader
@@ -16,7 +17,7 @@ import taboolib.module.kether.orNull
 class Description(val description: List<String>) {
 
     companion object {
-        private val descriptionSplit: String by ReloadableLazy({ Orryx.config }) { Orryx.config.getString("DescriptionSplit", "&7→")!! }
+        private val descriptionSplit: String by ConfigLazy(Orryx.config) { Orryx.config.getString("DescriptionSplit", "&7→")!! }
     }
 
     private fun getDescription(sender: ProxyCommandSender, skillParameter: SkillParameter): List<String> {

@@ -8,6 +8,7 @@ import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.module.mana.IManaManager
+import org.gitee.orryx.utils.ConfigLazy
 import org.gitee.orryx.utils.ReloadableLazy
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
@@ -21,7 +22,7 @@ import taboolib.module.nms.MinecraftVersion
 
 object GameManager {
 
-    private val disabledHunger by ReloadableLazy({ Orryx.config }) { Orryx.config.getBoolean("DisableHunger") }
+    private val disabledHunger by ConfigLazy(Orryx.config) { Orryx.config.getBoolean("DisableHunger") }
     var shutdown: Boolean = false
 
     @SubscribeEvent(EventPriority.MONITOR)

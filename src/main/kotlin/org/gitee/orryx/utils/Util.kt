@@ -4,6 +4,8 @@ import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
 import taboolib.common5.cint
 import taboolib.common5.clong
+import taboolib.module.configuration.ConfigFile
+import taboolib.module.configuration.Configuration
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
@@ -36,6 +38,23 @@ class ReloadableLazy<T>(private val check: () -> Any?, private val initializer: 
     override fun getValue(thisRef: Any?, property: KProperty<*>): T {
         val current = check()
         val currentHash = current.hashCode()
+        if (!initialized || lastHash != currentHash) {
+            cached = initializer()
+            initialized = true
+            lastHash = currentHash
+        }
+        @Suppress("UNCHECKED_CAST")
+        return cached as T
+    }
+}
+
+class ConfigLazy<T>(val config: Configuration, private val initializer: () -> T) : ReadOnlyProperty<Any?, T> {
+    private var cached: T? = null
+    private var initialized: Boolean = false
+    private var lastHash: Int? = null
+
+    override fun getValue(thisRef: Any?, property: KProperty<*>): T {
+        val currentHash = config.toString().hashCode()
         if (!initialized || lastHash != currentHash) {
             cached = initializer()
             initialized = true

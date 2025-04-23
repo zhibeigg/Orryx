@@ -4,6 +4,7 @@ import org.bukkit.entity.Player
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.core.job.IJob
 import org.gitee.orryx.core.reload.Reload
+import org.gitee.orryx.utils.ConfigLazy
 import org.gitee.orryx.utils.ReloadableLazy
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
@@ -21,7 +22,7 @@ interface IManaManager {
 
         private var thread: PlatformExecutor.PlatformTask? = null
 
-        private val reginTick: Long by ReloadableLazy({ Orryx.config }) { Orryx.config.getLong("ManaReginTick", 20) }
+        private val reginTick: Long by ConfigLazy(Orryx.config) { Orryx.config.getLong("ManaReginTick", 20) }
 
         @Reload(2)
         @Awake(LifeCycle.ENABLE)

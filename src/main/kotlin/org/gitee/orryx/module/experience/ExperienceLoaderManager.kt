@@ -7,6 +7,7 @@ import org.gitee.orryx.api.events.player.job.OrryxPlayerJobChangeEvents
 import org.gitee.orryx.api.events.player.job.OrryxPlayerJobExperienceEvents
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.reload.Reload
+import org.gitee.orryx.utils.ConfigLazy
 import org.gitee.orryx.utils.ReloadableLazy
 import org.gitee.orryx.utils.files
 import org.gitee.orryx.utils.job
@@ -24,7 +25,7 @@ import taboolib.module.configuration.Configuration
 object ExperienceLoaderManager {
 
     private val experienceLoaderMap by unsafeLazy { hashMapOf<String, ExperienceLoader>() }
-    private val syncExperience by ReloadableLazy({ Orryx.config }) { Orryx.config.getBoolean("SyncExperience", true) }
+    private val syncExperience by ConfigLazy(Orryx.config) { Orryx.config.getBoolean("SyncExperience", true) }
 
     internal fun getExperience(key: String): IExperience? {
         return experienceLoaderMap[key]
