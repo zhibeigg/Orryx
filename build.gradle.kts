@@ -73,7 +73,7 @@ taboolib {
     relocate("com.eatthepath.uuid", "org.gitee.orryx.eatthepath.uuid")
     version {
         taboolib = "6.2.3-8cc2f66"
-        coroutines = "1.8.0"
+        coroutines = "1.10.2"
     }
 }
 
@@ -104,8 +104,7 @@ dependencies {
     compileOnly("org.eldergod.ext:packetevents:2.7.0")
     compileOnly("org.eldergod.ext:ProtocolLib:5.3.0")
 
-    taboo("org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.1") { isTransitive = false }
-    taboo("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1") { isTransitive = false }
+    taboo("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
     taboo("org.apache.commons:commons-jexl3:3.4.0")
     compileOnly("com.github.ben-manes.caffeine:caffeine:2.9.3")
     compileOnly("org.joml:joml:1.10.7")
