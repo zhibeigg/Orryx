@@ -8,6 +8,10 @@ Options:
     orryx level
   MaxManaActions: |-
     math add [ orryx level 5 ]
+  RegainSpiritActions: |-
+    10
+  MaxSpiritActions: |-
+    100
   UpgradePointActions: |-
     1
   Experience: "default"

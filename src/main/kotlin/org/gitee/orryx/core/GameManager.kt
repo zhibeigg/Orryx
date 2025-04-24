@@ -14,6 +14,7 @@ import org.gitee.orryx.api.events.player.job.OrryxPlayerJobLevelEvents
 import org.gitee.orryx.compat.IAttributeBridge
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.module.mana.IManaManager
+import org.gitee.orryx.module.spirit.ISpiritManager
 import org.gitee.orryx.utils.ConfigLazy
 import org.gitee.orryx.utils.ReloadableLazy
 import org.gitee.orryx.utils.job
@@ -83,6 +84,8 @@ object GameManager {
         info("&e┣&7检测到关闭服务器的命令 Orryx开始关闭流程".colored())
         IManaManager.closeThread()
         info("&e┣&7Mana线程已关闭 &a√".colored())
+        ISpiritManager.closeThread()
+        info("&e┣&7Spirit线程已关闭 &a√".colored())
         shutdown = true
         info("&e┣&7Storage禁止异步 &a√".colored())
         ScriptManager.terminateAllSkills()
