@@ -14,11 +14,15 @@ class JobLoader(override val key: String, val configuration: Configuration): IJo
 
     override val attributes: List<String> = options.getStringList("Attributes")
 
-    override val maxManaActions: String = options.getString("MaxManaActions", "0")!!
+    override val maxManaActions: String = options.getString("MaxManaActions", "100")!!
 
-    override val regainManaActions: String = options.getString("RegainManaActions", "0")!!
+    override val regainManaActions: String = options.getString("RegainManaActions", "1")!!
 
-    override val upgradePointActions: String = options.getString("UpgradePointActions", "0")!!
+    override val upgradePointActions: String = options.getString("UpgradePointActions", "1")!!
 
     override val experience: String = options.getString("Experience", "default")!!
+
+    override val maxSpiritActions= options.getString("MaxSpiritActions", "100")!!
+
+    override val regainSpiritActions = options.getString("RegainSpiritActions", "1")!!
 }

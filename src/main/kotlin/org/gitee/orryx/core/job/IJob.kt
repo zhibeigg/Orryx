@@ -25,13 +25,12 @@ interface IJob {
     val upgradePointActions: String
 
     /**
-     * 职业升级获取的技能点
-     * &level获取升级到的等级
+     * 最大法力值
      * */
     val maxManaActions: String
 
     /**
-     * 职业恢复法力的值
+     * 自然恢复法力值
      * */
     val regainManaActions: String
 
@@ -44,4 +43,14 @@ interface IJob {
      * 职业的经验算法选择
      * */
     val experience: String
+
+    /**
+     * 最大精力值
+     * */
+    val maxSpiritActions: String
+
+    /**
+     * 自然恢复精力的值
+     * */
+    val regainSpiritActions: String
 }

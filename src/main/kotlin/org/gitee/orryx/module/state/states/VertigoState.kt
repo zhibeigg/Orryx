@@ -78,7 +78,5 @@ class VertigoState(override val key: String, configurationSection: Configuration
                 else -> false
             }
         }
-
     }
-
 }

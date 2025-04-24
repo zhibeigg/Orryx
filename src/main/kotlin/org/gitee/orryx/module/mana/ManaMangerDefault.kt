@@ -120,9 +120,9 @@ class ManaMangerDefault: IManaManager {
                 val mana = job.getReginMana()
                 val event = OrryxPlayerManaEvents.Regin.Pre(player, profile, mana)
                 if (event.call()) {
-                    profile.setFlag(MANA_FLAG, (profile.getFlag(MANA_FLAG)?.value.cdouble + mana).coerceAtMost(job.getMaxMana()).flag(true), false)
+                    profile.setFlag(MANA_FLAG, (profile.getFlag(MANA_FLAG)?.value.cdouble + event.reginMana).coerceAtMost(job.getMaxMana()).flag(true), false)
                     save(player, profile) {
-                        future.complete(mana)
+                        future.complete(event.reginMana)
                         OrryxPlayerManaEvents.Regin.Post(player, profile, event.reginMana).call()
                     }
                 } else {
@@ -146,7 +146,7 @@ class ManaMangerDefault: IManaManager {
                     profile.setFlag(MANA_FLAG, mana.flag(true), false)
                     save(player, profile) {
                         future.complete(add)
-                        OrryxPlayerManaEvents.Heal.Post(player, profile, event.healMana).call()
+                        OrryxPlayerManaEvents.Heal.Post(player, profile, mana).call()
                     }
                 } else {
                     future.complete(0.0)
@@ -172,5 +172,4 @@ class ManaMangerDefault: IManaManager {
             callback()
         }
     }
-
 }

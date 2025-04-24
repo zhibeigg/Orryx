@@ -83,7 +83,5 @@ class BlockState(override val key: String, configurationSection: ConfigurationSe
                 else -> false
             }
         }
-
     }
-
 }

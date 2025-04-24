@@ -12,6 +12,8 @@ Group:
 CacheManager: "disable"
 # 多少Tick自然恢复法力值一次
 ManaReginTick: 20
+# 多少Tick自然恢复精力值一次
+SpiritReginTick: 20
 # 是否取消饱食度
 DisableHunger: false
 # 释放技能时是否静默

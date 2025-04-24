@@ -134,6 +134,19 @@ interface IPlayerJob: Saveable {
     fun getReginMana(): Double
 
     /**
+     * 获得最大精力值
+     * @return 精力值
+     * */
+    fun getMaxSpirit(): Double
+
+    /**
+     * 获得恢复精力值
+     * @return 精力值
+     * */
+    fun getReginSpirit(): Double
+
+
+    /**
      * 设置技能组
      * @param group 已注册的技能组
      * @return 是否成功

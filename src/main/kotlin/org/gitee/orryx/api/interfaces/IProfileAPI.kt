@@ -189,5 +189,4 @@ interface IProfileAPI {
      * @param timeout 减少的沉默时长（毫秒）
      */
     fun reduceSilence(player: Player, timeout: Long)
-
 }

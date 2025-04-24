@@ -86,6 +86,14 @@ class PlayerJob(
         return player.eval(job.regainManaActions, mapOf("level" to level)).orNull().cdouble
     }
 
+    override fun getMaxSpirit(): Double {
+        return player.eval(job.maxSpiritActions, mapOf("level" to level)).orNull().cdouble
+    }
+
+    override fun getReginSpirit(): Double {
+        return player.eval(job.regainSpiritActions, mapOf("level" to level)).orNull().cdouble
+    }
+
     override fun giveExperience(experience: Int): CompletableFuture<ExperienceResult> {
         if (experience < 0) return takeExperience(-experience)
         val event = OrryxPlayerJobExperienceEvents.Up(player, this, experience)

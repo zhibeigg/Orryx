@@ -14,7 +14,6 @@ class OrryxPlayerManaEvents {
             override val allowCancelled: Boolean
                 get() = false
         }
-
     }
 
     class Down {
@@ -25,7 +24,6 @@ class OrryxPlayerManaEvents {
             override val allowCancelled: Boolean
                 get() = false
         }
-
     }
 
     /**
@@ -39,18 +37,15 @@ class OrryxPlayerManaEvents {
             override val allowCancelled: Boolean
                 get() = false
         }
-
     }
 
     class Heal {
 
-        class Pre(val player: Player, val profile: IPlayerProfile, var healMana: Double): BukkitProxyEvent()
+        class Pre(val player: Player, val profile: IPlayerProfile, val healMana: Double): BukkitProxyEvent()
 
         class Post(val player: Player, val profile: IPlayerProfile, val healMana: Double): BukkitProxyEvent() {
             override val allowCancelled: Boolean
                 get() = false
         }
-
     }
-
 }

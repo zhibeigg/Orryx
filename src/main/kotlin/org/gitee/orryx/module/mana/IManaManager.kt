@@ -38,7 +38,6 @@ interface IManaManager {
         internal fun closeThread() {
             thread?.cancel()
         }
-
     }
 
     /**
@@ -116,5 +115,4 @@ interface IManaManager {
      * @return 恢复的法力值
      * */
     fun healMana(player: Player): CompletableFuture<Double>
-
 }

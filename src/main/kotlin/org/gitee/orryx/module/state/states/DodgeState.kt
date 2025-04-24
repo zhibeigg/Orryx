@@ -103,7 +103,5 @@ class DodgeState(override val key: String, configurationSection: ConfigurationSe
                 else -> false
             }
         }
-
     }
-
 }
