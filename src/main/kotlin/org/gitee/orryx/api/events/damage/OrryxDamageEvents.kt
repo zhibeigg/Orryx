@@ -16,7 +16,7 @@ class OrryxDamageEvents {
 
         fun attackPlayer(): Player? {
             if (attacker is Projectile) {
-                return attacker.shooter as? Player ?: return null
+                return attacker.shooter as? Player
             }
             return attacker as? Player
         }
@@ -24,7 +24,5 @@ class OrryxDamageEvents {
         fun victimPlayer(): Player? {
             return victim as? Player
         }
-
     }
-
 }

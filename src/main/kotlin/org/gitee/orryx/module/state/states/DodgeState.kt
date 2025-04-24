@@ -67,10 +67,10 @@ class DodgeState(override val key: String, configurationSection: ConfigurationSe
                 if (!Orryx.api().profileAPI.isInvincible(data.player)) {
                     Orryx.api().profileAPI.setInvincible(data.player, (state.invincible.second - state.invincible.first) * 50)
                 }
-                task0 = submit(delay = state.animation.duration - state.invincible.first) {
+                task0 = submit(delay = state.animation.duration - state.invincible.first + 1) {
                     stop = true
                     StateManager.callNext(data.player)
-                    val lessTime = state.connection.second - state.animation.duration
+                    val lessTime = state.connection.second - state.animation.duration - 1
                     if (lessTime > 0) {
                         submit(delay = lessTime) {
                             if (data.nowRunningState == this@Running) {

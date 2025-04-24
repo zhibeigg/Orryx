@@ -13,10 +13,12 @@ import org.gitee.nodens.core.attribute.Damage
 import org.gitee.orryx.api.events.damage.DamageType
 import org.gitee.orryx.api.events.damage.DamageType.*
 import org.gitee.orryx.compat.IAttributeBridge
+import taboolib.common.platform.Ghost
 import taboolib.module.kether.ScriptContext
 
 class NodensBridge: IAttributeBridge {
 
+    @Ghost
     object Fire: IAttributeGroup.Number {
 
         override val name: String = "Fire"

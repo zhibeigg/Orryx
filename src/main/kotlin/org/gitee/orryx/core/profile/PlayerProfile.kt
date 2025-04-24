@@ -113,20 +113,24 @@ class PlayerProfile(
         return PlayerProfilePO(player.uniqueId, job, point, privateFlags.filter { it.value.isPersistence }.mapValues { it.value.toSerializable() })
     }
 
-    override fun save(async: Boolean, callback: () -> Unit) {
+    override fun save(async: Boolean, remove: Boolean, callback: () -> Unit) {
         val data = createPO()
+        fun remove() {
+            if (remove) {
+                ISyncCacheManager.INSTANCE.removePlayerProfile(player.uniqueId, false)
+                MemoryCache.removePlayerProfile(player.uniqueId)
+            }
+        }
         if (async && !GameManager.shutdown) {
             OrryxAPI.saveScope.launch(Dispatchers.async) {
                 IStorageManager.INSTANCE.savePlayerData(player.uniqueId, data) {
-                    ISyncCacheManager.INSTANCE.removePlayerProfile(player.uniqueId, false)
-                    MemoryCache.removePlayerProfile(player.uniqueId)
+                    remove()
                     callback()
                 }
             }
         } else {
             IStorageManager.INSTANCE.savePlayerData(player.uniqueId, data) {
-                ISyncCacheManager.INSTANCE.removePlayerProfile(player.uniqueId, false)
-                MemoryCache.removePlayerProfile(player.uniqueId)
+                remove()
                 callback()
             }
         }

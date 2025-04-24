@@ -256,20 +256,24 @@ class PlayerJob(
         return future
     }
 
-    override fun save(async: Boolean, callback: () -> Unit) {
+    override fun save(async: Boolean, remove: Boolean, callback: () -> Unit) {
         val data = createPO()
+        fun remove() {
+            if (remove) {
+                ISyncCacheManager.INSTANCE.removePlayerJob(player.uniqueId, key, false)
+                MemoryCache.removePlayerJob(player.uniqueId, key)
+            }
+        }
         if (async && !GameManager.shutdown) {
             OrryxAPI.saveScope.launch(Dispatchers.async) {
                 IStorageManager.INSTANCE.savePlayerJob(player.uniqueId, data) {
-                    ISyncCacheManager.INSTANCE.removePlayerJob(player.uniqueId, key, false)
-                    MemoryCache.removePlayerJob(player.uniqueId, key)
+                    remove()
                     callback()
                 }
             }
         } else {
             IStorageManager.INSTANCE.savePlayerJob(player.uniqueId, data) {
-                ISyncCacheManager.INSTANCE.removePlayerJob(player.uniqueId, key, false)
-                MemoryCache.removePlayerJob(player.uniqueId, key)
+                remove()
                 callback()
             }
         }

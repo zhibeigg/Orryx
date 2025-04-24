@@ -1,8 +1,16 @@
 package org.gitee.orryx.module.state
 
 import org.bukkit.entity.Player
+import org.gitee.orryx.module.state.states.SkillState
+import org.gitee.orryx.utils.checkAndCast
+import org.gitee.orryx.utils.getActionType
+import org.gitee.orryx.utils.getKeySort
+import org.gitee.orryx.utils.getTimeout
+import org.gitee.orryx.utils.keySetting
 import org.gitee.orryx.utils.parse
+import org.gitee.orryx.utils.tryCast
 import taboolib.common.platform.function.adaptPlayer
+import taboolib.common.platform.function.info
 import taboolib.library.configuration.ConfigurationSection
 import taboolib.module.configuration.Configuration
 import taboolib.module.kether.Script
@@ -22,7 +30,7 @@ class Status(override val key: String, configuration: Configuration): IStatus {
     }
 
     class Options(configurationSection: ConfigurationSection) {
-        val conditionAction  = configurationSection.getString("Condition")!!
+        val conditionAction = configurationSection.getString("Condition")!!
         val cancelHeldEventWhenPlaying = configurationSection.getBoolean("CancelHeldEventWhenPlaying", true)
         val controller = configurationSection.getString("Controller")!!
         private val armourers = configurationSection.getStringList("Armourers")
@@ -43,5 +51,4 @@ class Status(override val key: String, configuration: Configuration): IStatus {
             it as IRunningState?
         }
     }
-
 }

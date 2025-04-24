@@ -23,7 +23,6 @@ import org.gitee.orryx.module.state.StateManager
 import org.gitee.orryx.module.state.StateManager.statusData
 import org.gitee.orryx.module.state.states.SkillState
 import taboolib.common.platform.function.adaptPlayer
-import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common5.cdouble
 import taboolib.common5.clong
 import taboolib.module.kether.extend
@@ -137,7 +136,7 @@ internal fun Player.getSkill(job: String, skill: String, create: Boolean = false
         skillLoader ?: return@thenApply null
         it ?: if (create) {
             PlayerSkill(this, skill, job, skillLoader.minLevel, skillLoader.isLocked).apply {
-                save(isPrimaryThread)
+                save(remove = false)
             }
         } else {
             null

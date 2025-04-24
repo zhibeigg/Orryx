@@ -56,7 +56,7 @@ class BlockState(override val key: String, configurationSection: ConfigurationSe
             state.runScript(data) { context = this }
             task = submit(delay = state.check.first) {
                 Orryx.api().profileAPI.setBlock(data.player, (state.check.second - state.check.first) * 50)
-                task = submit(delay = max(state.animation.duration - state.check.first, state.check.second - state.check.first)) {
+                task = submit(delay = max(state.animation.duration - state.check.first + 1, state.check.second - state.check.first + 1)) {
                     stop = true
                     StateManager.callNext(data.player)
                 }

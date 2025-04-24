@@ -4,10 +4,8 @@ import org.bukkit.entity.LivingEntity
 import org.gitee.orryx.api.events.damage.DamageType
 import org.gitee.orryx.compat.attributeplus.AttributePlusBridge
 import org.gitee.orryx.compat.nodens.NodensBridge
-import org.gitee.orryx.compat.originattribute.OriginAttributeBridge
 import org.gitee.orryx.utils.AttributePlusPlugin
 import org.gitee.orryx.utils.NodensPlugin
-import org.gitee.orryx.utils.OriginAttributePlugin
 import taboolib.common.util.unsafeLazy
 import taboolib.module.kether.ScriptContext
 
@@ -18,7 +16,6 @@ interface IAttributeBridge {
         val INSTANCE by unsafeLazy {
             when {
                 AttributePlusPlugin.isEnabled -> AttributePlusBridge()
-                OriginAttributePlugin.isEnabled -> OriginAttributeBridge()
                 NodensPlugin.isEnabled -> NodensBridge()
                 else -> DefaultAttributeBridge()
             }
@@ -53,5 +50,4 @@ interface IAttributeBridge {
      * @param context 产生攻击的上下文
      * */
     fun damage(attacker: LivingEntity, target: LivingEntity, damage: Double, type: DamageType, context: ScriptContext? = null)
-
 }

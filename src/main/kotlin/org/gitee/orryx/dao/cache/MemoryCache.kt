@@ -160,5 +160,4 @@ object MemoryCache {
     fun removePlayerKeySetting(player: UUID) {
         playerKeyCache.synchronous().invalidate(player)
     }
-
 }

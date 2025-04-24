@@ -4,6 +4,7 @@ import org.bukkit.entity.Player
 import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.key.IGroup
+import org.gitee.orryx.core.skill.CastResult
 import org.gitee.orryx.core.skill.IPlayerSkill
 import java.util.concurrent.CompletableFuture
 
@@ -24,8 +25,8 @@ fun IBindKey.getBindSkill(player: Player): CompletableFuture<IPlayerSkill?> {
     return future
 }
 
-fun IBindKey.tryCast(player: Player) {
-    getBindSkill(player).thenApply { skill ->
+fun IBindKey.tryCast(player: Player): CompletableFuture<CastResult?> {
+    return getBindSkill(player).thenCompose { skill ->
         skill?.tryCast()
     }
 }

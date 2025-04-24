@@ -71,7 +71,11 @@ object PluginMessageHandler {
                 it.aimConfirmKey -> handleConfirmation(e.player, true)
                 it.aimCancelKey -> handleConfirmation(e.player, false)
                 else -> return@keySetting
-            }.also { e.isCancelled = true }
+            }.also { check ->
+                if (check) {
+                    e.isCancelled = true
+                }
+            }
         }
     }
 
@@ -84,7 +88,11 @@ object PluginMessageHandler {
                 it.aimConfirmKey -> handleConfirmation(e.player, true)
                 it.aimCancelKey -> handleConfirmation(e.player, false)
                 else -> return@keySetting
-            }.also { e.isCancelled = true }
+            }.also { check ->
+                if (check) {
+                    e.isCancelled = true
+                }
+            }
         }
     }
 
@@ -95,7 +103,11 @@ object PluginMessageHandler {
             Action.LEFT_CLICK_AIR, Action.LEFT_CLICK_BLOCK -> handleConfirmation(e.player, true)
             Action.RIGHT_CLICK_AIR, Action.RIGHT_CLICK_BLOCK -> handleConfirmation(e.player, false)
             else -> return
-        }.also { e.isCancelled = true }
+        }.also { check ->
+            if (check) {
+                e.isCancelled = true
+            }
+        }
     }
 
     /* 公开API */
@@ -242,12 +254,13 @@ object PluginMessageHandler {
     }
 
     /* 内部实现 */
-    private fun handleConfirmation(player: Player, isConfirmed: Boolean) {
-        pendingRequests[player.uniqueId] ?: return
+    private fun handleConfirmation(player: Player, isConfirmed: Boolean): Boolean {
+        pendingRequests[player.uniqueId] ?: return false
         sendDataPacket(player, PacketType.AimConfirm) {
             writeBoolean(isConfirmed)
         }
         if (!isConfirmed) cleanupRequest(player)
+        return true
     }
 
     private fun cleanupRequest(player: Player) {

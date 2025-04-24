@@ -33,8 +33,6 @@ val RedisChannelPlugin = Plugin("RedisChannel")
 
 val NodensPlugin = Plugin("Nodens")
 
-val OriginAttributePlugin = Plugin("OriginAttribute")
-
 val AttributePlusPlugin = Plugin("AttributePlus")
 
 val PacketEventsPlugin = Plugin("packetevents")

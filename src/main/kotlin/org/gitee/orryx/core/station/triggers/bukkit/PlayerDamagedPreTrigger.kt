@@ -29,15 +29,15 @@ object PlayerDamagedPreTrigger: AbstractEventTrigger<OrryxDamageEvents.Pre>() {
         get() = OrryxDamageEvents.Pre::class.java
 
     override fun onCheck(station: IStation, event: OrryxDamageEvents.Pre, map: Map<String, Any?>): Boolean {
-        return super.onCheck(station, event, map) && event.victimPlayer() != null
+        return super.onCheck(station, event, map) && event.defenderPlayer() != null
     }
 
     override fun onJoin(event: OrryxDamageEvents.Pre, map: Map<String, Any?>): ProxyCommandSender {
-        return adaptPlayer(event.victimPlayer()!!)
+        return adaptPlayer(event.defenderPlayer()!!)
     }
 
     override fun onCheck(pipeTask: IPipeTask, event: OrryxDamageEvents.Pre, map: Map<String, Any?>): Boolean {
-        return (pipeTask.scriptContext?.sender?.origin == event.victimPlayer())
+        return (pipeTask.scriptContext?.sender?.origin == event.defenderPlayer())
     }
 
     override fun onStart(context: ScriptContext, event: OrryxDamageEvents.Pre, map: Map<String, Any?>) {
@@ -47,5 +47,4 @@ object PlayerDamagedPreTrigger: AbstractEventTrigger<OrryxDamageEvents.Pre>() {
         context["attacker"] = event.attacker.abstract()
         context["type"] = event.type.name
     }
-
 }

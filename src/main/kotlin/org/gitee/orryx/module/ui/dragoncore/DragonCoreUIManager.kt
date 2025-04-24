@@ -12,13 +12,9 @@ import org.gitee.orryx.core.common.keyregister.IKeyRegister
 import org.gitee.orryx.module.ui.ISkillHud
 import org.gitee.orryx.module.ui.ISkillUI
 import org.gitee.orryx.module.ui.IUIManager
-import org.gitee.orryx.utils.ReloadableLazy
-import org.gitee.orryx.utils.keyPress
-import org.gitee.orryx.utils.keyRelease
-import org.gitee.orryx.utils.loadFromFile
-import org.gitee.orryx.utils.orryxProfile
-import org.gitee.orryx.utils.parseUUID
+import org.gitee.orryx.utils.*
 import taboolib.common.platform.function.getDataFolder
+import taboolib.common.platform.function.info
 import taboolib.common.platform.function.registerBukkitListener
 import taboolib.common.platform.function.releaseResourceFile
 import taboolib.module.configuration.Configuration

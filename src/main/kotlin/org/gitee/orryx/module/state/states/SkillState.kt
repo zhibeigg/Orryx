@@ -6,7 +6,6 @@ import org.gitee.orryx.module.state.IActionState
 import org.gitee.orryx.module.state.IRunningState
 import org.gitee.orryx.module.state.PlayerData
 import org.gitee.orryx.module.state.StateManager
-import org.gitee.orryx.module.state.states.DodgeState.Running
 import taboolib.common.platform.function.submit
 import taboolib.common.platform.service.PlatformExecutor
 import taboolib.module.kether.Script
@@ -25,7 +24,7 @@ class SkillState(val skill: ICastSkill): IActionState {
         private var task: PlatformExecutor.PlatformTask? = null
 
         override fun start() {
-            task = submit(delay = duration) {
+            task = submit(delay = duration + 1) {
                 stop = true
                 StateManager.callNext(data.player)
             }
@@ -47,7 +46,5 @@ class SkillState(val skill: ICastSkill): IActionState {
                 else -> false
             }
         }
-
     }
-
 }

@@ -50,7 +50,7 @@ class VertigoState(override val key: String, configurationSection: Configuration
                     getNearPlayers(data.player) { viewer ->
                         IAnimationBridge.INSTANCE.setPlayerAnimation(viewer, data.player, state.animation.endKey, 1f)
                     }
-                    task = submit(delay = state.animation.endDuration) {
+                    task = submit(delay = state.animation.endDuration + 1) {
                         stop = true
                         StateManager.callNext(data.player)
                     }

@@ -1,11 +1,10 @@
 package org.gitee.orryx.core.damage
 
-import ac.github.oa.api.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.gitee.orryx.api.events.damage.DamageType
 import org.gitee.orryx.api.events.damage.OrryxDamageEvents
 import org.gitee.orryx.utils.AttributePlusPlugin
-import org.gitee.orryx.utils.OriginAttributePlugin
+import org.gitee.orryx.utils.NodensPlugin
 import org.gitee.orryx.utils.transfer
 import org.serverct.ersha.api.event.AttrEntityDamageBeforeEvent
 import org.serverct.ersha.api.event.AttrEntityDamageEvent
@@ -18,36 +17,13 @@ object ProxyDamageManager {
     //Bukkit
     @SubscribeEvent(ignoreCancelled = true, priority = EventPriority.MONITOR)
     private fun bukkit(e: EntityDamageByEntityEvent) {
-        if (OriginAttributePlugin.isEnabled || AttributePlusPlugin.isEnabled) return
+        if (NodensPlugin.isEnabled || AttributePlusPlugin.isEnabled) return
         val event = OrryxDamageEvents.Pre(e.damager, e.entity, e.damage, e, transfer(e.cause))
         if (event.call()) {
             e.damage = event.damage
             OrryxDamageEvents.Post(e.damager, e.entity, e.damage, e, transfer(e.cause)).call()
         } else {
             e.isCancelled = true
-        }
-    }
-
-    //OriginAttribute
-    @Ghost
-    @SubscribeEvent(ignoreCancelled = true, priority = EventPriority.MONITOR)
-    private fun onOaDamage(e: EntityDamageEvent) {
-        val type = when (e.damageMemory.cause.uppercase()) {
-            "MAGIC" -> DamageType.MAGIC
-            "PHYSICS" -> DamageType.PHYSICS
-            "FIRE" -> DamageType.FIRE
-            "SELF" -> DamageType.SELF
-            "CONSOLE" -> DamageType.CONSOLE
-            else -> DamageType.PHYSICS
-        }
-        if (e.isPre) {
-            val event = OrryxDamageEvents.Pre(e.attacker, e.victim, e.damageMemory.totalDamage, e.damageMemory.event.origin, type)
-            event.origin = e.damageMemory
-            if (!event.call()) {
-                e.isCancelled = true
-            }
-        } else {
-            OrryxDamageEvents.Post(e.attacker, e.victim, e.damageMemory.totalDamage, e.damageMemory.event.origin, type).call()
         }
     }
 
@@ -72,5 +48,4 @@ object ProxyDamageManager {
     private fun onApDamage(e: AttrEntityDamageEvent) {
         OrryxDamageEvents.Post(e.attacker, e.target, e.targetDamage, null, DamageType.CONSOLE).call()
     }
-
 }

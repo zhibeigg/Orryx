@@ -49,20 +49,24 @@ class PlayerKeySetting(
         )
     }
 
-    override fun save(async: Boolean, callback: () -> Unit) {
+    override fun save(async: Boolean, remove: Boolean, callback: () -> Unit) {
         val data = createPO()
+        fun remove() {
+            if (remove) {
+                ISyncCacheManager.INSTANCE.removePlayerKeySetting(player.uniqueId, false)
+                MemoryCache.removePlayerKeySetting(player.uniqueId)
+            }
+        }
         if (async && !GameManager.shutdown) {
             OrryxAPI.saveScope.launch(Dispatchers.async) {
                 IStorageManager.INSTANCE.savePlayerKey(player.uniqueId, data) {
-                    ISyncCacheManager.INSTANCE.removePlayerKeySetting(player.uniqueId, false)
-                    MemoryCache.removePlayerKeySetting(player.uniqueId)
+                    remove()
                     callback()
                 }
             }
         } else {
             IStorageManager.INSTANCE.savePlayerKey(player.uniqueId, data) {
-                ISyncCacheManager.INSTANCE.removePlayerKeySetting(player.uniqueId, false)
-                MemoryCache.removePlayerKeySetting(player.uniqueId)
+                remove()
                 callback()
             }
         }
@@ -71,5 +75,4 @@ class PlayerKeySetting(
     override fun toString(): String {
         return "PlayerKeySetting(player=$player)"
     }
-
 }

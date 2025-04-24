@@ -21,7 +21,7 @@ object PlayerDamagePreTrigger: AbstractEventTrigger<OrryxDamageEvents.Pre>() {
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
             .addParm(Type.DOUBLE, "damage", "伤害")
-            .addParm(Type.TARGET, "victim", "防御者")
+            .addParm(Type.TARGET, "defender", "防御者")
             .addParm(Type.STRING, "type", "攻击类型：PHYSICS/MAGIC/FIRE/REAL/SELF/CONSOLE/CUSTOM")
             .description("当玩家攻击时发生，如果攻击来自于Or技能，那将会继承技能环境中的参数")
 
@@ -44,8 +44,7 @@ object PlayerDamagePreTrigger: AbstractEventTrigger<OrryxDamageEvents.Pre>() {
         event.context?.let { context.extend(it.rootFrame().deepVars()) }
         super.onStart(context, event, map)
         context["damage"] = event.damage
-        context["victim"] = event.victim.abstract()
+        context["defender"] = event.defender.abstract()
         context["type"] = event.type.name
     }
-
 }

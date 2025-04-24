@@ -11,16 +11,8 @@ import org.serverct.ersha.api.event.AttrEntityDamageBeforeEvent
 import taboolib.library.reflex.Reflex.Companion.getProperty
 import taboolib.library.reflex.Reflex.Companion.setProperty
 
-fun AbstractDamageEvent.isOriginAttribute(): Boolean {
-    return origin is ac.github.oa.api.event.entity.EntityDamageEvent
-}
-
 fun AbstractDamageEvent.isAttributePlus(): Boolean {
     return origin is AttrEntityDamageBeforeEvent
-}
-
-fun AbstractDamageEvent.oaDamageEvent(): ac.github.oa.api.event.entity.EntityDamageEvent? {
-    return origin as? ac.github.oa.api.event.entity.EntityDamageEvent
 }
 
 fun AbstractDamageEvent.apEvent(): AttrEntityDamageBeforeEvent? {
@@ -75,7 +67,7 @@ fun transfer(damageCause: DamageCause): DamageType {
             WORLD_BORDER -> DamageType.CONSOLE
             SONIC_BOOM -> DamageType.MAGIC
         }
-    } catch (e: Throwable) {
+    } catch (_: Throwable) {
         DamageType.CONSOLE
     }
 }

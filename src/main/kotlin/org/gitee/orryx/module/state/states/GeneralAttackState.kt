@@ -47,9 +47,9 @@ class GeneralAttackState(override val key: String, configurationSection: Configu
             getNearPlayers(data.player) { viewer ->
                 IAnimationBridge.INSTANCE.setPlayerAnimation(viewer, data.player, state.animation.startKey, 1f)
             }
-            task = submit(delay = state.connection.first) {
+            task = submit(delay = state.connection.first + 1) {
                 StateManager.callNext(data.player)
-                task = submit(delay = max(state.animation.duration, state.connection.second) - state.connection.first) {
+                task = submit(delay = max(state.animation.duration - 1, state.connection.second) - state.connection.first - 1) {
                     stop = true
                     if (data.nowRunningState == this@Running) {
                         data.clearRunningState()
@@ -78,7 +78,5 @@ class GeneralAttackState(override val key: String, configurationSection: Configu
                 else -> false
             }
         }
-
     }
-
 }

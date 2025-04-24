@@ -18,7 +18,6 @@ object HookManager {
         MythicMobsPlugin.load()
         RedisChannelPlugin.load()
         NodensPlugin.load()
-        OriginAttributePlugin.load()
         AttributePlusPlugin.load()
         PacketEventsPlugin.load()
         ProtocolLibPlugin.load()

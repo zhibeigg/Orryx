@@ -18,6 +18,7 @@ import org.gitee.orryx.compat.dragoncore.DragonCoreCustomPacketSender
 import org.gitee.orryx.core.common.keyregister.KeyRegisterManager
 import org.gitee.orryx.core.common.task.SimpleTimeoutTask
 import org.gitee.orryx.core.reload.Reload
+import org.gitee.orryx.core.skill.CastResult
 import org.gitee.orryx.core.skill.ICastSkill
 import org.gitee.orryx.module.state.states.*
 import org.gitee.orryx.utils.*
@@ -38,9 +39,12 @@ import taboolib.module.configuration.ConfigFile
 import taboolib.module.configuration.Configuration
 import taboolib.module.kether.Script
 import taboolib.module.kether.ScriptService
+import taboolib.module.kether.orNull
 import taboolib.platform.util.onlinePlayers
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import kotlin.collections.component1
+import kotlin.collections.component2
 
 object StateManager {
 
@@ -224,15 +228,21 @@ object StateManager {
 
     fun callNext(player: Player): CompletableFuture<IRunningState?>? {
         val data = playerDataMap.getOrPut(player.uniqueId) { PlayerData(player) }
-        return data.nextInput?.let {
-            data.tryNext(it)
-        } ?: player.keySetting {
+        return player.keySetting {
+            it.bindKeyMap.forEach { (keyBind, mapping) ->
+                if (mapping == data.nextInput) {
+                    val result = keyBind.tryCast(player).getNow(CastResult.CANCELED)
+                    if (result == CastResult.SUCCESS) {
+                        return@keySetting null
+                    }
+                }
+            }
             if (KeyRegisterManager.getKeyRegister(player.uniqueId)?.isKeyPress(it.generalAttackKey) == true) {
                 data.tryNext(it.generalAttackKey)
             } else {
-                null
+                data.tryNext(data.nextInput ?: return@keySetting null)
             }
-        }.getNow(null)
+        }.orNull()
     }
 
     fun loadScript(state: IActionState, action: String): Script? {

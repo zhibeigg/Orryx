@@ -266,7 +266,7 @@ class ProfileAPI: IProfileAPI {
 
         @SubscribeEvent
         private fun block(e: OrryxDamageEvents.Pre) {
-            val player = e.victimPlayer() ?: return
+            val player = e.defenderPlayer() ?: return
             if (e.type == DamageType.PHYSICS && Orryx.api().profileAPI.isBlock(player)) {
                 e.isCancelled = true
                 player.statusData()
@@ -283,7 +283,5 @@ class ProfileAPI: IProfileAPI {
                 cancelSilence(e.player)
             }
         }
-
     }
-
 }

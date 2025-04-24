@@ -166,20 +166,24 @@ class PlayerSkill(
         return future
     }
 
-    override fun save(async: Boolean, callback: () -> Unit) {
+    override fun save(async: Boolean, remove: Boolean, callback: () -> Unit) {
         val data = createPO()
+        fun remove() {
+            if (remove) {
+                ISyncCacheManager.INSTANCE.removePlayerSkill(player.uniqueId, job, key, false)
+                MemoryCache.removePlayerSkill(player.uniqueId, job, key)
+            }
+        }
         if (async && !GameManager.shutdown) {
             OrryxAPI.saveScope.launch(Dispatchers.async) {
                 IStorageManager.INSTANCE.savePlayerSkill(player.uniqueId, data) {
-                    ISyncCacheManager.INSTANCE.removePlayerSkill(player.uniqueId, job, key, false)
-                    MemoryCache.removePlayerSkill(player.uniqueId, job, key)
+                    remove()
                     callback()
                 }
             }
         } else {
             IStorageManager.INSTANCE.savePlayerSkill(player.uniqueId, data) {
-                ISyncCacheManager.INSTANCE.removePlayerSkill(player.uniqueId, job, key, false)
-                MemoryCache.removePlayerSkill(player.uniqueId, job, key)
+                remove()
                 callback()
             }
         }

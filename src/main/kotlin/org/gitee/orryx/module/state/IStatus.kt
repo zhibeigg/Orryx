@@ -16,5 +16,4 @@ interface IStatus {
      * @return [IRunningState]获取到的下一个状态
      * */
     fun next(playerData: PlayerData, input: String): CompletableFuture<IRunningState?>
-
 }

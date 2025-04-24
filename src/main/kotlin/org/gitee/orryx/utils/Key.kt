@@ -6,6 +6,7 @@ import org.gitee.orryx.core.common.keyregister.KeyRegisterManager
 import org.gitee.orryx.core.common.keyregister.PlayerKeySetting
 import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.module.ui.IUIManager
+import taboolib.common.platform.function.info
 import java.util.concurrent.CompletableFuture
 
 const val MOUSE_LEFT = "MOUSE_LEFT"
@@ -26,8 +27,11 @@ fun getKeySort(): Boolean {
 
 fun Player.keyPress(key: String, cast: Boolean) {
     val up = key.uppercase()
-    KeyRegisterManager.getKeyRegister(uniqueId)?.keyPress(up)
-    if (cast) checkAndCast(up, getTimeout(), getActionType(), getKeySort())
+    val register = KeyRegisterManager.getKeyRegister(uniqueId) ?: return
+    if (register.isKeyRelease(up)) {
+        register.keyPress(up)
+        if (cast) checkAndCast(up, getTimeout(), getActionType(), getKeySort())
+    }
 }
 
 fun Player.keyRelease(key: String, cast: Boolean) {
@@ -52,6 +56,6 @@ fun <T> Player.keySetting(func: (setting: PlayerKeySetting) -> T): CompletableFu
     }
 }
 
-fun PlayerKeySetting.keySettingList(): List<String> {
-    return (bindKeyMap.values + aimConfirmKey + aimCancelKey + generalAttackKey + blockKey + dodgeKey + extKeyMap.values).map { it.uppercase() }
+fun PlayerKeySetting.keySettingSet(): Set<String> {
+    return (bindKeyMap.values + aimConfirmKey + aimCancelKey + generalAttackKey + blockKey + dodgeKey + extKeyMap.values).map { it.uppercase() }.toSet()
 }

@@ -4,6 +4,7 @@ import com.github.benmanes.caffeine.cache.Caffeine
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.common.keyregister.IKeyRegister.ActionType.PRESS
 import org.gitee.orryx.core.common.keyregister.IKeyRegister.ActionType.RELEASE
+import taboolib.common.platform.function.info
 import java.util.concurrent.TimeUnit
 
 class KeyRegister(override val player: Player): IKeyRegister {
@@ -11,7 +12,7 @@ class KeyRegister(override val player: Player): IKeyRegister {
     private val keyCache = Caffeine.newBuilder()
         .initialCapacity(5)
         .maximumSize(100)
-        .expireAfterAccess(5, TimeUnit.SECONDS)
+        .expireAfterAccess(1, TimeUnit.MINUTES)
         .build<String, KeyAction>()
 
     private class KeyAction(var lastPress: Long, var lastRelease: Long)

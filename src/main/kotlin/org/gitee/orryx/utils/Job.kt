@@ -89,7 +89,7 @@ fun Player.job(): CompletableFuture<IPlayerJob?> {
 fun Player.job(job: String): CompletableFuture<IPlayerJob?> {
     return MemoryCache.getPlayerJob(this, job).thenApply {
         it ?: defaultJob(job).apply {
-            save()
+            save(remove = false)
         }
     }
 }

@@ -7,14 +7,12 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.gitee.orryx.api.events.damage.DamageType
 import org.gitee.orryx.utils.apEvent
 import org.gitee.orryx.utils.isAttributePlus
-import org.gitee.orryx.utils.isOriginAttribute
-import org.gitee.orryx.utils.oaDamageEvent
 import taboolib.module.kether.ScriptContext
 import taboolib.platform.type.BukkitProxyEvent
 
 abstract class AbstractDamageEvent(
     val attacker: Entity,
-    val victim: Entity,
+    val defender: Entity,
     private var privateDamage: Double,
     val event: EntityDamageByEntityEvent?,
     var type: DamageType,
@@ -25,7 +23,6 @@ abstract class AbstractDamageEvent(
 
     val damage: Double
         get() = when {
-            isOriginAttribute() -> oaDamageEvent()!!.damageMemory.totalDamage
             isAttributePlus() -> apEvent()!!.damage
             else -> privateDamage
         }
@@ -33,7 +30,6 @@ abstract class AbstractDamageEvent(
     fun addDamage(damage: Double) {
         if (damage < 0) takeDamage(-damage)
         when {
-            isOriginAttribute() -> oaDamageEvent()!!.damageMemory.addDamage(java.util.UUID.randomUUID().toString(), damage)
             isAttributePlus() -> apEvent()!!.damage += damage
             else -> privateDamage += damage
         }
@@ -42,7 +38,6 @@ abstract class AbstractDamageEvent(
     fun takeDamage(damage: Double) {
         if (damage < 0) addDamage(-damage)
         when {
-            isOriginAttribute() -> oaDamageEvent()!!.damageMemory.takeDamage(java.util.UUID.randomUUID().toString(), damage)
             isAttributePlus() -> apEvent()!!.damage -= damage
             else -> privateDamage -= damage
         }
@@ -50,13 +45,12 @@ abstract class AbstractDamageEvent(
 
     fun attackPlayer(): Player? {
         if (attacker is Projectile) {
-            return attacker.shooter as? Player ?: return null
+            return attacker.shooter as? Player
         }
         return attacker as? Player
     }
 
-    fun victimPlayer(): Player? {
-        return victim as? Player
+    fun defenderPlayer(): Player? {
+        return defender as? Player
     }
-
 }

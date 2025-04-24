@@ -7,6 +7,7 @@ import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import org.gitee.orryx.module.state.MoveState
 import taboolib.common.platform.Ghost
+import taboolib.common.platform.function.info
 import java.util.*
 
 @Ghost
@@ -63,17 +64,15 @@ object DragonCoreCustomPacketSender : PacketSender() {
         }
     }
 
-    fun sendKeyRegister(player: Player, list: List<String>) {
+    fun sendKeyRegister(player: Player, extendSet: Set<String>) {
         sendPluginMessage(player, 14) { buffer: PacketBuffer ->
             val set = (Config.fileMap["KeyConfig.yml"] as YamlConfiguration).getKeys(false)
-            set.addAll(Config.registeredKeys + list + MoveState.entries.map { it.key })
+            set.addAll(Config.registeredKeys + extendSet + MoveState.entries.map { it.key })
             buffer.writeInt(set.size)
-            val var2: Iterator<*> = set.iterator()
-            while (var2.hasNext()) {
-                val s = var2.next() as String
+
+            for (s in set) {
                 buffer.writeString(s)
             }
         }
     }
-
 }

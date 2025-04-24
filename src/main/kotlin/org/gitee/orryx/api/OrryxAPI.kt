@@ -70,5 +70,4 @@ class OrryxAPI: IOrryxAPI {
         internal val effectScope = CoroutineScope(Dispatchers.async + SupervisorJob())
         internal val pluginScope = CoroutineScope(Dispatchers.async + SupervisorJob())
     }
-
 }

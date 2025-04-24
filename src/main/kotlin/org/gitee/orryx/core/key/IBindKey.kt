@@ -10,5 +10,4 @@ interface IBindKey {
     val sort: Int
 
     fun checkAndCast(player: Player, key: List<String>, timeout: Long, actionType: IKeyRegister.ActionType, sort: Boolean): Boolean
-
 }

@@ -11,7 +11,7 @@ import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.utils.DragonCorePlugin
 import org.gitee.orryx.utils.GermPluginPlugin
 import org.gitee.orryx.utils.keySetting
-import org.gitee.orryx.utils.keySettingList
+import org.gitee.orryx.utils.keySettingSet
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.warning
@@ -51,20 +51,22 @@ object KeyRegisterManager {
 
     private fun sendKeyRegister(player: Player) {
         player.keySetting { keySetting ->
-            if (GermPluginPlugin.isEnabled) {
-                keySetting.keySettingList().forEach {
-                    try {
-                        GermPacketAPI.sendKeyRegister(player, KeyType.valueOf("KEY_${it}").keyId)
-                    } catch (ex: Throwable) {
-                        warning("GermPlugin 按键注册失败: ${ex.message}")
+            when {
+                GermPluginPlugin.isEnabled -> {
+                    keySetting.keySettingSet().forEach {
+                        try {
+                            GermPacketAPI.sendKeyRegister(player, KeyType.valueOf("KEY_${it}").keyId)
+                        } catch (ex: Throwable) {
+                            warning("GermPlugin 按键注册失败: ${ex.message}")
+                        }
                     }
                 }
-            }
-            if (DragonCorePlugin.isEnabled) {
-                try {
-                    DragonCoreCustomPacketSender.sendKeyRegister(player, keySetting.keySettingList())
-                } catch (ex: Throwable) {
-                    warning("DragonCore按键注册失败: ${ex.message}")
+                DragonCorePlugin.isEnabled -> {
+                    try {
+                        DragonCoreCustomPacketSender.sendKeyRegister(player, keySetting.keySettingSet())
+                    } catch (ex: Throwable) {
+                        warning("DragonCore按键注册失败: ${ex.message}")
+                    }
                 }
             }
         }
@@ -73,5 +75,4 @@ object KeyRegisterManager {
     fun getKeyRegister(uuid: UUID): IKeyRegister? {
         return keyRegisterMap[uuid]
     }
-
 }
