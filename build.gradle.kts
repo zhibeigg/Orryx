@@ -110,6 +110,7 @@ dependencies {
     compileOnly("com.larksuite.oapi:oapi-sdk:2.4.7")
     compileOnly("com.eatthepath:fast-uuid:0.2.0")
 
+    testCompileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
     testCompileOnly("com.github.ben-manes.caffeine:caffeine:2.9.3")
 
     compileOnly(kotlin("stdlib"))
