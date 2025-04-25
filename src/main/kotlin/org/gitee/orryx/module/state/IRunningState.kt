@@ -28,5 +28,4 @@ interface IRunningState {
      * @return 是否能
      * */
     fun hasNext(runningState: IRunningState): Boolean
-
 }

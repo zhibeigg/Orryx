@@ -17,22 +17,22 @@ object SpiritActions {
             .addEntry("检测精力值", type = Type.DOUBLE)
             .addContainerEntry("检测的目标", true, "@self")
             .result("是否有足够精力值", Type.BOOLEAN),
-        Action.new("Spirit精力", "给予精力", "spirit")
+        Action.new("Spirit精力", "给予精力", "spirit", true)
             .description("玩家获得精力值")
             .addEntry("give", type = Type.SYMBOL, head = "give")
             .addEntry("精力值", type = Type.DOUBLE)
             .addContainerEntry("给予精力的目标", true, "@self"),
-        Action.new("Spirit精力", "减少精力", "spirit")
+        Action.new("Spirit精力", "减少精力", "spirit", true)
             .description("获得精力值")
             .addEntry("take", type = Type.SYMBOL, head = "take")
             .addEntry("精力值", type = Type.DOUBLE)
             .addContainerEntry("减少精力的目标", true, "@self"),
-        Action.new("Spirit精力", "获取最大精力值", "spirit")
+        Action.new("Spirit精力", "获取最大精力值", "spirit", true)
             .description("获取玩家拥有的最大精力值")
             .addEntry("max", optional = true, type = Type.SYMBOL, head = "max")
             .addContainerEntry("获取的目标", true, "@self")
             .result("精力值", Type.DOUBLE),
-        Action.new("Spirit精力", "获取精力值", "spirit")
+        Action.new("Spirit精力", "获取精力值", "spirit", true)
             .description("获取玩家拥有的精力值")
             .addEntry("now", optional = true, type = Type.SYMBOL, head = "now")
             .addContainerEntry("获取的目标", true, "@self")

@@ -72,5 +72,4 @@ object RayHit: ISelectorGeometry {
 
         return entitiesWithDistance
     }
-
 }

@@ -14,6 +14,7 @@ import taboolib.common.platform.command.*
 import taboolib.expansion.createHelper
 import taboolib.module.lang.sendLang
 import taboolib.platform.util.sendLang
+import taboolib.platform.util.sendMessage
 
 @CommandHeader("Orryx", ["or"], "Orryx技能插件主指令", permission = "Orryx.Command.Main", permissionMessage = "你没有权限使用此指令")
 object OrryxCommand {
@@ -151,5 +152,4 @@ object OrryxCommand {
     val shutdown = subCommandExec<ConsoleCommandSender> {
         GameManager.shutdownServer()
     }
-
 }

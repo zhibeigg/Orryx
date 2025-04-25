@@ -33,6 +33,22 @@ object GameActions {
         }
     }
 
+    @KetherParser(["flyHeight"], namespace = ORRYX_NAMESPACE, shared = true)
+    private fun actionFlyHeight() = combinationParser(
+        Action.new("Game原版游戏", "获得玩家离地面高度", "flyHeight", true)
+            .description("获得玩家离地面高度")
+            .addContainerEntry(optional = true, default = "@self")
+    ) {
+        it.group(
+            theyContainer(true)
+        ).apply(it) { container ->
+            future {
+                val player = container.orElse(self()).firstInstanceOrNull<PlayerTarget>() ?: return@future completedFuture(null)
+                completedFuture(floor(player.getSource().location.clone(), 256.0).second)
+            }
+        }
+    }
+
     @KetherParser(["specialTarget"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun actionSpecialTarget() = combinationParser(
         Action.new("Game原版游戏", "设置旁观者模式下的附着视角", "specialTarget", true)

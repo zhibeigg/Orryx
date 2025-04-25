@@ -17,22 +17,22 @@ object ManaActions {
             .addEntry("检测法力值", type = Type.DOUBLE)
             .addContainerEntry("检测的目标", true, "@self")
             .result("是否有足够法力值", Type.BOOLEAN),
-        Action.new("Mana法力", "给予法力", "mana")
+        Action.new("Mana法力", "给予法力", "mana", true)
             .description("玩家获得法力值")
             .addEntry("give", type = Type.SYMBOL, head = "give")
             .addEntry("法力值", type = Type.DOUBLE)
             .addContainerEntry("给予法力的目标", true, "@self"),
-        Action.new("Mana法力", "减少法力", "mana")
+        Action.new("Mana法力", "减少法力", "mana", true)
             .description("获得法力值")
             .addEntry("take", type = Type.SYMBOL, head = "take")
             .addEntry("法力值", type = Type.DOUBLE)
             .addContainerEntry("减少法力的目标", true, "@self"),
-        Action.new("Mana法力", "获取最大法力值", "mana")
+        Action.new("Mana法力", "获取最大法力值", "mana", true)
             .description("获取玩家拥有的最大法力值")
             .addEntry("max", optional = true, type = Type.SYMBOL, head = "max")
             .addContainerEntry("获取的目标", true, "@self")
             .result("法力值", Type.DOUBLE),
-        Action.new("Mana法力", "获取法力值", "mana")
+        Action.new("Mana法力", "获取法力值", "mana", true)
             .description("获取玩家拥有的法力值")
             .addEntry("now", optional = true, type = Type.SYMBOL, head = "now")
             .addContainerEntry("获取的目标", true, "@self")

@@ -2,6 +2,7 @@ package org.gitee.orryx.module.state.states
 
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.core.skill.ICastSkill
+import org.gitee.orryx.module.state.AbstractRunningState
 import org.gitee.orryx.module.state.IActionState
 import org.gitee.orryx.module.state.IRunningState
 import org.gitee.orryx.module.state.PlayerData
@@ -16,7 +17,7 @@ class SkillState(val skill: ICastSkill): IActionState {
 
     override val script: Script? = null
 
-    class Running(val data: PlayerData, override val state: SkillState, val duration: Long): IRunningState {
+    class Running(override val data: PlayerData, override val state: SkillState, val duration: Long): AbstractRunningState(data) {
 
         override var stop: Boolean = false
             private set
@@ -36,6 +37,7 @@ class SkillState(val skill: ICastSkill): IActionState {
         }
 
         override fun hasNext(runningState: IRunningState): Boolean {
+            super.hasNext(runningState)
             if (stop) return true
             return when (runningState) {
                 is DodgeState.Running -> false

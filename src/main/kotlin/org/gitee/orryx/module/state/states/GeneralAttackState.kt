@@ -3,6 +3,7 @@ package org.gitee.orryx.module.state.states
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.compat.IAnimationBridge
 import org.gitee.orryx.core.kether.ScriptManager
+import org.gitee.orryx.module.state.AbstractRunningState
 import org.gitee.orryx.module.state.IActionState
 import org.gitee.orryx.module.state.IRunningState
 import org.gitee.orryx.module.state.PlayerData
@@ -30,7 +31,7 @@ class GeneralAttackState(override val key: String, configurationSection: Configu
 
     override val script: Script? = configurationSection.getString("Action")?.let { StateManager.loadScript(this, it) }
 
-    class Running(val data: PlayerData, override val state: GeneralAttackState): IRunningState {
+    class Running(override val data: PlayerData, override val state: GeneralAttackState): AbstractRunningState(data) {
 
         var startTimestamp: Long = 0
             private set
@@ -68,6 +69,7 @@ class GeneralAttackState(override val key: String, configurationSection: Configu
         }
 
         override fun hasNext(runningState: IRunningState): Boolean {
+            super.hasNext(runningState)
             if (stop) return true
             return when (runningState) {
                 is DodgeState.Running -> true

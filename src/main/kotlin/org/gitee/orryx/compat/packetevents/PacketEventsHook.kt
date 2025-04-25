@@ -1,4 +1,4 @@
-package org.gitee.orryx.core.packet
+package org.gitee.orryx.compat.packetevents
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.event.PacketListenerPriority
@@ -8,18 +8,16 @@ import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.platform.BukkitPlugin
 
-
-object PacketManager {
+object PacketEventsHook {
 
     @Awake(LifeCycle.LOAD)
     private fun onLoad() {
-        if (!PacketEventsPlugin.isEnabled) return
-        PacketEvents.setAPI(SpigotPacketEventsBuilder.build(BukkitPlugin.getInstance()))
-        PacketEvents.getAPI().settings.debug(true)
-        PacketEvents.getAPI().load()
-        PacketEvents.getAPI().eventManager.registerListener(
-            PacketEventsPacketListener(), PacketListenerPriority.NORMAL
-        )
+        try {
+            PacketEvents.setAPI(SpigotPacketEventsBuilder.build(BukkitPlugin.getInstance()))
+            PacketEvents.getAPI().settings.reEncodeByDefault(false).checkForUpdates(false)
+            PacketEvents.getAPI().load()
+        } catch (_: Throwable) {
+        }
     }
 
     @Awake(LifeCycle.ENABLE)
@@ -33,5 +31,4 @@ object PacketManager {
         if (!PacketEventsPlugin.isEnabled) return
         PacketEvents.getAPI().terminate()
     }
-
 }

@@ -80,6 +80,7 @@ repositories {
     mavenCentral()
     maven("https://repo.tabooproject.org/repository/releases")
     maven("https://www.mcwar.cn/nexus/repository/maven-public/")
+    maven("https://repo.codemc.io/repository/maven-releases/")
 }
 
 dependencies {
@@ -91,6 +92,7 @@ dependencies {
     compileOnly("org.gitee.nodens:Nodens:1.0")
     compileOnly("com.gitee.redischannel:RedisChannel:1.1:api")
     compileOnly("ink.ptms.adyeshach:plugin:2.0.26:api")
+    compileOnly("com.github.retrooper:packetevents-spigot:2.7.0")
     compileOnly("org.eldergod.ext:DragonCore:2.6.2.9")
     compileOnly("org.eldergod.ext:GermPlugin:4.4.1-5")
     compileOnly("org.eldergod.ext:DragonArmourers:6.72")
@@ -99,7 +101,6 @@ dependencies {
     compileOnly("org.eldergod.ext:GlowAPI:1.4.6")
     compileOnly("org.eldergod.ext:AttributePlus:3.3.3.0")
     compileOnly("org.eldergod.ext:DungeonPlus:1.4.3")
-    compileOnly("org.eldergod.ext:packetevents:2.7.0")
     compileOnly("org.eldergod.ext:ProtocolLib:5.3.0")
 
     compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")

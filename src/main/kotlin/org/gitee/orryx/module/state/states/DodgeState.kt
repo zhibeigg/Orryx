@@ -3,6 +3,7 @@ package org.gitee.orryx.module.state.states
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.compat.IAnimationBridge
 import org.gitee.orryx.core.kether.ScriptManager
+import org.gitee.orryx.module.state.AbstractRunningState
 import org.gitee.orryx.module.state.IActionState
 import org.gitee.orryx.module.state.IRunningState
 import org.gitee.orryx.module.state.MoveState.*
@@ -34,7 +35,7 @@ class DodgeState(override val key: String, configurationSection: ConfigurationSe
 
     override val script: Script? = configurationSection.getString("Action")?.let { StateManager.loadScript(this, it) }
 
-    class Running(val data: PlayerData, override val state: DodgeState): IRunningState {
+    class Running(override val data: PlayerData, override val state: DodgeState): AbstractRunningState(data) {
 
         var startTimestamp: Long = 0
             private set
@@ -93,6 +94,7 @@ class DodgeState(override val key: String, configurationSection: ConfigurationSe
         }
 
         override fun hasNext(runningState: IRunningState): Boolean {
+            super.hasNext(runningState)
             if (stop) return true
             return when (runningState) {
                 is Running -> (System.currentTimeMillis() - startTimestamp) in state.connection.first * 50 until state.connection.second * 50
