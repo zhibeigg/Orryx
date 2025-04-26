@@ -77,8 +77,10 @@ object StateActions {
                 }
             }
             case("update") {
-                actionNow {
-                    StateManager.autoCheckStatus(script().bukkitPlayer())?.key
+                actionTake {
+                    StateManager.autoCheckStatus(script().bukkitPlayer()).thenApply { status ->
+                        status?.key
+                    }
                 }
             }
             case("next") {

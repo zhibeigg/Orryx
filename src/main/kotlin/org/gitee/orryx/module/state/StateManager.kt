@@ -217,13 +217,25 @@ object StateManager {
         PacketSender.setEntityModelItemAnimation(player, "idle", 1.0f)
     }
 
-    fun autoCheckStatus(player: Player): Status? {
+    fun autoCheckStatus(player: Player): CompletableFuture<Status?> {
         val data = playerDataMap.getOrPut(player.uniqueId) { PlayerData(player) }
-        val status = statusMap.values.firstOrNull {
-            player.eval(it.options.conditionAction, emptyMap()).getNow(false).cbool
+        val future = CompletableFuture<Status?>()
+        CompletableFuture.allOf(
+            *statusMap.values.map { status ->
+                player.eval(status.options.conditionAction, emptyMap()).thenAccept { bool ->
+                    val bool = bool.cbool
+                    if (bool) {
+                        data.setStatus(status)
+                        future.complete(status)
+                    }
+                }
+            }.toTypedArray()
+        ).whenComplete { _, _ ->
+            if (!future.isDone) {
+                future.complete(null)
+            }
         }
-        data.setStatus(status)
-        return status
+        return future
     }
 
     fun callNext(player: Player): CompletableFuture<IRunningState?>? {
