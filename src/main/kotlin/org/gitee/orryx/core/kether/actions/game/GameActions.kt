@@ -106,7 +106,7 @@ object GameActions {
                                     val potion = PotionEffect(type, duration, level, false, false)
                                     future.complete(
                                         container.mapNotNullInstance<ITargetEntity<Entity>, Boolean> { target ->
-                                            target.entity.getBukkitLivingEntity()?.addPotionEffect(potion)
+                                            target.entity.getBukkitLivingEntity()?.addPotionEffect(potion, true)
                                         }.all { b -> b }
                                     )
                                 }

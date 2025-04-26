@@ -3,6 +3,7 @@ package org.gitee.orryx.module.ui
 import org.bukkit.entity.Player
 import org.bukkit.event.player.PlayerQuitEvent
 import org.gitee.orryx.api.Orryx
+import org.gitee.orryx.api.events.player.job.OrryxPlayerJobChangeEvents
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillBindKeyEvent
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillCooldownEvents
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillUnBindKeyEvent
@@ -72,9 +73,8 @@ interface IUIManager {
             }
         }
 
-        @SubscribeEvent(EventPriority.MONITOR)
+        @SubscribeEvent
         private fun cooldown(e: OrryxPlayerSkillCooldownEvents.Set.Post) {
-            if (e.isCancelled) return
             val cooldownMap = skillCooldownMap.getOrPut(e.player.uniqueId) { hashMapOf() }
             val iterator = cooldownMap.iterator()
             while (iterator.hasNext()) {
@@ -87,27 +87,28 @@ interface IUIManager {
             updateAll(e.player)
         }
 
-        @SubscribeEvent(EventPriority.MONITOR)
+        @SubscribeEvent
         private fun cooldown(e: OrryxPlayerSkillCooldownEvents.Increase.Post) {
-            if (e.isCancelled) return
             updateAll(e.player)
         }
 
-        @SubscribeEvent(EventPriority.MONITOR)
+        @SubscribeEvent
         private fun cooldown(e: OrryxPlayerSkillCooldownEvents.Reduce.Post) {
-            if (e.isCancelled) return
             updateAll(e.player)
         }
 
-        @SubscribeEvent(EventPriority.MONITOR)
+        @SubscribeEvent
         private fun bind(e: OrryxPlayerSkillBindKeyEvent.Post) {
-            if (e.isCancelled) return
             updateAll(e.player)
         }
 
-        @SubscribeEvent(EventPriority.MONITOR)
+        @SubscribeEvent
         private fun unbind(e: OrryxPlayerSkillUnBindKeyEvent.Post) {
-            if (e.isCancelled) return
+            updateAll(e.player)
+        }
+
+        @SubscribeEvent
+        private fun changeJob(e: OrryxPlayerJobChangeEvents.Post) {
             updateAll(e.player)
         }
 
