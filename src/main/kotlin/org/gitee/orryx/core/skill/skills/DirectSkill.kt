@@ -13,5 +13,4 @@ class DirectSkill(
     override val type = DIRECT
 
     override val script: Script? = SkillLoaderManager.loadScript(this)
-
 }

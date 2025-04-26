@@ -8,6 +8,7 @@ cooldown: "&4| &f技能正处于冷却"
 canceled: "&4| &f事件已取消"
 pressing: "&4| &f正在释放蓄力型技能"
 aiming: "&4| &f正在释放指向型技能"
+pressing-broke: "&4| &f蓄力技能 &e{0} &f被打断"
 
 command-hud-owner: "&a| &f当前你浏览的技能HUD拥有者是 &e{0}"
 info-no-job: "&4| &f玩家 &e{0} &f当前无职业"

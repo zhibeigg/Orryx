@@ -23,5 +23,4 @@ class DirectAimSkill(
     override val aimRadiusAction: String = options.getString("AimRadiusAction", "10")!!
 
     override val script: Script? = SkillLoaderManager.loadScript(this)
-
 }

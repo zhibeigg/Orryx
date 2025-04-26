@@ -9,5 +9,4 @@ class PassiveSkill(
 ) : AbstractSkillLoader(key, configuration) {
 
     override val type = PASSIVE
-
 }

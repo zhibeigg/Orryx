@@ -12,5 +12,4 @@ abstract class AbstractCastSkillLoader(final override val key: String, configura
     private fun getCleanScript(action: String): String {
         return action.split("\n").mapNotNull { if (it.trim().getOrNull(0) == '#') null else it }.joinToString("\n")
     }
-
 }

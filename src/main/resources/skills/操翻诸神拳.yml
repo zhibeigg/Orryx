@@ -32,6 +32,8 @@ Options:
   AimMinAction: 1
   # 指示范围缩放最大Tick大小
   AimMaxAction: 10
+  # 蓄力时会被打断的Pipe Trigger
+  PressBrockTriggers: [ "Player Damaged Post" ]
   Period: 10
   # 蓄力每Period执行
   PressPeriodAction: |-

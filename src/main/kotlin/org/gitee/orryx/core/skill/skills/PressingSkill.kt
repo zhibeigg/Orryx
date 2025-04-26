@@ -12,6 +12,8 @@ class PressingSkill(
 
     override val type = PRESSING
 
+    override val pressBrockTriggers: Array<String> = options.getStringList("PressBrockTriggers").toTypedArray()
+
     override val period: Long = options.getLong("Period")
 
     override val pressPeriodAction: String = options.getString("PressPeriodAction", "")!!
@@ -19,5 +21,4 @@ class PressingSkill(
     override val maxPressTickAction: String = options.getString("MaxPressTickAction", "20")!!
 
     override val script: Script? = SkillLoaderManager.loadScript(this)
-
 }

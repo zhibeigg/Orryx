@@ -19,5 +19,4 @@ interface IAim {
      * 选区中心距离玩家的最大半径
      * */
     val aimRadiusAction: String
-
 }

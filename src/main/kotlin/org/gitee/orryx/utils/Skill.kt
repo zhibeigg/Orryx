@@ -27,6 +27,7 @@ import taboolib.common5.cdouble
 import taboolib.common5.clong
 import taboolib.module.kether.extend
 import taboolib.module.kether.orNull
+import taboolib.platform.util.sendLang
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
@@ -178,6 +179,7 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean
             PressSkillManager.pressTaskMap[player.uniqueId] = key to PipeBuilder()
                 .uuid(UUID.randomUUID())
                 .timeout(maxPressTick)
+                .brokeTriggers(*skill.pressBrockTriggers)
                 .periodTask(period) {
                     parameter.runCustomAction(skill.pressPeriodAction, mapOf("pressTick" to (System.currentTimeMillis() - time) / 50))
                 }.onComplete {
@@ -186,8 +188,7 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean
                     PressSkillManager.pressTaskMap.remove(player.uniqueId)
                     CompletableFuture.completedFuture(null)
                 }.onBrock {
-                    if (consume) skill.consume(player, parameter)
-                    parameter.runSkillAction(mapOf("pressTick" to (System.currentTimeMillis() - time) / 50))
+                    player.sendLang("pressing-broke", name)
                     PressSkillManager.pressTaskMap.remove(player.uniqueId)
                     CompletableFuture.completedFuture(null)
                 }.build()

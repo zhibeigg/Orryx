@@ -58,7 +58,7 @@ object PressSkillManager {
             player.keySetting { keySetting ->
                 val mapping = keySetting.bindKeyMap[keybind] ?: return@keySetting
                 if (mapping.split("+").contains(key)) {
-                    pair.second.broke()
+                    pair.second.complete()
                 }
             }
         }

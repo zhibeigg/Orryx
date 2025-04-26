@@ -71,6 +71,4 @@ interface ISkill {
      * 技能的延迟生成变量
      * */
     val variables: Map<String, String>
-
-
 }
