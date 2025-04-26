@@ -14,10 +14,9 @@ import org.gitee.orryx.utils.orryxProfile
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.PlatformFactory
-import taboolib.common.platform.Schedule
 import taboolib.common.platform.event.SubscribeEvent
+import taboolib.common.platform.function.submit
 import taboolib.common.util.unsafeLazy
-import taboolib.platform.util.onlinePlayers
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
@@ -36,8 +35,14 @@ class ProfileAPI: IProfileAPI {
     }
 
     override fun setSuperBody(player: Player, timeout: Long) {
-        superBodyMap.getOrPut(player.uniqueId) { SuperBodyInfo(0) }.timeout = System.currentTimeMillis() + timeout
-        addKnockBackResistance(player)
+        val info = superBodyMap.getOrPut(player.uniqueId) { SuperBodyInfo(0) }
+        if (info.timeout - System.currentTimeMillis() < timeout) {
+            info.timeout = System.currentTimeMillis() + timeout
+            addKnockBackResistance(player)
+        }
+        submit(delay = timeout / 50L + 1L) {
+            if (!isSuperBody(player)) player.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE)?.removeModifier(superBodyModifier)
+        }
     }
 
     override fun cancelSuperBody(player: Player) {
@@ -47,11 +52,15 @@ class ProfileAPI: IProfileAPI {
     }
 
     override fun addSuperBody(player: Player, timeout: Long) {
+        val time = System.currentTimeMillis()
         superBodyMap.getOrPut(player.uniqueId) { SuperBodyInfo(0) }.also {
-            if (it.timeout >= System.currentTimeMillis()) {
+            if (it.timeout >= time) {
                 it.timeout += timeout
             } else {
-                it.timeout = System.currentTimeMillis() + timeout
+                it.timeout = time + timeout
+            }
+            submit(delay = (it.timeout - time) / 50L + 1L) {
+                if (!isSuperBody(player)) player.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE)?.removeModifier(superBodyModifier)
             }
         }
         addKnockBackResistance(player)
@@ -68,7 +77,7 @@ class ProfileAPI: IProfileAPI {
     }
 
     private fun addKnockBackResistance(player: Player) {
-        if (player.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE)?.modifiers?.contains(superBodyModifier) != true) {
+        if (player.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE)?.modifiers?.any { it.name == superBodyModifier.name } != true) {
             player.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE)?.addModifier(superBodyModifier)
         }
     }
@@ -82,7 +91,10 @@ class ProfileAPI: IProfileAPI {
     }
 
     override fun setInvincible(player: Player, timeout: Long) {
-        invincibleMap.getOrPut(player.uniqueId) { InvincibleInfo(0) }.timeout = System.currentTimeMillis() + timeout
+        val info = invincibleMap.getOrPut(player.uniqueId) { InvincibleInfo(0) }
+        if (info.timeout - System.currentTimeMillis() < timeout) {
+            info.timeout = System.currentTimeMillis() + timeout
+        }
     }
 
     override fun cancelInvincible(player: Player) {
@@ -117,7 +129,10 @@ class ProfileAPI: IProfileAPI {
     }
 
     override fun setSuperFoot(player: Player, timeout: Long) {
-        superFootMap.getOrPut(player.uniqueId) { SuperFootInfo(0) }.timeout = System.currentTimeMillis() + timeout
+        val info = superFootMap.getOrPut(player.uniqueId) { SuperFootInfo(0) }
+        if (info.timeout - System.currentTimeMillis() < timeout) {
+            info.timeout = System.currentTimeMillis() + timeout
+        }
     }
 
     override fun cancelSuperFoot(player: Player) {
@@ -152,7 +167,10 @@ class ProfileAPI: IProfileAPI {
     }
 
     override fun setBlock(player: Player, timeout: Long) {
-        blockMap.getOrPut(player.uniqueId) { BlockInfo(0) }.timeout = System.currentTimeMillis() + timeout
+        val info = blockMap.getOrPut(player.uniqueId) { BlockInfo(0) }
+        if (info.timeout - System.currentTimeMillis() < timeout) {
+            info.timeout = System.currentTimeMillis() + timeout
+        }
     }
 
     override fun cancelBlock(player: Player) {
@@ -187,7 +205,10 @@ class ProfileAPI: IProfileAPI {
     }
 
     override fun setSilence(player: Player, timeout: Long) {
-        silenceMap.getOrPut(player.uniqueId) { SilenceInfo(0) }.timeout = System.currentTimeMillis() + timeout
+        val info = silenceMap.getOrPut(player.uniqueId) { SilenceInfo(0) }
+        if (info.timeout - System.currentTimeMillis() < timeout) {
+            info.timeout = System.currentTimeMillis() + timeout
+        }
     }
 
     override fun cancelSilence(player: Player) {
@@ -237,15 +258,6 @@ class ProfileAPI: IProfileAPI {
         @Awake(LifeCycle.CONST)
         fun init() {
             PlatformFactory.registerAPI<IProfileAPI>(ProfileAPI())
-        }
-
-        @Schedule(async = false, period = 1)
-        private fun check() {
-            onlinePlayers.forEach {
-                if (!Orryx.api().profileAPI.isSuperBody(it)) {
-                    Orryx.api().profileAPI.cancelSuperBody(it)
-                }
-            }
         }
 
         @SubscribeEvent
