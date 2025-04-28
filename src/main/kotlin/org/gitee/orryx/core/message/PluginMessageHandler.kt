@@ -13,6 +13,7 @@ import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.plugin.messaging.PluginMessageListener
+import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.utils.DragonCorePlugin
 import org.gitee.orryx.utils.GermPluginPlugin
 import org.gitee.orryx.utils.keySetting
@@ -21,6 +22,7 @@ import taboolib.common.platform.Awake
 import taboolib.common.platform.Ghost
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
+import taboolib.common.platform.function.info
 import taboolib.common.platform.function.submit
 import taboolib.common.platform.function.warning
 import taboolib.common.util.unsafeLazy
@@ -56,6 +58,14 @@ object PluginMessageHandler {
         }
     }
 
+    @Reload(1)
+    private fun clean() {
+        pendingRequests.forEach {
+            it.value.second.cancel(false)
+        }
+        pendingRequests.clear()
+    }
+
     /* 事件处理 */
     @SubscribeEvent
     private fun onPlayerQuit(e: PlayerQuitEvent) {
@@ -72,9 +82,7 @@ object PluginMessageHandler {
                 it.aimCancelKey -> handleConfirmation(e.player, false)
                 else -> return@keySetting
             }.also { check ->
-                if (check) {
-                    e.isCancelled = true
-                }
+                if (check) { e.isCancelled = true }
             }
         }
     }
@@ -89,9 +97,7 @@ object PluginMessageHandler {
                 it.aimCancelKey -> handleConfirmation(e.player, false)
                 else -> return@keySetting
             }.also { check ->
-                if (check) {
-                    e.isCancelled = true
-                }
+                if (check) { e.isCancelled = true }
             }
         }
     }
@@ -133,7 +139,7 @@ object PluginMessageHandler {
         }
 
         CompletableFuture<AimInfo>().apply {
-            pendingRequests[player.uniqueId] = radius to this
+            pendingRequests[player.uniqueId] = radius + size to this
             whenComplete { result, ex ->
                 submit { // 切换到主线程执行回调
                     callback(
@@ -182,7 +188,7 @@ object PluginMessageHandler {
         }
 
         CompletableFuture<AimInfo>().apply {
-            pendingRequests[player.uniqueId] = radius to this
+            pendingRequests[player.uniqueId] = radius + max to this
             whenComplete { result, ex ->
                 submit { // 切换到主线程执行回调
                     callback(
@@ -310,7 +316,7 @@ object PluginMessageHandler {
                 val skillId = input.readUTF()
                 val location = readLocation(player, input)
 
-                if (location.distance(player.location) <= ((pendingRequests[player.uniqueId]?.first ?: 0.0) + 5.0)) {
+                if (location.distance(player.location) <= (pendingRequests[player.uniqueId]?.first ?: 0.0)) {
                     pendingRequests.remove(player.uniqueId)?.second?.complete(AimInfo(player, location, skillId))
                 } else {
                     pendingRequests.remove(player.uniqueId)
@@ -326,7 +332,9 @@ object PluginMessageHandler {
                 player.world,
                 input.readDouble(), // X
                 input.readDouble(), // Y
-                input.readDouble()  // Z
+                input.readDouble(),  // Z
+                input.readFloat(),  // Yaw
+                input.readFloat(),  // Pitch
             )
         }
     }
@@ -347,5 +355,4 @@ object PluginMessageHandler {
     class UnsupportedVersionException : IllegalStateException("此功能仅支持 1.12.2 版本")
 
     class PlayerCancelledException : RuntimeException("玩家取消操作")
-
 }

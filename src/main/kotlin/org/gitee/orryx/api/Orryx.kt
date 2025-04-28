@@ -25,5 +25,4 @@ object Orryx {
     fun api(): IOrryxAPI {
         return api ?: error("OrryxAPI has not finished loading, or failed to load!")
     }
-
 }

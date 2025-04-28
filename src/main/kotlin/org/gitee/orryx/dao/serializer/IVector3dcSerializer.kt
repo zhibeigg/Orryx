@@ -29,5 +29,4 @@ object IVector3dcSerializer : KSerializer<Vector3dc> {
             AbstractVector(decodeDoubleElement(descriptor, 0), decodeDoubleElement(descriptor, 1), decodeDoubleElement(descriptor, 2))
         }
     }
-
 }

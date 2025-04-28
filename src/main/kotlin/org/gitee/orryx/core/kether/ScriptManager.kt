@@ -11,6 +11,7 @@ import org.gitee.orryx.utils.orryxEnvironmentNamespaces
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
+import taboolib.common.platform.function.warning
 import taboolib.common.util.unsafeLazy
 import taboolib.library.kether.Parser.*
 import taboolib.library.kether.QuestAction
@@ -97,6 +98,7 @@ object ScriptManager {
                 it[PARAMETER] = parameter
             }.runActions()
         } catch (e: Throwable) {
+            if (e is IllegalStateException) warning(e.message)
             e.printKetherErrorMessage()
             CompletableFuture.completedFuture(null)
         }
@@ -116,6 +118,7 @@ object ScriptManager {
                 it[PARAMETER] = parameter
             }.runActions()
         } catch (e: Throwable) {
+            if (e is IllegalStateException) warning(e.message)
             e.printKetherErrorMessage()
             CompletableFuture.completedFuture(null)
         }
@@ -132,6 +135,7 @@ object ScriptManager {
                 }.build()
             )
         } catch (e: Throwable) {
+            if (e is IllegalStateException) warning(e.message)
             e.printKetherErrorMessage()
             "none-error"
         }
@@ -148,6 +152,7 @@ object ScriptManager {
                 }.build()
             )
         } catch (e: Throwable) {
+            if (e is IllegalStateException) warning(e.message)
             e.printKetherErrorMessage()
             listOf("none-error")
         }

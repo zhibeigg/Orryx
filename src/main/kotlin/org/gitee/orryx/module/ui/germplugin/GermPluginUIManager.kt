@@ -39,13 +39,12 @@ class GermPluginUIManager: IUIManager {
         GermPluginSkillHud.skillHUDConfiguration = YamlConfiguration.loadConfiguration(File(getDataFolder(), "ui/germplugin/OrryxSkillHUD.yml"))
         GermPluginSkillUI.skillUIConfiguration = YamlConfiguration.loadConfiguration(File(getDataFolder(), "ui/germplugin/OrryxSkillHUD.yml"))
 
-        registerBukkitListener(GermKeyDownEvent::class.java, EventPriority.MONITOR) { e ->
+        registerBukkitListener(GermKeyDownEvent::class.java) { e ->
             if (e.isCancelled) return@registerBukkitListener
             e.player.keyPress(e.keyType.simpleKey, setting.castType === IKeyRegister.ActionType.PRESS)
         }
 
-        registerBukkitListener(GermKeyUpEvent::class.java, EventPriority.MONITOR) { e ->
-            if (e.isCancelled) return@registerBukkitListener
+        registerBukkitListener(GermKeyUpEvent::class.java) { e ->
             e.player.keyRelease(e.keyType.simpleKey, setting.castType === IKeyRegister.ActionType.RELEASE)
         }
 

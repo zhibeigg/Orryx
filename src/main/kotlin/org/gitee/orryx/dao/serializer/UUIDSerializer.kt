@@ -21,5 +21,4 @@ object UUIDSerializer : KSerializer<UUID> {
     override fun deserialize(decoder: Decoder): UUID {
         return decoder.decodeString().parseUUID()!!
     }
-
 }

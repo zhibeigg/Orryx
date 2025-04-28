@@ -11,5 +11,4 @@ interface IVector: Vector3dc {
     fun add(vector3dc: Vector3dc): AbstractVector
 
     fun negate(): IVector
-
 }

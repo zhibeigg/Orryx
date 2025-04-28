@@ -81,21 +81,19 @@ object EntityActions {
                                                 .gravity(gravity)
                                                 .timeout(timeout)
 
+                                        val locations = it.mapNotNullInstance<ITargetLocation<*>, Location> { target ->
+                                            target.location
+                                        }
+
                                         ensureSync {
-                                            Container(
-                                                builder.build(it.mapNotNullInstance<ITargetLocation<*>, Location> { target ->
-                                                    target.location
-                                                }).mapTo(
-                                                    mutableSetOf()
-                                                ) { entity ->
-                                                    entity as AbstractBukkitEntity
-                                                }
-                                            )
-                                        }.thenApply {
+                                            Container(builder.build(locations).mapTo(mutableSetOf()) { entity ->
+                                                entity as AbstractBukkitEntity
+                                            })
+                                        }.thenApply { container ->
                                             addOrryxCloseable(builder.removed) {
                                                 fun clean() {
                                                     builder.task.cancel()
-                                                    it.forEachInstance<ITargetEntity<*>> { target ->
+                                                    container.forEachInstance<ITargetEntity<*>> { target ->
                                                         if (target.entity.isValid) {
                                                             target.entity.remove()
                                                         }
@@ -132,25 +130,22 @@ object EntityActions {
                                 containerOrSelf(viewer) { viewer ->
                                     containerOrSelf(they) {
                                         val players = viewer.get<PlayerTarget>()
-                                        val builder =
-                                            EntityBuilder()
-                                                .name(name)
-                                                .type(EntityType.valueOf(type.uppercase()))
-                                                .vector(vector)
-                                                .gravity(gravity)
-                                                .timeout(timeout)
-                                                .private(players.size == 1)
+                                        val builder = EntityBuilder()
+                                            .name(name)
+                                            .type(EntityType.valueOf(type.uppercase()))
+                                            .vector(vector)
+                                            .gravity(gravity)
+                                            .timeout(timeout)
+                                            .private(players.size == 1)
 
                                         val locations = it.mapNotNullInstance<ITargetLocation<*>, Location> { target ->
                                             target.location
                                         }
 
                                         ensureSync {
-                                            Container(
-                                                builder.build(locations, players.map { playerTarget -> playerTarget.getSource() }, true).mapTo(mutableSetOf()) { entity ->
-                                                    entity as AbstractAdyeshachEntity
-                                                }
-                                            )
+                                            Container(builder.build(locations, players.map { playerTarget -> playerTarget.getSource() }, true).mapTo(mutableSetOf()) { entity ->
+                                                entity as AbstractAdyeshachEntity
+                                            })
                                         }.thenAccept { container ->
                                             addOrryxCloseable(builder.removed) {
                                                 fun clean() {

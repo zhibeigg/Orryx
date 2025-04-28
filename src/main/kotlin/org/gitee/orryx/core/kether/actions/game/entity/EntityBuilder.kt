@@ -3,6 +3,7 @@ package org.gitee.orryx.core.kether.actions.game.entity
 import ink.ptms.adyeshach.core.Adyeshach
 import ink.ptms.adyeshach.core.entity.EntityTypes
 import ink.ptms.adyeshach.core.entity.manager.ManagerType
+import ink.ptms.adyeshach.core.entity.manager.spawnEntity
 import org.bukkit.Location
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.LivingEntity
@@ -128,9 +129,13 @@ class EntityBuilder {
 
     private fun createBukkitEntity(locations: List<Location>): List<AbstractBukkitEntity> {
         return locations.map { location ->
-            val entity = location.spawnEntity(EntityType.valueOf(type.name).entityClass ?: error("当前版本不支持此实体类型 ${type.name}")) { entity ->
+            val entity = location.spawnEntity(type.entityClass ?: error("当前版本不支持此实体类型 ${type.name}")) { entity ->
+                entity.customName = name
                 entity.setMeta("source", "Orryx")
-                if (health > 0) { (entity as? LivingEntity)?.health = health }
+                if (health > 0) {
+                    (entity as? LivingEntity)?.maxHealth = health
+                    (entity as? LivingEntity)?.health = health
+                }
                 entity.setGravity(gravity)
                 vector?.bukkit()?.let { entity.velocity = it }
             }

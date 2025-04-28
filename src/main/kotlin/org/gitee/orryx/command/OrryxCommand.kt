@@ -1,10 +1,13 @@
 package org.gitee.orryx.command
 
 import org.bukkit.command.ConsoleCommandSender
+import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
+import org.gitee.orryx.api.adapters.vector.AbstractVector
 import org.gitee.orryx.core.GameManager
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.job.JobLoaderManager
+import org.gitee.orryx.core.kether.actions.game.entity.EntityBuilder
 import org.gitee.orryx.core.reload.ReloadAPI
 import org.gitee.orryx.core.skill.SkillLoaderManager
 import org.gitee.orryx.module.mana.IManaManager
@@ -14,7 +17,6 @@ import taboolib.common.platform.command.*
 import taboolib.expansion.createHelper
 import taboolib.module.lang.sendLang
 import taboolib.platform.util.sendLang
-import taboolib.platform.util.sendMessage
 
 @CommandHeader("Orryx", ["or"], "Orryx技能插件主指令", permission = "Orryx.Command.Main", permissionMessage = "你没有权限使用此指令")
 object OrryxCommand {
@@ -151,5 +153,17 @@ object OrryxCommand {
     @CommandBody
     val shutdown = subCommandExec<ConsoleCommandSender> {
         GameManager.shutdownServer()
+    }
+
+    @CommandBody
+    val test = subCommandExec<Player> {
+        EntityBuilder()
+            .name("Test")
+            .type(EntityType.ARMOR_STAND)
+            .vector(AbstractVector())
+            .gravity(false)
+            .timeout(40)
+            .health(20.0)
+            .build(listOf(sender.location))
     }
 }

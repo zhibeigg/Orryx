@@ -191,4 +191,40 @@ object VectorActions {
             }
         }
     }
+
+    @KetherParser(["teleport"], namespace = ORRYX_NAMESPACE, shared = true)
+    private fun actionTeleport() = combinationParser(
+        Action.new("Game原版游戏", "传送到指向向量点", "teleport", true)
+            .description("传送到指向向量点")
+            .addEntry("指向向量", Type.VECTOR, false)
+            .addEntry("是否保留原朝向", Type.BOOLEAN)
+            .addContainerEntry(optional = true, default = "@self")
+    ) {
+        it.group(
+            vector(),
+            bool(),
+            theyContainer(true)
+        ).apply(it) { vector, keepFace, container ->
+            future {
+                ensureSync {
+                    container.orElse(self()).forEachInstance<ITargetEntity<*>> { entity ->
+                        val result = entity.entity.world.rayTraceBlocks(
+                            entity.entity.location.joml(),
+                            vector.joml(),
+                            1.0,
+                            FluidHandling.NONE,
+                            checkAxisAlignedBB = true,
+                            returnClosestPos = true
+                        )
+                        result?.hitPosition?.toLocation(entity.entity.world)?.let { loc ->
+                            if (keepFace) {
+                                loc.direction = entity.entity.location.direction
+                            }
+                            entity.entity.teleport(loc)
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

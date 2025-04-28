@@ -33,5 +33,4 @@ object Origin: ISelectorStream {
             "e" -> container.add(context.getParameter().origin!!.eyeLocation.toTarget())
         }
     }
-
 }

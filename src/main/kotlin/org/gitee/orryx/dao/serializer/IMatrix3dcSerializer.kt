@@ -39,5 +39,4 @@ object IMatrix3dcSerializer : KSerializer<Matrix3dc> {
             )
         }
     }
-
 }

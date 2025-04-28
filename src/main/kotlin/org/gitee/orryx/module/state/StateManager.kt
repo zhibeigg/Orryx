@@ -6,6 +6,7 @@ import eos.moe.armourers.api.PlayerSkinUpdateEvent
 import eos.moe.dragoncore.api.event.EntityJoinWorldEvent
 import eos.moe.dragoncore.api.event.EntityLeaveWorldEvent
 import eos.moe.dragoncore.api.event.KeyPressEvent
+import eos.moe.dragoncore.api.event.KeyReleaseEvent
 import eos.moe.dragoncore.api.gui.event.CustomPacketEvent
 import eos.moe.dragoncore.network.PacketSender
 import org.bukkit.Bukkit
@@ -130,30 +131,20 @@ object StateManager {
     }
 
     @Ghost
-    @SubscribeEvent(EventPriority.LOWEST, ignoreCancelled = false)
-    private fun move(e: KeyPressEvent) {
-        val data = playerDataMap.getOrPut(e.player.uniqueId) { PlayerData(e.player) }
-        data.updateMoveState(e.key)
-    }
-
-    @Ghost
     @SubscribeEvent
     private fun press(e: KeyPressEvent) {
+        if (e.isCancelled) return
         val data = playerDataMap.getOrPut(e.player.uniqueId) { PlayerData(e.player) }
+        data.updateMoveState(e.key)
         data.tryNext(e.key)
-    }
-
-    @Ghost
-    @SubscribeEvent(EventPriority.LOWEST, ignoreCancelled = false)
-    private fun move(e: GermKeyDownEvent) {
-        val data = playerDataMap.getOrPut(e.player.uniqueId) { PlayerData(e.player) }
-        data.updateMoveState(e.keyType.simpleKey)
     }
 
     @Ghost
     @SubscribeEvent
     private fun press(e: GermKeyDownEvent) {
+        if (e.isCancelled) return
         val data = playerDataMap.getOrPut(e.player.uniqueId) { PlayerData(e.player) }
+        data.updateMoveState(e.keyType.simpleKey)
         data.tryNext(e.keyType.simpleKey)
     }
 

@@ -45,7 +45,6 @@ class DragonCoreUIManager: IUIManager {
         }
 
         registerBukkitListener(KeyReleaseEvent::class.java) { e ->
-            if (e.isCancelled) return@registerBukkitListener
             e.player.keyRelease(e.key, setting.castType === IKeyRegister.ActionType.RELEASE)
         }
 

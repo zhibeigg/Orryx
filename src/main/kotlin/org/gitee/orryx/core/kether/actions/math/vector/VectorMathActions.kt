@@ -6,12 +6,31 @@ import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
 import org.joml.Vector3d
+import org.joml.Vector3dc
 import taboolib.common.OpenResult
 import taboolib.common5.cdouble
 import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*
 
 object VectorMathActions {
+
+    @KetherProperty(bind = Vector3dc::class)
+    fun propertyIVector() = object : ScriptProperty<Vector3dc>("Vector3dc.operator") {
+
+        override fun read(instance: Vector3dc, key: String): OpenResult {
+            return when (key) {
+                "x" -> OpenResult.successful(instance.x())
+                "y" -> OpenResult.successful(instance.y())
+                "z" -> OpenResult.successful(instance.z())
+                "size", "length" -> OpenResult.successful(instance.length())
+                else -> OpenResult.failed()
+            }
+        }
+
+        override fun write(instance: Vector3dc, key: String, value: Any?): OpenResult {
+            return OpenResult.failed()
+        }
+    }
 
     @KetherParser(["vector"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun actionVector() = scriptParser(

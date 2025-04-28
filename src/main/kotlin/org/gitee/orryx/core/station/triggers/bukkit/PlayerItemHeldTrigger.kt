@@ -27,5 +27,4 @@ object PlayerItemHeldTrigger: AbstractPlayerEventTrigger<PlayerItemHeldEvent>() 
         context["newItemStack"] = event.player.inventory.getItem(event.newSlot)
         context["previousItemStack"] = event.player.inventory.getItem(event.previousSlot)
     }
-
 }

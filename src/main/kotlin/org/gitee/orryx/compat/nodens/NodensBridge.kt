@@ -5,10 +5,12 @@ import org.gitee.nodens.api.Nodens
 import org.gitee.nodens.common.DamageProcessor
 import org.gitee.nodens.common.DigitalParser
 import org.gitee.nodens.common.EntitySyncProfile
+import org.gitee.nodens.common.RegainProcessor
 import org.gitee.nodens.core.AttributeConfig
 import org.gitee.nodens.core.AttributeManager
 import org.gitee.nodens.core.IAttributeGroup
 import org.gitee.nodens.core.TempAttributeData
+import org.gitee.nodens.core.attribute.AbstractNumber
 import org.gitee.nodens.core.attribute.Damage
 import org.gitee.orryx.api.events.damage.DamageType
 import org.gitee.orryx.api.events.damage.DamageType.*
@@ -19,21 +21,12 @@ import taboolib.module.kether.ScriptContext
 class NodensBridge: IAttributeBridge {
 
     @Ghost
-    object Fire: IAttributeGroup.Number {
+    object Fire: AbstractNumber() {
 
         override val name: String = "Fire"
 
         override val config: AttributeConfig
             get() = AttributeManager.getConfig(Damage.name, name)
-
-        override fun handleAttacker(damageProcessor: DamageProcessor, valueMap: Map<DigitalParser.Type, DoubleArray>) {
-        }
-
-        override fun handleDefender(damageProcessor: DamageProcessor, valueMap: Map<DigitalParser.Type, DoubleArray>) {
-        }
-
-        override fun sync(entitySyncProfile: EntitySyncProfile, valueMap: Map<DigitalParser.Type, DoubleArray>) {
-        }
     }
 
     override fun addAttribute(entity: LivingEntity, key: String, value: List<String>, timeout: Long) {

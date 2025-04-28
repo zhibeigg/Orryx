@@ -16,5 +16,4 @@ class DragonCoreAnimationBridge: IAnimationBridge {
     override fun clearPlayerAnimation(viewer: Player, player: Player) {
         DragonCoreCustomPacketSender.removePlayerAnimation(viewer, player.uniqueId)
     }
-
 }

@@ -37,6 +37,7 @@ taboolib {
         install(Database)
         install(Kether)
         install(Jexl)
+        repoTabooLib = "https://www.mcwar.cn/nexus/repository/maven-public/"
     }
     description {
         name = "Orryx"
@@ -71,7 +72,7 @@ taboolib {
     relocate("com.eatthepath.uuid", "org.gitee.orryx.eatthepath.uuid")
     relocate("kotlinx.serialization", "org.gitee.orryx.serialization")
     version {
-        taboolib = "6.2.3-8cc2f66"
+        taboolib = "6.2.3-test"
         coroutines = "1.8.0"
     }
 }
