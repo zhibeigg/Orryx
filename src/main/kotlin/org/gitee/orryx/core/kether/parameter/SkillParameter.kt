@@ -70,5 +70,4 @@ class SkillParameter(val skill: String?, val player: Player, var level: Int = 1)
     override fun toString(): String {
         return "SkillParameter{skill=$skill, player=${player.name}, level=$level}"
     }
-
 }

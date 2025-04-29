@@ -25,5 +25,4 @@ class StationLoader(override val key: String, val configuration: Configuration):
     override val actions: String = configuration.getString("Actions") ?: error("中转站${key}位于${configuration.file}未书写Actions")
 
     override val script: Script? = StationLoaderManager.loadScript(this)
-
 }

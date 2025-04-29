@@ -128,8 +128,7 @@ object ScriptManager {
         return try {
             KetherFunction.parse(
                 actions,
-                ScriptOptions.builder().sandbox(false).namespace(namespace = orryxEnvironmentNamespaces)
-                    .sender(sender = sender).context {
+                ScriptOptions.builder().sandbox(false).namespace(namespace = orryxEnvironmentNamespaces).sender(sender = sender).context {
                     context?.invoke(this)
                     this[PARAMETER] = parameter
                 }.build()
@@ -145,8 +144,7 @@ object ScriptManager {
         return try {
             KetherFunction.parse(
                 actions,
-                ScriptOptions.builder().sandbox(false).namespace(namespace = orryxEnvironmentNamespaces)
-                    .sender(sender = sender).context {
+                ScriptOptions.builder().sandbox(false).namespace(namespace = orryxEnvironmentNamespaces).sender(sender = sender).context {
                     context?.invoke(this)
                     this[PARAMETER] = parameter
                 }.build()

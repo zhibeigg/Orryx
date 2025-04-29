@@ -1,9 +1,10 @@
 package org.gitee.orryx.compat.mythicmobs
 
-import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicConditionLoadEvent
 import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicMechanicLoadEvent
 import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicTargeterLoadEvent
-import org.gitee.orryx.compat.mythicmobs.targeter.*
+import org.gitee.orryx.compat.mythicmobs.mechanic.MythicMobsCastMechanic
+import org.gitee.orryx.compat.mythicmobs.targeter.MythicMobsSelectorEntityTargeter
+import org.gitee.orryx.compat.mythicmobs.targeter.MythicMobsSelectorLocationTargeter
 import taboolib.common.platform.Ghost
 import taboolib.common.platform.event.SubscribeEvent
 
@@ -13,7 +14,7 @@ object MechanicRegister {
     @SubscribeEvent
     private fun registerMechanic(event: MythicMechanicLoadEvent) {
         when (event.mechanicName.uppercase()) {
-
+            "O-CAST" -> { event.register(MythicMobsCastMechanic(event.container.configLine, event.config)) }
         }
     }
 
@@ -21,20 +22,8 @@ object MechanicRegister {
     @SubscribeEvent
     private fun registerTargeter(event: MythicTargeterLoadEvent) {
         when (event.targeterName.uppercase()) {
-            "O-LIC" -> { event.register(MythicMobsLivingInConeTargeter(event.config)) }
-            "O-FORWARD" -> { event.register(MythicMobsForwardTargeter(event.config)) }
-            "O-MIR" -> { event.register(MythicMobsMobInRangeTargeter(event.config)) }
-            "O-RECTANGLE" -> { event.register(MythicMobsRectangleTargeter(event.config)) }
-            "O-RANGE" -> { event.register(MythicMobsOffsetRangeTargeter(event.config)) }
+            "O-SELECTORL" -> { event.register(MythicMobsSelectorLocationTargeter(event.config)) }
+            "O-SELECTORE" -> { event.register(MythicMobsSelectorEntityTargeter(event.config)) }
         }
     }
-
-    @Ghost
-    @SubscribeEvent
-    private fun registerCondition(event: MythicConditionLoadEvent) {
-        when (event.conditionName.uppercase()) {
-
-        }
-    }
-
 }

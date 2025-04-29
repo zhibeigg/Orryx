@@ -54,5 +54,4 @@ interface IStation {
      * 技能运行脚本
      * */
     val script: Script?
-
 }
