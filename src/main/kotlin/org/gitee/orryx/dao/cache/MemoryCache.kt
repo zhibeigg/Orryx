@@ -6,6 +6,7 @@ import com.github.benmanes.caffeine.cache.Scheduler
 import com.github.benmanes.caffeine.cache.stats.CacheStats
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
+import org.bukkit.event.player.PlayerJoinEvent
 import org.gitee.orryx.core.common.keyregister.PlayerKeySetting
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.job.PlayerJob
@@ -17,6 +18,8 @@ import org.gitee.orryx.core.skill.SkillLoaderManager
 import org.gitee.orryx.utils.*
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
+import taboolib.common.platform.event.EventPriority
+import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.info
 import taboolib.common5.format
 import taboolib.module.chat.colored
@@ -37,6 +40,7 @@ object MemoryCache {
         .recordStats()
         .scheduler(Scheduler.systemScheduler())
         .buildAsync { uuid, _ ->
+            debug("Cache 加载玩家 Profile")
             val po = ISyncCacheManager.INSTANCE.getPlayerProfile(uuid)
             po.thenApply {
                 it?.let { p ->
@@ -55,6 +59,7 @@ object MemoryCache {
         .recordStats()
         .scheduler(Scheduler.systemScheduler())
         .buildAsync { tag, _ ->
+            debug("Cache 加载玩家 Job")
             val info = reversePlayerJobDataTag(tag)
             val po = ISyncCacheManager.INSTANCE.getPlayerJob(info.second, info.first)
             po.thenApply {
@@ -73,6 +78,7 @@ object MemoryCache {
         .recordStats()
         .scheduler(Scheduler.systemScheduler())
         .buildAsync { tag, _ ->
+            debug("Cache 加载玩家 Skill")
             val info = reversePlayerJobSkillDataTag(tag)
             ISyncCacheManager.INSTANCE.getPlayerSkill(info.player, info.job, info.skill).thenApply {
                 it?.let { p ->
@@ -96,6 +102,7 @@ object MemoryCache {
         .recordStats()
         .scheduler(Scheduler.systemScheduler())
         .buildAsync { uuid, _ ->
+            debug("Cache 加载玩家 KeySetting")
             ISyncCacheManager.INSTANCE.getPlayerKeySetting(uuid).thenApply {
                 val player = Bukkit.getPlayer(uuid)?: return@thenApply null
                 it?.let { p -> PlayerKeySetting(player, p)} ?: PlayerKeySetting(player)
@@ -130,34 +137,42 @@ object MemoryCache {
     }
 
     fun savePlayerProfile(playerProfile: IPlayerProfile) {
+        debug("Cache 保存玩家 Profile")
         playerProfileCache.put(playerProfile.player.uniqueId, CompletableFuture.completedFuture(playerProfile))
     }
 
     fun savePlayerJob(playerJob: IPlayerJob) {
+        debug("Cache 保存玩家 Job")
         playerJobCache.put(playerJobDataTag(playerJob.player.uniqueId, playerJob.key), CompletableFuture.completedFuture(playerJob))
     }
 
     fun savePlayerSkill(playerSkill: IPlayerSkill) {
+        debug("Cache 保存玩家 Skill")
         playerSkillCache.put(playerJobSkillDataTag(playerSkill.player.uniqueId, playerSkill.job, playerSkill.key), CompletableFuture.completedFuture(playerSkill))
     }
 
     fun savePlayerKeySetting(player: UUID, setting: PlayerKeySetting) {
+        debug("Cache 保存玩家 KeySetting")
         playerKeyCache.put(player, CompletableFuture.completedFuture(setting))
     }
 
     fun removePlayerProfile(player: UUID) {
+        debug("Cache 移除玩家 Profile")
         playerProfileCache.synchronous().invalidate(player)
     }
 
     fun removePlayerJob(player: UUID, job: String) {
+        debug("Cache 移除玩家 Job")
         playerJobCache.synchronous().invalidate(playerJobDataTag(player, job))
     }
 
     fun removePlayerSkill(player: UUID, job: String, skill: String) {
+        debug("Cache 移除玩家 Skill")
         playerSkillCache.synchronous().invalidate(playerJobSkillDataTag(player, job, skill))
     }
 
     fun removePlayerKeySetting(player: UUID) {
+        debug("Cache 移除玩家 KeySetting")
         playerKeyCache.synchronous().invalidate(player)
     }
 }

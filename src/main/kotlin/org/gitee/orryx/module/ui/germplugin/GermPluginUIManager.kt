@@ -3,6 +3,7 @@ package org.gitee.orryx.module.ui.germplugin
 import com.germ.germplugin.api.event.GermClientLinkedEvent
 import com.germ.germplugin.api.event.GermKeyDownEvent
 import com.germ.germplugin.api.event.GermKeyUpEvent
+import com.germ.germplugin.api.event.GermReloadEvent
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import org.bukkit.event.player.PlayerQuitEvent
@@ -14,11 +15,11 @@ import org.gitee.orryx.utils.keyPress
 import org.gitee.orryx.utils.keyRelease
 import org.gitee.orryx.utils.loadFromFile
 import org.gitee.orryx.utils.orryxProfile
-import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.function.getDataFolder
 import taboolib.common.platform.function.registerBukkitListener
 import taboolib.common.platform.function.releaseResourceFile
 import taboolib.module.configuration.Configuration
+import taboolib.platform.util.onlinePlayers
 import java.io.File
 
 class GermPluginUIManager: IUIManager {
@@ -46,6 +47,18 @@ class GermPluginUIManager: IUIManager {
 
         registerBukkitListener(GermKeyUpEvent::class.java) { e ->
             e.player.keyRelease(e.keyType.simpleKey, setting.castType === IKeyRegister.ActionType.RELEASE)
+        }
+
+        registerBukkitListener(GermReloadEvent::class.java) { e ->
+            GermPluginSkillHud.skillHUDConfiguration = YamlConfiguration.loadConfiguration(File(getDataFolder(), "ui/germplugin/OrryxSkillHUD.yml"))
+            GermPluginSkillUI.skillUIConfiguration = YamlConfiguration.loadConfiguration(File(getDataFolder(), "ui/germplugin/OrryxSkillHUD.yml"))
+            if (setting.joinOpenHud) {
+                onlinePlayers.forEach { player ->
+                    player.orryxProfile {
+                        if (it.job != null) createSkillHUD(player, player).open()
+                    }
+                }
+            }
         }
 
         registerBukkitListener(GermClientLinkedEvent::class.java) { e ->

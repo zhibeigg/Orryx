@@ -36,7 +36,6 @@ object BuffActions {
         private fun getDescription(player: Player, description: List<String>): List<String> {
             return player.parse(description, emptyMap())
         }
-
     }
 
     class PlayerBuff(val player: Player, val buff: Buff, val timeout: Long) : SimpleTimeoutTask(timeout) {
@@ -44,7 +43,6 @@ object BuffActions {
         override val closed: () -> Unit = {
             playerBuffMap[player.uniqueId]?.remove(buff.key)
         }
-
     }
 
     @SubscribeEvent

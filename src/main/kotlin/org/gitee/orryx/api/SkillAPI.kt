@@ -47,7 +47,5 @@ class SkillAPI: ISkillAPI {
         fun init() {
             PlatformFactory.registerAPI<ISkillAPI>(SkillAPI())
         }
-
     }
-
 }

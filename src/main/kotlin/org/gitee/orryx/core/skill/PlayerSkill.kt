@@ -2,6 +2,7 @@ package org.gitee.orryx.core.skill
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.api.OrryxAPI
@@ -27,15 +28,21 @@ import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common5.cbool
 import taboolib.common5.cint
 import taboolib.module.kether.orNull
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
 
 class PlayerSkill(
-    override val player: Player,
+    val uuid: UUID,
     override val key: String,
     override val job: String,
     private var privateLevel: Int,
     private var privateLocked: Boolean
 ): IPlayerSkill {
+
+    constructor(player: Player, key: String, job: String, privateLevel: Int, privateLocked: Boolean): this(player.uniqueId, key, job, privateLevel, privateLocked)
+
+    override val player
+        get() = Bukkit.getPlayer(uuid)!!
 
     override val level: Int
         get() = privateLevel

@@ -2,6 +2,7 @@ package org.gitee.orryx.core.common.keyregister
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.GameManager
@@ -12,9 +13,10 @@ import org.gitee.orryx.dao.cache.Saveable
 import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
 import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.utils.*
+import java.util.UUID
 
 class PlayerKeySetting(
-    val player: Player,
+    val uuid: UUID,
     val bindKeyMap: Map<IBindKey, String>,
     val aimConfirmKey: String = MOUSE_LEFT,
     val aimCancelKey: String = MOUSE_RIGHT,
@@ -24,8 +26,11 @@ class PlayerKeySetting(
     val extKeyMap: Map<String, String> = emptyMap()
 ): Saveable {
 
+    val player
+        get() = Bukkit.getPlayer(uuid)!!
+
     constructor(player: Player, playerKeySettingPO: PlayerKeySettingPO) : this(
-        player,
+        player.uniqueId,
         bindKeys().associateWith { playerKeySettingPO.bindKeyMap[it.key] ?: it.key },
         playerKeySettingPO.aimConfirmKey,
         playerKeySettingPO.aimCancelKey,
@@ -35,7 +40,7 @@ class PlayerKeySetting(
         playerKeySettingPO.extKeyMap
     )
 
-    constructor(player: Player): this(player, bindKeyMap = bindKeys().associateWith { it.key })
+    constructor(player: Player): this(player.uniqueId, bindKeyMap = bindKeys().associateWith { it.key })
 
     private fun createPO(): PlayerKeySettingPO {
         return PlayerKeySettingPO(

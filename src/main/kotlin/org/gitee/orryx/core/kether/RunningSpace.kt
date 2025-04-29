@@ -36,5 +36,4 @@ class RunningSpace(val tag: String) {
     fun foreach(func: ScriptContext.() -> Unit) {
         runningScriptContexts.forEach { it.value.func() }
     }
-
 }

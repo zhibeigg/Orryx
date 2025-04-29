@@ -119,5 +119,4 @@ interface IStorageManager {
      * @param onSuccess 成功时执行
      * */
     fun savePlayerKey(player: UUID, playerKeySettingPO: PlayerKeySettingPO, onSuccess: () -> Unit)
-
 }

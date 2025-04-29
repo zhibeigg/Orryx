@@ -19,6 +19,7 @@ import org.gitee.orryx.core.skill.skills.PressingAimSkill
 import org.gitee.orryx.core.skill.skills.PressingSkill
 import org.gitee.orryx.core.station.pipe.PipeBuilder
 import org.gitee.orryx.dao.cache.MemoryCache
+import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.module.state.StateManager
 import org.gitee.orryx.module.state.StateManager.statusData
 import org.gitee.orryx.module.state.states.SkillState
@@ -43,9 +44,8 @@ val silence: Boolean by ConfigLazy(Orryx.config) { Orryx.config.getBoolean("Sile
 
 internal fun SkillParameter.runSkillAction(map: Map<String, Any> = emptyMap()) {
     SkillLoaderManager.getSkillLoader(skill ?: return)?.let { skill ->
-        if (skill is ICastSkill) {
-            KetherScript(skill.key, skill.script ?: error("请修复技能配置中的错误${skill.key}")).runActions(this, map)
-        }
+        skill as ICastSkill
+        KetherScript(skill.key, skill.script ?: error("请修复技能配置中的错误${skill.key}")).runActions(this, map)
     }
 }
 
@@ -168,9 +168,11 @@ fun IPlayerSkill.getIcon(): String {
 fun ICastSkill.consume(player: Player, parameter: SkillParameter) {
     silence(parameter, player)
     SkillTimer.reset(player, parameter)
+    IManaManager.INSTANCE.takeMana(player, parameter.manaValue(true))
 }
 
 fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean = true) {
+    debug("玩家 ${player.name} cast skill $key")
     when(val skill = this) {
         is PressingSkill -> {
             if (PressSkillManager.pressTaskMap.containsKey(player.uniqueId)) return
@@ -242,9 +244,11 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean
 }
 
 fun IPlayerSkill.tryCast(): CompletableFuture<CastResult> {
+    debug("玩家 ${player.name} try cast skill $key")
     val parameter = parameter()
     val result = castCheck(parameter)
     result.thenAccept {
+        debug("玩家 ${player.name} try cast skill result ${it.name}")
         if (!silence) it.sendLang(player)
         if (it.isSuccess()) {
             cast(parameter, true)

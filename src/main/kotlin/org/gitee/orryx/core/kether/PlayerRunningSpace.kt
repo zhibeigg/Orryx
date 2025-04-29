@@ -31,5 +31,4 @@ class PlayerRunningSpace(val player: Player) {
     fun terminate(tag: String) {
         runningSpaceMap[tag]?.terminate()
     }
-
 }

@@ -105,5 +105,4 @@ class PlayerData(val player: Player) {
         val state = nowRunningState as? BlockState.Running ?: return
         state.success()
     }
-
 }

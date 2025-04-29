@@ -1,8 +1,8 @@
 package org.gitee.orryx.core.profile
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.api.events.player.OrryxPlayerPointEvents
@@ -15,17 +15,22 @@ import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.utils.async
 import org.gitee.orryx.utils.toSerializable
-import taboolib.common.platform.function.info
 import taboolib.common.platform.function.isPrimaryThread
+import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentMap
 
 class PlayerProfile(
-    override val player: Player,
+    val uuid: UUID,
     private var privateJob: String?,
     private var privatePoint: Int,
     private val privateFlags: ConcurrentMap<String, IFlag>
 ): IPlayerProfile {
+
+    constructor(player: Player, privateJob: String?, privatePoint: Int, privateFlags: ConcurrentMap<String, IFlag>): this(player.uniqueId, privateJob, privatePoint, privateFlags)
+
+    override val player: Player
+        get() = Bukkit.getPlayer(uuid)!!
 
     override val flags: Map<String, IFlag>
         get() = privateFlags

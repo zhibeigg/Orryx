@@ -8,5 +8,4 @@ interface IKetherScript {
     val script: Script
 
     fun runActions(skillParameter: SkillParameter, map: Map<String, Any>? = null)
-
 }

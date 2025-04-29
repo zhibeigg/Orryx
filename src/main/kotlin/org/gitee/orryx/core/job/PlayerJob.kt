@@ -2,6 +2,7 @@ package org.gitee.orryx.core.job
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.api.events.player.OrryxPlayerChangeGroupEvents
@@ -29,15 +30,21 @@ import taboolib.common.util.unsafeLazy
 import taboolib.common5.cdouble
 import taboolib.common5.cint
 import taboolib.module.kether.orNull
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
 
 class PlayerJob(
-    override val player: Player,
+    val uuid: UUID,
     override val key: String,
     private var privateExperience: Int,
     private var privateGroup: String = DEFAULT,
     private val privateBindKeyOfGroup: MutableMap<IGroup, MutableMap<IBindKey, String?>>
 ): IPlayerJob {
+
+    constructor(player: Player, key: String, privateExperience: Int, privateGroup: String = DEFAULT, privateBindKeyOfGroup: MutableMap<IGroup, MutableMap<IBindKey, String?>>): this(player.uniqueId, key, privateExperience, privateGroup, privateBindKeyOfGroup)
+
+    override val player
+        get() = Bukkit.getPlayer(uuid)!!
 
     override val job: IJob by unsafeLazy { JobLoaderManager.getJobLoader(key)!! }
 

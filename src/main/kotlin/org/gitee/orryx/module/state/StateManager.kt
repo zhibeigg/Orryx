@@ -6,7 +6,6 @@ import eos.moe.armourers.api.PlayerSkinUpdateEvent
 import eos.moe.dragoncore.api.event.EntityJoinWorldEvent
 import eos.moe.dragoncore.api.event.EntityLeaveWorldEvent
 import eos.moe.dragoncore.api.event.KeyPressEvent
-import eos.moe.dragoncore.api.event.KeyReleaseEvent
 import eos.moe.dragoncore.api.gui.event.CustomPacketEvent
 import eos.moe.dragoncore.network.PacketSender
 import org.bukkit.Bukkit
@@ -26,7 +25,6 @@ import org.gitee.orryx.utils.*
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.Ghost
-import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.info
 import taboolib.common.platform.function.warning
@@ -44,8 +42,6 @@ import taboolib.module.kether.orNull
 import taboolib.platform.util.onlinePlayers
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import kotlin.collections.component1
-import kotlin.collections.component2
 
 object StateManager {
 
@@ -127,7 +123,7 @@ object StateManager {
 
     @SubscribeEvent
     private fun quit(e: PlayerQuitEvent) {
-        playerDataMap.remove(e.player.uniqueId)
+        playerDataMap.remove(e.player.uniqueId)?.nowRunningState?.stop()
     }
 
     @Ghost

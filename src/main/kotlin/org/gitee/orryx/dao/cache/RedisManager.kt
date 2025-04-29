@@ -8,6 +8,7 @@ import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.dao.storage.IStorageManager
+import org.gitee.orryx.utils.debug
 import org.gitee.orryx.utils.playerDataTag
 import org.gitee.orryx.utils.playerJobDataTag
 import org.gitee.orryx.utils.playerJobSkillDataTag
@@ -28,6 +29,7 @@ class RedisManager: ISyncCacheManager {
     private val api by unsafeLazy { RedisChannelPlugin.api }
 
     override fun getPlayerProfile(player: UUID): CompletableFuture<PlayerProfilePO?> {
+        debug("Redis 获取玩家 Profile")
         val tag = playerDataTag(player)
         val future = CompletableFuture<PlayerProfilePO?>()
         fun read() {
@@ -53,6 +55,7 @@ class RedisManager: ISyncCacheManager {
     }
 
     override fun getPlayerJob(player: UUID, job: String): CompletableFuture<PlayerJobPO?> {
+        debug("Redis 获取玩家 Job")
         val tag = playerJobDataTag(player, job)
         val future = CompletableFuture<PlayerJobPO?>()
         fun read() {
@@ -78,6 +81,7 @@ class RedisManager: ISyncCacheManager {
     }
 
     override fun getPlayerSkill(player: UUID, job: String, skill: String): CompletableFuture<PlayerSkillPO?> {
+        debug("Redis 获取玩家 Skill")
         val tag = playerJobSkillDataTag(player, job, skill)
         val future = CompletableFuture<PlayerSkillPO?>()
         fun read() {
@@ -103,6 +107,7 @@ class RedisManager: ISyncCacheManager {
     }
 
     override fun getPlayerKeySetting(player: UUID): CompletableFuture<PlayerKeySettingPO?> {
+        debug("Redis 获取玩家 KeySetting")
         val tag = playerKeySettingDataTag(player)
         val future = CompletableFuture<PlayerKeySettingPO?>()
         fun read() {
@@ -128,35 +133,42 @@ class RedisManager: ISyncCacheManager {
     }
 
     override fun savePlayerProfile(player: UUID, playerProfilePO: PlayerProfilePO, async: Boolean) {
+        debug("Redis 获取玩家 Profile")
         api.set(playerDataTag(player), Json.encodeToString(playerProfilePO), SECOND_12_HOURS, async)
     }
 
     override fun savePlayerJob(player: UUID, playerJobPO: PlayerJobPO, async: Boolean) {
+        debug("Redis 获取玩家 Job")
         api.set(playerJobDataTag(player, playerJobPO.job), Json.encodeToString(playerJobPO), SECOND_12_HOURS, async)
     }
 
     override fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO, async: Boolean) {
+        debug("Redis 保存玩家 Skill")
         api.set(playerJobSkillDataTag(player, playerSkillPO.job, playerSkillPO.skill), Json.encodeToString(playerSkillPO), SECOND_6_HOURS, async)
     }
 
     override fun savePlayerKeySetting(player: UUID, playerKeySettingPO: PlayerKeySettingPO, async: Boolean) {
+        debug("Redis 保存玩家 KeySetting")
         api.set(playerKeySettingDataTag(player), Json.encodeToString(playerKeySettingPO), SECOND_6_HOURS, async)
     }
 
     override fun removePlayerProfile(player: UUID, async: Boolean) {
+        debug("Redis 移除玩家 Profile")
         api.remove(playerDataTag(player), async)
     }
 
     override fun removePlayerJob(player: UUID, job: String, async: Boolean) {
+        debug("Redis 移除玩家 Job")
         api.remove(playerJobDataTag(player, job), async)
     }
 
     override fun removePlayerSkill(player: UUID, job: String, skill: String, async: Boolean) {
+        debug("Redis 移除玩家 Skill")
         api.remove(playerJobSkillDataTag(player, job, skill), async)
     }
 
     override fun removePlayerKeySetting(player: UUID, async: Boolean) {
+        debug("Redis 移除玩家 KeySetting")
         api.remove(playerKeySettingDataTag(player), async)
     }
-
 }

@@ -19,5 +19,4 @@ object LanguageLoader {
     private fun reload() {
         Language.reload()
     }
-
 }

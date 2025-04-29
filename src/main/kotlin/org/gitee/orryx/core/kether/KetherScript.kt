@@ -1,7 +1,10 @@
 package org.gitee.orryx.core.kether
 
+import kotlinx.coroutines.launch
+import org.gitee.orryx.api.OrryxAPI.Companion.pluginScope
 import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.skill.SkillLoaderManager
+import org.gitee.orryx.utils.debug
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common.platform.function.submitAsync
 import taboolib.module.kether.Script
@@ -21,7 +24,8 @@ class KetherScript(val skill: String, override val script: Script): IKetherScrip
     }
 
     override fun runActions(skillParameter: SkillParameter, map: Map<String, Any>?) {
-        submitAsync {
+        pluginScope.launch {
+            debug("run skill action $map")
             val playerRunningSpace =
                 ScriptManager.runningSkillScriptsMap.getOrPut(skillParameter.player.uniqueId) { PlayerRunningSpace(skillParameter.player) }
 
@@ -35,5 +39,4 @@ class KetherScript(val skill: String, override val script: Script): IKetherScrip
             }
         }
     }
-
 }

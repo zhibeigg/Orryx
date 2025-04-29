@@ -22,7 +22,5 @@ class TimerAPI: ITimerAPI {
         fun init() {
             PlatformFactory.registerAPI<ITimerAPI>(TimerAPI())
         }
-
     }
-
 }

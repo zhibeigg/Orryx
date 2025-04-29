@@ -101,5 +101,4 @@ object SkillTimer : ITimer {
     private fun onPlayerQuit(e: PlayerQuitEvent) {
         playerCooldowns.remove(e.player.uniqueId)
     }
-
 }

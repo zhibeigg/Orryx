@@ -7,6 +7,7 @@ import org.gitee.orryx.core.skill.SkillLoaderManager
 import org.gitee.orryx.utils.*
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.command.*
+import taboolib.common5.cbool
 import taboolib.common5.cint
 
 object OrryxSkillCommand {
@@ -55,6 +56,14 @@ object OrryxSkillCommand {
                         val skill = SkillLoaderManager.getSkillLoader(ctx["skill"]) as ICastSkill
                         skill.castSkill(player, SkillParameter(skill.key, player, ctx["level"].cint), false)
                     }
+                    bool("consume") {
+                        exec<ProxyCommandSender> {
+                            val player = ctx.bukkitPlayer() ?: return@exec
+                            val skill = SkillLoaderManager.getSkillLoader(ctx["skill"]) as ICastSkill
+                            val consume = ctx["consume"].cbool
+                            skill.castSkill(player, SkillParameter(skill.key, player, ctx["level"].cint), consume)
+                        }
+                    }
                 }
             }
         }
@@ -94,5 +103,4 @@ object OrryxSkillCommand {
 
     @CommandBody
     val level = OrryxSkillLevelCommand
-
 }
