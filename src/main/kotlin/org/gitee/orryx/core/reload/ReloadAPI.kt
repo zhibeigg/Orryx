@@ -1,5 +1,8 @@
 package org.gitee.orryx.core.reload
 
+import com.germ.germplugin.api.event.GermReloadEvent
+import eos.moe.dragoncore.api.event.ConfigLoadEvent
+import eos.moe.dragoncore.api.gui.event.CustomPacketEvent
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.api.events.OrryxPluginReloadEvent
 import org.gitee.orryx.api.interfaces.IReloadAPI
@@ -7,7 +10,9 @@ import org.gitee.orryx.utils.debug
 import taboolib.common.LifeCycle
 import taboolib.common.inject.ClassVisitor
 import taboolib.common.platform.Awake
+import taboolib.common.platform.Ghost
 import taboolib.common.platform.PlatformFactory
+import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.info
 import taboolib.common.util.unsafeLazy
 import taboolib.library.reflex.ClassMethod
@@ -60,4 +65,17 @@ object ReloadAPI: IReloadAPI, ClassVisitor(3) {
         PlatformFactory.registerAPI<IReloadAPI>(ReloadAPI)
     }
 
+    @Ghost
+    @SubscribeEvent
+    private fun reload(e: GermReloadEvent) {
+        reload()
+    }
+
+    @Ghost
+    @SubscribeEvent
+    private fun reload(e: CustomPacketEvent) {
+        if (e.identifier == "DragonCore" && e.data.size == 1 && e.data[0] == "cache_loaded") {
+            reload()
+        }
+    }
 }
