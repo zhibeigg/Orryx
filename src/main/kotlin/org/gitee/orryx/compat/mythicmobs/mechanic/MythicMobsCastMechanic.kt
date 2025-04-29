@@ -10,7 +10,9 @@ import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.skill.ICastSkill
 import org.gitee.orryx.core.skill.SkillLoaderManager
 import org.gitee.orryx.utils.castSkill
+import taboolib.common.platform.Ghost
 
+@Ghost
 class MythicMobsCastMechanic(line: String, mlc: MythicLineConfig) : SkillMechanic(line, mlc), ITargetedEntitySkill {
 
     private val skill = mlc.getString(arrayOf("s", "skill"))

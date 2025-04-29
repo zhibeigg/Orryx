@@ -2,6 +2,7 @@ package org.gitee.orryx.core.common.keyregister
 
 import com.germ.germplugin.api.GermPacketAPI
 import com.germ.germplugin.api.KeyType
+import com.germ.germplugin.api.event.GermClientLinkedEvent
 import eos.moe.dragoncore.api.event.EntityJoinWorldEvent
 import org.bukkit.entity.Player
 import org.bukkit.event.player.PlayerJoinEvent
@@ -14,6 +15,7 @@ import org.gitee.orryx.utils.MOUSE_LEFT
 import org.gitee.orryx.utils.MOUSE_RIGHT
 import org.gitee.orryx.utils.keySetting
 import org.gitee.orryx.utils.keySettingSet
+import taboolib.common.platform.Ghost
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.warning
@@ -28,6 +30,7 @@ object KeyRegisterManager {
 
     @SubscribeEvent
     private fun onJoin(e: PlayerJoinEvent) {
+        if (!DragonCorePlugin.isEnabled && !GermPluginPlugin.isEnabled) return
         players.add(e.player.uniqueId)
         keyRegisterMap[e.player.uniqueId] = KeyRegister(e.player)
     }
@@ -37,8 +40,17 @@ object KeyRegisterManager {
         keyRegisterMap.remove(e.player.uniqueId)
     }
 
+    @Ghost
     @SubscribeEvent(priority = EventPriority.LOW)
     private fun onPlayerJoin(e: EntityJoinWorldEvent) {
+        if (players.remove(e.player.uniqueId)) {
+            sendKeyRegister(e.player)
+        }
+    }
+
+    @Ghost
+    @SubscribeEvent(priority = EventPriority.LOW)
+    private fun onPlayerJoin(e: GermClientLinkedEvent) {
         if (players.remove(e.player.uniqueId)) {
             sendKeyRegister(e.player)
         }
