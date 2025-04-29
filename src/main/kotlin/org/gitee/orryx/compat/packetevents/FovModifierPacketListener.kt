@@ -8,9 +8,10 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPl
 class FovModifierPacketListener: PacketListener {
 
     override fun onPacketSend(e: PacketSendEvent) {
+        if (!PacketEventsHook.offSpeedFovChange) return
         if (e.packetType != PacketType.Play.Server.PLAYER_ABILITIES) return
         val packet = WrapperPlayServerPlayerAbilities(e)
-        packet.fovModifier = 0.1f
+        packet.fovModifier = 0f
         e.markForReEncode(true)
         packet.write()
         e.byteBuf = packet.readByte()

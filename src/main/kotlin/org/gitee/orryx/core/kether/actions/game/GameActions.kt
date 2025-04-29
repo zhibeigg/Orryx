@@ -33,28 +33,6 @@ object GameActions {
         }
     }
 
-    @KetherParser(["walkspeed"], namespace = ORRYX_NAMESPACE, shared = true)
-    private fun actionWalkSpeed() = combinationParser(
-        Action.new("Game原版游戏", "设置走路速度", "walkspeed", true)
-            .description("设置走路速度")
-            .addEntry("走路速度", Type.FLOAT, false)
-            .addEntry("持续时间", Type.LONG, false)
-            .addContainerEntry(optional = true, default = "@self")
-    ) {
-        it.group(
-            float(),
-            theyContainer(true)
-        ).apply(it) { speed, container ->
-            future {
-                ensureSync {
-                    container.orElse(self()).forEachInstance<PlayerTarget> { player ->
-                        player.getSource().walkSpeed = speed
-                    }
-                }
-            }
-        }
-    }
-
     @KetherParser(["flyHeight"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun actionFlyHeight() = combinationParser(
         Action.new("Game原版游戏", "获得玩家离地面高度", "flyHeight", true)

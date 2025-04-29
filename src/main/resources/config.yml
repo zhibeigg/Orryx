@@ -20,6 +20,8 @@ DisableHunger: false
 Silence: false
 # 是否需要同步原版经验
 SyncExperience: true
+# 是否取消因为速度改变产生的FOV角变化
+OffSpeedFovChange: true
 UI:
   # ！修改后需要重启
   # bukkit/germplugin/dragoncore
