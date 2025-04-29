@@ -16,6 +16,7 @@ object GddTitleActions {
             .description("发送龙核Hud Title")
             .addEntry("title（@sender和@player会替换）", Type.STRING)
             .addEntry("淡入 停留 淡出", Type.INT, true, "0 20 0", "by/with")
+            .addContainerEntry("目标玩家", true, "@self")
     ) {
         it.group(
             text(),
@@ -38,6 +39,7 @@ object GddTitleActions {
             .description("发送龙核Hud Action")
             .addEntry("action（@sender和@player会替换）", Type.STRING)
             .addEntry("淡入 停留 淡出", Type.INT, true, "0 20 0", "by/with")
+            .addContainerEntry("目标玩家", true, "@self")
     ) {
         it.group(
             text(),

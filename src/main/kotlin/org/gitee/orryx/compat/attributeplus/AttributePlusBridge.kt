@@ -33,4 +33,8 @@ class AttributePlusBridge: IAttributeBridge {
     override fun damage(attacker: LivingEntity, target: LivingEntity, damage: Double, type: DamageType, context: ScriptContext?) {
         AttributeAPI.runAttributeAttackEntity(attacker, target, damage, callBeforeEvent = true, callCancel = true)
     }
+
+    override fun update(entity: LivingEntity) {
+        AttributeAPI.updateAttribute(entity)
+    }
 }

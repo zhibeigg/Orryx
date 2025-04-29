@@ -27,4 +27,8 @@ class DefaultAttributeBridge: IAttributeBridge {
             OrryxDamageEvents.Post(attacker, target, event.damage, bukkitEvent, event.type, context).call()
         }
     }
+
+    override fun update(entity: LivingEntity) {
+        warning("Not Found Attribute Plugin")
+    }
 }

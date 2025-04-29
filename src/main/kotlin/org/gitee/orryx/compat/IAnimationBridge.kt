@@ -26,5 +26,4 @@ interface IAnimationBridge {
     fun removePlayerAnimation(viewer: Player, player: Player, animation: String)
 
     fun clearPlayerAnimation(viewer: Player, player: Player)
-
 }

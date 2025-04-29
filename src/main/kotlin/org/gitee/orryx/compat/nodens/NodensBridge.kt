@@ -56,4 +56,8 @@ class NodensBridge: IAttributeBridge {
     override fun removeAttribute(entity: LivingEntity, key: String) {
         Nodens.api().removeTempAttribute(entity, key)
     }
+
+    override fun update(entity: LivingEntity) {
+        Nodens.api().updateAttribute(entity)
+    }
 }

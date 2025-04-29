@@ -90,7 +90,7 @@ dependencies {
     compileOnly("ink.ptms.core:v11200:11200")
     compileOnly("ink.ptms:nms-all:1.0.0")
 
-    compileOnly("org.gitee.nodens:Nodens:1.0")
+    compileOnly("org.gitee.nodens:Nodens:1.2.1:api")
     compileOnly("com.gitee.redischannel:RedisChannel:1.1:api")
     compileOnly("ink.ptms.adyeshach:plugin:2.0.26:api")
     compileOnly("com.github.retrooper:packetevents-spigot:2.7.0")

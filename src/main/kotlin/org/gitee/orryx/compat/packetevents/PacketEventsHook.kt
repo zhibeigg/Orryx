@@ -16,6 +16,9 @@ object PacketEventsHook {
             PacketEvents.setAPI(SpigotPacketEventsBuilder.build(BukkitPlugin.getInstance()))
             PacketEvents.getAPI().settings.reEncodeByDefault(false).checkForUpdates(false)
             PacketEvents.getAPI().load()
+            PacketEvents.getAPI().eventManager.registerListener(
+                FovModifierPacketListener(), PacketListenerPriority.NORMAL
+            )
         } catch (_: Throwable) {
         }
     }

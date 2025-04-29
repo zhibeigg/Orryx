@@ -50,4 +50,9 @@ interface IAttributeBridge {
      * @param context 产生攻击的上下文
      * */
     fun damage(attacker: LivingEntity, target: LivingEntity, damage: Double, type: DamageType, context: ScriptContext? = null)
+
+    /**
+     * 更新实体属性
+     * */
+    fun update(entity: LivingEntity)
 }
