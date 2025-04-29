@@ -57,5 +57,5 @@ fun <T> Player.keySetting(func: (setting: PlayerKeySetting) -> T): CompletableFu
 }
 
 fun PlayerKeySetting.keySettingSet(): Set<String> {
-    return (bindKeyMap.values + aimConfirmKey + aimCancelKey + generalAttackKey + blockKey + dodgeKey + extKeyMap.values).map { it.uppercase() }.toSet()
+    return (bindKeyMap.values.flatMap { it.split("+") } + aimConfirmKey + aimCancelKey + generalAttackKey + blockKey + dodgeKey + extKeyMap.values).map { it.uppercase() }.toSet()
 }

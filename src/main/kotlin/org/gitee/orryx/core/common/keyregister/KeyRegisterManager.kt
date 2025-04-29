@@ -10,6 +10,8 @@ import org.gitee.orryx.compat.dragoncore.DragonCoreCustomPacketSender
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.utils.DragonCorePlugin
 import org.gitee.orryx.utils.GermPluginPlugin
+import org.gitee.orryx.utils.MOUSE_LEFT
+import org.gitee.orryx.utils.MOUSE_RIGHT
 import org.gitee.orryx.utils.keySetting
 import org.gitee.orryx.utils.keySettingSet
 import taboolib.common.platform.event.EventPriority
@@ -54,8 +56,13 @@ object KeyRegisterManager {
             when {
                 GermPluginPlugin.isEnabled -> {
                     keySetting.keySettingSet().forEach {
+                        val key = when (it) {
+                            MOUSE_LEFT -> "MLEFT"
+                            MOUSE_RIGHT -> "MRIGHT"
+                            else -> it
+                        }
                         try {
-                            GermPacketAPI.sendKeyRegister(player, KeyType.valueOf("KEY_${it}").keyId)
+                            GermPacketAPI.sendKeyRegister(player, KeyType.valueOf("KEY_${key}").keyId)
                         } catch (ex: Throwable) {
                             warning("GermPlugin 按键注册失败: ${ex.message}")
                         }
