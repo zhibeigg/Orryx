@@ -1,6 +1,7 @@
 package org.gitee.orryx.core.station.triggers.germplugin
 
 import com.germ.germplugin.api.event.GermClientLinkedEvent
+import eos.moe.dragoncore.api.gui.event.CustomPacketEvent
 import org.gitee.orryx.core.station.Plugin
 import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.station.triggers.AbstractEventTrigger
@@ -8,6 +9,7 @@ import org.gitee.orryx.core.station.triggers.AbstractPropertyEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
+import taboolib.common.OpenResult
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.module.kether.ScriptContext
@@ -33,10 +35,17 @@ object GermClientLinkedTrigger: AbstractPropertyEventTrigger<GermClientLinkedEve
         return pipeTask.scriptContext?.sender?.origin == event.player
     }
 
-    override fun onStart(context: ScriptContext, event: GermClientLinkedEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["ip"] = event.ip
-        context["machineCode"] = event.machineCode
-        context["modVersion"] = event.modVersion
+    override fun read(instance: GermClientLinkedEvent, key: String): OpenResult {
+        return when(key) {
+            "ip" -> OpenResult.successful(instance.ip)
+            "machineCode" -> OpenResult.successful(instance.machineCode)
+            "modVersion" -> OpenResult.successful(instance.modVersion)
+            "qq" -> OpenResult.successful(instance.qq)
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: GermClientLinkedEvent, key: String, value: Any?): OpenResult {
+        return OpenResult.failed()
     }
 }

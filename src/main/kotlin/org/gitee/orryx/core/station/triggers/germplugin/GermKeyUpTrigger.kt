@@ -1,5 +1,6 @@
 package org.gitee.orryx.core.station.triggers.germplugin
 
+import com.germ.germplugin.api.event.GermKeyDownEvent
 import com.germ.germplugin.api.event.GermKeyUpEvent
 import org.gitee.orryx.core.station.Plugin
 import org.gitee.orryx.core.station.pipe.IPipeTask
@@ -9,6 +10,7 @@ import org.gitee.orryx.core.station.triggers.AbstractPropertyEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
+import taboolib.common.OpenResult
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.module.kether.ScriptContext
@@ -39,8 +41,15 @@ object GermKeyUpTrigger: AbstractPropertyEventTrigger<GermKeyUpEvent>("Germ Key 
         return pipeTask.scriptContext?.sender?.origin == event.player && ((map["keys"] as? List<*>)?.contains(event.keyType.simpleKey) ?: (map["keys"] == event.keyType.simpleKey))
     }
 
-    override fun onStart(context: ScriptContext, event: GermKeyUpEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["key"] = event.keyType.simpleKey
+    override fun read(instance: GermKeyUpEvent, key: String): OpenResult {
+        return when(key) {
+            "key" -> OpenResult.successful(instance.keyType.simpleKey)
+            "keyBinding" -> OpenResult.successful(instance.keyBinding)
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: GermKeyUpEvent, key: String, value: Any?): OpenResult {
+        return OpenResult.failed()
     }
 }

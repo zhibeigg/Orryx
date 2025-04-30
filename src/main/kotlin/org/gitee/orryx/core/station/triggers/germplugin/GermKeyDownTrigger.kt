@@ -1,17 +1,21 @@
 package org.gitee.orryx.core.station.triggers.germplugin
 
+import com.germ.germplugin.api.KeyType
+import com.germ.germplugin.api.bean.KeyBinding
 import com.germ.germplugin.api.event.GermKeyDownEvent
 import org.gitee.orryx.core.station.Plugin
 import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.station.stations.IStation
-import org.gitee.orryx.core.station.triggers.AbstractEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
+import taboolib.common.OpenResult
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
-import taboolib.module.kether.ScriptContext
+import taboolib.common5.cint
+import taboolib.module.kether.KetherProperty
+import taboolib.module.kether.ScriptProperty
 
 @Plugin("GermPlugin")
 object GermKeyDownTrigger: AbstractPropertyEventTrigger<GermKeyDownEvent>("Germ Key Down") {
@@ -39,8 +43,51 @@ object GermKeyDownTrigger: AbstractPropertyEventTrigger<GermKeyDownEvent>("Germ 
         return pipeTask.scriptContext?.sender?.origin == event.player && ((map["keys"] as? List<*>)?.contains(event.keyType.simpleKey) ?: (map["keys"] == event.keyType.simpleKey))
     }
 
-    override fun onStart(context: ScriptContext, event: GermKeyDownEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["key"] = event.keyType.simpleKey
+    override fun read(instance: GermKeyDownEvent, key: String): OpenResult {
+        return when(key) {
+            "key" -> OpenResult.successful(instance.keyType.simpleKey)
+            "keyBinding" -> OpenResult.successful(instance.keyBinding)
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: GermKeyDownEvent, key: String, value: Any?): OpenResult {
+        return OpenResult.failed()
+    }
+
+    @KetherProperty(bind = KeyBinding::class)
+    private fun property() = object : ScriptProperty<KeyBinding>("orryx.germ.keybinding.operator") {
+
+        override fun read(instance: KeyBinding, key: String): OpenResult {
+            return when(key) {
+                "name" -> OpenResult.successful(instance.name)
+                "index" -> OpenResult.successful(instance.index)
+                "defaultKey" -> OpenResult.successful(instance.defaultKey)
+                "category" -> OpenResult.successful(instance.category)
+                else -> OpenResult.failed()
+            }
+        }
+
+        override fun write(instance: KeyBinding, key: String, value: Any?): OpenResult {
+            return when(key) {
+                "name" -> {
+                    instance.name = value.toString()
+                    OpenResult.successful()
+                }
+                "index" -> {
+                    instance.index = value.toString()
+                    OpenResult.successful()
+                }
+                "defaultKey" -> {
+                    instance.defaultKey = KeyType.getKeyTypeFromKeyId(value.cint)
+                    OpenResult.successful()
+                }
+                "category" -> {
+                    instance.category = value.toString()
+                    OpenResult.successful()
+                }
+                else -> OpenResult.failed()
+            }
+        }
     }
 }
