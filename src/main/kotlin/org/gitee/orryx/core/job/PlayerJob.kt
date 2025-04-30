@@ -26,11 +26,10 @@ import org.gitee.orryx.module.experience.ExperienceLoaderManager
 import org.gitee.orryx.module.experience.IExperience
 import org.gitee.orryx.utils.*
 import taboolib.common.platform.function.isPrimaryThread
-import taboolib.common.util.unsafeLazy
 import taboolib.common5.cdouble
 import taboolib.common5.cint
 import taboolib.module.kether.orNull
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.CompletableFuture
 
 class PlayerJob(
@@ -46,7 +45,8 @@ class PlayerJob(
     override val player
         get() = Bukkit.getPlayer(uuid)!!
 
-    override val job: IJob by unsafeLazy { JobLoaderManager.getJobLoader(key)!! }
+    override val job: IJob
+        get() = JobLoaderManager.getJobLoader(key)!!
 
     override val bindKeyOfGroup: Map<IGroup, Map<IBindKey, String?>>
         get() = privateBindKeyOfGroup

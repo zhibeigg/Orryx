@@ -110,5 +110,4 @@ interface IPlayerSkill: Saveable {
      * 创建序列化存储数据
      * */
     fun createPO(): PlayerSkillPO
-
 }
