@@ -186,5 +186,4 @@ class Selector(val name: String, val keys: Array<String>, val type: SelectorType
         }
         return list to id
     }
-
 }

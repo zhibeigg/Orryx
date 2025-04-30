@@ -163,5 +163,4 @@ class Trigger(val group: TriggerGroup, val key: String, var description: String 
         }
         return list to id
     }
-
 }

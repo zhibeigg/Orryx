@@ -9,5 +9,4 @@ interface WikiBlock {
      * @return [Block] and childrenId
      */
     fun createBlocks(): Pair<List<Block>, List<String>>
-
 }
