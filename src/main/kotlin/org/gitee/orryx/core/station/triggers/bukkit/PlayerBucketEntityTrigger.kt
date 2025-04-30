@@ -28,5 +28,4 @@ object PlayerBucketEntityTrigger: AbstractPlayerEventTrigger<PlayerBucketEntityE
         context["entityBucket"] = event.entityBucket
         context["entity"] = AbstractBukkitEntity(event.entity)
     }
-
 }

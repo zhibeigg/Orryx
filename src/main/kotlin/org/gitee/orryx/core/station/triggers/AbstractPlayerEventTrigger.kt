@@ -14,5 +14,4 @@ abstract class AbstractPlayerEventTrigger<E : PlayerEvent>: AbstractEventTrigger
     override fun onCheck(pipeTask: IPipeTask, event: E, map: Map<String, Any?>): Boolean {
         return pipeTask.scriptContext?.sender?.origin == event.player
     }
-
 }

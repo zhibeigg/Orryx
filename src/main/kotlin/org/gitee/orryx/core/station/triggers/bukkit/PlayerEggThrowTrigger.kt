@@ -30,5 +30,4 @@ object PlayerEggThrowTrigger: AbstractPlayerEventTrigger<PlayerEggThrowEvent>() 
         context["numHatches"] = event.numHatches
         context["hatchingType"] = event.hatchingType.name
     }
-
 }

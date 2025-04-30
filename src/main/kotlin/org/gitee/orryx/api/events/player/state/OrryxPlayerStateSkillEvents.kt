@@ -10,8 +10,8 @@ class OrryxPlayerStateSkillEvents {
     class Pre(val player: Player, val skillParameter: IParameter, var silence: Long, val state: SkillState.Running): BukkitProxyEvent()
 
     class Post(val player: Player, val skillParameter: IParameter, val silence: Long, val state: SkillState.Running): BukkitProxyEvent() {
+
         override val allowCancelled: Boolean
             get() = false
     }
-
 }

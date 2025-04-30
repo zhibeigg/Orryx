@@ -28,5 +28,4 @@ object PlayerBedEnterTrigger: AbstractPlayerEventTrigger<PlayerBedEnterEvent>() 
         context["bed"] = LocationTarget(event.bed.location)
         context["useBed"] = event.useBed().name
     }
-
 }

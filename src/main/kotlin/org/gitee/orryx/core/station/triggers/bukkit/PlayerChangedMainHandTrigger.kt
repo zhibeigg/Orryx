@@ -23,5 +23,4 @@ object PlayerChangedMainHandTrigger: AbstractPlayerEventTrigger<PlayerChangedMai
         super.onStart(context, event, map)
         context["mainHand"] = event.mainHand.name
     }
-
 }

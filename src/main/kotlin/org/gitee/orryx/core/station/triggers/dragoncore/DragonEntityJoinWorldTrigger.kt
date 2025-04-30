@@ -2,26 +2,28 @@ package org.gitee.orryx.core.station.triggers.dragoncore
 
 import com.eatthepath.uuid.FastUUID
 import eos.moe.dragoncore.api.event.EntityJoinWorldEvent
+import eos.moe.dragoncore.api.event.EntityLeaveWorldEvent
+import eos.moe.dragoncore.api.event.KeyPressEvent
 import ink.ptms.adyeshach.core.Adyeshach
 import org.bukkit.Bukkit
 import org.gitee.orryx.core.station.Plugin
 import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.AdyeshachPlugin
 import org.gitee.orryx.utils.abstract
+import taboolib.common.OpenResult
 import taboolib.module.kether.ScriptContext
 
 @Plugin("DragonCore")
-object DragonEntityJoinWorldTrigger: AbstractPlayerEventTrigger<EntityJoinWorldEvent>() {
-
-    override val event = "Dragon Entity Join"
+object DragonEntityJoinWorldTrigger: AbstractPropertyPlayerEventTrigger<EntityJoinWorldEvent>("Dragon Entity Join") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.DRAGONCORE, event)
-            .addParm(Type.STRING, "entityUUID", "实体的UUID")
+            .addParm(Type.STRING, "uuid", "实体的UUID")
             .addParm(Type.TARGET, "entity", "实体，不一定存在")
             .description("玩家客户端中有实体加入")
 
@@ -32,16 +34,23 @@ object DragonEntityJoinWorldTrigger: AbstractPlayerEventTrigger<EntityJoinWorldE
         return (pipeTask.scriptContext?.sender?.origin == event.player)
     }
 
-    override fun onStart(context: ScriptContext, event: EntityJoinWorldEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["entityUUID"] = FastUUID.toString(event.entityUUID)
-        val bukkit = Bukkit.getEntity(event.entityUUID)?.abstract()
-        val ady = if (AdyeshachPlugin.isEnabled) {
-            Adyeshach.api().getEntityFinder().getEntityFromUniqueId(FastUUID.toString(event.entityUUID), event.player)?.abstract()
-        } else {
-            null
+    override fun read(instance: EntityJoinWorldEvent, key: String): OpenResult {
+        return when(key) {
+            "uuid" -> OpenResult.successful(instance.entityUUID)
+            "entity" -> {
+                val bukkit = Bukkit.getEntity(instance.entityUUID)?.abstract()
+                val ady = if (AdyeshachPlugin.isEnabled) {
+                    Adyeshach.api().getEntityFinder().getEntityFromUniqueId(FastUUID.toString(instance.entityUUID), instance.player)?.abstract()
+                } else {
+                    null
+                }
+                OpenResult.successful(bukkit ?: ady)
+            }
+            else -> OpenResult.failed()
         }
-        context["entity"] = bukkit ?: ady
     }
 
+    override fun write(instance: EntityJoinWorldEvent, key: String, value: Any?): OpenResult {
+        return OpenResult.failed()
+    }
 }

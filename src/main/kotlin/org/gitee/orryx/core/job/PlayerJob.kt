@@ -89,7 +89,7 @@ class PlayerJob(
         return player.eval(job.maxManaActions, mapOf("level" to level)).orNull().cdouble
     }
 
-    override fun getReginMana(): Double {
+    override fun getRegainMana(): Double {
         return player.eval(job.regainManaActions, mapOf("level" to level)).orNull().cdouble
     }
 
@@ -97,7 +97,7 @@ class PlayerJob(
         return player.eval(job.maxSpiritActions, mapOf("level" to level)).orNull().cdouble
     }
 
-    override fun getReginSpirit(): Double {
+    override fun getRegainSpirit(): Double {
         return player.eval(job.regainSpiritActions, mapOf("level" to level)).orNull().cdouble
     }
 

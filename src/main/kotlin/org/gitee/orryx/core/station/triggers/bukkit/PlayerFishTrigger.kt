@@ -52,5 +52,4 @@ object PlayerFishTrigger: AbstractPlayerEventTrigger<PlayerFishEvent>() {
         context["minWaitTime"] = event.hook.minWaitTime
         context["biteChance"] = event.hook.biteChance
     }
-
 }

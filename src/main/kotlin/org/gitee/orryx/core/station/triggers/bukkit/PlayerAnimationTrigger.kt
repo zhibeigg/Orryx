@@ -23,5 +23,4 @@ object PlayerAnimationTrigger: AbstractPlayerEventTrigger<PlayerAnimationEvent>(
         super.onStart(context, event, map)
         context["animation"] = event.animationType.name
     }
-
 }

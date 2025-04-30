@@ -23,5 +23,4 @@ object PlayerGameModeChangeTrigger: AbstractPlayerEventTrigger<PlayerGameModeCha
         super.onStart(context, event, map)
         context["newGameMode"] = event.newGameMode.name
     }
-
 }

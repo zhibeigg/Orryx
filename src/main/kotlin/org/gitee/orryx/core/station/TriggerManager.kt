@@ -65,5 +65,4 @@ object TriggerManager: ClassVisitor(3) {
             stationTriggers[instance.event.uppercase()] = instance
         }
     }
-
 }

@@ -8,8 +8,8 @@ class OrryxScriptTerminateEvent {
     class Pre(val runningSpace: RunningSpace): BukkitProxyEvent()
 
     class Post(val runningSpace: RunningSpace): BukkitProxyEvent() {
+
         override val allowCancelled: Boolean
             get() = false
     }
-
 }

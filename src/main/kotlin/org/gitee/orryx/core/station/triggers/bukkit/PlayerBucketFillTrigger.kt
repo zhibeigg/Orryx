@@ -28,5 +28,4 @@ object PlayerBucketFillTrigger: AbstractPlayerEventTrigger<PlayerBucketFillEvent
         context["block"] = LocationTarget(event.block.location)
         context["bucket"] = event.bucket.name
     }
-
 }

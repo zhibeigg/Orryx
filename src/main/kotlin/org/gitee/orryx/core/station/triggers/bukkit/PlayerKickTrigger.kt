@@ -25,5 +25,4 @@ object PlayerKickTrigger: AbstractPlayerEventTrigger<PlayerKickEvent>() {
         context["reason"] = event.reason
         context["leaveMessage"] = event.leaveMessage
     }
-
 }

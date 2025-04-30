@@ -23,5 +23,4 @@ object PlayerJoinTrigger: AbstractPlayerEventTrigger<PlayerJoinEvent>() {
         super.onStart(context, event, map)
         context["joinMessage"] = event.joinMessage
     }
-
 }

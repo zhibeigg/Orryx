@@ -29,5 +29,4 @@ object PlayerItemMendTrigger: AbstractPlayerEventTrigger<PlayerItemMendEvent>() 
         context["repairAmount"] = event.repairAmount
         context["experience"] = event.experienceOrb.experience
     }
-
 }

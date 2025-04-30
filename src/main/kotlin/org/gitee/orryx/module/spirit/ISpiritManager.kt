@@ -21,15 +21,15 @@ interface ISpiritManager {
 
         private var thread: PlatformExecutor.PlatformTask? = null
 
-        private val reginTick: Long by ConfigLazy(Orryx.config) { Orryx.config.getLong("SpiritReginTick", 20) }
+        private val regainTick: Long by ConfigLazy(Orryx.config) { Orryx.config.getLong("SpiritRegainTick", 20) }
         
         @Reload(2)
         @Awake(LifeCycle.ENABLE)
         private fun init() {
             thread?.cancel()
-            thread = submitAsync(period = reginTick) {
+            thread = submitAsync(period = regainTick) {
                 onlinePlayers.forEach {
-                    INSTANCE.reginSpirit(it)
+                    INSTANCE.regainSpirit(it)
                 }
             }
         }
@@ -106,7 +106,7 @@ interface ISpiritManager {
      * @param player 玩家
      * @return 恢复的精力值
      * */
-    fun reginSpirit(player: Player): CompletableFuture<Double>
+    fun regainSpirit(player: Player): CompletableFuture<Double>
 
     /**
      * 恢复满精力值

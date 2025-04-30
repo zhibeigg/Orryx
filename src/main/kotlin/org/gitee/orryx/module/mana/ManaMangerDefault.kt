@@ -113,17 +113,17 @@ class ManaMangerDefault: IManaManager {
         }
     }
 
-    override fun reginMana(player: Player): CompletableFuture<Double> {
+    override fun regainMana(player: Player): CompletableFuture<Double> {
         val future = CompletableFuture<Double>()
         player.orryxProfile { profile ->
             player.job { job ->
-                val mana = job.getReginMana()
-                val event = OrryxPlayerManaEvents.Regin.Pre(player, profile, mana)
+                val mana = job.getRegainMana()
+                val event = OrryxPlayerManaEvents.Regain.Pre(player, profile, mana)
                 if (event.call()) {
-                    profile.setFlag(MANA_FLAG, (profile.getFlag(MANA_FLAG)?.value.cdouble + event.reginMana).coerceAtMost(job.getMaxMana()).flag(true), false)
+                    profile.setFlag(MANA_FLAG, (profile.getFlag(MANA_FLAG)?.value.cdouble + event.regainMana).coerceAtMost(job.getMaxMana()).flag(true), false)
                     save(player, profile) {
-                        future.complete(event.reginMana)
-                        OrryxPlayerManaEvents.Regin.Post(player, profile, event.reginMana).call()
+                        future.complete(event.regainMana)
+                        OrryxPlayerManaEvents.Regain.Post(player, profile, event.regainMana).call()
                     }
                 } else {
                     future.complete(0.0)

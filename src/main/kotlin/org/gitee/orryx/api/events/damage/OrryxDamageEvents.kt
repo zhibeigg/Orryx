@@ -15,6 +15,7 @@ class OrryxDamageEvents {
     class Post(val attacker: Entity, val victim: Entity, val damage: Double, val event: EntityDamageByEntityEvent?, val type: DamageType, val context: ScriptContext? = null): BukkitProxyEvent() {
 
         fun attackPlayer(): Player? {
+
             if (attacker is Projectile) {
                 return attacker.shooter as? Player
             }
@@ -22,6 +23,7 @@ class OrryxDamageEvents {
         }
 
         fun victimPlayer(): Player? {
+
             return victim as? Player
         }
     }

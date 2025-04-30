@@ -10,5 +10,4 @@ class OrryxPlayerSkillCastEvents {
     class Check(val player: Player, val skill: IPlayerSkill, val skillParameter: IParameter): BukkitProxyEvent()
 
     class Cast(val player: Player, val skill: IPlayerSkill, val skillParameter: IParameter): BukkitProxyEvent()
-
 }

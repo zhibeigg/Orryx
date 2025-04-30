@@ -11,8 +11,8 @@ class OrryxPlayerSkillBindKeyEvent {
     class Pre(val player: Player, val skill: IPlayerSkill, var group: IGroup, var bindKey: IBindKey): BukkitProxyEvent()
 
     class Post(val player: Player, val skill: IPlayerSkill, val group: IGroup, val bindKey: IBindKey): BukkitProxyEvent() {
+
         override val allowCancelled: Boolean
             get() = false
     }
-
 }

@@ -21,6 +21,7 @@ class OrryxPlayerManaEvents {
         class Pre(val player: Player, val profile: IPlayerProfile, var mana: Double): BukkitProxyEvent()
 
         class Post(val player: Player, val profile: IPlayerProfile, val mana: Double): BukkitProxyEvent() {
+
             override val allowCancelled: Boolean
                 get() = false
         }
@@ -29,11 +30,12 @@ class OrryxPlayerManaEvents {
     /**
      * 此事件可能为异步，注意检测线程安全问题
      * */
-    class Regin {
+    class Regain {
 
-        class Pre(val player: Player, val profile: IPlayerProfile, var reginMana: Double): BukkitProxyEvent()
+        class Pre(val player: Player, val profile: IPlayerProfile, var regainMana: Double): BukkitProxyEvent()
 
-        class Post(val player: Player, val profile: IPlayerProfile, val reginMana: Double): BukkitProxyEvent() {
+        class Post(val player: Player, val profile: IPlayerProfile, val regainMana: Double): BukkitProxyEvent() {
+
             override val allowCancelled: Boolean
                 get() = false
         }
@@ -44,6 +46,7 @@ class OrryxPlayerManaEvents {
         class Pre(val player: Player, val profile: IPlayerProfile, val healMana: Double): BukkitProxyEvent()
 
         class Post(val player: Player, val profile: IPlayerProfile, val healMana: Double): BukkitProxyEvent() {
+
             override val allowCancelled: Boolean
                 get() = false
         }

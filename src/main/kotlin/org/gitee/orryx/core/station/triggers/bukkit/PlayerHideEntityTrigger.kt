@@ -24,5 +24,4 @@ object PlayerHideEntityTrigger: AbstractPlayerEventTrigger<PlayerHideEntityEvent
         super.onStart(context, event, map)
         context["entity"] = AbstractBukkitEntity(event.entity)
     }
-
 }

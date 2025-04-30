@@ -45,5 +45,4 @@ object PlayerPickupItemTrigger: AbstractEventTrigger<EntityPickupItemEvent>() {
         context["itemStack"] = event.item.itemStack
         context["remaining"] = event.remaining
     }
-
 }

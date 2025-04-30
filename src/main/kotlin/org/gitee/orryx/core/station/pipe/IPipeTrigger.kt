@@ -19,5 +19,4 @@ interface IPipeTrigger<E>: ITrigger<E> {
      * @return 是否中断
      * */
     fun onCheck(pipeTask: IPipeTask, event: E, map: Map<String, Any?>): Boolean
-
 }

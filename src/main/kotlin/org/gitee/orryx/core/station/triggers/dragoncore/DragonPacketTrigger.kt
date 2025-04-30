@@ -5,15 +5,15 @@ import org.gitee.orryx.core.station.Plugin
 import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.station.stations.IStation
 import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
+import taboolib.common.OpenResult
 import taboolib.module.kether.ScriptContext
 
 @Plugin("DragonCore")
-object DragonPacketTrigger: AbstractPlayerEventTrigger<CustomPacketEvent>() {
-
-    override val event = "Dragon Packet"
+object DragonPacketTrigger: AbstractPropertyPlayerEventTrigger<CustomPacketEvent>("Dragon Packet") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.DRAGONCORE, event)
@@ -35,10 +35,15 @@ object DragonPacketTrigger: AbstractPlayerEventTrigger<CustomPacketEvent>() {
         return (pipeTask.scriptContext?.sender?.origin == event.player) && event.identifier == map["identifier"]
     }
 
-    override fun onStart(context: ScriptContext, event: CustomPacketEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["identifier"] = event.identifier
-        context["data"] = event.data
+    override fun read(instance: CustomPacketEvent, key: String): OpenResult {
+        return when(key) {
+            "identifier" -> OpenResult.successful(instance.identifier)
+            "data" -> OpenResult.successful(instance.data)
+            else -> OpenResult.failed()
+        }
     }
 
+    override fun write(instance: CustomPacketEvent, key: String, value: Any?): OpenResult {
+        return OpenResult.failed()
+    }
 }

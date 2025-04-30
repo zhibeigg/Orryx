@@ -38,5 +38,4 @@ object DungeonEndTrigger: AbstractPipeEventTrigger<DungeonEvent>() {
         context["dungeonUUID"] = FastUUID.toString(event.dungeon.dungeonUuid)
         context["params"] = event.dungeon.params
     }
-
 }

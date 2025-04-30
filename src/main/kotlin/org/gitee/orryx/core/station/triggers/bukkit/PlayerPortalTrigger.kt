@@ -32,5 +32,4 @@ object PlayerPortalTrigger: AbstractPlayerEventTrigger<PlayerPortalEvent>() {
         context["from"] = LocationTarget(event.from)
         context["to"] = event.to?.let { LocationTarget(it) }
     }
-
 }

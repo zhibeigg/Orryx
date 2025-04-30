@@ -23,5 +23,4 @@ object PlayerItemBreakTrigger: AbstractPlayerEventTrigger<PlayerItemBreakEvent>(
         super.onStart(context, event, map)
         context["brokenItem"] = event.brokenItem
     }
-
 }

@@ -31,5 +31,4 @@ object PlayerInteractTrigger: AbstractPlayerEventTrigger<PlayerInteractEvent>() 
         context["action"] = event.action.name
         context["clickedBlock"] = event.clickedBlock?.location?.let { LocationTarget(it) }
     }
-
 }

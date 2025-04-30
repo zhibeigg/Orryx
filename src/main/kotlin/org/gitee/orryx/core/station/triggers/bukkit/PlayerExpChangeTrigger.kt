@@ -23,5 +23,4 @@ object PlayerExpChangeTrigger: AbstractPlayerEventTrigger<PlayerExpChangeEvent>(
         super.onStart(context, event, map)
         context["amount"] = event.amount
     }
-
 }

@@ -27,5 +27,4 @@ object PlayerInteractAtEntityTrigger: AbstractPlayerEventTrigger<PlayerInteractA
         context["clickedPosition"] = event.clickedPosition.abstract()
         context["rightClicked"] = AbstractBukkitEntity(event.rightClicked)
     }
-
 }

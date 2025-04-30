@@ -116,15 +116,15 @@ class SpiritManagerDefault: ISpiritManager {
         return future
     }
 
-    override fun reginSpirit(player: Player): CompletableFuture<Double> {
+    override fun regainSpirit(player: Player): CompletableFuture<Double> {
         val future = CompletableFuture<Double>()
         player.orryxProfile { profile ->
             player.job { job ->
-                val spirit = job.getReginSpirit()
-                val event = OrryxPlayerSpiritEvents.Regin(player, profile, spirit)
+                val spirit = job.getRegainSpirit()
+                val event = OrryxPlayerSpiritEvents.Regain(player, profile, spirit)
                 if (event.call()) {
-                    spiritMap[player.uniqueId] = (spiritMap.getOrPut(player.uniqueId) { 0.0 } + event.reginSpirit).coerceAtMost(job.getMaxSpirit())
-                    future.complete(event.reginSpirit)
+                    spiritMap[player.uniqueId] = (spiritMap.getOrPut(player.uniqueId) { 0.0 } + event.regainSpirit).coerceAtMost(job.getMaxSpirit())
+                    future.complete(event.regainSpirit)
                 } else {
                     future.complete(0.0)
                 }

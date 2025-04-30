@@ -22,6 +22,10 @@ internal fun String?.toLongPair(vararg delimiters: String): Pair<Long, Long> {
     }
 }
 
+internal fun String.clearSpace(): String {
+    return replace(" ", "")
+}
+
 internal fun getNearPlayers(entity: Entity): List<Player> {
     return entity.world.players
 }

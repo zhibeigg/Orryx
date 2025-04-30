@@ -22,15 +22,15 @@ interface IManaManager {
 
         private var thread: PlatformExecutor.PlatformTask? = null
 
-        private val reginTick: Long by ConfigLazy(Orryx.config) { Orryx.config.getLong("ManaReginTick", 20) }
+        private val regainTick: Long by ConfigLazy(Orryx.config) { Orryx.config.getLong("ManaRegainTick", 20) }
 
         @Reload(2)
         @Awake(LifeCycle.ENABLE)
         private fun init() {
             thread?.cancel()
-            thread = submitAsync(period = reginTick) {
+            thread = submitAsync(period = regainTick) {
                 onlinePlayers.forEach {
-                    INSTANCE.reginMana(it)
+                    INSTANCE.regainMana(it)
                 }
             }
         }
@@ -107,7 +107,7 @@ interface IManaManager {
      * @param player 玩家
      * @return 恢复的法力值
      * */
-    fun reginMana(player: Player): CompletableFuture<Double>
+    fun regainMana(player: Player): CompletableFuture<Double>
 
     /**
      * 恢复满法力值

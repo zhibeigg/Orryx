@@ -25,5 +25,4 @@ object PlayerItemConsumeTrigger: AbstractPlayerEventTrigger<PlayerItemConsumeEve
         context["item"] = event.item
         context["hand"] = event.hand
     }
-
 }

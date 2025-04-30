@@ -29,5 +29,4 @@ object AsyncPlayerChatTrigger: AbstractPlayerEventTrigger<AsyncPlayerChatEvent>(
         context["format"] = event.format
         context["recipients"] = Container(event.recipients.mapTo(mutableSetOf()) { it.toTarget() })
     }
-
 }

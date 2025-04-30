@@ -4,16 +4,14 @@ import eos.moe.dragoncore.api.event.KeyPressEvent
 import org.gitee.orryx.core.station.Plugin
 import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.station.stations.IStation
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
-import taboolib.module.kether.ScriptContext
+import taboolib.common.OpenResult
 
 @Plugin("DragonCore")
-object DragonKeyPressTrigger: AbstractPlayerEventTrigger<KeyPressEvent>() {
-
-    override val event = "Dragon Key Press"
+object DragonKeyPressTrigger: AbstractPropertyPlayerEventTrigger<KeyPressEvent>("Dragon Key Press") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.DRAGONCORE, event)
@@ -34,9 +32,15 @@ object DragonKeyPressTrigger: AbstractPlayerEventTrigger<KeyPressEvent>() {
         return pipeTask.scriptContext?.sender?.origin == event.player && ((map["keys"] as? List<*>)?.contains(event.key) ?: (map["keys"] == event.key))
     }
 
-    override fun onStart(context: ScriptContext, event: KeyPressEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["key"] = event.key
+    override fun read(instance: KeyPressEvent, key: String): OpenResult {
+        return when(key) {
+            "key" -> OpenResult.successful(instance.key)
+            "keys" -> OpenResult.successful(instance.keys)
+            else -> OpenResult.failed()
+        }
     }
 
+    override fun write(instance: KeyPressEvent, key: String, value: Any?): OpenResult {
+        return OpenResult.failed()
+    }
 }

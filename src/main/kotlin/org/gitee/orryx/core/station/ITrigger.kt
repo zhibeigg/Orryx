@@ -23,8 +23,7 @@ interface ITrigger<E> {
      * @param map 传入的特殊参数
      * */
     fun onStart(context: ScriptContext, event: E, map: Map<String, Any?>) {
-        context["event"] = this.event
-        context["@event"] = event
+        context["event"] = event
         context.extend(map)
         if (event is Cancellable) {
             context["isCancelled"] = event.isCancelled
@@ -39,8 +38,6 @@ interface ITrigger<E> {
      * */
     fun onEnd(context: ScriptContext, event: E, map: Map<String, Any?>) {
         context["event"] = null
-        context["@event"] = null
         context["isCancelled"] = null
     }
-
 }

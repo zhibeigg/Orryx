@@ -26,5 +26,4 @@ interface IStationTrigger<E>: ITrigger<E> {
      * @return 是否能进入
      * */
     fun onCheck(station: IStation, event: E, map: Map<String, Any?>): Boolean
-
 }

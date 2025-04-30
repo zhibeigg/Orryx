@@ -60,5 +60,4 @@ interface IPipeTask {
      * 完成任务并返回脚本执行内容
      * */
     fun complete(): CompletableFuture<Any?>
-
 }

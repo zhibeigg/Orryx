@@ -95,7 +95,7 @@ object OrryxCommand {
                                 job.key,
                                 job.job.name,
                                 job.getAttributes().joinToString(", "),
-                                job.getReginMana(),
+                                job.getRegainMana(),
                                 job.getMaxMana(),
                                 job.getUpgradePoint(job.level, job.level + 1),
                                 job.getExperience().key

@@ -26,5 +26,4 @@ object PlayerJumpTrigger: AbstractEventTrigger<PlayerJumpEvent>() {
     override fun onCheck(pipeTask: IPipeTask, event: PlayerJumpEvent, map: Map<String, Any?>): Boolean {
         return pipeTask.scriptContext?.sender?.origin == event.player
     }
-
 }

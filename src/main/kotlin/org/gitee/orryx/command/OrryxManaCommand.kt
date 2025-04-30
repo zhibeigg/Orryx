@@ -61,13 +61,13 @@ object OrryxManaCommand {
     }
 
     @CommandBody
-    val regin = subCommand {
+    val regain = subCommand {
         player {
             exec<ProxyCommandSender> {
                 val player = ctx.bukkitPlayer() ?: return@exec
-                IManaManager.INSTANCE.reginMana(player).thenApply {
+                IManaManager.INSTANCE.regainMana(player).thenApply {
                     sender.sendMessage("玩家${player.name} 恢复了 $it 点法力")
-                    debug("${player.name}指令regin恢复法力${it}")
+                    debug("${player.name}指令regain恢复法力${it}")
                 }
             }
         }

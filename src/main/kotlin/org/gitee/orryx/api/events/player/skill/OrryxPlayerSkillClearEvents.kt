@@ -9,8 +9,8 @@ class OrryxPlayerSkillClearEvents {
     class Pre(val player: Player, val skill: IPlayerSkill): BukkitProxyEvent()
 
     class Post(val player: Player, val skill: IPlayerSkill): BukkitProxyEvent() {
+
         override val allowCancelled: Boolean
             get() = false
     }
-
 }

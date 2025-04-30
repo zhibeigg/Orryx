@@ -23,5 +23,4 @@ interface IPipePeriodTask {
      * @param pipeTask 管式任务
      * */
     fun cancel(pipeTask: IPipeTask)
-
 }

@@ -23,5 +23,4 @@ object PlayerQuitTrigger: AbstractPlayerEventTrigger<PlayerQuitEvent>() {
         super.onStart(context, event, map)
         context["quitMessage"] = event.quitMessage
     }
-
 }

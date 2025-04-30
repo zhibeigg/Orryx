@@ -25,5 +25,4 @@ object PlayerLevelChangeTrigger: AbstractPlayerEventTrigger<PlayerLevelChangeEve
         context["newLevel"] = event.newLevel
         context["oldLevel"] = event.oldLevel
     }
-
 }

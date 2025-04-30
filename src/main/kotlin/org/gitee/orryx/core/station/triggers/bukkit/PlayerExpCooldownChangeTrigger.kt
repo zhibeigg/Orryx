@@ -25,5 +25,4 @@ object PlayerExpCooldownChangeTrigger: AbstractPlayerEventTrigger<PlayerExpCoold
         context["newCooldown"] = event.newCooldown
         context["reason"] = event.reason.name
     }
-
 }

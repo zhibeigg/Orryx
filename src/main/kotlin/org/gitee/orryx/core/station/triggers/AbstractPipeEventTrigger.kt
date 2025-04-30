@@ -11,5 +11,4 @@ abstract class AbstractPipeEventTrigger<E>: IPipeTrigger<E>, WikiTrigger {
 
     override fun onEnd(context: ScriptContext, event: E, map: Map<String, Any?>) {
     }
-
 }

@@ -5,7 +5,9 @@ import org.gitee.orryx.core.station.pipe.IPipeTrigger
 import org.gitee.orryx.core.station.stations.IStation
 import org.gitee.orryx.core.station.stations.IStationTrigger
 import taboolib.common.platform.event.ProxyListener
+import taboolib.module.kether.KetherProperty
 import taboolib.module.kether.ScriptContext
+import taboolib.module.kether.ScriptProperty
 
 abstract class AbstractEventTrigger<E>: IStationTrigger<E>, IPipeTrigger<E>, WikiTrigger {
 
@@ -19,5 +21,4 @@ abstract class AbstractEventTrigger<E>: IStationTrigger<E>, IPipeTrigger<E>, Wik
 
     override fun onEnd(context: ScriptContext, event: E, map: Map<String, Any?>) {
     }
-
 }

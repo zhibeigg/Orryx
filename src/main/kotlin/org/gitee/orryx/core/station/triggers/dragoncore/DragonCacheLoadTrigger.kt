@@ -32,9 +32,4 @@ object DragonCacheLoadTrigger: AbstractPlayerEventTrigger<CustomPacketEvent>() {
     private fun check(event: CustomPacketEvent): Boolean {
         return event.identifier == "DragonCore" && event.data.size == 1 && event.data[0] == "cache_loaded"
     }
-
-    override fun onStart(context: ScriptContext, event: CustomPacketEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-    }
-
 }

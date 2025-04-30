@@ -11,10 +11,10 @@ class OrryxPlayerPointEvents {
         class Pre(val player: Player, val profile: IPlayerProfile, var point: Int): BukkitProxyEvent()
 
         class Post(val player: Player, val profile: IPlayerProfile, val point: Int): BukkitProxyEvent() {
+
             override val allowCancelled: Boolean
                 get() = false
         }
-
     }
 
     class Down {
@@ -22,10 +22,9 @@ class OrryxPlayerPointEvents {
         class Pre(val player: Player, val profile: IPlayerProfile, var point: Int): BukkitProxyEvent()
 
         class Post(val player: Player, val profile: IPlayerProfile, val point: Int): BukkitProxyEvent() {
+
             override val allowCancelled: Boolean
                 get() = false
         }
-
     }
-
 }

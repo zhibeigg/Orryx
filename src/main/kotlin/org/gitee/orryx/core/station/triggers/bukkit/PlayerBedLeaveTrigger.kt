@@ -26,5 +26,4 @@ object PlayerBedLeaveTrigger: AbstractPlayerEventTrigger<PlayerBedLeaveEvent>() 
         context["bed"] = LocationTarget(event.bed.location)
         context["shouldSetSpawn"] = event.shouldSetSpawnLocation()
     }
-
 }

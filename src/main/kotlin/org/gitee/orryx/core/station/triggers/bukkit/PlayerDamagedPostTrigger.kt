@@ -47,5 +47,4 @@ object PlayerDamagedPostTrigger: AbstractEventTrigger<OrryxDamageEvents.Post>() 
         context["attacker"] = event.attacker.abstract()
         context["type"] = event.type.name
     }
-
 }

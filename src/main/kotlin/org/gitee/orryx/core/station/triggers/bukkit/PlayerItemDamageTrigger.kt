@@ -25,5 +25,4 @@ object PlayerItemDamageTrigger: AbstractPlayerEventTrigger<PlayerItemDamageEvent
         context["item"] = event.item
         context["damage"] = event.damage
     }
-
 }

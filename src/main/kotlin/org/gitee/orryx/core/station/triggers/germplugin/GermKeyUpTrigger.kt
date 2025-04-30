@@ -5,6 +5,7 @@ import org.gitee.orryx.core.station.Plugin
 import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.station.stations.IStation
 import org.gitee.orryx.core.station.triggers.AbstractEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
@@ -13,9 +14,7 @@ import taboolib.common.platform.function.adaptPlayer
 import taboolib.module.kether.ScriptContext
 
 @Plugin("GermPlugin")
-object GermKeyUpTrigger: AbstractEventTrigger<GermKeyUpEvent>() {
-
-    override val event = "Germ Key Up"
+object GermKeyUpTrigger: AbstractPropertyEventTrigger<GermKeyUpEvent>("Germ Key Up") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.GERM_PLUGIN, event)
@@ -44,5 +43,4 @@ object GermKeyUpTrigger: AbstractEventTrigger<GermKeyUpEvent>() {
         super.onStart(context, event, map)
         context["key"] = event.keyType.simpleKey
     }
-
 }

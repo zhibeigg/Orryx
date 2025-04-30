@@ -26,5 +26,4 @@ object PlayerDropItemTrigger: AbstractPlayerEventTrigger<PlayerDropItemEvent>() 
         context["itemDrop"] = AbstractBukkitEntity(event.itemDrop)
         context["itemStackDrop"] = event.itemDrop.itemStack
     }
-
 }

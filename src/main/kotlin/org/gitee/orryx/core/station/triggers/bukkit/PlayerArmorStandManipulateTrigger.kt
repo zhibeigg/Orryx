@@ -32,5 +32,4 @@ object PlayerArmorStandManipulateTrigger: AbstractPlayerEventTrigger<PlayerArmor
         context["rightClicked"] = AbstractBukkitEntity(event.rightClicked)
         context["hand"] = event.hand.name
     }
-
 }

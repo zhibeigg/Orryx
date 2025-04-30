@@ -27,5 +27,4 @@ object PlayerChatTabCompleteTrigger: AbstractPlayerEventTrigger<PlayerChatTabCom
         context["chatMessage"] = event.chatMessage
         context["tabCompletions"] = event.tabCompletions
     }
-
 }

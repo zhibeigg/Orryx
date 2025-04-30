@@ -10,8 +10,8 @@ class OrryxPlayerChangeGroupEvents {
     class Pre(val player: Player, val job: IPlayerJob, var group: IGroup): BukkitProxyEvent()
 
     class Post(val player: Player, val job: IPlayerJob, val group: IGroup): BukkitProxyEvent() {
+
         override val allowCancelled: Boolean
             get() = false
     }
-
 }

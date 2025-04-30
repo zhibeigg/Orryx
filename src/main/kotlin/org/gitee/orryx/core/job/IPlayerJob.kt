@@ -131,7 +131,7 @@ interface IPlayerJob: Saveable {
      * 获得恢复法力值
      * @return 法力值
      * */
-    fun getReginMana(): Double
+    fun getRegainMana(): Double
 
     /**
      * 获得最大精力值
@@ -143,7 +143,7 @@ interface IPlayerJob: Saveable {
      * 获得恢复精力值
      * @return 精力值
      * */
-    fun getReginSpirit(): Double
+    fun getRegainSpirit(): Double
 
 
     /**

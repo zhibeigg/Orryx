@@ -25,5 +25,4 @@ object PlayerAdvancementDoneTrigger: AbstractPlayerEventTrigger<PlayerAdvancemen
         context["advancementKey"] = event.advancement.key.key
         context["advancementNamespace"] = event.advancement.key.namespace
     }
-
 }

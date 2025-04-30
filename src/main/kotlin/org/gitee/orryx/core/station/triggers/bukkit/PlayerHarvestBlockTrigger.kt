@@ -28,5 +28,4 @@ object PlayerHarvestBlockTrigger: AbstractPlayerEventTrigger<PlayerHarvestBlockE
         context["itemsHarvested"] = event.itemsHarvested
         context["hand"] = event.hand.name
     }
-
 }

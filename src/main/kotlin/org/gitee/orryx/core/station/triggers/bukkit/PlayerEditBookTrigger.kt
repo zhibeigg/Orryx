@@ -43,5 +43,4 @@ object PlayerEditBookTrigger: AbstractPlayerEventTrigger<PlayerEditBookEvent>() 
         context["generation"] = event.previousBookMeta.generation?.name
         context["isSigning"] = event.isSigning
     }
-
 }

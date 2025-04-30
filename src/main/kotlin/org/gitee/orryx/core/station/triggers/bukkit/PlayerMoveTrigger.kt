@@ -26,5 +26,4 @@ object PlayerMoveTrigger: AbstractPlayerEventTrigger<PlayerMoveEvent>() {
         context["to"] = event.to?.let { LocationTarget(it) }
         context["from"] = LocationTarget(event.from)
     }
-
 }

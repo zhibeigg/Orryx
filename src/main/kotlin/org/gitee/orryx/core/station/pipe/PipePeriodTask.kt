@@ -21,5 +21,4 @@ class PipePeriodTask(override val period: Long, override val onPeriod: (IPipeTas
     override fun cancel(pipeTask: IPipeTask) {
         bukkitRunningTask.cancel()
     }
-
 }

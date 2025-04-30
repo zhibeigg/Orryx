@@ -24,5 +24,4 @@ object PlayerPickupArrowTrigger: AbstractPlayerEventTrigger<PlayerPickupArrowEve
         super.onStart(context, event, map)
         context["arrow"] = AbstractBukkitEntity(event.arrow)
     }
-
 }

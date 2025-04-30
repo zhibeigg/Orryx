@@ -25,5 +25,4 @@ object PlayerChangedWorldTrigger: AbstractPlayerEventTrigger<PlayerChangedWorldE
         context["from"] = event.from.name
         context["to"] = event.player.world.name
     }
-
 }

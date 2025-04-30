@@ -1,19 +1,20 @@
 package org.gitee.orryx.core.station.triggers.dragoncore
 
 import eos.moe.dragoncore.api.event.KeyReleaseEvent
+import eos.moe.dragoncore.api.gui.event.CustomPacketEvent
 import org.gitee.orryx.core.station.Plugin
 import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.station.stations.IStation
 import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
+import taboolib.common.OpenResult
 import taboolib.module.kether.ScriptContext
 
 @Plugin("DragonCore")
-object DragonKeyReleaseTrigger: AbstractPlayerEventTrigger<KeyReleaseEvent>() {
-
-    override val event = "Dragon Key Release"
+object DragonKeyReleaseTrigger: AbstractPropertyPlayerEventTrigger<KeyReleaseEvent>("Dragon Key Release") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.DRAGONCORE, event)
@@ -34,8 +35,14 @@ object DragonKeyReleaseTrigger: AbstractPlayerEventTrigger<KeyReleaseEvent>() {
         return pipeTask.scriptContext?.sender?.origin == event.player && ((map["keys"] as? List<*>)?.contains(event.key) ?: (map["keys"] == event.key))
     }
 
-    override fun onStart(context: ScriptContext, event: KeyReleaseEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["key"] = event.key
+    override fun read(instance: KeyReleaseEvent, key: String): OpenResult {
+        return when(key) {
+            "key" -> OpenResult.successful(instance.key)
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: KeyReleaseEvent, key: String, value: Any?): OpenResult {
+        return OpenResult.failed()
     }
 }

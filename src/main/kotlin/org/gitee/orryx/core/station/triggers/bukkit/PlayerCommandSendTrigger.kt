@@ -23,5 +23,4 @@ object PlayerCommandSendTrigger: AbstractPlayerEventTrigger<PlayerCommandSendEve
         super.onStart(context, event, map)
         context["commands"] = event.commands
     }
-
 }

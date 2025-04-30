@@ -9,5 +9,4 @@ class OrryxPlayerJobExperienceEvents {
     class Up(val player: Player, val job: IPlayerJob, var upExperience: Int): BukkitProxyEvent()
 
     class Down(val player: Player, val job: IPlayerJob, var downExperience: Int): BukkitProxyEvent()
-
 }
