@@ -9,8 +9,15 @@ import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.command.*
 import taboolib.common5.cbool
 import taboolib.common5.cint
+import taboolib.expansion.createHelper
 
+@CommandHeader("skill", ["sk"], "Orryx技能插件技能指令", permission = "Orryx.Command.Skill", permissionMessage = "你没有权限使用此指令")
 object OrryxSkillCommand {
+
+    @CommandBody
+    val main = mainCommand {
+        createHelper()
+    }
 
     @CommandBody
     val bindKey = subCommand {

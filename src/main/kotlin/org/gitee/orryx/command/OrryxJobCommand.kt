@@ -6,9 +6,15 @@ import org.gitee.orryx.utils.job
 import org.gitee.orryx.utils.orryxProfile
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.command.*
+import taboolib.expansion.createHelper
 
 @CommandHeader("Job", description = "Orryx技能插件职业指令", usage = "Job", permission = "Orryx.Command.Main", permissionMessage = "你没有权限使用此指令")
 object OrryxJobCommand {
+
+    @CommandBody
+    val main = mainCommand {
+        createHelper()
+    }
 
     @CommandBody
     val change = subCommand {
@@ -50,5 +56,4 @@ object OrryxJobCommand {
 
     @CommandBody
     val level = OrryxJobLevelCommand
-
 }

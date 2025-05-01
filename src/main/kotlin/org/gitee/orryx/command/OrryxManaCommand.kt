@@ -85,5 +85,4 @@ object OrryxManaCommand {
             }
         }
     }
-
 }

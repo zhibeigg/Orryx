@@ -20,5 +20,4 @@ object OrryxLarkSuiteCommand {
     val create = subCommandExec<ProxyCommandSender> {
         LarkSuite.createDocument()
     }
-
 }

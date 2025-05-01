@@ -175,7 +175,7 @@ publishing {
 
 tasks.dokkaHtml {
     // 配置输出目录
-    outputDirectory.set(file("${build}/doc"))
+    outputDirectory.set(file("${build}/${rootProject.name}-${version}-doc"))
     // 配置模块名称
     moduleName.set("Orryx")
     // 禁用自动生成文档链接

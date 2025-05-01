@@ -79,5 +79,4 @@ object OrryxScriptCommand {
             }
         }
     }
-
 }

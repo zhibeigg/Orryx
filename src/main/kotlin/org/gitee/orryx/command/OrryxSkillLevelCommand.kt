@@ -69,6 +69,4 @@ object OrryxSkillLevelCommand {
             }
         }
     }
-
-
 }

@@ -62,5 +62,4 @@ object OrryxJobLevelCommand {
             }
         }
     }
-
 }
