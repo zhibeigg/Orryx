@@ -1,15 +1,17 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
 import org.bukkit.event.player.PlayerQuitEvent
+import org.gitee.orryx.api.events.damage.OrryxDamageEvents
 import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
+import org.gitee.orryx.utils.abstract
+import taboolib.common.OpenResult
 import taboolib.module.kether.ScriptContext
 
-object PlayerQuitTrigger: AbstractPlayerEventTrigger<PlayerQuitEvent>() {
-
-    override val event: String = "Player Quit"
+object PlayerQuitTrigger: AbstractPropertyPlayerEventTrigger<PlayerQuitEvent>("Player Quit") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
@@ -19,8 +21,20 @@ object PlayerQuitTrigger: AbstractPlayerEventTrigger<PlayerQuitEvent>() {
     override val clazz
         get() = PlayerQuitEvent::class.java
 
-    override fun onStart(context: ScriptContext, event: PlayerQuitEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["quitMessage"] = event.quitMessage
+    override fun read(instance: PlayerQuitEvent, key: String): OpenResult {
+        return when(key) {
+            "quitMessage" -> OpenResult.successful(instance.quitMessage)
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: PlayerQuitEvent, key: String, value: Any?): OpenResult {
+        return when(key) {
+            "quitMessage" -> {
+                instance.quitMessage = value.toString()
+                OpenResult.successful()
+            }
+            else -> OpenResult.failed()
+        }
     }
 }

@@ -1,16 +1,19 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
+import org.bukkit.event.player.PlayerBucketEntityEvent
 import org.bukkit.event.player.PlayerBucketFillEvent
+import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
 import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.core.targets.LocationTarget
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
+import org.gitee.orryx.utils.toTarget
+import taboolib.common.OpenResult
 import taboolib.module.kether.ScriptContext
 
-object PlayerBucketFillTrigger: AbstractPlayerEventTrigger<PlayerBucketFillEvent>() {
-
-    override val event: String = "Player Bucket Fill"
+object PlayerBucketFillTrigger: AbstractPropertyPlayerEventTrigger<PlayerBucketFillEvent>("Player Bucket Fill") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
@@ -22,10 +25,16 @@ object PlayerBucketFillTrigger: AbstractPlayerEventTrigger<PlayerBucketFillEvent
     override val clazz
         get() = PlayerBucketFillEvent::class.java
 
-    override fun onStart(context: ScriptContext, event: PlayerBucketFillEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["blockClicked"] = LocationTarget(event.blockClicked.location)
-        context["block"] = LocationTarget(event.block.location)
-        context["bucket"] = event.bucket.name
+    override fun read(instance: PlayerBucketFillEvent, key: String): OpenResult {
+        return when(key) {
+            "blockClicked" -> OpenResult.successful(instance.blockClicked.location.toTarget())
+            "block" -> OpenResult.successful(instance.block.location.toTarget())
+            "bucket" -> OpenResult.successful(instance.bucket.name)
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: PlayerBucketFillEvent, key: String, value: Any?): OpenResult {
+        return OpenResult.failed()
     }
 }

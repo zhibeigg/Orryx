@@ -1,15 +1,17 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
+import org.bukkit.event.player.PlayerExpCooldownChangeEvent
 import org.bukkit.event.player.PlayerGameModeChangeEvent
 import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
+import taboolib.common.OpenResult
+import taboolib.common5.cint
 import taboolib.module.kether.ScriptContext
 
-object PlayerGameModeChangeTrigger: AbstractPlayerEventTrigger<PlayerGameModeChangeEvent>() {
-
-    override val event: String = "Player GameMode Change"
+object PlayerGameModeChangeTrigger: AbstractPropertyPlayerEventTrigger<PlayerGameModeChangeEvent>("Player GameMode Change") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
@@ -19,8 +21,14 @@ object PlayerGameModeChangeTrigger: AbstractPlayerEventTrigger<PlayerGameModeCha
     override val clazz
         get() = PlayerGameModeChangeEvent::class.java
 
-    override fun onStart(context: ScriptContext, event: PlayerGameModeChangeEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["newGameMode"] = event.newGameMode.name
+    override fun read(instance: PlayerGameModeChangeEvent, key: String): OpenResult {
+        return when(key) {
+            "newGameMode" -> OpenResult.successful(instance.newGameMode.name)
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: PlayerGameModeChangeEvent, key: String, value: Any?): OpenResult {
+        return OpenResult.failed()
     }
 }

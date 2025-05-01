@@ -1,16 +1,23 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
+import org.bukkit.event.entity.EntityPickupItemEvent
+import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerPortalEvent
 import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
+import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.core.targets.LocationTarget
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
+import org.gitee.orryx.utils.abstract
+import org.gitee.orryx.utils.toTarget
+import taboolib.common.OpenResult
+import taboolib.common5.cbool
+import taboolib.common5.cint
 import taboolib.module.kether.ScriptContext
 
-object PlayerPortalTrigger: AbstractPlayerEventTrigger<PlayerPortalEvent>() {
-
-    override val event: String = "Player Portal"
+object PlayerPortalTrigger: AbstractPropertyPlayerEventTrigger<PlayerPortalEvent>("Player Portal") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
@@ -24,12 +31,40 @@ object PlayerPortalTrigger: AbstractPlayerEventTrigger<PlayerPortalEvent>() {
     override val clazz
         get() = PlayerPortalEvent::class.java
 
-    override fun onStart(context: ScriptContext, event: PlayerPortalEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["canCreatePortal"] = event.canCreatePortal
-        context["searchRadius"] = event.searchRadius
-        context["creationRadius"] = event.creationRadius
-        context["from"] = LocationTarget(event.from)
-        context["to"] = event.to?.let { LocationTarget(it) }
+    override fun read(instance: PlayerPortalEvent, key: String): OpenResult {
+        return when(key) {
+            "canCreatePortal" -> OpenResult.successful(instance.canCreatePortal)
+            "searchRadius" -> OpenResult.successful(instance.searchRadius)
+            "creationRadius" -> OpenResult.successful(instance.creationRadius)
+            "from" -> OpenResult.successful(instance.from.toTarget())
+            "to" -> OpenResult.successful(instance.to?.toTarget())
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: PlayerPortalEvent, key: String, value: Any?): OpenResult {
+        return when(key) {
+            "canCreatePortal" -> {
+                instance.canCreatePortal = value.cbool
+                OpenResult.successful()
+            }
+            "searchRadius" -> {
+                instance.searchRadius = value.cint
+                OpenResult.successful()
+            }
+            "creationRadius" -> {
+                instance.creationRadius = value.cint
+                OpenResult.successful()
+            }
+            "from" -> {
+                (value as? ITargetLocation<*>)?.location?.let { instance.from = it }
+                OpenResult.successful()
+            }
+            "to" -> {
+                (value as? ITargetLocation<*>)?.location?.let { instance.setTo(it) }
+                OpenResult.successful()
+            }
+            else -> OpenResult.failed()
+        }
     }
 }

@@ -1,16 +1,14 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
 import org.bukkit.event.player.PlayerDropItemEvent
-import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
-import taboolib.module.kether.ScriptContext
+import org.gitee.orryx.utils.abstract
+import taboolib.common.OpenResult
 
-object PlayerDropItemTrigger: AbstractPlayerEventTrigger<PlayerDropItemEvent>() {
-
-    override val event: String = "Player Drop Item"
+object PlayerDropItemTrigger: AbstractPropertyPlayerEventTrigger<PlayerDropItemEvent>("Player Drop Item") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
@@ -21,9 +19,15 @@ object PlayerDropItemTrigger: AbstractPlayerEventTrigger<PlayerDropItemEvent>() 
     override val clazz
         get() = PlayerDropItemEvent::class.java
 
-    override fun onStart(context: ScriptContext, event: PlayerDropItemEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["itemDrop"] = AbstractBukkitEntity(event.itemDrop)
-        context["itemStackDrop"] = event.itemDrop.itemStack
+    override fun read(instance: PlayerDropItemEvent, key: String): OpenResult {
+        return when(key) {
+            "itemDrop" -> OpenResult.successful(instance.itemDrop.abstract())
+            "itemStackDrop" -> OpenResult.successful(instance.itemDrop.itemStack)
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: PlayerDropItemEvent, key: String, value: Any?): OpenResult {
+        return OpenResult.failed()
     }
 }

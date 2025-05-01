@@ -20,14 +20,6 @@ import taboolib.module.kether.ScriptContext
 
 class NodensBridge: IAttributeBridge {
 
-    @Ghost
-    object Fire: AbstractNumber() {
-
-        override val name: String = "Fire"
-
-        override val config: AttributeConfig
-            get() = AttributeManager.getConfig(Damage.name, name)
-    }
 
     override fun addAttribute(entity: LivingEntity, key: String, value: List<String>, timeout: Long) {
         Nodens.api().addTempAttribute(entity, key, TempAttributeData(timeout, Nodens.api().matchAttributes(value), false))
@@ -44,7 +36,7 @@ class NodensBridge: IAttributeBridge {
         when (type) {
             MAGIC -> processor.addDamageSource("Orryx", Damage.Magic, damage)
             PHYSICS -> processor.addDamageSource("Orryx", Damage.Physics, damage)
-            FIRE -> processor.addDamageSource("Orryx", Fire, damage)
+            FIRE -> processor.addDamageSource("Orryx", Damage.Magic, damage)
             REAL -> processor.addDamageSource("Orryx", Damage.Real, damage)
             SELF -> processor.addDamageSource("Orryx", Damage.Real, damage)
             CONSOLE -> processor.addDamageSource("Orryx", Damage.Real, damage)

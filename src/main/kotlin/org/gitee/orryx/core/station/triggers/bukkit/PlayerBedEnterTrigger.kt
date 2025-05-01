@@ -1,16 +1,14 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
 import org.bukkit.event.player.PlayerBedEnterEvent
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
-import org.gitee.orryx.core.targets.LocationTarget
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
-import taboolib.module.kether.ScriptContext
+import org.gitee.orryx.utils.toTarget
+import taboolib.common.OpenResult
 
-object PlayerBedEnterTrigger: AbstractPlayerEventTrigger<PlayerBedEnterEvent>() {
-
-    override val event: String = "Player Bed Enter"
+object PlayerBedEnterTrigger: AbstractPropertyPlayerEventTrigger<PlayerBedEnterEvent>("Player Bed Enter") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
@@ -22,10 +20,16 @@ object PlayerBedEnterTrigger: AbstractPlayerEventTrigger<PlayerBedEnterEvent>() 
     override val clazz
         get() = PlayerBedEnterEvent::class.java
 
-    override fun onStart(context: ScriptContext, event: PlayerBedEnterEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["bedEnterResult"] = event.bedEnterResult.name
-        context["bed"] = LocationTarget(event.bed.location)
-        context["useBed"] = event.useBed().name
+    override fun read(instance: PlayerBedEnterEvent, key: String): OpenResult {
+        return when(key) {
+            "bedEnterResult" -> OpenResult.successful(instance.bedEnterResult.name)
+            "bed" -> OpenResult.successful(instance.bed.location.toTarget())
+            "useBed" -> OpenResult.successful(instance.useBed().name)
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: PlayerBedEnterEvent, key: String, value: Any?): OpenResult {
+        return OpenResult.failed()
     }
 }

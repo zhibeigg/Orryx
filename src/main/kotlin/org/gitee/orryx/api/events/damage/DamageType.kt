@@ -9,5 +9,4 @@ enum class DamageType {
     SELF,
     CONSOLE,
     CUSTOM;
-
 }

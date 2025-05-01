@@ -1,16 +1,14 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
 import org.bukkit.event.player.PlayerBedLeaveEvent
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
-import org.gitee.orryx.core.targets.LocationTarget
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
-import taboolib.module.kether.ScriptContext
+import org.gitee.orryx.utils.toTarget
+import taboolib.common.OpenResult
 
-object PlayerBedLeaveTrigger: AbstractPlayerEventTrigger<PlayerBedLeaveEvent>() {
-
-    override val event: String = "Player Bed Leave"
+object PlayerBedLeaveTrigger: AbstractPropertyPlayerEventTrigger<PlayerBedLeaveEvent>("Player Bed Leave") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
@@ -21,9 +19,15 @@ object PlayerBedLeaveTrigger: AbstractPlayerEventTrigger<PlayerBedLeaveEvent>() 
     override val clazz
         get() = PlayerBedLeaveEvent::class.java
 
-    override fun onStart(context: ScriptContext, event: PlayerBedLeaveEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["bed"] = LocationTarget(event.bed.location)
-        context["shouldSetSpawn"] = event.shouldSetSpawnLocation()
+    override fun read(instance: PlayerBedLeaveEvent, key: String): OpenResult {
+        return when(key) {
+            "bed" -> OpenResult.successful(instance.bed.location.toTarget())
+            "shouldSetSpawn" -> OpenResult.successful(instance.shouldSetSpawnLocation())
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: PlayerBedLeaveEvent, key: String, value: Any?): OpenResult {
+        return OpenResult.failed()
     }
 }

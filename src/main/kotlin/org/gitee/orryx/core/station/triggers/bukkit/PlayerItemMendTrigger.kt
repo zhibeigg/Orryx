@@ -1,15 +1,17 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
+import org.bukkit.event.player.PlayerItemHeldEvent
 import org.bukkit.event.player.PlayerItemMendEvent
 import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
+import taboolib.common.OpenResult
+import taboolib.common5.cint
 import taboolib.module.kether.ScriptContext
 
-object PlayerItemMendTrigger: AbstractPlayerEventTrigger<PlayerItemMendEvent>() {
-
-    override val event: String = "Player Item Mend"
+object PlayerItemMendTrigger: AbstractPropertyPlayerEventTrigger<PlayerItemMendEvent>("Player Item Mend") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
@@ -22,11 +24,27 @@ object PlayerItemMendTrigger: AbstractPlayerEventTrigger<PlayerItemMendEvent>() 
     override val clazz
         get() = PlayerItemMendEvent::class.java
 
-    override fun onStart(context: ScriptContext, event: PlayerItemMendEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["item"] = event.item
-        context["slot"] = event.slot.name
-        context["repairAmount"] = event.repairAmount
-        context["experience"] = event.experienceOrb.experience
+    override fun read(instance: PlayerItemMendEvent, key: String): OpenResult {
+        return when(key) {
+            "item" -> OpenResult.successful(instance.item)
+            "slot" -> OpenResult.successful(instance.slot.name)
+            "repairAmount" -> OpenResult.successful(instance.repairAmount)
+            "experience" -> OpenResult.successful(instance.experienceOrb.experience)
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: PlayerItemMendEvent, key: String, value: Any?): OpenResult {
+        return when(key) {
+            "repairAmount" -> {
+                instance.repairAmount = value.cint
+                OpenResult.successful()
+            }
+            "experience" -> {
+                instance.experienceOrb.experience = value.cint
+                OpenResult.successful()
+            }
+            else -> OpenResult.failed()
+        }
     }
 }

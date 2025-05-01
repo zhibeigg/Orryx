@@ -1,15 +1,18 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
+import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerItemBreakEvent
 import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
+import org.gitee.orryx.utils.abstract
+import org.gitee.orryx.utils.toTarget
+import taboolib.common.OpenResult
 import taboolib.module.kether.ScriptContext
 
-object PlayerItemBreakTrigger: AbstractPlayerEventTrigger<PlayerItemBreakEvent>() {
-
-    override val event: String = "Player Item Break"
+object PlayerItemBreakTrigger: AbstractPropertyPlayerEventTrigger<PlayerItemBreakEvent>("Player Item Break") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
@@ -19,8 +22,14 @@ object PlayerItemBreakTrigger: AbstractPlayerEventTrigger<PlayerItemBreakEvent>(
     override val clazz
         get() = PlayerItemBreakEvent::class.java
 
-    override fun onStart(context: ScriptContext, event: PlayerItemBreakEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["brokenItem"] = event.brokenItem
+    override fun read(instance: PlayerItemBreakEvent, key: String): OpenResult {
+        return when(key) {
+            "brokenItem" -> OpenResult.successful(instance.brokenItem)
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: PlayerItemBreakEvent, key: String, value: Any?): OpenResult {
+        return OpenResult.failed()
     }
 }

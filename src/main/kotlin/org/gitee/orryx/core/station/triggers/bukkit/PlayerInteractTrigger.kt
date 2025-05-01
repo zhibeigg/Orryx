@@ -1,17 +1,19 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
+import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.core.targets.LocationTarget
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.abstract
+import org.gitee.orryx.utils.toTarget
+import taboolib.common.OpenResult
 import taboolib.module.kether.ScriptContext
 
-object PlayerInteractTrigger: AbstractPlayerEventTrigger<PlayerInteractEvent>() {
-
-    override val event: String = "Player Interact"
+object PlayerInteractTrigger: AbstractPropertyPlayerEventTrigger<PlayerInteractEvent>("Player Interact") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
@@ -24,11 +26,17 @@ object PlayerInteractTrigger: AbstractPlayerEventTrigger<PlayerInteractEvent>() 
     override val clazz
         get() = PlayerInteractEvent::class.java
 
-    override fun onStart(context: ScriptContext, event: PlayerInteractEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["clickedPosition"] = event.clickedPosition?.abstract()
-        context["item"] = event.item
-        context["action"] = event.action.name
-        context["clickedBlock"] = event.clickedBlock?.location?.let { LocationTarget(it) }
+    override fun read(instance: PlayerInteractEvent, key: String): OpenResult {
+        return when(key) {
+            "clickedPosition" -> OpenResult.successful(instance.clickedPosition?.abstract())
+            "item" -> OpenResult.successful(instance.item)
+            "action" -> OpenResult.successful(instance.action.name)
+            "clickedBlock" -> OpenResult.successful(instance.clickedBlock?.location?.toTarget())
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: PlayerInteractEvent, key: String, value: Any?): OpenResult {
+        return OpenResult.failed()
     }
 }

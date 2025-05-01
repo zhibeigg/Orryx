@@ -5,6 +5,7 @@ import org.bukkit.entity.Player
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause.*
+import org.gitee.nodens.api.events.entity.NodensEntityDamageEvents
 import org.gitee.orryx.api.events.damage.DamageType
 import org.gitee.orryx.core.damage.AbstractDamageEvent
 import org.serverct.ersha.api.event.AttrEntityDamageBeforeEvent
@@ -15,8 +16,16 @@ fun AbstractDamageEvent.isAttributePlus(): Boolean {
     return origin is AttrEntityDamageBeforeEvent
 }
 
+fun AbstractDamageEvent.isNodens(): Boolean {
+    return origin is NodensEntityDamageEvents.Pre
+}
+
 fun AbstractDamageEvent.apEvent(): AttrEntityDamageBeforeEvent? {
     return origin as? AttrEntityDamageBeforeEvent
+}
+
+fun AbstractDamageEvent.noEvent(): NodensEntityDamageEvents.Pre? {
+    return origin as? NodensEntityDamageEvents.Pre
 }
 
 fun doDamage(source: LivingEntity?, entity: LivingEntity, damageCause: DamageCause, damage: Double) {

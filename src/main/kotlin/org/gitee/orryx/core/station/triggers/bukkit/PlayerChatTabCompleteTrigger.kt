@@ -1,15 +1,16 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
+import org.bukkit.event.player.PlayerChangedWorldEvent
 import org.bukkit.event.player.PlayerChatTabCompleteEvent
 import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
+import taboolib.common.OpenResult
 import taboolib.module.kether.ScriptContext
 
-object PlayerChatTabCompleteTrigger: AbstractPlayerEventTrigger<PlayerChatTabCompleteEvent>() {
-
-    override val event: String = "Player Chat Tab Complete"
+object PlayerChatTabCompleteTrigger: AbstractPropertyPlayerEventTrigger<PlayerChatTabCompleteEvent>("Player Chat Tab Complete") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
@@ -21,10 +22,16 @@ object PlayerChatTabCompleteTrigger: AbstractPlayerEventTrigger<PlayerChatTabCom
     override val clazz
         get() = PlayerChatTabCompleteEvent::class.java
 
-    override fun onStart(context: ScriptContext, event: PlayerChatTabCompleteEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["lastToken"] = event.lastToken
-        context["chatMessage"] = event.chatMessage
-        context["tabCompletions"] = event.tabCompletions
+    override fun read(instance: PlayerChatTabCompleteEvent, key: String): OpenResult {
+        return when(key) {
+            "lastToken" -> OpenResult.successful(instance.lastToken)
+            "chatMessage" -> OpenResult.successful(instance.chatMessage)
+            "tabCompletions" -> OpenResult.successful(instance.tabCompletions)
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: PlayerChatTabCompleteEvent, key: String, value: Any?): OpenResult {
+        return OpenResult.failed()
     }
 }

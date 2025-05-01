@@ -1,15 +1,16 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
+import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerKickEvent
 import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
+import taboolib.common.OpenResult
 import taboolib.module.kether.ScriptContext
 
-object PlayerKickTrigger: AbstractPlayerEventTrigger<PlayerKickEvent>() {
-
-    override val event: String = "Player Kick"
+object PlayerKickTrigger: AbstractPropertyPlayerEventTrigger<PlayerKickEvent>("Player Kick") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
@@ -20,9 +21,25 @@ object PlayerKickTrigger: AbstractPlayerEventTrigger<PlayerKickEvent>() {
     override val clazz
         get() = PlayerKickEvent::class.java
 
-    override fun onStart(context: ScriptContext, event: PlayerKickEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["reason"] = event.reason
-        context["leaveMessage"] = event.leaveMessage
+    override fun read(instance: PlayerKickEvent, key: String): OpenResult {
+        return when(key) {
+            "reason" -> OpenResult.successful(instance.reason)
+            "leaveMessage" -> OpenResult.successful(instance.leaveMessage)
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: PlayerKickEvent, key: String, value: Any?): OpenResult {
+        return when(key) {
+            "reason" -> {
+                instance.reason = value.toString()
+                OpenResult.successful()
+            }
+            "leaveMessage" -> {
+                instance.leaveMessage = value.toString()
+                OpenResult.successful()
+            }
+            else -> OpenResult.failed()
+        }
     }
 }

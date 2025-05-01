@@ -1,15 +1,17 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
+import org.bukkit.event.player.PlayerItemBreakEvent
 import org.bukkit.event.player.PlayerItemConsumeEvent
+import org.bukkit.inventory.ItemStack
 import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
+import taboolib.common.OpenResult
 import taboolib.module.kether.ScriptContext
 
-object PlayerItemConsumeTrigger: AbstractPlayerEventTrigger<PlayerItemConsumeEvent>() {
-
-    override val event: String = "Player Item Consume"
+object PlayerItemConsumeTrigger: AbstractPropertyPlayerEventTrigger<PlayerItemConsumeEvent>("Player Item Consume") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
@@ -20,9 +22,21 @@ object PlayerItemConsumeTrigger: AbstractPlayerEventTrigger<PlayerItemConsumeEve
     override val clazz
         get() = PlayerItemConsumeEvent::class.java
 
-    override fun onStart(context: ScriptContext, event: PlayerItemConsumeEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["item"] = event.item
-        context["hand"] = event.hand
+    override fun read(instance: PlayerItemConsumeEvent, key: String): OpenResult {
+        return when(key) {
+            "item" -> OpenResult.successful(instance.item)
+            "hand" -> OpenResult.successful(instance.hand.name)
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: PlayerItemConsumeEvent, key: String, value: Any?): OpenResult {
+        return when(key) {
+            "item" -> {
+                instance.setItem(value as ItemStack?)
+                OpenResult.successful()
+            }
+            else -> OpenResult.failed()
+        }
     }
 }

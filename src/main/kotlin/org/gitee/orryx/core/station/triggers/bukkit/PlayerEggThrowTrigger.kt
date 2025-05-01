@@ -1,16 +1,21 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
+import org.bukkit.event.player.PlayerEditBookEvent
 import org.bukkit.event.player.PlayerEggThrowEvent
 import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
 import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
+import org.gitee.orryx.utils.abstract
+import taboolib.common.OpenResult
+import taboolib.common5.cbool
+import taboolib.common5.cbyte
+import taboolib.library.xseries.XEntityType
 import taboolib.module.kether.ScriptContext
 
-object PlayerEggThrowTrigger: AbstractPlayerEventTrigger<PlayerEggThrowEvent>() {
-
-    override val event: String = "Player Egg Throw"
+object PlayerEggThrowTrigger: AbstractPropertyPlayerEventTrigger<PlayerEggThrowEvent>("Player Egg Throw") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
@@ -23,11 +28,33 @@ object PlayerEggThrowTrigger: AbstractPlayerEventTrigger<PlayerEggThrowEvent>() 
     override val clazz
         get() = PlayerEggThrowEvent::class.java
 
-    override fun onStart(context: ScriptContext, event: PlayerEggThrowEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["egg"] = AbstractBukkitEntity(event.egg)
-        context["isHatching"] = event.isHatching
-        context["numHatches"] = event.numHatches
-        context["hatchingType"] = event.hatchingType.name
+    override fun read(instance: PlayerEggThrowEvent, key: String): OpenResult {
+        return when(key) {
+            "egg" -> OpenResult.successful(instance.egg.abstract())
+            "isHatching" -> OpenResult.successful(instance.isHatching)
+            "numHatches" -> OpenResult.successful(instance.numHatches)
+            "hatchingType" -> OpenResult.successful(instance.hatchingType.name)
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: PlayerEggThrowEvent, key: String, value: Any?): OpenResult {
+        return when(key) {
+            "isHatching" -> {
+                instance.isHatching = value.cbool
+                OpenResult.successful()
+            }
+            "numHatches" -> {
+                instance.numHatches = value.cbyte
+                OpenResult.successful()
+            }
+            "hatchingType" -> {
+                XEntityType.of(value.toString())?.get()?.get()?.let {
+                    instance.hatchingType = it
+                }
+                OpenResult.successful()
+            }
+            else -> OpenResult.failed()
+        }
     }
 }

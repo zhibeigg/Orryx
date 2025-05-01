@@ -1,15 +1,17 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
+import org.bukkit.event.player.PlayerBucketFillEvent
 import org.bukkit.event.player.PlayerChangedMainHandEvent
 import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
+import org.gitee.orryx.utils.toTarget
+import taboolib.common.OpenResult
 import taboolib.module.kether.ScriptContext
 
-object PlayerChangedMainHandTrigger: AbstractPlayerEventTrigger<PlayerChangedMainHandEvent>() {
-
-    override val event: String = "Player Changed MainHand"
+object PlayerChangedMainHandTrigger: AbstractPropertyPlayerEventTrigger<PlayerChangedMainHandEvent>("Player Changed MainHand") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
@@ -19,8 +21,14 @@ object PlayerChangedMainHandTrigger: AbstractPlayerEventTrigger<PlayerChangedMai
     override val clazz
         get() = PlayerChangedMainHandEvent::class.java
 
-    override fun onStart(context: ScriptContext, event: PlayerChangedMainHandEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["mainHand"] = event.mainHand.name
+    override fun read(instance: PlayerChangedMainHandEvent, key: String): OpenResult {
+        return when(key) {
+            "mainHand" -> OpenResult.successful(instance.mainHand.name)
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: PlayerChangedMainHandEvent, key: String, value: Any?): OpenResult {
+        return OpenResult.failed()
     }
 }

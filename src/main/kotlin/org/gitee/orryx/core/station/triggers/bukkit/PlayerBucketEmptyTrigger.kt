@@ -1,16 +1,18 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
+import org.bukkit.event.player.PlayerBedLeaveEvent
 import org.bukkit.event.player.PlayerBucketEmptyEvent
 import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.core.targets.LocationTarget
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
+import org.gitee.orryx.utils.toTarget
+import taboolib.common.OpenResult
 import taboolib.module.kether.ScriptContext
 
-object PlayerBucketEmptyTrigger: AbstractPlayerEventTrigger<PlayerBucketEmptyEvent>() {
-
-    override val event: String = "Player Bucket Empty"
+object PlayerBucketEmptyTrigger: AbstractPropertyPlayerEventTrigger<PlayerBucketEmptyEvent>("Player Bucket Empty") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
@@ -22,10 +24,16 @@ object PlayerBucketEmptyTrigger: AbstractPlayerEventTrigger<PlayerBucketEmptyEve
     override val clazz
         get() = PlayerBucketEmptyEvent::class.java
 
-    override fun onStart(context: ScriptContext, event: PlayerBucketEmptyEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["blockClicked"] = LocationTarget(event.blockClicked.location)
-        context["block"] = LocationTarget(event.block.location)
-        context["bucket"] = event.bucket.name
+    override fun read(instance: PlayerBucketEmptyEvent, key: String): OpenResult {
+        return when(key) {
+            "blockClicked" -> OpenResult.successful(instance.blockClicked.location.toTarget())
+            "block" -> OpenResult.successful(instance.block.location.toTarget())
+            "bucket" -> OpenResult.successful(instance.bucket.name)
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: PlayerBucketEmptyEvent, key: String, value: Any?): OpenResult {
+        return OpenResult.failed()
     }
 }

@@ -1,16 +1,17 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
+import org.bukkit.event.player.PlayerAnimationEvent
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent
 import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
 import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
+import taboolib.common.OpenResult
 import taboolib.module.kether.ScriptContext
 
-object PlayerArmorStandManipulateTrigger: AbstractPlayerEventTrigger<PlayerArmorStandManipulateEvent>() {
-
-    override val event: String = "Player ArmorStand Manipulate"
+object PlayerArmorStandManipulateTrigger: AbstractPropertyPlayerEventTrigger<PlayerArmorStandManipulateEvent>("Player ArmorStand Manipulate") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
@@ -24,12 +25,18 @@ object PlayerArmorStandManipulateTrigger: AbstractPlayerEventTrigger<PlayerArmor
     override val clazz
         get() = PlayerArmorStandManipulateEvent::class.java
 
-    override fun onStart(context: ScriptContext, event: PlayerArmorStandManipulateEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["armorStandItem"] = event.armorStandItem
-        context["playerItem"] = event.playerItem
-        context["slot"] = event.slot.name
-        context["rightClicked"] = AbstractBukkitEntity(event.rightClicked)
-        context["hand"] = event.hand.name
+    override fun read(instance: PlayerArmorStandManipulateEvent, key: String): OpenResult {
+        return when(key) {
+            "armorStandItem" -> OpenResult.successful(instance.armorStandItem)
+            "playerItem" -> OpenResult.successful(instance.playerItem)
+            "slot" -> OpenResult.successful(instance.slot.name)
+            "rightClicked" -> OpenResult.successful(instance.rightClicked)
+            "hand" -> OpenResult.successful(instance.hand.name)
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: PlayerArmorStandManipulateEvent, key: String, value: Any?): OpenResult {
+        return OpenResult.failed()
     }
 }

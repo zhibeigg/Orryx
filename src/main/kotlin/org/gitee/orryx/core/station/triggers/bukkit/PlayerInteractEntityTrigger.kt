@@ -1,16 +1,18 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
+import org.bukkit.event.player.PlayerInteractAtEntityEvent
 import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
 import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
+import org.gitee.orryx.utils.abstract
+import taboolib.common.OpenResult
 import taboolib.module.kether.ScriptContext
 
-object PlayerInteractEntityTrigger: AbstractPlayerEventTrigger<PlayerInteractEntityEvent>() {
-
-    override val event: String = "Player Interact Entity"
+object PlayerInteractEntityTrigger: AbstractPropertyPlayerEventTrigger<PlayerInteractEntityEvent>("Player Interact Entity") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
@@ -20,8 +22,14 @@ object PlayerInteractEntityTrigger: AbstractPlayerEventTrigger<PlayerInteractEnt
     override val clazz
         get() = PlayerInteractEntityEvent::class.java
 
-    override fun onStart(context: ScriptContext, event: PlayerInteractEntityEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["rightClicked"] = AbstractBukkitEntity(event.rightClicked)
+    override fun read(instance: PlayerInteractEntityEvent, key: String): OpenResult {
+        return when(key) {
+            "rightClicked" -> OpenResult.successful(instance.rightClicked.abstract())
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: PlayerInteractEntityEvent, key: String, value: Any?): OpenResult {
+        return OpenResult.failed()
     }
 }

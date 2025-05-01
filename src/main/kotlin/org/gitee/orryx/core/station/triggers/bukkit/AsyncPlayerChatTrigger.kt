@@ -1,15 +1,18 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
 import org.bukkit.event.player.AsyncPlayerChatEvent
+import org.bukkit.event.player.AsyncPlayerChatPreviewEvent
 import org.gitee.orryx.core.container.Container
 import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.toTarget
+import taboolib.common.OpenResult
 import taboolib.module.kether.ScriptContext
 
-object AsyncPlayerChatTrigger: AbstractPlayerEventTrigger<AsyncPlayerChatEvent>() {
+object AsyncPlayerChatTrigger: AbstractPropertyPlayerEventTrigger<AsyncPlayerChatEvent>("Async Player Chat") {
 
     override val event: String = "Async Player Chat"
 
@@ -23,10 +26,26 @@ object AsyncPlayerChatTrigger: AbstractPlayerEventTrigger<AsyncPlayerChatEvent>(
     override val clazz
         get() = AsyncPlayerChatEvent::class.java
 
-    override fun onStart(context: ScriptContext, event: AsyncPlayerChatEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["message"] = event.message
-        context["format"] = event.format
-        context["recipients"] = Container(event.recipients.mapTo(mutableSetOf()) { it.toTarget() })
+    override fun read(instance: AsyncPlayerChatEvent, key: String): OpenResult {
+        return when(key) {
+            "message" -> OpenResult.successful(instance.message)
+            "format" -> OpenResult.successful(instance.format)
+            "recipients" -> OpenResult.successful(instance.recipients)
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: AsyncPlayerChatEvent, key: String, value: Any?): OpenResult {
+        return when(key) {
+            "message" -> {
+                instance.message = value.toString()
+                OpenResult.successful()
+            }
+            "format" -> {
+                instance.format = value.toString()
+                OpenResult.successful()
+            }
+            else -> OpenResult.failed()
+        }
     }
 }

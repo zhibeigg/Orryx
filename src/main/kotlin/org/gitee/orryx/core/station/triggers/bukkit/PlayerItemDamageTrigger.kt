@@ -1,15 +1,18 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
+import org.bukkit.event.player.PlayerItemConsumeEvent
 import org.bukkit.event.player.PlayerItemDamageEvent
+import org.bukkit.inventory.ItemStack
 import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
+import taboolib.common.OpenResult
+import taboolib.common5.cint
 import taboolib.module.kether.ScriptContext
 
-object PlayerItemDamageTrigger: AbstractPlayerEventTrigger<PlayerItemDamageEvent>() {
-
-    override val event: String = "Player Item Damage"
+object PlayerItemDamageTrigger: AbstractPropertyPlayerEventTrigger<PlayerItemDamageEvent>("Player Item Damage") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
@@ -20,9 +23,21 @@ object PlayerItemDamageTrigger: AbstractPlayerEventTrigger<PlayerItemDamageEvent
     override val clazz
         get() = PlayerItemDamageEvent::class.java
 
-    override fun onStart(context: ScriptContext, event: PlayerItemDamageEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["item"] = event.item
-        context["damage"] = event.damage
+    override fun read(instance: PlayerItemDamageEvent, key: String): OpenResult {
+        return when(key) {
+            "item" -> OpenResult.successful(instance.item)
+            "damage" -> OpenResult.successful(instance.damage)
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: PlayerItemDamageEvent, key: String, value: Any?): OpenResult {
+        return when(key) {
+            "damage" -> {
+                instance.damage = value.cint
+                OpenResult.successful()
+            }
+            else -> OpenResult.failed()
+        }
     }
 }

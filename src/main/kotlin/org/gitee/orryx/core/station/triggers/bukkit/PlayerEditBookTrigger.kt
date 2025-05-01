@@ -1,46 +1,70 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
 import org.bukkit.event.player.PlayerEditBookEvent
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
+import org.bukkit.inventory.meta.BookMeta
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
-import taboolib.module.kether.ScriptContext
+import taboolib.common.OpenResult
+import taboolib.common5.cint
+import taboolib.module.kether.KetherProperty
+import taboolib.module.kether.ScriptProperty
+import taboolib.module.kether.isInt
 
-object PlayerEditBookTrigger: AbstractPlayerEventTrigger<PlayerEditBookEvent>() {
-
-    override val event: String = "Player Edit Book"
+object PlayerEditBookTrigger: AbstractPropertyPlayerEventTrigger<PlayerEditBookEvent>("Player Edit Book") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
-            .addParm(Type.STRING, "newTitle", "获得新书标题")
-            .addParm(Type.STRING, "newAuthor", "获得新书作者")
-            .addParm(Type.ITERABLE, "newPages", "获得新书的内容")
-            .addParm(Type.STRING, "newPageCount", "获得新书页数")
-            .addParm(Type.STRING, "newGeneration", "获得新书的代次：COPY_OF_COPY/COPY_OF_ORIGINAL/ORIGINAL/TATTERED")
-            .addParm(Type.STRING, "title", "获取老书标题")
-            .addParm(Type.STRING, "author", "获取老书作者")
-            .addParm(Type.ITERABLE, "pages", "获取老书的内容")
-            .addParm(Type.STRING, "pageCount", "获取老书页数")
-            .addParm(Type.STRING, "generation", "获取老书的代次：COPY_OF_COPY/COPY_OF_ORIGINAL/ORIGINAL/TATTERED")
+            .addParm(Type.ANY, "newBookMeta", "新书的数据")
+            .addParm(Type.ANY, "previousBookMeta", "旧书的数据")
             .addParm(Type.BOOLEAN, "isSigning", "检测书本是否正在被签名")
             .description("当玩家编辑或签名书与笔时触发。如果事件中断取消，书与笔的元数据不会改变。")
 
     override val clazz
         get() = PlayerEditBookEvent::class.java
 
-    override fun onStart(context: ScriptContext, event: PlayerEditBookEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["newTitle"] = event.newBookMeta.title
-        context["newAuthor"] = event.newBookMeta.author
-        context["newPages"] = event.newBookMeta.pages
-        context["newPageCount"] = event.newBookMeta.pageCount
-        context["newGeneration"] = event.newBookMeta.generation?.name
-        context["title"] = event.previousBookMeta.title
-        context["author"] = event.previousBookMeta.author
-        context["pages"] = event.previousBookMeta.pages
-        context["pageCount"] = event.previousBookMeta.pageCount
-        context["generation"] = event.previousBookMeta.generation?.name
-        context["isSigning"] = event.isSigning
+    override fun read(instance: PlayerEditBookEvent, key: String): OpenResult {
+        return when(key) {
+            "newBookMeta" -> OpenResult.successful(instance.newBookMeta)
+            "previousBookMeta" -> OpenResult.successful(instance.previousBookMeta)
+            "isSigning" -> OpenResult.successful(instance.isSigning)
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: PlayerEditBookEvent, key: String, value: Any?): OpenResult {
+        return OpenResult.failed()
+    }
+
+    @KetherProperty(bind = BookMeta::class)
+    private fun property() = object : ScriptProperty<BookMeta>("orryx.bookmeta.operator") {
+
+        override fun read(instance: BookMeta, key: String): OpenResult {
+            return when(key) {
+                "title" -> OpenResult.successful(instance.title)
+                "lore" -> OpenResult.successful(instance.lore)
+                "author" -> OpenResult.successful(instance.author)
+                else -> OpenResult.failed()
+            }
+        }
+
+        override fun write(instance: BookMeta, key: String, value: Any?): OpenResult {
+            return when {
+                key.isInt() -> {
+                    instance.setPage(key.cint, value.toString())
+                    OpenResult.successful()
+                }
+                key == "title" -> {
+                    instance.title = value.toString()
+                    OpenResult.successful()
+                }
+                key == "author" -> {
+                    instance.author = value.toString()
+                    OpenResult.successful()
+                }
+                else -> OpenResult.failed()
+            }
+        }
     }
 }

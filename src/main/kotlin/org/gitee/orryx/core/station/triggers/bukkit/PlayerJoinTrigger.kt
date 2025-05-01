@@ -1,15 +1,16 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
 import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerQuitEvent
 import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
+import taboolib.common.OpenResult
 import taboolib.module.kether.ScriptContext
 
-object PlayerJoinTrigger: AbstractPlayerEventTrigger<PlayerJoinEvent>() {
-
-    override val event: String = "Player Join"
+object PlayerJoinTrigger: AbstractPropertyPlayerEventTrigger<PlayerJoinEvent>("Player Join") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
@@ -19,8 +20,20 @@ object PlayerJoinTrigger: AbstractPlayerEventTrigger<PlayerJoinEvent>() {
     override val clazz
         get() = PlayerJoinEvent::class.java
 
-    override fun onStart(context: ScriptContext, event: PlayerJoinEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["joinMessage"] = event.joinMessage
+    override fun read(instance: PlayerJoinEvent, key: String): OpenResult {
+        return when(key) {
+            "joinMessage" -> OpenResult.successful(instance.joinMessage)
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: PlayerJoinEvent, key: String, value: Any?): OpenResult {
+        return when(key) {
+            "joinMessage" -> {
+                instance.joinMessage = value.toString()
+                OpenResult.successful()
+            }
+            else -> OpenResult.failed()
+        }
     }
 }

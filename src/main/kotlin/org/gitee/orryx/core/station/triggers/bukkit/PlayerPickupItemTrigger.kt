@@ -2,20 +2,23 @@ package org.gitee.orryx.core.station.triggers.bukkit
 
 import org.bukkit.entity.Player
 import org.bukkit.event.entity.EntityPickupItemEvent
+import org.bukkit.event.player.PlayerPickupArrowEvent
 import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
 import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.station.stations.IStation
 import org.gitee.orryx.core.station.triggers.AbstractEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
+import org.gitee.orryx.utils.abstract
+import taboolib.common.OpenResult
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.module.kether.ScriptContext
 
-object PlayerPickupItemTrigger: AbstractEventTrigger<EntityPickupItemEvent>() {
-
-    override val event: String = "Player Pickup Item"
+object PlayerPickupItemTrigger: AbstractPropertyEventTrigger<EntityPickupItemEvent>("Player Pickup Item") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
@@ -39,10 +42,16 @@ object PlayerPickupItemTrigger: AbstractEventTrigger<EntityPickupItemEvent>() {
         return pipeTask.scriptContext?.sender?.origin == event.entity
     }
 
-    override fun onStart(context: ScriptContext, event: EntityPickupItemEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["item"] = AbstractBukkitEntity(event.item)
-        context["itemStack"] = event.item.itemStack
-        context["remaining"] = event.remaining
+    override fun read(instance: EntityPickupItemEvent, key: String): OpenResult {
+        return when(key) {
+            "item" -> OpenResult.successful(instance.item.abstract())
+            "itemStack" -> OpenResult.successful(instance.item.itemStack)
+            "remaining" -> OpenResult.successful(instance.remaining)
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: EntityPickupItemEvent, key: String, value: Any?): OpenResult {
+        return OpenResult.failed()
     }
 }

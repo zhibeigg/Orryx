@@ -1,15 +1,17 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
+import org.bukkit.event.player.PlayerExpChangeEvent
 import org.bukkit.event.player.PlayerExpCooldownChangeEvent
 import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
+import taboolib.common.OpenResult
+import taboolib.common5.cint
 import taboolib.module.kether.ScriptContext
 
-object PlayerExpCooldownChangeTrigger: AbstractPlayerEventTrigger<PlayerExpCooldownChangeEvent>() {
-
-    override val event: String = "Player Exp Cooldown Change"
+object PlayerExpCooldownChangeTrigger: AbstractPropertyPlayerEventTrigger<PlayerExpCooldownChangeEvent>("Player Exp Cooldown Change") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
@@ -20,9 +22,21 @@ object PlayerExpCooldownChangeTrigger: AbstractPlayerEventTrigger<PlayerExpCoold
     override val clazz
         get() = PlayerExpCooldownChangeEvent::class.java
 
-    override fun onStart(context: ScriptContext, event: PlayerExpCooldownChangeEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["newCooldown"] = event.newCooldown
-        context["reason"] = event.reason.name
+    override fun read(instance: PlayerExpCooldownChangeEvent, key: String): OpenResult {
+        return when(key) {
+            "newCooldown" -> OpenResult.successful(instance.newCooldown)
+            "reason" -> OpenResult.successful(instance.reason)
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: PlayerExpCooldownChangeEvent, key: String, value: Any?): OpenResult {
+        return when(key) {
+            "newCooldown" -> {
+                instance.newCooldown = value.cint
+                OpenResult.successful()
+            }
+            else -> OpenResult.failed()
+        }
     }
 }
