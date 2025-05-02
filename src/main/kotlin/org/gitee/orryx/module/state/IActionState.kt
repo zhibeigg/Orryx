@@ -28,5 +28,4 @@ interface IActionState {
             }
         }
     }
-
 }

@@ -3,9 +3,11 @@ package org.gitee.orryx.module.state.states
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.compat.IAnimationBridge
 import org.gitee.orryx.core.kether.ScriptManager
+import org.gitee.orryx.module.spirit.ISpiritManager
 import org.gitee.orryx.module.state.AbstractRunningState
 import org.gitee.orryx.module.state.IActionState
 import org.gitee.orryx.module.state.IRunningState
+import org.gitee.orryx.module.state.ISpiritCost
 import org.gitee.orryx.module.state.PlayerData
 import org.gitee.orryx.module.state.StateManager
 import org.gitee.orryx.utils.getNearPlayers
@@ -17,12 +19,13 @@ import taboolib.module.kether.Script
 import taboolib.module.kether.ScriptContext
 import kotlin.math.max
 
-class BlockState(override val key: String, configurationSection: ConfigurationSection): IActionState {
+class BlockState(override val key: String, override val configurationSection: ConfigurationSection): IActionState, ISpiritCost {
 
     val animation: Animation = Animation(configurationSection.getConfigurationSection("Animation")!!)
 
     val check = configurationSection.getString("Check").toLongPair("-")
     val invincible = configurationSection.getLong("Invincible")
+    override val spirit = configurationSection.getDouble("Spirit", 0.0)
 
     class Animation(configurationSection: ConfigurationSection) {
         val key = configurationSection.getString("Key")!!
@@ -54,6 +57,7 @@ class BlockState(override val key: String, configurationSection: ConfigurationSe
             getNearPlayers(data.player) { viewer ->
                 IAnimationBridge.INSTANCE.setPlayerAnimation(viewer, data.player, state.animation.key, 1f)
             }
+            ISpiritManager.INSTANCE.takeSpirit(data.player, state.spirit)
             state.runScript(data) { context = this }
             task = submit(delay = state.check.first) {
                 Orryx.api().profileAPI.setBlock(data.player, (state.check.second - state.check.first) * 50)

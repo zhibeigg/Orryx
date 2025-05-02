@@ -1,8 +1,10 @@
 package org.gitee.orryx.module.state.states
 
+import eos.moe.armourers.da
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.compat.IAnimationBridge
 import org.gitee.orryx.core.kether.ScriptManager
+import org.gitee.orryx.module.spirit.ISpiritManager
 import org.gitee.orryx.module.state.*
 import org.gitee.orryx.module.state.MoveState.*
 import org.gitee.orryx.utils.getNearPlayers
@@ -13,12 +15,13 @@ import taboolib.library.configuration.ConfigurationSection
 import taboolib.module.kether.Script
 import taboolib.module.kether.ScriptContext
 
-class DodgeState(override val key: String, configurationSection: ConfigurationSection): IActionState {
+class DodgeState(override val key: String, override val configurationSection: ConfigurationSection): IActionState, ISpiritCost {
 
     val animation: Animation = Animation(configurationSection.getConfigurationSection("Animation")!!)
 
     val invincible = configurationSection.getString("Invincible").toLongPair("-")
     val connection = configurationSection.getString("Connection").toLongPair("-")
+    override val spirit = configurationSection.getDouble("Spirit", 0.0)
 
     class Animation(configurationSection: ConfigurationSection) {
         val front = configurationSection.getString("Front")!!
@@ -44,6 +47,7 @@ class DodgeState(override val key: String, configurationSection: ConfigurationSe
 
         override fun start() {
             startTimestamp = System.currentTimeMillis()
+            ISpiritManager.INSTANCE.takeSpirit(data.player, state.spirit)
             state.runScript(data) { context = this }
             val key = when(data.moveState) {
                 FRONT -> state.animation.front
