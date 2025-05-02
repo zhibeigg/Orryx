@@ -10,7 +10,6 @@ object HookManager {
 
     @Awake(LifeCycle.ENABLE)
     private fun load() {
-        info("&e┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".colored())
         AdyeshachPlugin.load()
         DragonCorePlugin.load()
         DragonArmourersPlugin.load()

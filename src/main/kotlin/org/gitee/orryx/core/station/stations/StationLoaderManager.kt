@@ -48,7 +48,7 @@ object StationLoaderManager {
         stationMap.clear()
         files("stations", "example.yml") { file ->
             val configuration = Configuration.loadFromFile(file)
-            val station = StationLoader(configuration.name, configuration)
+            val station = StationLoader(file.nameWithoutExtension, configuration)
             stationMap[station.key] = station
         }
         autoRegister()

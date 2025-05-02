@@ -14,7 +14,11 @@ import taboolib.module.kether.*
 
 object VectorMathActions {
 
-    @KetherProperty(bind = Vector3dc::class)
+    init {
+        KetherLoader.registerProperty(propertyIVector(), Vector3dc::class.java, false)
+        KetherLoader.registerProperty(propertyVector(), IVector::class.java, false)
+    }
+
     fun propertyIVector() = object : ScriptProperty<Vector3dc>("Vector3dc.operator") {
 
         override fun read(instance: Vector3dc, key: String): OpenResult {
@@ -29,6 +33,39 @@ object VectorMathActions {
 
         override fun write(instance: Vector3dc, key: String, value: Any?): OpenResult {
             return OpenResult.failed()
+        }
+    }
+
+    fun propertyVector() = object : ScriptProperty<IVector>("vector.operator") {
+
+        override fun read(instance: IVector, key: String): OpenResult {
+            return when (key) {
+                "x" -> OpenResult.successful(instance.x())
+                "y" -> OpenResult.successful(instance.y())
+                "z" -> OpenResult.successful(instance.z())
+                else -> OpenResult.failed()
+            }
+        }
+
+        override fun write(instance: IVector, key: String, value: Any?): OpenResult {
+            return when (key) {
+                "x" -> {
+                    instance.joml.x = value.cdouble
+                    OpenResult.successful(instance.x())
+                }
+
+                "y" -> {
+                    instance.joml.y = value.cdouble
+                    OpenResult.successful(instance.y())
+                }
+
+                "z" -> {
+                    instance.joml.z = value.cdouble
+                    OpenResult.successful(instance.z())
+                }
+
+                else -> OpenResult.failed()
+            }
         }
     }
 
@@ -374,40 +411,6 @@ object VectorMathActions {
                         }
                     }
                 }
-            }
-        }
-    }
-
-    @KetherProperty(bind = IVector::class)
-    fun propertyVector() = object : ScriptProperty<IVector>("vector.operator") {
-
-        override fun read(instance: IVector, key: String): OpenResult {
-            return when (key) {
-                "x" -> OpenResult.successful(instance.x())
-                "y" -> OpenResult.successful(instance.y())
-                "z" -> OpenResult.successful(instance.z())
-                else -> OpenResult.failed()
-            }
-        }
-
-        override fun write(instance: IVector, key: String, value: Any?): OpenResult {
-            return when (key) {
-                "x" -> {
-                    instance.joml.x = value.cdouble
-                    OpenResult.successful(instance.x())
-                }
-
-                "y" -> {
-                    instance.joml.y = value.cdouble
-                    OpenResult.successful(instance.y())
-                }
-
-                "z" -> {
-                    instance.joml.z = value.cdouble
-                    OpenResult.successful(instance.z())
-                }
-
-                else -> OpenResult.failed()
             }
         }
     }

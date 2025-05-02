@@ -2,7 +2,6 @@ package org.gitee.orryx.core.station.triggers
 
 import org.bukkit.event.player.PlayerEvent
 import org.gitee.orryx.core.station.pipe.IPipeTask
-import org.gitee.orryx.module.wiki.Trigger
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
 

@@ -37,7 +37,7 @@ class SkillState(val skill: ICastSkill): IActionState {
         }
 
         override fun hasNext(runningState: IRunningState): Boolean {
-            super.hasNext(runningState)
+            if (!super.hasNext(runningState)) return false
             if (stop) return true
             return when (runningState) {
                 is DodgeState.Running -> false

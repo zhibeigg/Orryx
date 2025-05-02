@@ -13,7 +13,9 @@ import taboolib.module.kether.ScriptProperty
 abstract class AbstractPropertyEventTrigger<E>(override val event: String): IStationTrigger<E>, IPipeTrigger<E>, WikiTrigger, ScriptProperty<E>("orryx.${event.clearSpace()}.property") {
 
     init {
-        KetherLoader.registerProperty(this, clazz, false)
+        runCatching {
+            KetherLoader.registerProperty(this, clazz, false)
+        }
     }
 
     override var listener: ProxyListener? = null

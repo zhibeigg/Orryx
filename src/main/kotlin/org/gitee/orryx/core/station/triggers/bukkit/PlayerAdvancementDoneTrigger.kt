@@ -1,19 +1,22 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
 import org.bukkit.advancement.Advancement
-import org.bukkit.event.player.AsyncPlayerChatEvent
 import org.bukkit.event.player.PlayerAdvancementDoneEvent
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
 import taboolib.common.OpenResult
-import taboolib.module.kether.KetherProperty
-import taboolib.module.kether.ScriptContext
+import taboolib.module.kether.KetherLoader
 import taboolib.module.kether.ScriptProperty
 
 object PlayerAdvancementDoneTrigger: AbstractPropertyPlayerEventTrigger<PlayerAdvancementDoneEvent>("Player Advancement Done") {
+
+    init {
+        runCatching {
+            KetherLoader.registerProperty(property(), Advancement::class.java, false)
+        }
+    }
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
@@ -34,7 +37,6 @@ object PlayerAdvancementDoneTrigger: AbstractPropertyPlayerEventTrigger<PlayerAd
         return OpenResult.failed()
     }
 
-    @KetherProperty(bind = Advancement::class)
     private fun property() = object : ScriptProperty<Advancement>("orryx.advancement.operator") {
 
         override fun read(instance: Advancement, key: String): OpenResult {

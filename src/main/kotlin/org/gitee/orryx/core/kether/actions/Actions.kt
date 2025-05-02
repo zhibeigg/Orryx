@@ -1,19 +1,32 @@
 package org.gitee.orryx.core.kether.actions
 
+import org.gitee.orryx.core.job.IJob
+import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.kether.ScriptManager.addOrryxCloseable
+import org.gitee.orryx.core.profile.IPlayerProfile
+import org.gitee.orryx.core.skill.IPlayerSkill
+import org.gitee.orryx.core.skill.ISkill
+import org.gitee.orryx.module.mana.IManaManager
+import org.gitee.orryx.module.spirit.ISpiritManager
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.ORRYX_NAMESPACE
 import org.gitee.orryx.utils.ensureSync
 import org.gitee.orryx.utils.scriptParser
+import taboolib.common.OpenResult
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common.platform.function.submit
-import taboolib.module.kether.KetherParser
-import taboolib.module.kether.actionFuture
-import taboolib.module.kether.long
-import taboolib.module.kether.run
+import taboolib.module.kether.*
 
 object Actions {
+
+    init {
+        KetherLoader.registerProperty(playerJobProperty(), IPlayerJob::class.java, false)
+        KetherLoader.registerProperty(playerSkillProperty(), IPlayerSkill::class.java, false)
+        KetherLoader.registerProperty(profileProperty(), IPlayerProfile::class.java, false)
+        KetherLoader.registerProperty(skillProperty(), ISkill::class.java, false)
+        KetherLoader.registerProperty(jobProperty(), IJob::class.java, false)
+    }
 
     @KetherParser(["wait", "delay", "sleep"], namespace = ORRYX_NAMESPACE)
     private fun actionWait() = scriptParser(
@@ -66,6 +79,111 @@ object Actions {
                     )
                 }
             }
+        }
+    }
+
+    private fun playerJobProperty() = object : ScriptProperty<IPlayerJob>("orryx.player.job.operator") {
+
+        override fun read(instance: IPlayerJob, key: String): OpenResult {
+            return when(key) {
+                "key" -> OpenResult.successful(instance.key)
+                "config" -> OpenResult.successful(instance.job)
+                "player" -> OpenResult.successful(instance.player)
+                "level" -> OpenResult.successful(instance.level)
+                "maxLevel" -> OpenResult.successful(instance.maxLevel)
+                "experienceOfLevel" -> OpenResult.successful(instance.experienceOfLevel)
+                "maxExperienceOfLevel" -> OpenResult.successful(instance.maxExperienceOfLevel)
+                "experience" -> OpenResult.successful(instance.experience)
+                "binds" -> OpenResult.successful(instance.bindKeyOfGroup)
+                "maxMana" -> OpenResult.successful(instance.getMaxMana())
+                "regainMana" -> OpenResult.successful(instance.getRegainMana())
+                "maxSpirit" -> OpenResult.successful(instance.getMaxSpirit())
+                "regainSpirit" -> OpenResult.successful(instance.getRegainSpirit())
+                "attributes" -> OpenResult.successful(instance.getAttributes())
+                "mana" -> OpenResult.successful(IManaManager.INSTANCE.getMana(instance.player))
+                "spirit" -> OpenResult.successful(ISpiritManager.INSTANCE.getSpirit(instance.player))
+                else -> OpenResult.failed()
+            }
+        }
+
+        override fun write(instance: IPlayerJob, key: String, value: Any?): OpenResult {
+            return OpenResult.failed()
+        }
+    }
+
+    private fun playerSkillProperty() = object : ScriptProperty<IPlayerSkill>("orryx.player.skill.operator") {
+
+        override fun read(instance: IPlayerSkill, key: String): OpenResult {
+            return when(key) {
+                "key" -> OpenResult.successful(instance.key)
+                "job" -> OpenResult.successful(instance.job)
+                "player" -> OpenResult.successful(instance.player)
+                "level" -> OpenResult.successful(instance.level)
+                "config" -> OpenResult.successful(instance.skill)
+                "locked" -> OpenResult.successful(instance.locked)
+                else -> OpenResult.failed()
+            }
+        }
+
+        override fun write(instance: IPlayerSkill, key: String, value: Any?): OpenResult {
+            return OpenResult.failed()
+        }
+    }
+
+    private fun profileProperty() = object : ScriptProperty<IPlayerProfile>("orryx.player.profile.operator") {
+
+        override fun read(instance: IPlayerProfile, key: String): OpenResult {
+            return when(key) {
+                "point" -> OpenResult.successful(instance.point)
+                "job" -> OpenResult.successful(instance.job)
+                "player" -> OpenResult.successful(instance.player)
+                "flags" -> OpenResult.successful(instance.flags)
+                else -> OpenResult.failed()
+            }
+        }
+
+        override fun write(instance: IPlayerProfile, key: String, value: Any?): OpenResult {
+            return OpenResult.failed()
+        }
+    }
+
+    private fun skillProperty() = object : ScriptProperty<ISkill>("orryx.skill.operator") {
+
+        override fun read(instance: ISkill, key: String): OpenResult {
+            return when(key) {
+                "key" -> OpenResult.successful(instance.key)
+                "name" -> OpenResult.successful(instance.name)
+                "type" -> OpenResult.successful(instance.type)
+                "minLevel" -> OpenResult.successful(instance.minLevel)
+                "maxLevel" -> OpenResult.successful(instance.maxLevel)
+                "icon" -> OpenResult.successful(instance.icon)
+                "locked" -> OpenResult.successful(instance.isLocked)
+                "sort" -> OpenResult.successful(instance.sort)
+                "material" -> OpenResult.successful(instance.xMaterial)
+                else -> OpenResult.failed()
+            }
+        }
+
+        override fun write(instance: ISkill, key: String, value: Any?): OpenResult {
+            return OpenResult.failed()
+        }
+    }
+
+    private fun jobProperty() = object : ScriptProperty<IJob>("orryx.player.profile.operator") {
+
+        override fun read(instance: IJob, key: String): OpenResult {
+            return when(key) {
+                "key" -> OpenResult.successful(instance.key)
+                "name" -> OpenResult.successful(instance.name)
+                "experience" -> OpenResult.successful(instance.experience)
+                "attributes" -> OpenResult.successful(instance.attributes)
+                "skills" -> OpenResult.successful(instance.skills)
+                else -> OpenResult.failed()
+            }
+        }
+
+        override fun write(instance: IJob, key: String, value: Any?): OpenResult {
+            return OpenResult.failed()
         }
     }
 }

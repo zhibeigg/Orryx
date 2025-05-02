@@ -1,6 +1,7 @@
 package org.gitee.orryx.module.state.states
 
 import eos.moe.armourers.da
+import eos.moe.armourers.fa
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.compat.IAnimationBridge
 import org.gitee.orryx.core.kether.ScriptManager
@@ -93,7 +94,7 @@ class DodgeState(override val key: String, override val configurationSection: Co
         }
 
         override fun hasNext(runningState: IRunningState): Boolean {
-            super.hasNext(runningState)
+            if (!super.hasNext(runningState)) return false
             if (stop) return true
             return when (runningState) {
                 is Running -> (System.currentTimeMillis() - startTimestamp) in state.connection.first * 50 until state.connection.second * 50

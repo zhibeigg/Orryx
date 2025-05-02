@@ -18,6 +18,10 @@ object OrryxActions {
             .description("获取玩家职业")
             .addEntry("获取玩家职业", Type.SYMBOL, false, head = "job")
             .result("职业", Type.STRING),
+        Action.new("Orryx信息获取", "获取玩家职业实例", "orryx", false)
+            .description("获取玩家职业实例")
+            .addEntry("获取玩家职业", Type.SYMBOL, false, head = "jobInstance")
+            .result("职业实例", Type.ANY),
         Action.new("Orryx信息获取", "获取玩家等级", "orryx", false)
             .description("获取玩家等级")
             .addEntry("获取玩家等级", Type.SYMBOL, false, head = "level")
@@ -109,6 +113,7 @@ object OrryxActions {
     ) {
         it.switch {
             case("job") { job() }
+            case("jobInstance") { jobInstance(it) }
             case("level") { level(it) }
             case("point") { point() }
             case("experience", "exp") { experience(it) }
@@ -172,6 +177,23 @@ object OrryxActions {
             skillCaster {
                 orryxProfile {
                     future.complete(it.job)
+                }
+            }
+        }
+    }
+
+    private fun jobInstance(reader: QuestReader): ScriptAction<Any?> {
+        val job = reader.nextHeadActionOrNull("job")
+        return actionFuture { future ->
+            skillCaster {
+                if (job != null) {
+                    run(job).str {
+                        job(it) { job ->
+                            future.complete(job)
+                        }
+                    }
+                } else {
+                    job { future.complete(it) }
                 }
             }
         }

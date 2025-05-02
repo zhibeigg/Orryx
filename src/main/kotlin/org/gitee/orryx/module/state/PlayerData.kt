@@ -1,9 +1,11 @@
 package org.gitee.orryx.module.state
 
 import eos.moe.armourers.api.DragonAPI
+import org.bukkit.GameMode
 import org.bukkit.entity.Player
 import org.gitee.orryx.compat.dragoncore.DragonCoreCustomPacketSender
 import org.gitee.orryx.core.common.keyregister.KeyRegisterManager
+import org.gitee.orryx.module.spirit.ISpiritManager
 import org.gitee.orryx.module.state.StateManager.getController
 import org.gitee.orryx.module.state.StateManager.statusDataList
 import org.gitee.orryx.module.state.states.BlockState
@@ -32,6 +34,20 @@ class PlayerData(val player: Player) {
     var nowRunningState: IRunningState? = null
         private set
 
+    fun firstCheck(runningState: IRunningState): Boolean {
+        return if (nowRunningState == null) {
+            if (player.gameMode == GameMode.SPECTATOR || player.gameMode == GameMode.CREATIVE) return false
+            val state = runningState.state
+            if (state is ISpiritCost) {
+                ISpiritManager.INSTANCE.haveSpirit(player, state.spirit)
+            } else {
+                true
+            }
+        } else {
+            false
+        }
+    }
+
     /**
      * 尝试执行下一个状态
      * @param input 用于读取下一操作的输入键
@@ -43,7 +59,7 @@ class PlayerData(val player: Player) {
                 nextInput = input
                 return@thenApply null
             }
-            if (nowRunningState == null || nowRunningState!!.hasNext(it)) {
+            if (firstCheck(it) || nowRunningState!!.hasNext(it)) {
                 nextInput = null
                 nowRunningState = it
                 it.start()

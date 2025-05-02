@@ -3,10 +3,12 @@ package org.gitee.orryx.core.station.triggers.germplugin
 import com.germ.germplugin.api.KeyType
 import com.germ.germplugin.api.bean.KeyBinding
 import com.germ.germplugin.api.event.GermKeyDownEvent
+import org.bukkit.inventory.meta.BookMeta
 import org.gitee.orryx.core.station.Plugin
 import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.station.stations.IStation
 import org.gitee.orryx.core.station.triggers.AbstractPropertyEventTrigger
+import org.gitee.orryx.core.station.triggers.bukkit.PlayerEditBookTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
@@ -14,11 +16,18 @@ import taboolib.common.OpenResult
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common5.cint
+import taboolib.module.kether.KetherLoader
 import taboolib.module.kether.KetherProperty
 import taboolib.module.kether.ScriptProperty
 
 @Plugin("GermPlugin")
 object GermKeyDownTrigger: AbstractPropertyEventTrigger<GermKeyDownEvent>("Germ Key Down") {
+
+    init {
+        runCatching {
+            KetherLoader.registerProperty(property(), KeyBinding::class.java, false)
+        }
+    }
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.GERM_PLUGIN, event)
@@ -55,7 +64,6 @@ object GermKeyDownTrigger: AbstractPropertyEventTrigger<GermKeyDownEvent>("Germ 
         return OpenResult.failed()
     }
 
-    @KetherProperty(bind = KeyBinding::class)
     private fun property() = object : ScriptProperty<KeyBinding>("orryx.germ.keybinding.operator") {
 
         override fun read(instance: KeyBinding, key: String): OpenResult {

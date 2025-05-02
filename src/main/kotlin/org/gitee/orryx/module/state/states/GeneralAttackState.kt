@@ -69,7 +69,7 @@ class GeneralAttackState(override val key: String, configurationSection: Configu
         }
 
         override fun hasNext(runningState: IRunningState): Boolean {
-            super.hasNext(runningState)
+            if (!super.hasNext(runningState)) return false
             if (stop) return true
             return when (runningState) {
                 is DodgeState.Running -> true

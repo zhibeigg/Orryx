@@ -24,13 +24,17 @@ object TriggerManager: ClassVisitor(3) {
         get() = stationTriggers
 
     override fun getLifeCycle(): LifeCycle {
-        return LifeCycle.INIT
+        return LifeCycle.ENABLE
     }
 
     override fun visitStart(clazz: ReflexClass) {
         val c = clazz.toClass()
         if (WikiTrigger::class.java.isAssignableFrom(c)) {
-            (clazz.getInstance() as? WikiTrigger)?.also { ScriptManager.wikiTriggers.add(it.wiki) }
+            try {
+                (clazz.getInstance() as? WikiTrigger)?.also { ScriptManager.wikiTriggers.add(it.wiki) }
+            } catch (_: Throwable){
+                return
+            }
         }
         if (IPipeTrigger::class.java.isAssignableFrom(c)) {
             val instance = try {

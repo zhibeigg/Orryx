@@ -8,11 +8,17 @@ import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
 import taboolib.common.OpenResult
 import taboolib.common5.cint
-import taboolib.module.kether.KetherProperty
+import taboolib.module.kether.KetherLoader
 import taboolib.module.kether.ScriptProperty
 import taboolib.module.kether.isInt
 
 object PlayerEditBookTrigger: AbstractPropertyPlayerEventTrigger<PlayerEditBookEvent>("Player Edit Book") {
+
+    init {
+        runCatching {
+            KetherLoader.registerProperty(property(), BookMeta::class.java, false)
+        }
+    }
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
@@ -37,7 +43,6 @@ object PlayerEditBookTrigger: AbstractPropertyPlayerEventTrigger<PlayerEditBookE
         return OpenResult.failed()
     }
 
-    @KetherProperty(bind = BookMeta::class)
     private fun property() = object : ScriptProperty<BookMeta>("orryx.bookmeta.operator") {
 
         override fun read(instance: BookMeta, key: String): OpenResult {
