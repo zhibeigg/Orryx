@@ -5,19 +5,17 @@ import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
 import org.bukkit.entity.Projectile
 import org.bukkit.event.entity.EntityDamageByEntityEvent
-import org.gitee.nodens.core.IAttributeGroup
 import org.gitee.nodens.core.attribute.Damage
 import org.gitee.nodens.core.attribute.Defence
 import org.gitee.orryx.api.events.damage.DamageType
 import org.gitee.orryx.api.events.damage.DamageType.*
-import org.gitee.orryx.compat.nodens.NodensBridge
 import org.gitee.orryx.utils.apEvent
 import org.gitee.orryx.utils.isAttributePlus
 import org.gitee.orryx.utils.isNodens
 import org.gitee.orryx.utils.noEvent
 import taboolib.module.kether.ScriptContext
 import taboolib.platform.type.BukkitProxyEvent
-import java.util.UUID
+import java.util.*
 
 abstract class AbstractDamageEvent(
     val attacker: Entity,
