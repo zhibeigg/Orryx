@@ -1,9 +1,9 @@
 package org.gitee.orryx
 
 import com.github.benmanes.caffeine.cache.Caffeine
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
+import taboolib.module.kether.script
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -39,6 +39,6 @@ object Orryx {
             test += (System.nanoTime() - start) // 纳秒级
         }
         println("test = ${test/10000}")
+        println("spirit".split(",").associateWith { it })
     }
-
 }

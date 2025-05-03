@@ -112,6 +112,7 @@ dependencies {
 
     testCompileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
     testCompileOnly("com.github.ben-manes.caffeine:caffeine:2.9.3")
+    testCompileOnly("com.eatthepath:fast-uuid:0.2.0")
 
     compileOnly(kotlin("stdlib"))
     compileOnly(kotlin("reflect"))

@@ -779,7 +779,8 @@ object DragonCoreActions {
                     it.forEachInstance<PlayerTarget> { player ->
                         PacketSender.sendSyncPlaceholder(
                             player.getSource(),
-                            keys.split(",").associateWith { key -> script().get<String>(key) })
+                            keys.split(",").associateWith { key -> script().get<Any?>(key).toString() }
+                        )
                     }
                 }
             }
