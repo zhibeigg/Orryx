@@ -4,7 +4,9 @@ import com.github.retrooper.packetevents.event.PacketListener
 import com.github.retrooper.packetevents.event.PacketSendEvent
 import com.github.retrooper.packetevents.protocol.packettype.PacketType
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerAbilities
+import taboolib.common.platform.Ghost
 
+@Ghost
 class FovModifierPacketListener: PacketListener {
 
     override fun onPacketSend(e: PacketSendEvent) {
