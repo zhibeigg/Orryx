@@ -7,6 +7,7 @@ import org.gitee.orryx.core.targets.ITarget
 import org.gitee.orryx.module.wiki.Selector
 import org.gitee.orryx.module.wiki.SelectorType
 import org.gitee.orryx.module.wiki.Type
+import org.gitee.orryx.utils.ensureSync
 import org.gitee.orryx.utils.getParameter
 import org.gitee.orryx.utils.read
 import org.gitee.orryx.utils.toTarget
@@ -66,7 +67,7 @@ object OrientedBoundingBox: ISelectorGeometry {
             return projection <= rObb + rAabb + 1e-6
         }
 
-        val entities = origin.world.livingEntities
+        val entities = ensureSync { origin.world.livingEntities }.join()
 
         return entities.filter { entity ->
             val entityLoc = entity.location

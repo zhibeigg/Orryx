@@ -7,6 +7,7 @@ import org.gitee.orryx.core.targets.ITarget
 import org.gitee.orryx.module.wiki.Selector
 import org.gitee.orryx.module.wiki.SelectorType
 import org.gitee.orryx.module.wiki.Type
+import org.gitee.orryx.utils.ensureSync
 import org.gitee.orryx.utils.getEntityAABB
 import org.gitee.orryx.utils.getParameter
 import org.gitee.orryx.utils.read
@@ -33,7 +34,7 @@ object Range: ISelectorGeometry {
         val r = parameter.read<Double>(0, 10.0)
         val ray = RayAabIntersection()
 
-        val entities = origin.world.livingEntities
+        val entities = ensureSync { origin.world.livingEntities }.join()
         return entities.mapNotNull {
             if (it == origin.getSource()) return@mapNotNull it.toTarget()
             if (it is LivingEntity) {

@@ -34,7 +34,7 @@ object Sector: ISelectorGeometry {
         val h = parameter.read<Double>(2, 2.0)
         val offsetY = parameter.read<Double>(3, 0.0)
 
-        val entities = origin.world.livingEntities
+        val entities = ensureSync { origin.world.livingEntities }.join()
         val dir = origin.location.direction.clone().setY(0).normalize()
 
         return entities.mapNotNull {

@@ -9,6 +9,7 @@ import org.gitee.orryx.core.targets.ITarget
 import org.gitee.orryx.module.wiki.Selector
 import org.gitee.orryx.module.wiki.SelectorType
 import org.gitee.orryx.module.wiki.Type
+import org.gitee.orryx.utils.ensureSync
 import org.gitee.orryx.utils.getParameter
 import org.gitee.orryx.utils.isInRound
 import org.gitee.orryx.utils.read
@@ -39,7 +40,7 @@ object Annular : ISelectorGeometry {
         val max = parameter.read<Double>(1, 0.0)
         val high = parameter.read<Double>(2, 0.0)
 
-        val livingEntities = origin.world.livingEntities
+        val livingEntities = ensureSync { origin.world.livingEntities }.join()
         val list = mutableListOf<ITarget<*>>()
 
         livingEntities.forEach {

@@ -55,7 +55,7 @@ object RayHit: ISelectorGeometry {
     private fun findEntitiesAlongRay(origin: Location, direction: Vector3d): List<Entity> {
         val world = origin.world ?: return emptyList()
 
-        val nearbyEntities = world.livingEntities
+        val nearbyEntities = ensureSync { world.livingEntities }.join()
 
         // 初始化射线
         val ray = RayAabIntersection(
