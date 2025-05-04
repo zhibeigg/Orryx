@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit
 object MemoryCache {
 
     private val playerProfileCache: AsyncLoadingCache<UUID, IPlayerProfile> = Caffeine.newBuilder()
-        .initialCapacity(20)
+        .initialCapacity(60)
         .maximumSize(100)
         .expireAfterAccess(30, TimeUnit.MINUTES)
         .recordStats()
@@ -53,7 +53,7 @@ object MemoryCache {
         }
 
     private val playerJobCache: AsyncLoadingCache<String, IPlayerJob> = Caffeine.newBuilder()
-        .initialCapacity(20)
+        .initialCapacity(60)
         .maximumSize(100)
         .expireAfterAccess(30, TimeUnit.MINUTES)
         .recordStats()
@@ -72,7 +72,7 @@ object MemoryCache {
         }
 
     private val playerSkillCache: AsyncLoadingCache<String, IPlayerSkill> = Caffeine.newBuilder()
-        .initialCapacity(100)
+        .initialCapacity(300)
         .maximumSize(500)
         .expireAfterAccess(20, TimeUnit.MINUTES)
         .recordStats()
@@ -96,9 +96,9 @@ object MemoryCache {
 
 
     private val playerKeyCache: AsyncLoadingCache<UUID, PlayerKeySetting> = Caffeine.newBuilder()
-        .initialCapacity(100)
-        .maximumSize(500)
-        .expireAfterAccess(20, TimeUnit.MINUTES)
+        .initialCapacity(60)
+        .maximumSize(100)
+        .expireAfterAccess(30, TimeUnit.MINUTES)
         .recordStats()
         .scheduler(Scheduler.systemScheduler())
         .buildAsync { uuid, _ ->

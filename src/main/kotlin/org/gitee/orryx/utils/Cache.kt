@@ -1,5 +1,6 @@
 package org.gitee.orryx.utils
 
+import com.eatthepath.uuid.FastUUID
 import java.util.*
 
 const val PLAYER_DATA = "orryx_player_data_"
@@ -8,19 +9,19 @@ const val PLAYER_JOB_SKILL_DATA = "orryx_player_job_skill_data_"
 const val PLAYER_KEY_SETTING_DATA = "orryx_player_key_setting_data_"
 
 fun playerDataTag(player: UUID): String {
-    return "${PLAYER_DATA}${player}"
+    return "${PLAYER_DATA}${FastUUID.toString(player)}"
 }
 
 fun playerJobDataTag(player: UUID, job: String): String {
-    return "${PLAYER_JOB_DATA}${job}_${player}"
+    return "${PLAYER_JOB_DATA}${job}_${FastUUID.toString(player)}"
 }
 
 fun playerJobSkillDataTag(player: UUID, job: String, skill: String): String {
-    return "${PLAYER_JOB_SKILL_DATA}${job}_${skill}_${player}"
+    return "${PLAYER_JOB_SKILL_DATA}${job}_${skill}_${FastUUID.toString(player)}"
 }
 
 fun playerKeySettingDataTag(player: UUID): String {
-    return "${PLAYER_KEY_SETTING_DATA}${player}"
+    return "${PLAYER_KEY_SETTING_DATA}${FastUUID.toString(player)}"
 }
 
 fun reversePlayerDataTag(flag: String): UUID {

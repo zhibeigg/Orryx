@@ -11,7 +11,6 @@ import taboolib.common.io.newFile
 import taboolib.common.platform.function.getDataFolder
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common.platform.function.submitAsync
-import taboolib.common.util.unsafeLazy
 import taboolib.module.database.ColumnOptionSQLite
 import taboolib.module.database.ColumnTypeSQLite
 import taboolib.module.database.Table
@@ -21,8 +20,8 @@ import java.util.concurrent.CompletableFuture
 
 class SqlLiteManager: IStorageManager {
 
-    private val host by unsafeLazy { newFile(getDataFolder(), "data.db").getHost() }
-    private val dataSource by unsafeLazy { host.createDataSource() }
+    private val host = newFile(getDataFolder(), "data.db").getHost()
+    private val dataSource = host.createDataSource()
 
     private val playerTable: Table<*, *> = Table("orryx_player", host) {
         add(PLAYER_UUID) { type(ColumnTypeSQLite.TEXT) { options(ColumnOptionSQLite.PRIMARY_KEY) } }
@@ -62,7 +61,7 @@ class SqlLiteManager: IStorageManager {
     }
 
     override fun getPlayerData(player: UUID): CompletableFuture<PlayerProfilePO?> {
-        debug("Mysql 获取玩家 Profile")
+        debug("SqlLite 获取玩家 Profile")
         val future = CompletableFuture<PlayerProfilePO?>()
         fun read() {
             try {
@@ -90,7 +89,7 @@ class SqlLiteManager: IStorageManager {
     }
 
     override fun getPlayerJob(player: UUID, job: String): CompletableFuture<PlayerJobPO?> {
-        debug("Mysql 获取玩家 Job")
+        debug("SqlLite 获取玩家 Job")
         val future = CompletableFuture<PlayerJobPO?>()
         fun read() {
             try {
@@ -119,7 +118,7 @@ class SqlLiteManager: IStorageManager {
     }
 
     override fun getPlayerSkill(player: UUID, job: String, skill: String): CompletableFuture<PlayerSkillPO?> {
-        debug("Mysql 获取玩家 Skill")
+        debug("SqlLite 获取玩家 Skill")
         val future = CompletableFuture<PlayerSkillPO?>()
         fun read() {
             try {
@@ -142,7 +141,7 @@ class SqlLiteManager: IStorageManager {
     }
 
     override fun getPlayerSkills(player: UUID, job: String): CompletableFuture<List<PlayerSkillPO>> {
-        debug("Mysql 获取玩家 Skills")
+        debug("SqlLite 获取玩家 Skills")
         val future = CompletableFuture<List<PlayerSkillPO>>()
         fun read() {
             try {
@@ -165,7 +164,7 @@ class SqlLiteManager: IStorageManager {
     }
 
     override fun getPlayerKey(player: UUID): CompletableFuture<PlayerKeySettingPO?> {
-        debug("Mysql 获取玩家 KeySetting")
+        debug("SqlLite 获取玩家 KeySetting")
         val future = CompletableFuture<PlayerKeySettingPO?>()
         fun read() {
             try {

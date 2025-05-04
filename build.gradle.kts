@@ -65,7 +65,6 @@ taboolib {
             name("Nodens").optional(true)
         }
     }
-    relocate("org.apache.commons.jexl3", "org.gitee.orryx.jexl3")
     relocate("com.github.benmanes.caffeine", "org.gitee.orryx.caffeine")
     relocate("org.joml", "org.gitee.orryx.joml")
     relocate("com.larksuite.oapi", "org.gitee.orryx.larksuite.oapi")
@@ -90,7 +89,7 @@ dependencies {
     compileOnly("ink.ptms.core:v11200:11200")
     compileOnly("ink.ptms:nms-all:1.0.0")
 
-    compileOnly("org.gitee.nodens:Nodens:1.3.2:api")
+    compileOnly("org.gitee.nodens:Nodens:1.4.3:api")
     compileOnly("com.gitee.redischannel:RedisChannel:1.1:api")
     compileOnly("ink.ptms.adyeshach:plugin:2.0.26:api")
     compileOnly("com.github.retrooper:packetevents-spigot:2.7.0")

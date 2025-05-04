@@ -14,7 +14,6 @@ import org.joml.Vector3d
 import taboolib.common.platform.function.adaptLocation
 import taboolib.common5.cfloat
 import taboolib.module.kether.ScriptContext
-import java.util.stream.Collectors
 
 object RayHit: ISelectorGeometry {
 
@@ -31,9 +30,9 @@ object RayHit: ISelectorGeometry {
         val origin = context.getParameter().origin ?: return emptyList()
         val v = parameter.read<String>(0, "a")
         val distance = parameter.read<Double>(1, 0.0)
-        val vector = context.vector(v)?.joml ?: return emptyList()
+        val vector = context.vector(v)?.joml?.normalize(distance) ?: return emptyList()
 
-        return findEntitiesAlongRay(origin.eyeLocation, vector, distance).map { it.toTarget() }
+        return findEntitiesAlongRay(origin.eyeLocation, vector).map { it.toTarget() }
     }
 
     override fun aFrameShowLocations(context: ScriptContext, parameter: StringParser.Entry): List<taboolib.common.util.Location> {
@@ -53,10 +52,10 @@ object RayHit: ISelectorGeometry {
         return list
     }
 
-    private fun findEntitiesAlongRay(origin: Location, direction: Vector3d, distance: Double): List<Entity> {
+    private fun findEntitiesAlongRay(origin: Location, direction: Vector3d): List<Entity> {
         val world = origin.world ?: return emptyList()
 
-        val nearbyEntities = world.getNearbyEntities(origin, distance, distance, distance)
+        val nearbyEntities = world.entities
 
         // 初始化射线
         val ray = RayAabIntersection(
@@ -65,10 +64,10 @@ object RayHit: ISelectorGeometry {
         )
 
         // 检测相交并记录距离
-        val entitiesWithDistance = nearbyEntities.parallelStream().filter { entity ->
+        val entitiesWithDistance = nearbyEntities.filter { entity ->
             val aabb = getEntityAABB(entity)
             ray.test(aabb.minX.cfloat, aabb.minY.cfloat, aabb.minZ.cfloat, aabb.maxX.cfloat, aabb.maxY.cfloat, aabb.maxZ.cfloat)
-        }.collect(Collectors.toList())
+        }
 
         return entitiesWithDistance
     }

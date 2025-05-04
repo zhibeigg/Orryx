@@ -49,5 +49,4 @@ class DisableManager: ISyncCacheManager {
 
     override fun removePlayerKeySetting(player: UUID, async: Boolean) {
     }
-
 }

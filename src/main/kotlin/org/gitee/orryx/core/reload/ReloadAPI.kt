@@ -1,7 +1,6 @@
 package org.gitee.orryx.core.reload
 
 import com.germ.germplugin.api.event.GermReloadEvent
-import eos.moe.dragoncore.api.event.ConfigLoadEvent
 import eos.moe.dragoncore.api.gui.event.CustomPacketEvent
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.api.events.OrryxPluginReloadEvent
