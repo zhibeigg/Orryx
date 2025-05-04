@@ -64,5 +64,4 @@ object VectorLocation: ISelectorGeometry {
         val loc = origin.eyeLocation.clone().add(direction)
         return listOf(adaptLocation(loc))
     }
-
 }

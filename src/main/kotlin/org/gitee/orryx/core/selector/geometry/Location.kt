@@ -57,5 +57,4 @@ object Location: ISelectorGeometry {
 
         return listOf(location)
     }
-
 }

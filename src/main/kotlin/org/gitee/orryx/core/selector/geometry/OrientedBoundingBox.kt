@@ -66,9 +66,7 @@ object OrientedBoundingBox: ISelectorGeometry {
             return projection <= rObb + rAabb + 1e-6
         }
 
-        // 筛选范围调整为OBB对角线的半长（避免漏检）
-        val radius = sqrt(long * long + wide * wide + high * high) / 2
-        val entities = origin.world.getNearbyEntities(obbCenterLocation, radius, radius, radius)
+        val entities = origin.world.livingEntities
 
         return entities.filter { entity ->
             val entityLoc = entity.location
@@ -141,5 +139,4 @@ object OrientedBoundingBox: ISelectorGeometry {
 
         return list
     }
-
 }

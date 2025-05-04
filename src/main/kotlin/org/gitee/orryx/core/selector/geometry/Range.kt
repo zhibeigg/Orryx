@@ -33,7 +33,7 @@ object Range: ISelectorGeometry {
         val r = parameter.read<Double>(0, 10.0)
         val ray = RayAabIntersection()
 
-        val entities = origin.world.getNearbyEntities(origin.eyeLocation, r, r, r)
+        val entities = origin.world.livingEntities
         return entities.mapNotNull {
             if (it == origin.getSource()) return@mapNotNull it.toTarget()
             if (it is LivingEntity) {
@@ -54,5 +54,4 @@ object Range: ISelectorGeometry {
 
         return createSphere(adaptLocation(origin.eyeLocation), radius = r).calculateLocations().map { it }
     }
-
 }

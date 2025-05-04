@@ -39,7 +39,7 @@ object Annular : ISelectorGeometry {
         val max = parameter.read<Double>(1, 0.0)
         val high = parameter.read<Double>(2, 0.0)
 
-        val livingEntities = origin.world.getNearbyEntities(origin.location, max, high, max)
+        val livingEntities = origin.world.livingEntities
         val list = mutableListOf<ITarget<*>>()
 
         livingEntities.forEach {
@@ -99,6 +99,4 @@ object Annular : ISelectorGeometry {
 
         return locations
     }
-
-
 }
