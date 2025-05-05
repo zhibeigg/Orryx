@@ -1,7 +1,10 @@
 package org.gitee.orryx.core.reload
 
 import com.germ.germplugin.api.event.GermReloadEvent
-import eos.moe.dragoncore.api.gui.event.CustomPacketEvent
+import eos.moe.dragoncore.api.event.ConfigLoadEvent
+import org.bukkit.event.player.PlayerCommandPreprocessEvent
+import org.bukkit.event.player.PlayerCommandSendEvent
+import org.bukkit.event.server.ServerCommandEvent
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.api.events.OrryxPluginReloadEvent
 import org.gitee.orryx.api.interfaces.IReloadAPI
@@ -13,6 +16,7 @@ import taboolib.common.platform.Ghost
 import taboolib.common.platform.PlatformFactory
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.info
+import taboolib.common.platform.function.submit
 import taboolib.common.util.unsafeLazy
 import taboolib.library.reflex.ClassMethod
 import taboolib.library.reflex.ReflexClass
@@ -70,11 +74,21 @@ object ReloadAPI: IReloadAPI, ClassVisitor(3) {
         reload()
     }
 
-    @Ghost
     @SubscribeEvent
-    private fun reload(e: CustomPacketEvent) {
-        if (e.identifier == "DragonCore" && e.data.size == 1 && e.data[0] == "cache_loaded") {
-            reload()
+    private fun reload(e: ServerCommandEvent) {
+        if (e.command == "core reload" || e.command == "dragoncore reload") {
+            submit {
+                reload()
+            }
+        }
+    }
+
+    @SubscribeEvent
+    private fun reload(e: PlayerCommandPreprocessEvent) {
+        if (e.message == "/core reload" || e.message == "/dragoncore reload") {
+            submit {
+                reload()
+            }
         }
     }
 }
