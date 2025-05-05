@@ -24,7 +24,7 @@ object TriggerManager: ClassVisitor(3) {
         get() = stationTriggers
 
     override fun getLifeCycle(): LifeCycle {
-        return LifeCycle.ENABLE
+        return LifeCycle.LOAD
     }
 
     override fun visitStart(clazz: ReflexClass) {
@@ -44,9 +44,9 @@ object TriggerManager: ClassVisitor(3) {
             }
             if (clazz.hasAnnotation(Plugin::class.java)) {
                 val annotation = clazz.getAnnotation(Plugin::class.java)
-                val pluginEnabled = Bukkit.getPluginManager().isPluginEnabled(annotation.property<String>("plugin")!!)
-                debug("&e┣&7PipeTrigger loaded &e${instance.event} ${if (pluginEnabled) "&a√" else "&4×"}")
-                if (!pluginEnabled) return
+                val pluginLoaded = Bukkit.getPluginManager().getPlugin(annotation.property<String>("plugin")!!) != null
+                debug("&e┣&7PipeTrigger loaded &e${instance.event} ${if (pluginLoaded) "&a√" else "&4×"}")
+                if (!pluginLoaded) return
             } else {
                 debug("&e┣&7PipeTrigger loaded &e${instance.event} &a√")
             }
@@ -60,9 +60,9 @@ object TriggerManager: ClassVisitor(3) {
             }
             if (clazz.hasAnnotation(Plugin::class.java)) {
                 val annotation = clazz.getAnnotation(Plugin::class.java)
-                val pluginEnabled = Bukkit.getPluginManager().isPluginEnabled(annotation.property<String>("plugin")!!)
-                debug("&e┣&7StationTrigger loaded &e${instance.event} ${if (pluginEnabled) "&a√" else "&4×"}")
-                if (!pluginEnabled) return
+                val pluginLoaded = Bukkit.getPluginManager().getPlugin(annotation.property<String>("plugin")!!) != null
+                debug("&e┣&7StationTrigger loaded &e${instance.event} ${if (pluginLoaded) "&a√" else "&4×"}")
+                if (!pluginLoaded) return
             } else {
                 debug("&e┣&7StationTrigger loaded &e${instance.event} &a√")
             }

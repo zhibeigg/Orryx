@@ -18,7 +18,6 @@ interface IAnimationBridge {
                 else -> DefaultAnimationBridge()
             }
         }
-
     }
 
     fun setPlayerAnimation(viewer: Player, player: Player, animation: String, speed: Float)

@@ -16,7 +16,7 @@ object SelectorInit: ClassVisitor(3) {
     private val selectors by unsafeLazy { mutableListOf<ISelector>() }
 
     override fun getLifeCycle(): LifeCycle {
-        return LifeCycle.ENABLE
+        return LifeCycle.LOAD
     }
 
     override fun visitStart(clazz: ReflexClass) {
@@ -27,10 +27,9 @@ object SelectorInit: ClassVisitor(3) {
                         ScriptManager.wikiSelectors += instance.wiki
                     }
                     clazz.getAnnotationIfPresent(Plugin::class.java)?.let { annotation ->
-                        val pluginEnabled =
-                            Bukkit.getPluginManager().isPluginEnabled(annotation.property<String>("plugin")!!)
-                        debug("&e┣&7Selector loaded &e${instance.keys.map { it }} ${if (pluginEnabled) "&a√" else "&4×"}")
-                        if (!pluginEnabled) return
+                        val pluginLoaded = Bukkit.getPluginManager().getPlugin(annotation.property<String>("plugin")!!) != null
+                        debug("&e┣&7Selector loaded &e${instance.keys.map { it }} ${if (pluginLoaded) "&a√" else "&4×"}")
+                        if (!pluginLoaded) return
                     } ?: run {
                         debug("&e┣&7Selector loaded &e${instance.keys.map { it }} &a√")
                     }

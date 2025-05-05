@@ -6,6 +6,9 @@ import taboolib.module.lang.sendLang
 
 class Plugin(val name: String, val extensionFunction: () -> Unit = {}) {
 
+    val isLoaded
+        get() = Bukkit.getPluginManager().getPlugin(name) != null
+
     val isEnabled
         get() = Bukkit.getPluginManager().isPluginEnabled(name)
 
