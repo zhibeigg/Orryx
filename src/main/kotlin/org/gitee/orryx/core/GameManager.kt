@@ -1,6 +1,7 @@
 package org.gitee.orryx.core
 
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.event.entity.FoodLevelChangeEvent
@@ -72,16 +73,9 @@ object GameManager {
         }
     }
 
-    @SubscribeEvent(EventPriority.MONITOR)
-    private fun onServerCommand(e: ServerCommandEvent) {
-        if (e.command.equals("stop", ignoreCase = true)) {
-            e.isCancelled = true
-            shutdownServer()
-        }
-    }
-
-    fun shutdownServer() {
-        info("&e┣&7检测到关闭服务器的命令 Orryx开始关闭流程".colored())
+    @Awake(LifeCycle.DISABLE)
+    private fun disabled() {
+        info("&e┣&7检测到关闭服务器 Orryx开始关闭流程".colored())
         IManaManager.closeThread()
         info("&e┣&7Mana线程已关闭 &a√".colored())
         ISpiritManager.closeThread()
@@ -91,13 +85,7 @@ object GameManager {
         ScriptManager.terminateAllSkills()
         info("&e┣&7终止所有玩家技能 &a√".colored())
         info("&e┣&7延迟2Tick后关闭服务器 &a√".colored())
-        submit(delay = 2) {
-            Bukkit.getServer().shutdown()
-        }
-    }
-
-    @Awake(LifeCycle.DISABLE)
-    private fun disabled() {
+        Thread.sleep(100)
         OrryxAPI.saveScope.cancel("服务器关闭")
         OrryxAPI.effectScope.cancel("服务器关闭")
         OrryxAPI.pluginScope.cancel("服务器关闭")

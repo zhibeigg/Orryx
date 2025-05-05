@@ -151,11 +151,6 @@ object OrryxCommand {
     }
 
     @CommandBody
-    val shutdown = subCommandExec<ConsoleCommandSender> {
-        GameManager.shutdownServer()
-    }
-
-    @CommandBody
     val test = subCommandExec<Player> {
         EntityBuilder()
             .name("Test")
