@@ -8,6 +8,7 @@ import org.gitee.orryx.core.GameManager
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.job.JobLoaderManager
 import org.gitee.orryx.core.kether.actions.game.entity.EntityBuilder
+import org.gitee.orryx.core.message.PluginMessageHandler
 import org.gitee.orryx.core.reload.ReloadAPI
 import org.gitee.orryx.core.skill.SkillLoaderManager
 import org.gitee.orryx.module.mana.IManaManager
@@ -148,17 +149,5 @@ object OrryxCommand {
                 player.sendMessage(", ")
             }
         }
-    }
-
-    @CommandBody
-    val test = subCommandExec<Player> {
-        EntityBuilder()
-            .name("Test")
-            .type(EntityType.ARMOR_STAND)
-            .vector(AbstractVector())
-            .gravity(false)
-            .timeout(40)
-            .health(20.0)
-            .build(listOf(sender.location))
     }
 }

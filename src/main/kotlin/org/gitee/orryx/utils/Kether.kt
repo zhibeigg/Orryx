@@ -62,6 +62,10 @@ internal fun ScriptFrame.self(): IContainer {
     return bukkitPlayer().readContainer(script())!!
 }
 
+internal fun ScriptFrame.world(): IContainer {
+    return Container(bukkitPlayer().world.livingEntities.mapTo(mutableSetOf()) { it.toTarget() })
+}
+
 internal fun <T> ScriptFrame.keySetting(func: (setting: PlayerKeySetting) -> T): CompletableFuture<T> {
     return bukkitPlayer().keySetting {
         func(it)

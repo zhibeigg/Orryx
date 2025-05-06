@@ -49,5 +49,4 @@ object Offset: ISelectorStream {
         }
         container.removeIf { it is ITargetLocation }.addAll(list)
     }
-
 }

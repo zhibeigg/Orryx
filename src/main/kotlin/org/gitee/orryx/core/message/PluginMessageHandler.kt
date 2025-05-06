@@ -1,10 +1,12 @@
 package org.gitee.orryx.core.message
 
+import com.eatthepath.uuid.FastUUID
 import com.germ.germplugin.api.GermPacketAPI
 import com.germ.germplugin.api.event.GermKeyDownEvent
 import com.google.common.io.ByteArrayDataInput
 import com.google.common.io.ByteArrayDataOutput
 import com.google.common.io.ByteStreams
+import eos.moe.armourers.s
 import eos.moe.dragoncore.api.event.KeyPressEvent
 import org.bukkit.Bukkit
 import org.bukkit.Location
@@ -40,7 +42,7 @@ object PluginMessageHandler {
     private val isLegacyVersion by unsafeLazy { MinecraftVersion.versionId == 11202 }
 
     // 协议类型定义
-    private sealed class PacketType(val header: Int) {
+    internal sealed class PacketType(val header: Int) {
         data object AimRequest : PacketType(1)
         data object AimConfirm : PacketType(2)
         data object Ghost : PacketType(3)
@@ -48,6 +50,8 @@ object PluginMessageHandler {
         data object Flicker : PacketType(5)
         data object PressAimRequest : PacketType(6)
         data object MouseRequest : PacketType(7)
+        data object EntityShow : PacketType(8)
+        data object EntityShowRemove : PacketType(9)
     }
 
     @Awake(LifeCycle.ENABLE)
@@ -222,7 +226,7 @@ object PluginMessageHandler {
      */
     fun applyGhostEffect(viewer: Player, player: Player, duration: Long, density: Int, gap: Int) {
         sendDataPacket(viewer, PacketType.Ghost) {
-            writeUTF(player.uniqueId.toString())
+            writeUTF(FastUUID.toString(player.uniqueId))
             writeLong(duration)
             writeInt(density)
             writeInt(gap)
@@ -233,14 +237,18 @@ object PluginMessageHandler {
      * 应用闪影效果，原地留下一道虚影
      * @param viewer 可视玩家
      * @param player 效果玩家
-     * @param duration 持续时间（毫秒）
+     * @param timeout 持续时间（毫秒）
      * @param alpha 透明度（0.0-1.0）
+     * @param duration 透明度淡化时间(-1为不淡化)
+     * @param scale 缩放
      */
-    fun applyFlickerEffect(viewer: Player, player: Player, duration: Long, alpha: Float) {
+    fun applyFlickerEffect(viewer: Player, player: Player, timeout: Long, alpha: Float, duration: Long, scale: Float) {
         sendDataPacket(viewer, PacketType.Flicker) {
-            writeUTF(player.uniqueId.toString())
-            writeLong(duration)
+            writeUTF(FastUUID.toString(player.uniqueId))
+            writeLong(timeout)
             writeFloat(alpha)
+            writeLong(duration)
+            writeFloat(scale)
         }
     }
 
@@ -256,6 +264,46 @@ object PluginMessageHandler {
             sendDataPacket(player, PacketType.MouseRequest) {
                 writeBoolean(show)
             }
+        }
+    }
+
+    /**
+     * 应用投影效果，在指定地点投影一个玩家虚影
+     * @param viewer 可视玩家
+     * @param entity 效果实体
+     * @param group 组
+     * @param location 位置
+     * @param timeout 持续时间（毫秒）
+     * @param rotateX X轴旋转
+     * @param rotateY Y轴旋转
+     * @param rotateZ Z轴旋转
+     * @param scale 缩放
+     */
+    fun applyEntityShowEffect(viewer: Player, entity: UUID, group: String, location: Location, timeout: Long, rotateX: Float, rotateY: Float, rotateZ: Float, scale: Float) {
+        if (viewer.world != location.world) return
+        sendDataPacket(viewer, PacketType.EntityShow) {
+            writeUTF(FastUUID.toString(entity))
+            writeUTF(group)
+            writeDouble(location.x)
+            writeDouble(location.y)
+            writeDouble(location.z)
+            writeLong(timeout)
+            writeFloat(rotateX)
+            writeFloat(rotateY)
+            writeFloat(rotateZ)
+            writeFloat(scale)
+        }
+    }
+
+    /**
+     * 删除投影效果
+     * @param entity 效果实体
+     * @param group 组
+     */
+    fun removeEntityShowEffect(viewer: Player, entity: UUID, group: String) {
+        sendDataPacket(viewer, PacketType.EntityShowRemove) {
+            writeUTF(FastUUID.toString(entity))
+            writeUTF(group)
         }
     }
 
