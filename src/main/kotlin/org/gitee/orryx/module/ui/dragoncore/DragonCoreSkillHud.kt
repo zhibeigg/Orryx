@@ -34,8 +34,8 @@ open class DragonCoreSkillHud(override val viewer: Player, override val owner: P
             onlinePlayers.forEach {
                 PacketSender.sendYaml(it, "gui/OrryxSkillHUD.yml", skillHudConfiguration)
             }
-            dragonSkillHudMap.forEach { (_, u) ->
-                u.values.forEach {
+            dragonSkillHudMap.toList().forEach { (_, u) ->
+                u.values.toList().forEach {
                     it.open()
                 }
             }
