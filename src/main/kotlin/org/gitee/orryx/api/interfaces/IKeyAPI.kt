@@ -38,5 +38,4 @@ interface IKeyAPI {
      * @param key 绑定键名
      * */
     fun getBindKey(key: String): IBindKey
-
 }

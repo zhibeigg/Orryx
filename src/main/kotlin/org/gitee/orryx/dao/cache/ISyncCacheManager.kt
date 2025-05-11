@@ -51,7 +51,6 @@ interface ISyncCacheManager {
                 info(("&e┣&6请勿在运行时修改缓存选择 &4×").colored())
             }
         }
-
     }
 
     /**

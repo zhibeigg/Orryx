@@ -113,7 +113,7 @@ object MemoryCache {
         }
 
     @Awake(LifeCycle.DISABLE)
-    private fun disable() {
+    fun printStats() {
         fun printStats(name: String, stats: CacheStats) {
             info("&e┣&f缓存：$name &c命中率：${(stats.hitRate()*100).format(2)} % &c加载平均时间：${stats.averageLoadPenalty()/1000000} ms".colored())
         }

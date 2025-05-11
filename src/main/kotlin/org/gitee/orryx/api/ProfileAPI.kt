@@ -10,7 +10,6 @@ import org.gitee.orryx.api.events.damage.OrryxDamageEvents
 import org.gitee.orryx.api.interfaces.IProfileAPI
 import org.gitee.orryx.core.profile.IPlayerProfile
 import org.gitee.orryx.module.state.StateManager.statusData
-import org.gitee.orryx.utils.orryxProfile
 import org.gitee.orryx.utils.orryxProfileTo
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake

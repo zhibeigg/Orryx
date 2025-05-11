@@ -12,6 +12,7 @@ import org.gitee.orryx.core.kether.actions.game.entity.EntityBuilder
 import org.gitee.orryx.core.message.PluginMessageHandler
 import org.gitee.orryx.core.reload.ReloadAPI
 import org.gitee.orryx.core.skill.SkillLoaderManager
+import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.dao.pojo.PlayerJobPO
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.storage.IStorageManager
@@ -161,5 +162,10 @@ object OrryxCommand {
                 player.sendMessage(", ")
             }
         }
+    }
+
+    @CommandBody
+    val printStats = subCommandExec<ProxyCommandSender> {
+        MemoryCache.printStats()
     }
 }

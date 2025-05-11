@@ -25,5 +25,4 @@ interface ISkillAPI {
     fun tryCastSkill(player: Player, skill: String): CompletableFuture<CastResult?>
 
     fun getSkill(skill: String): ISkill?
-
 }

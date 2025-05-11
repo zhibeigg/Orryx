@@ -18,5 +18,4 @@ interface IJobAPI {
     fun <T> modifyJob(player: Player, job: String? = null, function: (job: IPlayerJob) -> T) : CompletableFuture<T?>
 
     fun getJob(job: String): IJob?
-
 }

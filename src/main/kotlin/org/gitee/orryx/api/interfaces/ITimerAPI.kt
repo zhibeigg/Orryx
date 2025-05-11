@@ -15,5 +15,4 @@ interface ITimerAPI {
      * @return 计时器
      * */
     val stationTimer: ITimer
-
 }
