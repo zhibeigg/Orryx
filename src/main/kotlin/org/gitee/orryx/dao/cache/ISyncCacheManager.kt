@@ -61,37 +61,40 @@ interface ISyncCacheManager {
      * @param player 玩家的UUID
      * @return 玩家数据
      * */
-    fun getPlayerProfile(player: UUID): CompletableFuture<PlayerProfilePO?>
+    fun getPlayerProfile(player: UUID): CompletableFuture<PlayerProfilePO>
 
     /**
      * 从缓存获取职业数据
      *
      * 如果数据不存在将自动从storage中调用并保存到缓存
      * @param player 玩家的UUID
+     * @param id 玩家的ID
      * @param job 获取的职业
      * @return 职业数据
      * */
-    fun getPlayerJob(player: UUID, job: String): CompletableFuture<PlayerJobPO?>
+    fun getPlayerJob(player: UUID, id: Int, job: String): CompletableFuture<PlayerJobPO?>
 
     /**
      * 从缓存获取技能数据
      *
      * 如果数据不存在将自动从storage中调用并保存到缓存
      * @param player 玩家的UUID
+     * @param id 玩家的ID
      * @param job 获取的职业
      * @param skill 获取的技能
      * @return 技能数据
      * */
-    fun getPlayerSkill(player: UUID, job: String, skill: String): CompletableFuture<PlayerSkillPO?>
+    fun getPlayerSkill(player: UUID, id: Int, job: String, skill: String): CompletableFuture<PlayerSkillPO?>
 
     /**
      * 从缓存获取按键数据
      *
      * 如果数据不存在将自动从storage中调用并保存到缓存
      * @param player 玩家的UUID
+     * @param id 玩家的ID
      * @return 按键数据
      * */
-    fun getPlayerKeySetting(player: UUID): CompletableFuture<PlayerKeySettingPO?>
+    fun getPlayerKeySetting(player: UUID, id: Int): CompletableFuture<PlayerKeySettingPO?>
 
     /**
      * 保存玩家数据到缓存
@@ -138,7 +141,7 @@ interface ISyncCacheManager {
      * @param job 职业键名
      * @param async 是否异步
      * */
-    fun removePlayerJob(player: UUID, job: String, async: Boolean)
+    fun removePlayerJob(player: UUID, id: Int, job: String, async: Boolean)
 
     /**
      * 删除缓存中的技能数据
@@ -147,7 +150,7 @@ interface ISyncCacheManager {
      * @param skill 技能键名
      * @param async 是否异步
      * */
-    fun removePlayerSkill(player: UUID, job: String, skill: String, async: Boolean)
+    fun removePlayerSkill(player: UUID, id: Int, job: String, skill: String, async: Boolean)
 
     /**
      * 删除缓存中的按键数据

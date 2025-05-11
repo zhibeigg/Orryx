@@ -8,6 +8,11 @@ import org.gitee.orryx.dao.pojo.PlayerProfilePO
 interface IPlayerProfile: Saveable {
 
     /**
+     * 玩家ID
+     * */
+    val id: Int
+
+    /**
      * 玩家
      * */
     val player: Player

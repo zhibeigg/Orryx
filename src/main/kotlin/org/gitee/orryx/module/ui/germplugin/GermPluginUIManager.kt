@@ -14,7 +14,7 @@ import org.gitee.orryx.module.ui.IUIManager
 import org.gitee.orryx.utils.keyPress
 import org.gitee.orryx.utils.keyRelease
 import org.gitee.orryx.utils.loadFromFile
-import org.gitee.orryx.utils.orryxProfile
+import org.gitee.orryx.utils.orryxProfileTo
 import taboolib.common.platform.function.getDataFolder
 import taboolib.common.platform.function.registerBukkitListener
 import taboolib.common.platform.function.releaseResourceFile
@@ -54,7 +54,7 @@ class GermPluginUIManager: IUIManager {
             GermPluginSkillUI.skillUIConfiguration = YamlConfiguration.loadConfiguration(File(getDataFolder(), "ui/germplugin/OrryxSkillHUD.yml"))
             if (setting.joinOpenHud) {
                 onlinePlayers.forEach { player ->
-                    player.orryxProfile {
+                    player.orryxProfileTo {
                         if (it.job != null) createSkillHUD(player, player).open()
                     }
                 }
@@ -63,7 +63,7 @@ class GermPluginUIManager: IUIManager {
 
         registerBukkitListener(GermClientLinkedEvent::class.java) { e ->
             if (setting.joinOpenHud) {
-                e.player.orryxProfile {
+                e.player.orryxProfileTo {
                     if (it.job != null) createSkillHUD(e.player, e.player).open()
                 }
             }

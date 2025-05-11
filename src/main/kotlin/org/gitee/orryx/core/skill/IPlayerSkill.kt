@@ -9,6 +9,11 @@ import java.util.concurrent.CompletableFuture
 interface IPlayerSkill: Saveable {
 
     /**
+     * 玩家ID
+     * */
+    val id: Int
+
+    /**
      * 拥有玩家
      * */
     val player: Player

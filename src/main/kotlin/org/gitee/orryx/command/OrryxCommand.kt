@@ -1,5 +1,6 @@
 package org.gitee.orryx.command
 
+import com.eatthepath.uuid.FastUUID
 import org.bukkit.command.ConsoleCommandSender
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
@@ -11,13 +12,19 @@ import org.gitee.orryx.core.kether.actions.game.entity.EntityBuilder
 import org.gitee.orryx.core.message.PluginMessageHandler
 import org.gitee.orryx.core.reload.ReloadAPI
 import org.gitee.orryx.core.skill.SkillLoaderManager
+import org.gitee.orryx.dao.pojo.PlayerProfilePO
+import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.utils.*
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.command.*
+import taboolib.common.platform.function.info
+import taboolib.common.platform.function.submitAsync
 import taboolib.expansion.createHelper
 import taboolib.module.lang.sendLang
 import taboolib.platform.util.sendLang
+import java.util.UUID
+import kotlin.system.measureTimeMillis
 
 @CommandHeader("Orryx", ["or"], "Orryx技能插件主指令", permission = "Orryx.Command.Main", permissionMessage = "你没有权限使用此指令")
 object OrryxCommand {
@@ -59,9 +66,9 @@ object OrryxCommand {
                 player.orryxProfile { profile ->
                     val jobKey = profile.job
                     if (jobKey != null) {
-                        IManaManager.INSTANCE.getMana(player).thenApply { mana ->
-                            IManaManager.INSTANCE.getMaxMana(player).thenApply { maxMana ->
-                                player.job(jobKey) { job ->
+                        IManaManager.INSTANCE.getMana(player).thenCompose { mana ->
+                            IManaManager.INSTANCE.getMaxMana(player).thenCompose { maxMana ->
+                                player.job(profile.id, jobKey) { job ->
                                     sender.sendLang(
                                         "info",
                                         player.name,
@@ -81,6 +88,7 @@ object OrryxCommand {
                         }
                     } else {
                         sender.sendLang("info-no-job", player.name)
+                        null
                     }
                 }
             }
@@ -89,19 +97,21 @@ object OrryxCommand {
                     suggest { JobLoaderManager.getAllJobLoaders().map { it.key } }
                     exec<ProxyCommandSender> {
                         val player = ctx.bukkitPlayer() ?: return@exec
-                        player.job(ctx["job"]) { job ->
-                            sender.sendLang(
-                                "info-job",
-                                player.name,
-                                job.key,
-                                job.job.name,
-                                job.getAttributes().joinToString(", "),
-                                job.getRegainMana(),
-                                job.getMaxMana(),
-                                job.getUpgradePoint(job.level, job.level + 1),
-                                job.getExperience().key
-                            )
-                            sendSkills(player, job)
+                        player.orryxProfile { profile ->
+                            player.job(profile.id, ctx["job"]) { job ->
+                                sender.sendLang(
+                                    "info-job",
+                                    player.name,
+                                    job.key,
+                                    job.job.name,
+                                    job.getAttributes().joinToString(", "),
+                                    job.getRegainMana(),
+                                    job.getMaxMana(),
+                                    job.getUpgradePoint(job.level, job.level + 1),
+                                    job.getExperience().key
+                                )
+                                sendSkills(player, job)
+                            }
                         }
                     }
                 }

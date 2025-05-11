@@ -1,5 +1,6 @@
 package org.gitee.orryx.utils
 
+const val USER_ID = "id"
 const val PLAYER_UUID = "uuid"
 const val POINT = "point"
 const val JOB = "job"

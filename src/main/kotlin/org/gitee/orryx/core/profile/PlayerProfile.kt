@@ -21,13 +21,14 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentMap
 
 class PlayerProfile(
+    override val id: Int,
     val uuid: UUID,
     private var privateJob: String?,
     private var privatePoint: Int,
     private val privateFlags: ConcurrentMap<String, IFlag>
 ): IPlayerProfile {
 
-    constructor(player: Player, privateJob: String?, privatePoint: Int, privateFlags: ConcurrentMap<String, IFlag>): this(player.uniqueId, privateJob, privatePoint, privateFlags)
+    constructor(id: Int, player: Player, privateJob: String?, privatePoint: Int, privateFlags: ConcurrentMap<String, IFlag>): this(id, player.uniqueId, privateJob, privatePoint, privateFlags)
 
     override val player: Player
         get() = Bukkit.getPlayer(uuid)!!
@@ -115,7 +116,7 @@ class PlayerProfile(
     }
 
     override fun createPO(): PlayerProfilePO {
-        return PlayerProfilePO(player.uniqueId, job, point, privateFlags.filter { it.value.isPersistence }.mapValues { it.value.toSerializable() })
+        return PlayerProfilePO(id, player.uniqueId, job, point, privateFlags.filter { it.value.isPersistence }.mapValues { it.value.toSerializable() })
     }
 
     override fun save(async: Boolean, remove: Boolean, callback: () -> Unit) {
@@ -128,13 +129,13 @@ class PlayerProfile(
         }
         if (async && !GameManager.shutdown) {
             OrryxAPI.saveScope.launch(Dispatchers.async) {
-                IStorageManager.INSTANCE.savePlayerData(player.uniqueId, data) {
+                IStorageManager.INSTANCE.savePlayerData(id, data) {
                     remove()
                     callback()
                 }
             }
         } else {
-            IStorageManager.INSTANCE.savePlayerData(player.uniqueId, data) {
+            IStorageManager.INSTANCE.savePlayerData(id, data) {
                 remove()
                 callback()
             }

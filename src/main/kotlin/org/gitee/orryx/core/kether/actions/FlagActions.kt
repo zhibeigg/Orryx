@@ -83,7 +83,7 @@ object FlagActions {
                             run(timeout).long { timeout ->
                                 containerOrSelf(they) {
                                     it.forEachInstance<PlayerTarget> { target ->
-                                        target.getSource().orryxProfile { profile ->
+                                        target.getSource().orryxProfileTo { profile ->
                                             value?.flag(persistence, timeout * 50)
                                                 ?.let { it1 -> profile.setFlag(key, it1) }
                                         }
@@ -102,7 +102,7 @@ object FlagActions {
         return actionFuture { future ->
             run(key).str { key ->
                 containerOrSelf(they) {
-                    it.firstInstance<PlayerTarget>().getSource().orryxProfile { profile ->
+                    it.firstInstance<PlayerTarget>().getSource().orryxProfileTo { profile ->
                         future.complete(profile.getFlag(key)?.value)
                     }
                 }
@@ -116,7 +116,7 @@ object FlagActions {
         return actionFuture { future ->
             run(key).str { key ->
                 containerOrSelf(they) {
-                    it.firstInstance<PlayerTarget>().getSource().orryxProfile { profile ->
+                    it.firstInstance<PlayerTarget>().getSource().orryxProfileTo { profile ->
                         future.complete(profile.removeFlag(key))
                     }
                 }
@@ -130,7 +130,7 @@ object FlagActions {
         return actionNow {
             containerOrSelf(they) {
                 it.forEachInstance<PlayerTarget> { target ->
-                    target.getSource().orryxProfile { profile ->
+                    target.getSource().orryxProfileTo { profile ->
                         profile.clearFlags()
                     }
                 }
@@ -144,7 +144,7 @@ object FlagActions {
         return actionFuture { future ->
             run(key).str { key ->
                 containerOrSelf(they) {
-                    it.firstInstance<PlayerTarget>().getSource().orryxProfile { profile ->
+                    it.firstInstance<PlayerTarget>().getSource().orryxProfileTo { profile ->
                         val flag = profile.getFlag(key)
 
                         future.complete(
@@ -164,7 +164,7 @@ object FlagActions {
         return actionFuture { future ->
             run(key).str { key ->
                 containerOrSelf(they) {
-                    it.firstInstance<PlayerTarget>().getSource().orryxProfile { profile ->
+                    it.firstInstance<PlayerTarget>().getSource().orryxProfileTo { profile ->
                         val flag = profile.getFlag(key)
 
                         future.complete(

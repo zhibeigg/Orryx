@@ -28,10 +28,10 @@ class RedisManager: ISyncCacheManager {
 
     private val api by unsafeLazy { RedisChannelPlugin.api }
 
-    override fun getPlayerProfile(player: UUID): CompletableFuture<PlayerProfilePO?> {
+    override fun getPlayerProfile(player: UUID): CompletableFuture<PlayerProfilePO> {
         debug("Redis 获取玩家 Profile")
         val tag = playerDataTag(player)
-        val future = CompletableFuture<PlayerProfilePO?>()
+        val future = CompletableFuture<PlayerProfilePO>()
         fun read() {
             try {
                 var playerProfilePO = api.get(playerDataTag(player))?.let { Json.decodeFromString<PlayerProfilePO>(it) }
@@ -54,15 +54,15 @@ class RedisManager: ISyncCacheManager {
         return future
     }
 
-    override fun getPlayerJob(player: UUID, job: String): CompletableFuture<PlayerJobPO?> {
+    override fun getPlayerJob(player: UUID, id: Int, job: String): CompletableFuture<PlayerJobPO?> {
         debug("Redis 获取玩家 Job")
-        val tag = playerJobDataTag(player, job)
+        val tag = playerJobDataTag(player, id, job)
         val future = CompletableFuture<PlayerJobPO?>()
         fun read() {
             try {
-                var playerJobPO = api.get(playerJobDataTag(player, job))?.let { Json.decodeFromString<PlayerJobPO>(it) }
+                var playerJobPO = api.get(playerJobDataTag(player, id, job))?.let { Json.decodeFromString<PlayerJobPO>(it) }
                 if (playerJobPO == null) {
-                    playerJobPO = IStorageManager.INSTANCE.getPlayerJob(player, job).join()
+                    playerJobPO = IStorageManager.INSTANCE.getPlayerJob(player, id, job).join()
                     playerJobPO?.let { savePlayerJob(player, it, false) }
                 } else {
                     api.refreshExpire(tag, SECOND_12_HOURS, false)
@@ -80,15 +80,15 @@ class RedisManager: ISyncCacheManager {
         return future
     }
 
-    override fun getPlayerSkill(player: UUID, job: String, skill: String): CompletableFuture<PlayerSkillPO?> {
+    override fun getPlayerSkill(player: UUID, id: Int, job: String, skill: String): CompletableFuture<PlayerSkillPO?> {
         debug("Redis 获取玩家 Skill")
-        val tag = playerJobSkillDataTag(player, job, skill)
+        val tag = playerJobSkillDataTag(player, id, job, skill)
         val future = CompletableFuture<PlayerSkillPO?>()
         fun read() {
             try {
                 var playerSkillPO = api.get(tag)?.let { Json.decodeFromString<PlayerSkillPO>(it) }
                 if (playerSkillPO == null) {
-                    playerSkillPO = IStorageManager.INSTANCE.getPlayerSkill(player, job, skill).join()
+                    playerSkillPO = IStorageManager.INSTANCE.getPlayerSkill(player, id, job, skill).join()
                     playerSkillPO?.let { savePlayerSkill(player, it, false) }
                 } else {
                     api.refreshExpire(tag, SECOND_6_HOURS, false)
@@ -106,7 +106,7 @@ class RedisManager: ISyncCacheManager {
         return future
     }
 
-    override fun getPlayerKeySetting(player: UUID): CompletableFuture<PlayerKeySettingPO?> {
+    override fun getPlayerKeySetting(player: UUID, id: Int): CompletableFuture<PlayerKeySettingPO?> {
         debug("Redis 获取玩家 KeySetting")
         val tag = playerKeySettingDataTag(player)
         val future = CompletableFuture<PlayerKeySettingPO?>()
@@ -114,7 +114,7 @@ class RedisManager: ISyncCacheManager {
             try {
                 var playerKeySettingPO = api.get(tag)?.let { Json.decodeFromString<PlayerKeySettingPO>(it) }
                 if (playerKeySettingPO == null) {
-                    playerKeySettingPO = IStorageManager.INSTANCE.getPlayerKey(player).join()
+                    playerKeySettingPO = IStorageManager.INSTANCE.getPlayerKey(id).join()
                     playerKeySettingPO?.let { savePlayerKeySetting(player, it, false) }
                 } else {
                     api.refreshExpire(tag, SECOND_6_HOURS, false)
@@ -139,12 +139,12 @@ class RedisManager: ISyncCacheManager {
 
     override fun savePlayerJob(player: UUID, playerJobPO: PlayerJobPO, async: Boolean) {
         debug("Redis 获取玩家 Job")
-        api.set(playerJobDataTag(player, playerJobPO.job), Json.encodeToString(playerJobPO), SECOND_12_HOURS, async)
+        api.set(playerJobDataTag(player, playerJobPO.id, playerJobPO.job), Json.encodeToString(playerJobPO), SECOND_12_HOURS, async)
     }
 
     override fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO, async: Boolean) {
         debug("Redis 保存玩家 Skill")
-        api.set(playerJobSkillDataTag(player, playerSkillPO.job, playerSkillPO.skill), Json.encodeToString(playerSkillPO), SECOND_6_HOURS, async)
+        api.set(playerJobSkillDataTag(player, playerSkillPO.id, playerSkillPO.job, playerSkillPO.skill), Json.encodeToString(playerSkillPO), SECOND_6_HOURS, async)
     }
 
     override fun savePlayerKeySetting(player: UUID, playerKeySettingPO: PlayerKeySettingPO, async: Boolean) {
@@ -157,14 +157,14 @@ class RedisManager: ISyncCacheManager {
         api.remove(playerDataTag(player), async)
     }
 
-    override fun removePlayerJob(player: UUID, job: String, async: Boolean) {
+    override fun removePlayerJob(player: UUID, id: Int, job: String, async: Boolean) {
         debug("Redis 移除玩家 Job")
-        api.remove(playerJobDataTag(player, job), async)
+        api.remove(playerJobDataTag(player, id, job), async)
     }
 
-    override fun removePlayerSkill(player: UUID, job: String, skill: String, async: Boolean) {
+    override fun removePlayerSkill(player: UUID, id: Int, job: String, skill: String, async: Boolean) {
         debug("Redis 移除玩家 Skill")
-        api.remove(playerJobSkillDataTag(player, job, skill), async)
+        api.remove(playerJobSkillDataTag(player, id, job, skill), async)
     }
 
     override fun removePlayerKeySetting(player: UUID, async: Boolean) {

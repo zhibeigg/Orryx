@@ -33,6 +33,7 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 
 class PlayerJob(
+    override val id: Int,
     val uuid: UUID,
     override val key: String,
     private var privateExperience: Int,
@@ -40,7 +41,7 @@ class PlayerJob(
     private val privateBindKeyOfGroup: MutableMap<IGroup, MutableMap<IBindKey, String?>>
 ): IPlayerJob {
 
-    constructor(player: Player, key: String, privateExperience: Int, privateGroup: String = DEFAULT, privateBindKeyOfGroup: MutableMap<IGroup, MutableMap<IBindKey, String?>>): this(player.uniqueId, key, privateExperience, privateGroup, privateBindKeyOfGroup)
+    constructor(id: Int, player: Player, key: String, privateExperience: Int, privateGroup: String = DEFAULT, privateBindKeyOfGroup: MutableMap<IGroup, MutableMap<IBindKey, String?>>): this(id, player.uniqueId, key, privateExperience, privateGroup, privateBindKeyOfGroup)
 
     override val player
         get() = Bukkit.getPlayer(uuid)!!
@@ -70,7 +71,7 @@ class PlayerJob(
         get() = getExperience().getExperienceOfLevel(player, level)
 
     override fun createPO(): PlayerJobPO {
-        return PlayerJobPO(player.uniqueId, key, experience, group, bindKeyOfGroupToMap(bindKeyOfGroup))
+        return PlayerJobPO(id, player.uniqueId, key, experience, group, bindKeyOfGroupToMap(bindKeyOfGroup))
     }
 
     override fun getUpgradePoint(from: Int, to: Int): Int {
@@ -275,19 +276,19 @@ class PlayerJob(
         val data = createPO()
         fun remove() {
             if (remove) {
-                ISyncCacheManager.INSTANCE.removePlayerJob(player.uniqueId, key, false)
-                MemoryCache.removePlayerJob(player.uniqueId, key)
+                ISyncCacheManager.INSTANCE.removePlayerJob(player.uniqueId, id, key, false)
+                MemoryCache.removePlayerJob(player.uniqueId, id, key)
             }
         }
         if (async && !GameManager.shutdown) {
             OrryxAPI.saveScope.launch(Dispatchers.async) {
-                IStorageManager.INSTANCE.savePlayerJob(player.uniqueId, data) {
+                IStorageManager.INSTANCE.savePlayerJob(id, data) {
                     remove()
                     callback()
                 }
             }
         } else {
-            IStorageManager.INSTANCE.savePlayerJob(player.uniqueId, data) {
+            IStorageManager.INSTANCE.savePlayerJob(id, data) {
                 remove()
                 callback()
             }

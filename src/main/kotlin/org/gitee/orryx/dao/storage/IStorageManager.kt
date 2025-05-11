@@ -54,69 +54,72 @@ interface IStorageManager {
      * @param player 玩家的UUID
      * @return 玩家数据
      * */
-    fun getPlayerData(player: UUID): CompletableFuture<PlayerProfilePO?>
+    fun getPlayerData(player: UUID): CompletableFuture<PlayerProfilePO>
 
     /**
      * 从数据库获取职业数据
      * @param player 玩家的UUID
+     * @param id 玩家的ID
      * @param job 获取的职业
      * @return 职业数据
      * */
-    fun getPlayerJob(player: UUID, job: String): CompletableFuture<PlayerJobPO?>
+    fun getPlayerJob(player: UUID, id: Int, job: String): CompletableFuture<PlayerJobPO?>
 
     /**
      * 从数据库获取技能数据
      * @param player 玩家的UUID
+     * @param id 玩家的ID
      * @param job 获取的职业
      * @param skill 获取的技能
      * @return 技能数据
      * */
-    fun getPlayerSkill(player: UUID, job: String, skill: String): CompletableFuture<PlayerSkillPO?>
+    fun getPlayerSkill(player: UUID, id: Int, job: String, skill: String): CompletableFuture<PlayerSkillPO?>
 
     /**
      * 从数据库获取技能数据列表
      * @param player 玩家的UUID
+     * @param id 玩家的ID
      * @param job 获取的职业
      * @return 技能数据列表
      * */
-    fun getPlayerSkills(player: UUID, job: String): CompletableFuture<List<PlayerSkillPO>>
+    fun getPlayerSkills(player: UUID, id: Int, job: String): CompletableFuture<List<PlayerSkillPO>>
 
     /**
      * 从数据库获取按键数据列表
-     * @param player 玩家的UUID
+     * @param id 玩家的ID
      * @return 按键数据列表
      * */
-    fun getPlayerKey(player: UUID): CompletableFuture<PlayerKeySettingPO?>
+    fun getPlayerKey(id: Int): CompletableFuture<PlayerKeySettingPO?>
 
     /**
      * 保存玩家数据到数据库
-     * @param player 玩家的UUID
+     * @param id 玩家的ID
      * @param playerProfilePO 玩家数据
      * @param onSuccess 成功时执行
      * */
-    fun savePlayerData(player: UUID, playerProfilePO: PlayerProfilePO, onSuccess: () -> Unit)
+    fun savePlayerData(id: Int, playerProfilePO: PlayerProfilePO, onSuccess: () -> Unit)
 
     /**
      * 保存职业数据到数据库
-     * @param player 玩家的UUID
+     * @param id 玩家的ID
      * @param playerJobPO 职业数据
      * @param onSuccess 成功时执行
      * */
-    fun savePlayerJob(player: UUID, playerJobPO: PlayerJobPO, onSuccess: () -> Unit)
+    fun savePlayerJob(id: Int, playerJobPO: PlayerJobPO, onSuccess: () -> Unit)
 
     /**
      * 保存技能数据到数据库
-     * @param player 玩家的UUID
+     * @param id 玩家的ID
      * @param playerSkillPO 技能数据
      * @param onSuccess 成功时执行
      * */
-    fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO, onSuccess: () -> Unit)
+    fun savePlayerSkill(id: Int, playerSkillPO: PlayerSkillPO, onSuccess: () -> Unit)
 
     /**
      * 保存按键数据到数据库
-     * @param player 玩家的UUID
+     * @param id 玩家的ID
      * @param playerKeySettingPO 按键数据
      * @param onSuccess 成功时执行
      * */
-    fun savePlayerKey(player: UUID, playerKeySettingPO: PlayerKeySettingPO, onSuccess: () -> Unit)
+    fun savePlayerKey(id: Int, playerKeySettingPO: PlayerKeySettingPO, onSuccess: () -> Unit)
 }

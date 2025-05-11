@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class PlayerKeySettingPO(
+    val id: Int,
     val bindKeyMap: Map<String, String>,
     val aimConfirmKey: String,
     val aimCancelKey: String,

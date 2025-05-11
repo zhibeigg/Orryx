@@ -11,6 +11,7 @@ import org.gitee.orryx.api.interfaces.IProfileAPI
 import org.gitee.orryx.core.profile.IPlayerProfile
 import org.gitee.orryx.module.state.StateManager.statusData
 import org.gitee.orryx.utils.orryxProfile
+import org.gitee.orryx.utils.orryxProfileTo
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.PlatformFactory
@@ -23,7 +24,7 @@ import java.util.concurrent.CompletableFuture
 class ProfileAPI: IProfileAPI {
 
     override fun <T> modifyProfile(player: Player, function: (skill: IPlayerProfile) -> T): CompletableFuture<T?> {
-        return player.orryxProfile(function)
+        return player.orryxProfileTo(function)
     }
 
     override fun isSuperBody(player: Player): Boolean {

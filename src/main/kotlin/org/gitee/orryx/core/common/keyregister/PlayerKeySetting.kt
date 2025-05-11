@@ -14,8 +14,10 @@ import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
 import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.utils.*
 import java.util.UUID
+import kotlin.Int
 
 class PlayerKeySetting(
+    val id: Int,
     val uuid: UUID,
     val bindKeyMap: Map<IBindKey, String>,
     val aimConfirmKey: String = MOUSE_LEFT,
@@ -30,6 +32,7 @@ class PlayerKeySetting(
         get() = Bukkit.getPlayer(uuid)!!
 
     constructor(player: Player, playerKeySettingPO: PlayerKeySettingPO) : this(
+        playerKeySettingPO.id,
         player.uniqueId,
         bindKeys().associateWith { playerKeySettingPO.bindKeyMap[it.key] ?: it.key },
         playerKeySettingPO.aimConfirmKey,
@@ -40,10 +43,11 @@ class PlayerKeySetting(
         playerKeySettingPO.extKeyMap
     )
 
-    constructor(player: Player): this(player.uniqueId, bindKeyMap = bindKeys().associateWith { it.key })
+    constructor(id: Int, player: Player): this(id, player.uniqueId, bindKeyMap = bindKeys().associateWith { it.key })
 
     private fun createPO(): PlayerKeySettingPO {
         return PlayerKeySettingPO(
+            id,
             bindKeyMap.mapKeys { it.key.key },
             aimConfirmKey,
             aimCancelKey,
@@ -64,13 +68,13 @@ class PlayerKeySetting(
         }
         if (async && !GameManager.shutdown) {
             OrryxAPI.saveScope.launch(Dispatchers.async) {
-                IStorageManager.INSTANCE.savePlayerKey(player.uniqueId, data) {
+                IStorageManager.INSTANCE.savePlayerKey(id, data) {
                     remove()
                     callback()
                 }
             }
         } else {
-            IStorageManager.INSTANCE.savePlayerKey(player.uniqueId, data) {
+            IStorageManager.INSTANCE.savePlayerKey(id, data) {
                 remove()
                 callback()
             }

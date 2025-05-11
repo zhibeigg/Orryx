@@ -23,32 +23,42 @@ class MySqlManager: IStorageManager {
     private val dataSource = host.createDataSource()
 
     private val playerTable: Table<*, *> = Table("orryx_player", host) {
-        add(PLAYER_UUID) { type(ColumnTypeSQL.CHAR, 36) { options(ColumnOptionSQL.PRIMARY_KEY) } }
+        add { id() }
+        add(PLAYER_UUID) { type(ColumnTypeSQL.CHAR, 36) { options(ColumnOptionSQL.UNIQUE_KEY, ColumnOptionSQL.NOTNULL) } }
         add(JOB) { type(ColumnTypeSQL.VARCHAR, 255) }
         add(POINT) { type(ColumnTypeSQL.INT) }
         add(FLAGS) { type(ColumnTypeSQL.TEXT) }
     }
 
     private val jobsTable: Table<*, *> = Table("orryx_player_jobs", host) {
-        add(PLAYER_UUID) { type(ColumnTypeSQL.CHAR, 36) }
-        add(JOB) { type(ColumnTypeSQL.VARCHAR, 255) }
+        add(USER_ID) {
+            type(ColumnTypeSQL.BIGINT)
+            { options(ColumnOptionSQL.UNSIGNED, ColumnOptionSQL.NOTNULL) }
+        }
+        add(JOB) { type(ColumnTypeSQL.VARCHAR, 255) { options(ColumnOptionSQL.KEY, ColumnOptionSQL.NOTNULL) } }
         add(EXPERIENCE) { type(ColumnTypeSQL.INT) }
         add(GROUP) { type(ColumnTypeSQL.VARCHAR, 255) }
         add(BIND_KEY_OF_GROUP) { type(ColumnTypeSQL.TEXT) }
-        primaryKeyForLegacy += listOf(PLAYER_UUID, JOB)
+        primaryKeyForLegacy.addAll(arrayOf(USER_ID, JOB))
     }
 
     private val skillsTable: Table<*, *> = Table("orryx_player_job_skills", host) {
-        add(PLAYER_UUID) { type(ColumnTypeSQL.CHAR, 36) }
-        add(JOB) { type(ColumnTypeSQL.VARCHAR, 255) }
-        add(SKILL) { type(ColumnTypeSQL.VARCHAR, 255) }
+        add(USER_ID) {
+            type(ColumnTypeSQL.BIGINT)
+            { options(ColumnOptionSQL.UNSIGNED, ColumnOptionSQL.NOTNULL) }
+        }
+        add(JOB) { type(ColumnTypeSQL.VARCHAR, 255) { options(ColumnOptionSQL.KEY, ColumnOptionSQL.NOTNULL) } }
+        add(SKILL) { type(ColumnTypeSQL.VARCHAR, 255) { options(ColumnOptionSQL.KEY, ColumnOptionSQL.NOTNULL) } }
         add(LOCKED) { type(ColumnTypeSQL.BOOLEAN) }
         add(LEVEL) { type(ColumnTypeSQL.INT) }
-        primaryKeyForLegacy += listOf(PLAYER_UUID, JOB, SKILL)
+        primaryKeyForLegacy.addAll(arrayOf(USER_ID, JOB, SKILL))
     }
 
     private val keyTable: Table<*, *> = Table("orryx_player_key_setting", host) {
-        add(PLAYER_UUID) { type(ColumnTypeSQL.CHAR, 36) { options(ColumnOptionSQL.PRIMARY_KEY) } }
+        add(USER_ID) {
+            type(ColumnTypeSQL.BIGINT)
+            { options(ColumnOptionSQL.UNSIGNED, ColumnOptionSQL.NOTNULL, ColumnOptionSQL.PRIMARY_KEY) }
+        }
         add(KEY_SETTING) { type(ColumnTypeSQL.TEXT) }
     }
 
@@ -59,22 +69,33 @@ class MySqlManager: IStorageManager {
         keyTable.createTable(dataSource)
     }
 
-    override fun getPlayerData(player: UUID): CompletableFuture<PlayerProfilePO?> {
+    override fun getPlayerData(player: UUID): CompletableFuture<PlayerProfilePO> {
         debug("Mysql 获取玩家 Profile")
-        val future = CompletableFuture<PlayerProfilePO?>()
+        val future = CompletableFuture<PlayerProfilePO>()
         fun read() {
             try {
-                future.complete(playerTable.select(dataSource) {
-                    where { PLAYER_UUID eq FastUUID.toString(player) }
-                    rows(JOB, POINT, FLAGS)
-                }.firstOrNull {
-                    PlayerProfilePO(
-                        player,
-                        getString(JOB),
-                        getInt(POINT),
-                        Json.decodeFromString(getString(FLAGS))
+                val uuid = FastUUID.toString(player)
+                playerTable.transaction(dataSource) {
+                    if (!select { where { PLAYER_UUID eq uuid } }.find()) {
+                        insert(PLAYER_UUID, JOB, POINT, FLAGS) {
+                            value(uuid, null, 0, null)
+                        }
+                    }
+                    future.complete(
+                        select {
+                            where { PLAYER_UUID eq FastUUID.toString(player) }
+                            rows(USER_ID, JOB, POINT, FLAGS)
+                        }.firstOrNull {
+                            PlayerProfilePO(
+                                getInt(USER_ID),
+                                player,
+                                getString(JOB),
+                                getInt(POINT),
+                                Json.decodeFromString(getString(FLAGS))
+                            )
+                        }
                     )
-                })
+                }
             } catch (e: Throwable) {
                 future.completeExceptionally(e)
             }
@@ -87,16 +108,17 @@ class MySqlManager: IStorageManager {
         return future
     }
 
-    override fun getPlayerJob(player: UUID, job: String): CompletableFuture<PlayerJobPO?> {
+    override fun getPlayerJob(player: UUID, id: Int, job: String): CompletableFuture<PlayerJobPO?> {
         debug("Mysql 获取玩家 Job")
         val future = CompletableFuture<PlayerJobPO?>()
         fun read() {
             try {
                 future.complete(jobsTable.select(dataSource) {
-                    where { PLAYER_UUID eq FastUUID.toString(player) and (JOB eq job) }
+                    where { USER_ID eq id and (JOB eq job) }
                     rows(EXPERIENCE, GROUP, BIND_KEY_OF_GROUP)
                 }.firstOrNull {
                     PlayerJobPO(
+                        id,
                         player,
                         job,
                         getInt(EXPERIENCE),
@@ -116,16 +138,16 @@ class MySqlManager: IStorageManager {
         return future
     }
 
-    override fun getPlayerSkill(player: UUID, job: String, skill: String): CompletableFuture<PlayerSkillPO?> {
+    override fun getPlayerSkill(player: UUID, id: Int, job: String, skill: String): CompletableFuture<PlayerSkillPO?> {
         debug("Mysql 获取玩家 Skill")
         val future = CompletableFuture<PlayerSkillPO?>()
         fun read() {
             try {
                 future.complete(skillsTable.select(dataSource) {
-                    where { PLAYER_UUID eq FastUUID.toString(player) and (JOB eq job) and (SKILL eq skill) }
+                    where { USER_ID eq id and (JOB eq job) and (SKILL eq skill) }
                     rows(LOCKED, LEVEL)
                 }.firstOrNull {
-                    PlayerSkillPO(player, job, skill, getBoolean(LOCKED), getInt(LEVEL))
+                    PlayerSkillPO(id, player, job, skill, getBoolean(LOCKED), getInt(LEVEL))
                 })
             } catch (e: Throwable) {
                 future.completeExceptionally(e)
@@ -139,16 +161,16 @@ class MySqlManager: IStorageManager {
         return future
     }
 
-    override fun getPlayerSkills(player: UUID, job: String): CompletableFuture<List<PlayerSkillPO>> {
+    override fun getPlayerSkills(player: UUID, id: Int, job: String): CompletableFuture<List<PlayerSkillPO>> {
         debug("Mysql 获取玩家 Skills")
         val future = CompletableFuture<List<PlayerSkillPO>>()
         fun read() {
             try {
                 future.complete(skillsTable.select(dataSource) {
-                    where { PLAYER_UUID eq FastUUID.toString(player) and (JOB eq job) }
+                    where { USER_ID eq id and (JOB eq job) }
                     rows(SKILL, LOCKED, LEVEL)
                 }.map {
-                    PlayerSkillPO(player, job, getString(SKILL), getBoolean(LOCKED), getInt(LEVEL))
+                    PlayerSkillPO(id, player, job, getString(SKILL), getBoolean(LOCKED), getInt(LEVEL))
                 })
             } catch (e: Throwable) {
                 future.completeExceptionally(e)
@@ -162,13 +184,13 @@ class MySqlManager: IStorageManager {
         return future
     }
 
-    override fun getPlayerKey(player: UUID): CompletableFuture<PlayerKeySettingPO?> {
+    override fun getPlayerKey(id: Int): CompletableFuture<PlayerKeySettingPO?> {
         debug("Mysql 获取玩家 KeySetting")
         val future = CompletableFuture<PlayerKeySettingPO?>()
         fun read() {
             try {
                 future.complete(keyTable.select(dataSource) {
-                    where { PLAYER_UUID eq FastUUID.toString(player) }
+                    where { USER_ID eq id }
                     rows(KEY_SETTING)
                 }.firstOrNull {
                     Json.decodeFromString<PlayerKeySettingPO>(getString(KEY_SETTING))
@@ -185,17 +207,17 @@ class MySqlManager: IStorageManager {
         return future
     }
 
-    override fun savePlayerData(player: UUID, playerProfilePO: PlayerProfilePO, onSuccess: () -> Unit) {
+    override fun savePlayerData(id: Int, playerProfilePO: PlayerProfilePO, onSuccess: () -> Unit) {
         debug("Mysql 保存玩家 Profile")
         playerTable.transaction(dataSource) {
-            insert(PLAYER_UUID, JOB, POINT, FLAGS) {
+            insert(USER_ID, JOB, POINT, FLAGS) {
                 onDuplicateKeyUpdate {
                     update(JOB, playerProfilePO.job ?: "null")
                     update(POINT, playerProfilePO.point)
                     update(FLAGS, Json.encodeToString(playerProfilePO.flags))
                 }
                 value(
-                    FastUUID.toString(player),
+                    id,
                     playerProfilePO.job,
                     playerProfilePO.point,
                     Json.encodeToString(playerProfilePO.flags)
@@ -204,17 +226,17 @@ class MySqlManager: IStorageManager {
         }.onSuccess { onSuccess() }
     }
 
-    override fun savePlayerJob(player: UUID, playerJobPO: PlayerJobPO, onSuccess: () -> Unit) {
+    override fun savePlayerJob(id: Int, playerJobPO: PlayerJobPO, onSuccess: () -> Unit) {
         debug("Mysql 保存玩家 Job")
         jobsTable.transaction(dataSource) {
-            insert(PLAYER_UUID, JOB, EXPERIENCE, GROUP, BIND_KEY_OF_GROUP) {
+            insert(USER_ID, JOB, EXPERIENCE, GROUP, BIND_KEY_OF_GROUP) {
                 onDuplicateKeyUpdate {
                     update(EXPERIENCE, playerJobPO.experience)
                     update(GROUP, playerJobPO.group)
                     update(BIND_KEY_OF_GROUP, Json.encodeToString(playerJobPO.bindKeyOfGroup))
                 }
                 value(
-                    FastUUID.toString(player),
+                    id,
                     playerJobPO.job,
                     playerJobPO.experience,
                     playerJobPO.group,
@@ -224,16 +246,16 @@ class MySqlManager: IStorageManager {
         }.onSuccess { onSuccess() }
     }
 
-    override fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO, onSuccess: () -> Unit) {
+    override fun savePlayerSkill(id: Int, playerSkillPO: PlayerSkillPO, onSuccess: () -> Unit) {
         debug("Mysql 保存玩家 Skill")
         skillsTable.transaction(dataSource) {
-            insert(PLAYER_UUID, JOB, SKILL, LOCKED, LEVEL) {
+            insert(USER_ID, JOB, SKILL, LOCKED, LEVEL) {
                 onDuplicateKeyUpdate {
                     update(LOCKED, playerSkillPO.locked)
                     update(LEVEL, playerSkillPO.level)
                 }
                 value(
-                    FastUUID.toString(player),
+                    id,
                     playerSkillPO.job,
                     playerSkillPO.skill,
                     playerSkillPO.locked,
@@ -243,15 +265,15 @@ class MySqlManager: IStorageManager {
         }.onSuccess { onSuccess() }
     }
 
-    override fun savePlayerKey(player: UUID, playerKeySettingPO: PlayerKeySettingPO, onSuccess: () -> Unit) {
+    override fun savePlayerKey(id: Int, playerKeySettingPO: PlayerKeySettingPO, onSuccess: () -> Unit) {
         debug("Mysql 保存玩家 KeySetting")
         keyTable.transaction(dataSource) {
-            insert(PLAYER_UUID, KEY_SETTING) {
+            insert(USER_ID, KEY_SETTING) {
                 onDuplicateKeyUpdate {
                     update(KEY_SETTING, Json.encodeToString(playerKeySettingPO))
                 }
                 value(
-                    FastUUID.toString(player),
+                    id,
                     Json.encodeToString(playerKeySettingPO)
                 )
             }

@@ -10,20 +10,20 @@ import java.util.concurrent.CompletableFuture
 
 class DisableManager: ISyncCacheManager {
 
-    override fun getPlayerProfile(player: UUID): CompletableFuture<PlayerProfilePO?> {
+    override fun getPlayerProfile(player: UUID): CompletableFuture<PlayerProfilePO> {
         return IStorageManager.INSTANCE.getPlayerData(player)
     }
 
-    override fun getPlayerJob(player: UUID, job: String): CompletableFuture<PlayerJobPO?> {
-        return IStorageManager.INSTANCE.getPlayerJob(player, job)
+    override fun getPlayerJob(player: UUID, id: Int, job: String): CompletableFuture<PlayerJobPO?> {
+        return IStorageManager.INSTANCE.getPlayerJob(player, id, job)
     }
 
-    override fun getPlayerSkill(player: UUID, job: String, skill: String): CompletableFuture<PlayerSkillPO?> {
-        return IStorageManager.INSTANCE.getPlayerSkill(player, job, skill)
+    override fun getPlayerSkill(player: UUID, id: Int, job: String, skill: String): CompletableFuture<PlayerSkillPO?> {
+        return IStorageManager.INSTANCE.getPlayerSkill(player, id, job, skill)
     }
 
-    override fun getPlayerKeySetting(player: UUID): CompletableFuture<PlayerKeySettingPO?> {
-        return IStorageManager.INSTANCE.getPlayerKey(player)
+    override fun getPlayerKeySetting(player: UUID, id: Int): CompletableFuture<PlayerKeySettingPO?> {
+        return IStorageManager.INSTANCE.getPlayerKey(id)
     }
 
     override fun savePlayerProfile(player: UUID, playerProfilePO: PlayerProfilePO, async: Boolean) {
@@ -41,10 +41,10 @@ class DisableManager: ISyncCacheManager {
     override fun removePlayerProfile(player: UUID, async: Boolean) {
     }
 
-    override fun removePlayerJob(player: UUID, job: String, async: Boolean) {
+    override fun removePlayerJob(player: UUID, id: Int, job: String, async: Boolean) {
     }
 
-    override fun removePlayerSkill(player: UUID, job: String, skill: String, async: Boolean) {
+    override fun removePlayerSkill(player: UUID, id: Int, job: String, skill: String, async: Boolean) {
     }
 
     override fun removePlayerKeySetting(player: UUID, async: Boolean) {

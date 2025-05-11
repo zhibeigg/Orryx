@@ -21,9 +21,10 @@ class KeyAPI: IKeyAPI {
 
     override fun bindSkillKeyOfGroup(player: Player, job: String, skill: String, group: String, bindKey: String): CompletableFuture<Boolean> {
         val future = CompletableFuture<Boolean>()
-        player.getSkill(job, skill).thenApply { sk ->
-            player.job(job) { jb ->
-                jb.setBindKey(sk ?: error("玩家${player.name}在职业${job}无技能$skill"), getGroup(group), getBindKey(bindKey)).thenApply {
+        player.getSkill(job, skill).thenAccept { sk ->
+            sk ?: error("玩家${player.name}在职业${job}无技能$skill")
+            player.job(sk.id, job) { jb ->
+                jb.setBindKey(sk, getGroup(group), getBindKey(bindKey)).thenAccept {
                     future.complete(it)
                 }
             }
@@ -41,7 +42,5 @@ class KeyAPI: IKeyAPI {
         fun init() {
             PlatformFactory.registerAPI<IKeyAPI>(KeyAPI())
         }
-
     }
-
 }

@@ -21,7 +21,7 @@ import java.util.concurrent.CompletableFuture
 class ManaMangerDefault: IManaManager {
 
     override fun getMana(player: Player): CompletableFuture<Double> {
-        return player.orryxProfile {
+        return player.orryxProfileTo {
             it.getFlag(MANA_FLAG)?.value.cdouble
         }
     }
@@ -107,7 +107,7 @@ class ManaMangerDefault: IManaManager {
     }
 
     override fun haveMana(player: Player, mana: Double): CompletableFuture<Boolean> {
-        return player.orryxProfile { profile ->
+        return player.orryxProfileTo { profile ->
             val less = profile.getFlag(MANA_FLAG)?.value.cdouble - mana
             less >= 0
         }

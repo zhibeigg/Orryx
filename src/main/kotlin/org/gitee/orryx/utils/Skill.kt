@@ -75,10 +75,9 @@ fun IPlayerSkill.up(): CompletableFuture<SkillLevelResult> {
     if (level == skill.maxLevel) return CompletableFuture.completedFuture(SkillLevelResult.MAX)
     val from = level
     val to = level+1
-    val future = CompletableFuture<SkillLevelResult>()
-    player.orryxProfile { profile ->
+    return player.orryxProfile { profile ->
         if (upLevelCheck(from, to)) {
-            upgradePointCheck(from, to).thenApply { pointCheck ->
+            upgradePointCheck(from, to).thenCompose { pointCheck ->
                 if (pointCheck.second) {
                     val result = upLevel(1)
                     result.thenApply {
@@ -86,17 +85,16 @@ fun IPlayerSkill.up(): CompletableFuture<SkillLevelResult> {
                             profile.takePoint(pointCheck.first)
                             upLevelSuccess(from, level)
                         }
-                        future.complete(it)
+                        it
                     }
                 } else {
-                    future.complete(SkillLevelResult.POINT)
+                    CompletableFuture.completedFuture(SkillLevelResult.POINT)
                 }
             }
         } else {
-            future.complete(SkillLevelResult.CHECK)
+            CompletableFuture.completedFuture(SkillLevelResult.CHECK)
         }
     }
-    return future
 }
 
 fun <T> Player.skill(skill: String, create: Boolean = false, function: (IPlayerSkill) -> T): CompletableFuture<T?> {
@@ -132,15 +130,16 @@ internal fun Player.getSkill(skill: String, create: Boolean = false): Completabl
 }
 
 internal fun Player.getSkill(job: String, skill: String, create: Boolean = false): CompletableFuture<IPlayerSkill?> {
-    val skillLoader = SkillLoaderManager.getSkillLoader(skill)
-    return MemoryCache.getPlayerSkill(this, job, skill).thenApply {
-        skillLoader ?: return@thenApply null
-        it ?: if (create) {
-            PlayerSkill(this, skill, job, skillLoader.minLevel, skillLoader.isLocked).apply {
-                save(remove = false)
+    val skillLoader = SkillLoaderManager.getSkillLoader(skill) ?: return CompletableFuture.completedFuture(null)
+    return orryxProfile { profile ->
+        MemoryCache.getPlayerSkill(this, profile.id, job, skill).thenApply {
+            it ?: if (create) {
+                PlayerSkill(profile.id, this, skill, job, skillLoader.minLevel, skillLoader.isLocked).apply {
+                    save(remove = false)
+                }
+            } else {
+                null
             }
-        } else {
-            null
         }
     }
 }
@@ -262,25 +261,23 @@ fun CastResult.isSuccess(): Boolean {
 }
 
 fun IPlayerSkill.clearLevelAndBackPoint(): CompletableFuture<Boolean> {
-    val future = CompletableFuture<Boolean>()
-    if (level == skill.minLevel) {
-        future.complete(false)
+    return if (level == skill.minLevel) {
+        CompletableFuture.completedFuture(false)
     } else {
         player.orryxProfile { profile ->
             val event = OrryxClearSkillLevelAndBackPointEvent(player, this)
             if (event.call()) {
-                upgradePointCheck(skill.minLevel, level).thenApply { pair ->
+                upgradePointCheck(skill.minLevel, level).thenCompose { pair ->
                     profile.givePoint(pair.first)
                     clearLevel().thenApply {
-                        future.complete(it == SkillLevelResult.SUCCESS)
+                        it == SkillLevelResult.SUCCESS
                     }
                 }
             } else {
-                future.complete(false)
+                CompletableFuture.completedFuture(false)
             }
         }
     }
-    return future
 }
 
 fun IPlayerSkill.clearLevel(): CompletableFuture<SkillLevelResult> {

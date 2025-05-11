@@ -175,7 +175,7 @@ object OrryxActions {
     private fun job(): ScriptAction<Any?> {
         return actionFuture { future ->
             skillCaster {
-                orryxProfile {
+                orryxProfileTo {
                     future.complete(it.job)
                 }
             }
@@ -188,8 +188,10 @@ object OrryxActions {
             skillCaster {
                 if (job != null) {
                     run(job).str {
-                        job(it) { job ->
-                            future.complete(job)
+                        orryxProfileTo { profile ->
+                            job(profile.id, it) { job ->
+                                future.complete(job)
+                            }
                         }
                     }
                 } else {
@@ -205,8 +207,10 @@ object OrryxActions {
             skillCaster {
                 if (job != null) {
                     run(job).str {
-                        job(it) { job ->
-                            future.complete(job.level)
+                        orryxProfileTo { profile ->
+                            job(profile.id, it) { job ->
+                                future.complete(job.level)
+                            }
                         }
                     }
                 } else {
@@ -219,7 +223,7 @@ object OrryxActions {
     private fun point(): ScriptAction<Any?> {
         return actionFuture { future ->
             skillCaster {
-                orryxProfile {
+                orryxProfileTo {
                     future.complete(it.point)
                 }
             }
@@ -232,8 +236,10 @@ object OrryxActions {
             skillCaster {
                 if (job != null) {
                     run(job).str {
-                        job(it) { job ->
-                            future.complete(job.experience)
+                        orryxProfileTo { profile ->
+                            job(profile.id, it) { job ->
+                                future.complete(job.experience)
+                            }
                         }
                     }
                 } else {
@@ -249,8 +255,10 @@ object OrryxActions {
             skillCaster {
                 if (job != null) {
                     run(job).str {
-                        job(it) { job ->
-                            future.complete(job.experienceOfLevel)
+                        orryxProfileTo { profile ->
+                            job(profile.id, it) { job ->
+                                future.complete(job.experienceOfLevel)
+                            }
                         }
                     }
                 } else {
@@ -266,8 +274,10 @@ object OrryxActions {
             skillCaster {
                 if (job != null) {
                     run(job).str {
-                        job(it) { job ->
-                            future.complete(job.maxExperienceOfLevel)
+                        orryxProfileTo { profile ->
+                            job(profile.id, it) { job ->
+                                future.complete(job.maxExperienceOfLevel)
+                            }
                         }
                     }
                 } else {
@@ -283,8 +293,10 @@ object OrryxActions {
             skillCaster {
                 if (job != null) {
                     run(job).str {
-                        job(it) { job ->
-                            future.complete(job.group)
+                        orryxProfileTo { profile ->
+                            job(profile.id, it) { job ->
+                                future.complete(job.group)
+                            }
                         }
                     }
                 } else {
@@ -328,7 +340,7 @@ object OrryxActions {
                             }
                         }
                     } else {
-                        orryxProfile {
+                        orryxProfileTo {
                             it.job?.let { job -> getSkill(job, skill, true) }?.thenApply { skill ->
                                 future.complete(skill?.level)
                             } ?: kotlin.run {
@@ -355,7 +367,7 @@ object OrryxActions {
                             }
                         }
                     } else {
-                        orryxProfile {
+                        orryxProfileTo {
                             it.job?.let { job -> getSkill(job, skill, true) }?.thenApply { skill ->
                                 future.complete(skill?.locked)
                             } ?: kotlin.run {

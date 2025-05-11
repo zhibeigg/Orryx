@@ -68,30 +68,26 @@ fun <T> Player.job(function: (IPlayerJob) -> T): CompletableFuture<T?> {
     }
 }
 
-fun <T> Player.job(job: String, function: (IPlayerJob) -> T): CompletableFuture<T?> {
-    return job(job).thenApply {
+fun <T> Player.job(id: Int, job: String, function: (IPlayerJob) -> T): CompletableFuture<T?> {
+    return job(id, job).thenApply {
         it?.let { it1 -> function(it1) }
     }
 }
 
 fun Player.job(): CompletableFuture<IPlayerJob?> {
-    val future = CompletableFuture<IPlayerJob?>()
-    orryxProfile { profile ->
+    return orryxProfile { profile ->
         profile.job?.let {
-            job(it) { job ->
-                future.complete(job)
-            }
+            job(profile.id, it)
         }
     }
-    return future
 }
 
-fun Player.job(job: String): CompletableFuture<IPlayerJob?> {
-    return MemoryCache.getPlayerJob(this, job).thenApply {
-        it ?: defaultJob(job).apply {
+fun Player.job(id: Int, job: String): CompletableFuture<IPlayerJob?> {
+    return MemoryCache.getPlayerJob(this, id, job).thenApply {
+        it ?: defaultJob(id, job).apply {
             save(remove = false)
         }
     }
 }
 
-private fun Player.defaultJob(job: String) = PlayerJob(this, job, 0, DEFAULT, hashMapOf())
+private fun Player.defaultJob(id: Int, job: String) = PlayerJob(id, this, job, 0, DEFAULT, hashMapOf())

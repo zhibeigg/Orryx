@@ -7,6 +7,7 @@ import java.util.*
 
 @Serializable
 data class PlayerProfilePO(
+    val id: Int,
     @Serializable(with = UUIDSerializer::class)
     val player: UUID,
     val job: String?,

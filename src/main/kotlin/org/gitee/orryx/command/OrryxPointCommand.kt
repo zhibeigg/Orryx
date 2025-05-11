@@ -2,6 +2,7 @@ package org.gitee.orryx.command
 
 import org.gitee.orryx.utils.bukkitPlayer
 import org.gitee.orryx.utils.orryxProfile
+import org.gitee.orryx.utils.orryxProfileTo
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.command.CommandBody
 import taboolib.common.platform.command.int
@@ -17,7 +18,7 @@ object OrryxPointCommand {
             int("point") {
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
-                    player.orryxProfile {
+                    player.orryxProfileTo {
                         it.givePoint(ctx["point"].cint)
                         sender.sendMessage("玩家${player.name} 技能点添加成功")
                     }
@@ -32,7 +33,7 @@ object OrryxPointCommand {
             int("point") {
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
-                    player.orryxProfile {
+                    player.orryxProfileTo {
                         it.takePoint(ctx["point"].cint)
                         sender.sendMessage("玩家${player.name} 技能点减少成功")
                     }
@@ -47,7 +48,7 @@ object OrryxPointCommand {
             int("point") {
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
-                    player.orryxProfile {
+                    player.orryxProfileTo {
                         it.setPoint(ctx["point"].cint)
                         sender.sendMessage("玩家${player.name} 技能点设置成功")
                     }

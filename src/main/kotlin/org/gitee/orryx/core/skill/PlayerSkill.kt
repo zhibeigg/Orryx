@@ -23,6 +23,7 @@ import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.utils.async
 import org.gitee.orryx.utils.castSkill
 import org.gitee.orryx.utils.orryxProfile
+import org.gitee.orryx.utils.orryxProfileTo
 import org.gitee.orryx.utils.runCustomAction
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common5.cbool
@@ -32,6 +33,7 @@ import java.util.UUID
 import java.util.concurrent.CompletableFuture
 
 class PlayerSkill(
+    override val id: Int,
     val uuid: UUID,
     override val key: String,
     override val job: String,
@@ -39,7 +41,7 @@ class PlayerSkill(
     private var privateLocked: Boolean
 ): IPlayerSkill {
 
-    constructor(player: Player, key: String, job: String, privateLevel: Int, privateLocked: Boolean): this(player.uniqueId, key, job, privateLevel, privateLocked)
+    constructor(id: Int, player: Player, key: String, job: String, privateLevel: Int, privateLocked: Boolean): this(id, player.uniqueId, key, job, privateLevel, privateLocked)
 
     override val player
         get() = Bukkit.getPlayer(uuid)!!
@@ -102,7 +104,7 @@ class PlayerSkill(
 
     override fun upgradePointCheck(from: Int, to: Int): CompletableFuture<Pair<Int,Boolean>> {
         val point = skill.upgradePointAction?.let { runCustomAction(it, mapOf("from" to from, "to" to to)).orNull() }.cint
-        return player.orryxProfile {
+        return player.orryxProfileTo {
             point to (it.point >= point)
         }
     }
@@ -154,7 +156,7 @@ class PlayerSkill(
     }
 
     override fun createPO(): PlayerSkillPO {
-        return PlayerSkillPO(player.uniqueId, job, key, locked, level)
+        return PlayerSkillPO(id, player.uniqueId, job, key, locked, level)
     }
 
     override fun clear(): CompletableFuture<Boolean> {
@@ -177,19 +179,19 @@ class PlayerSkill(
         val data = createPO()
         fun remove() {
             if (remove) {
-                ISyncCacheManager.INSTANCE.removePlayerSkill(player.uniqueId, job, key, false)
-                MemoryCache.removePlayerSkill(player.uniqueId, job, key)
+                ISyncCacheManager.INSTANCE.removePlayerSkill(player.uniqueId, id, job, key, false)
+                MemoryCache.removePlayerSkill(player.uniqueId, id, job, key)
             }
         }
         if (async && !GameManager.shutdown) {
             OrryxAPI.saveScope.launch(Dispatchers.async) {
-                IStorageManager.INSTANCE.savePlayerSkill(player.uniqueId, data) {
+                IStorageManager.INSTANCE.savePlayerSkill(id, data) {
                     remove()
                     callback()
                 }
             }
         } else {
-            IStorageManager.INSTANCE.savePlayerSkill(player.uniqueId, data) {
+            IStorageManager.INSTANCE.savePlayerSkill(id, data) {
                 remove()
                 callback()
             }

@@ -47,8 +47,8 @@ object MemoryCache {
                     val list = p.flags.mapNotNull { (key, value) ->
                         value.toFlag()?.let { flag -> key to flag }
                     }
-                    PlayerProfile(Bukkit.getPlayer(uuid) ?: return@let null, p.job, p.point, list.toMap(ConcurrentHashMap(list.size)))
-                } ?: PlayerProfile(Bukkit.getPlayer(uuid) ?: return@thenApply null, null, 0, ConcurrentHashMap())
+                    PlayerProfile(it.id, Bukkit.getPlayer(uuid) ?: return@let null, p.job, p.point, list.toMap(ConcurrentHashMap(list.size)))
+                } ?: PlayerProfile(it.id, Bukkit.getPlayer(uuid) ?: return@thenApply null, null, 0, ConcurrentHashMap())
             }
         }
 
@@ -61,11 +61,11 @@ object MemoryCache {
         .buildAsync { tag, _ ->
             debug("Cache 加载玩家 Job")
             val info = reversePlayerJobDataTag(tag)
-            val po = ISyncCacheManager.INSTANCE.getPlayerJob(info.second, info.first)
+            val po = ISyncCacheManager.INSTANCE.getPlayerJob(info.second, info.third, info.first)
             po.thenApply {
                 it?.let { p ->
                     Bukkit.getPlayer(info.second)?.let { player ->
-                        PlayerJob(player, p.job, p.experience, p.group, bindKeyOfGroupToMutableMap(p.bindKeyOfGroup))
+                        PlayerJob(p.id, player, p.job, p.experience, p.group, bindKeyOfGroupToMutableMap(p.bindKeyOfGroup))
                     }
                 }
             }
@@ -80,10 +80,11 @@ object MemoryCache {
         .buildAsync { tag, _ ->
             debug("Cache 加载玩家 Skill")
             val info = reversePlayerJobSkillDataTag(tag)
-            ISyncCacheManager.INSTANCE.getPlayerSkill(info.player, info.job, info.skill).thenApply {
+            ISyncCacheManager.INSTANCE.getPlayerSkill(info.player, info.id, info.job, info.skill).thenApply {
                 it?.let { p ->
                     val skillLoader = SkillLoaderManager.getSkillLoader(p.skill) ?: return@let null
                     PlayerSkill(
+                        p.id,
                         Bukkit.getPlayer(p.player) ?: return@let null,
                         p.skill,
                         p.job,
@@ -103,9 +104,11 @@ object MemoryCache {
         .scheduler(Scheduler.systemScheduler())
         .buildAsync { uuid, _ ->
             debug("Cache 加载玩家 KeySetting")
-            ISyncCacheManager.INSTANCE.getPlayerKeySetting(uuid).thenApply {
-                val player = Bukkit.getPlayer(uuid)?: return@thenApply null
-                it?.let { p -> PlayerKeySetting(player, p)} ?: PlayerKeySetting(player)
+            playerProfileCache.get(uuid).thenCompose { profile ->
+                ISyncCacheManager.INSTANCE.getPlayerKeySetting(uuid, profile.id).thenApply {
+                    val player = Bukkit.getPlayer(uuid)?: return@thenApply null
+                    it?.let { p -> PlayerKeySetting(player, p)} ?: PlayerKeySetting(profile.id, player)
+                }
             }
         }
 
@@ -124,12 +127,12 @@ object MemoryCache {
         return playerProfileCache.get(player.uniqueId)
     }
 
-    fun getPlayerJob(player: Player, job: String): CompletableFuture<IPlayerJob?> {
-        return playerJobCache.get(playerJobDataTag(player.uniqueId, job))
+    fun getPlayerJob(player: Player, id: Int, job: String): CompletableFuture<IPlayerJob?> {
+        return playerJobCache.get(playerJobDataTag(player.uniqueId, id, job))
     }
 
-    fun getPlayerSkill(player: Player, job: String, skill: String): CompletableFuture<IPlayerSkill?> {
-        return playerSkillCache.get(playerJobSkillDataTag(player.uniqueId, job, skill))
+    fun getPlayerSkill(player: Player, id: Int, job: String, skill: String): CompletableFuture<IPlayerSkill?> {
+        return playerSkillCache.get(playerJobSkillDataTag(player.uniqueId, id, job, skill))
     }
 
     fun getPlayerKey(player: Player): CompletableFuture<PlayerKeySetting> {
@@ -143,12 +146,12 @@ object MemoryCache {
 
     fun savePlayerJob(playerJob: IPlayerJob) {
         debug("Cache 保存玩家 Job")
-        playerJobCache.put(playerJobDataTag(playerJob.player.uniqueId, playerJob.key), CompletableFuture.completedFuture(playerJob))
+        playerJobCache.put(playerJobDataTag(playerJob.player.uniqueId, playerJob.id, playerJob.key), CompletableFuture.completedFuture(playerJob))
     }
 
     fun savePlayerSkill(playerSkill: IPlayerSkill) {
         debug("Cache 保存玩家 Skill")
-        playerSkillCache.put(playerJobSkillDataTag(playerSkill.player.uniqueId, playerSkill.job, playerSkill.key), CompletableFuture.completedFuture(playerSkill))
+        playerSkillCache.put(playerJobSkillDataTag(playerSkill.player.uniqueId, playerSkill.id, playerSkill.job, playerSkill.key), CompletableFuture.completedFuture(playerSkill))
     }
 
     fun savePlayerKeySetting(player: UUID, setting: PlayerKeySetting) {
@@ -161,14 +164,14 @@ object MemoryCache {
         playerProfileCache.synchronous().invalidate(player)
     }
 
-    fun removePlayerJob(player: UUID, job: String) {
+    fun removePlayerJob(player: UUID, id: Int, job: String) {
         debug("Cache 移除玩家 Job")
-        playerJobCache.synchronous().invalidate(playerJobDataTag(player, job))
+        playerJobCache.synchronous().invalidate(playerJobDataTag(player, id, job))
     }
 
-    fun removePlayerSkill(player: UUID, job: String, skill: String) {
+    fun removePlayerSkill(player: UUID, id: Int, job: String, skill: String) {
         debug("Cache 移除玩家 Skill")
-        playerSkillCache.synchronous().invalidate(playerJobSkillDataTag(player, job, skill))
+        playerSkillCache.synchronous().invalidate(playerJobSkillDataTag(player, id, job, skill))
     }
 
     fun removePlayerKeySetting(player: UUID) {
