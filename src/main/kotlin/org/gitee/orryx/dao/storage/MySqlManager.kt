@@ -24,7 +24,7 @@ class MySqlManager: IStorageManager {
 
     private val playerTable: Table<*, *> = Table("orryx_player", host) {
         add { id() }
-        add(PLAYER_UUID) { type(ColumnTypeSQL.CHAR, 36) { options(ColumnOptionSQL.UNIQUE_KEY, ColumnOptionSQL.NOTNULL) } }
+        add(PLAYER_UUID) { type(ColumnTypeSQL.BINARY, 16) { options(ColumnOptionSQL.UNIQUE_KEY, ColumnOptionSQL.NOTNULL) } }
         add(JOB) { type(ColumnTypeSQL.VARCHAR, 255) }
         add(POINT) { type(ColumnTypeSQL.INT) }
         add(FLAGS) { type(ColumnTypeSQL.TEXT) }
@@ -74,7 +74,7 @@ class MySqlManager: IStorageManager {
         val future = CompletableFuture<PlayerProfilePO>()
         fun read() {
             try {
-                val uuid = FastUUID.toString(player)
+                val uuid = uuidToBytes(player)
                 if (!playerTable.find(dataSource) { where { PLAYER_UUID eq uuid } }) {
                     playerTable.insert(dataSource, PLAYER_UUID, JOB, POINT, FLAGS) {
                         value(uuid, null, 0, null)
@@ -82,7 +82,7 @@ class MySqlManager: IStorageManager {
                 }
                 future.complete(
                     playerTable.select(dataSource) {
-                        where { PLAYER_UUID eq FastUUID.toString(player) }
+                        where { PLAYER_UUID eq uuidToBytes(player) }
                         rows(USER_ID, JOB, POINT, FLAGS)
                     }.firstOrNull {
                         PlayerProfilePO(
