@@ -10,7 +10,7 @@ import taboolib.platform.BukkitPlugin
 @Ghost
 class FovModifierPacketListener: PacketAdapter(BukkitPlugin.getInstance(), PacketType.Play.Server.ABILITIES) {
 
-    override fun onPacketReceiving(e: PacketEvent) {
+    override fun onPacketSending(e: PacketEvent) {
         if (!PacketEventsHook.offSpeedFovChange) return
         if (e.packetType != PacketType.Play.Server.ABILITIES) return
         e.packet.float.write(1, 0f)
