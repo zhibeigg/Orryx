@@ -75,27 +75,25 @@ class MySqlManager: IStorageManager {
         fun read() {
             try {
                 val uuid = FastUUID.toString(player)
-                playerTable.transaction(dataSource) {
-                    if (!select { where { PLAYER_UUID eq uuid } }.find()) {
-                        insert(PLAYER_UUID, JOB, POINT, FLAGS) {
-                            value(uuid, null, 0, null)
-                        }
+                if (!playerTable.find(dataSource) { where { PLAYER_UUID eq uuid } }) {
+                    playerTable.insert(dataSource, PLAYER_UUID, JOB, POINT, FLAGS) {
+                        value(uuid, null, 0, null)
                     }
-                    future.complete(
-                        select {
-                            where { PLAYER_UUID eq FastUUID.toString(player) }
-                            rows(USER_ID, JOB, POINT, FLAGS)
-                        }.firstOrNull {
-                            PlayerProfilePO(
-                                getInt(USER_ID),
-                                player,
-                                getString(JOB),
-                                getInt(POINT),
-                                Json.decodeFromString(getString(FLAGS))
-                            )
-                        }
-                    )
                 }
+                future.complete(
+                    playerTable.select(dataSource) {
+                        where { PLAYER_UUID eq FastUUID.toString(player) }
+                        rows(USER_ID, JOB, POINT, FLAGS)
+                    }.firstOrNull {
+                        PlayerProfilePO(
+                            getInt(USER_ID),
+                            player,
+                            getString(JOB),
+                            getInt(POINT),
+                            getString(FLAGS)?.let { Json.decodeFromString(it) } ?: emptyMap()
+                        )
+                    }
+                )
             } catch (e: Throwable) {
                 future.completeExceptionally(e)
             }
@@ -207,26 +205,18 @@ class MySqlManager: IStorageManager {
         return future
     }
 
-    override fun savePlayerData(id: Int, playerProfilePO: PlayerProfilePO, onSuccess: () -> Unit) {
+    override fun savePlayerData(playerProfilePO: PlayerProfilePO, onSuccess: () -> Unit) {
         debug("Mysql 保存玩家 Profile")
-        playerTable.transaction(dataSource) {
-            insert(USER_ID, JOB, POINT, FLAGS) {
-                onDuplicateKeyUpdate {
-                    update(JOB, playerProfilePO.job ?: "null")
-                    update(POINT, playerProfilePO.point)
-                    update(FLAGS, Json.encodeToString(playerProfilePO.flags))
-                }
-                value(
-                    id,
-                    playerProfilePO.job,
-                    playerProfilePO.point,
-                    Json.encodeToString(playerProfilePO.flags)
-                )
-            }
-        }.onSuccess { onSuccess() }
+        playerTable.update(dataSource) {
+            where { USER_ID eq playerProfilePO.id }
+            set(JOB, playerProfilePO.job)
+            set(POINT, playerProfilePO.point)
+            set(FLAGS, Json.encodeToString(playerProfilePO.flags))
+        }
+        onSuccess()
     }
 
-    override fun savePlayerJob(id: Int, playerJobPO: PlayerJobPO, onSuccess: () -> Unit) {
+    override fun savePlayerJob(playerJobPO: PlayerJobPO, onSuccess: () -> Unit) {
         debug("Mysql 保存玩家 Job")
         jobsTable.transaction(dataSource) {
             insert(USER_ID, JOB, EXPERIENCE, GROUP, BIND_KEY_OF_GROUP) {
@@ -236,7 +226,7 @@ class MySqlManager: IStorageManager {
                     update(BIND_KEY_OF_GROUP, Json.encodeToString(playerJobPO.bindKeyOfGroup))
                 }
                 value(
-                    id,
+                    playerJobPO.id,
                     playerJobPO.job,
                     playerJobPO.experience,
                     playerJobPO.group,
@@ -246,7 +236,7 @@ class MySqlManager: IStorageManager {
         }.onSuccess { onSuccess() }
     }
 
-    override fun savePlayerSkill(id: Int, playerSkillPO: PlayerSkillPO, onSuccess: () -> Unit) {
+    override fun savePlayerSkill(playerSkillPO: PlayerSkillPO, onSuccess: () -> Unit) {
         debug("Mysql 保存玩家 Skill")
         skillsTable.transaction(dataSource) {
             insert(USER_ID, JOB, SKILL, LOCKED, LEVEL) {
@@ -255,7 +245,7 @@ class MySqlManager: IStorageManager {
                     update(LEVEL, playerSkillPO.level)
                 }
                 value(
-                    id,
+                    playerSkillPO.id,
                     playerSkillPO.job,
                     playerSkillPO.skill,
                     playerSkillPO.locked,
@@ -265,7 +255,7 @@ class MySqlManager: IStorageManager {
         }.onSuccess { onSuccess() }
     }
 
-    override fun savePlayerKey(id: Int, playerKeySettingPO: PlayerKeySettingPO, onSuccess: () -> Unit) {
+    override fun savePlayerKey(playerKeySettingPO: PlayerKeySettingPO, onSuccess: () -> Unit) {
         debug("Mysql 保存玩家 KeySetting")
         keyTable.transaction(dataSource) {
             insert(USER_ID, KEY_SETTING) {
@@ -273,7 +263,7 @@ class MySqlManager: IStorageManager {
                     update(KEY_SETTING, Json.encodeToString(playerKeySettingPO))
                 }
                 value(
-                    id,
+                    playerKeySettingPO.id,
                     Json.encodeToString(playerKeySettingPO)
                 )
             }

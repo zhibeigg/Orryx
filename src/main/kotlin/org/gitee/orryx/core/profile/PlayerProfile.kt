@@ -129,13 +129,13 @@ class PlayerProfile(
         }
         if (async && !GameManager.shutdown) {
             OrryxAPI.saveScope.launch(Dispatchers.async) {
-                IStorageManager.INSTANCE.savePlayerData(id, data) {
+                IStorageManager.INSTANCE.savePlayerData(data) {
                     remove()
                     callback()
                 }
             }
         } else {
-            IStorageManager.INSTANCE.savePlayerData(id, data) {
+            IStorageManager.INSTANCE.savePlayerData(data) {
                 remove()
                 callback()
             }

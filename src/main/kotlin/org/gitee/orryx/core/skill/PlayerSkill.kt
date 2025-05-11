@@ -185,13 +185,13 @@ class PlayerSkill(
         }
         if (async && !GameManager.shutdown) {
             OrryxAPI.saveScope.launch(Dispatchers.async) {
-                IStorageManager.INSTANCE.savePlayerSkill(id, data) {
+                IStorageManager.INSTANCE.savePlayerSkill(data) {
                     remove()
                     callback()
                 }
             }
         } else {
-            IStorageManager.INSTANCE.savePlayerSkill(id, data) {
+            IStorageManager.INSTANCE.savePlayerSkill(data) {
                 remove()
                 callback()
             }
@@ -201,5 +201,4 @@ class PlayerSkill(
     override fun toString(): String {
         return "PlayerSkill(player=${player.name}, job=$job, key=$key)"
     }
-
 }

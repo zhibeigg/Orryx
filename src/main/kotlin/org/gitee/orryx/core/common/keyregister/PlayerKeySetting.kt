@@ -68,13 +68,13 @@ class PlayerKeySetting(
         }
         if (async && !GameManager.shutdown) {
             OrryxAPI.saveScope.launch(Dispatchers.async) {
-                IStorageManager.INSTANCE.savePlayerKey(id, data) {
+                IStorageManager.INSTANCE.savePlayerKey(data) {
                     remove()
                     callback()
                 }
             }
         } else {
-            IStorageManager.INSTANCE.savePlayerKey(id, data) {
+            IStorageManager.INSTANCE.savePlayerKey(data) {
                 remove()
                 callback()
             }

@@ -12,6 +12,7 @@ import org.gitee.orryx.core.kether.actions.game.entity.EntityBuilder
 import org.gitee.orryx.core.message.PluginMessageHandler
 import org.gitee.orryx.core.reload.ReloadAPI
 import org.gitee.orryx.core.skill.SkillLoaderManager
+import org.gitee.orryx.dao.pojo.PlayerJobPO
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.module.mana.IManaManager
@@ -21,6 +22,7 @@ import taboolib.common.platform.command.*
 import taboolib.common.platform.function.info
 import taboolib.common.platform.function.submitAsync
 import taboolib.expansion.createHelper
+import taboolib.module.database.ColumnTypeSQLite
 import taboolib.module.lang.sendLang
 import taboolib.platform.util.sendLang
 import java.util.UUID
