@@ -18,6 +18,8 @@ import org.bukkit.plugin.messaging.PluginMessageListener
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.utils.DragonCorePlugin
 import org.gitee.orryx.utils.GermPluginPlugin
+import org.gitee.orryx.utils.MOUSE_LEFT
+import org.gitee.orryx.utils.MOUSE_RIGHT
 import org.gitee.orryx.utils.keySetting
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
@@ -96,7 +98,12 @@ object PluginMessageHandler {
     private fun onKeyPress(e: GermKeyDownEvent) {
         if (e.isCancelled) return
         e.player.keySetting {
-            when (e.keyType.simpleKey.uppercase()) {
+            val key = when (e.keyType.simpleKey) {
+                "MLEFT" -> MOUSE_LEFT
+                "MRIGHT" -> MOUSE_RIGHT
+                else -> it
+            }
+            when (key) {
                 it.aimConfirmKey -> handleConfirmation(e.player, true)
                 it.aimCancelKey -> handleConfirmation(e.player, false)
                 else -> return@keySetting

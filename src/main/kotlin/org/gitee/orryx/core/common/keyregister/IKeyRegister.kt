@@ -79,5 +79,4 @@ interface IKeyRegister {
     enum class ActionType {
         PRESS, RELEASE;
     }
-
 }

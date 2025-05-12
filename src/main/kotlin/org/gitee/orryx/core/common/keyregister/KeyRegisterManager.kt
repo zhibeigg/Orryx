@@ -1,5 +1,6 @@
 package org.gitee.orryx.core.common.keyregister
 
+import com.germ.germplugin.api.GermKeyAPI
 import com.germ.germplugin.api.GermPacketAPI
 import com.germ.germplugin.api.KeyType
 import com.germ.germplugin.api.event.GermClientLinkedEvent
