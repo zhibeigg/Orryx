@@ -26,7 +26,7 @@ interface ISkillHud {
     /**
      * 更新HUD
      * */
-    fun update()
+    fun update(skill: IPlayerSkill? = null)
 
     /**
      * 关闭HUD

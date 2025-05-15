@@ -12,6 +12,7 @@ import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.event.player.PlayerItemHeldEvent
 import org.bukkit.event.player.PlayerQuitEvent
+import org.bukkit.event.player.PlayerRespawnEvent
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.api.events.player.job.OrryxPlayerJobChangeEvents
 import org.gitee.orryx.compat.dragoncore.DragonCoreCustomPacketSender
@@ -124,6 +125,11 @@ object StateManager {
     @SubscribeEvent
     private fun quit(e: PlayerQuitEvent) {
         playerDataMap.remove(e.player.uniqueId)?.nowRunningState?.stop()
+    }
+
+    @SubscribeEvent
+    private fun respawn(e: PlayerRespawnEvent) {
+        autoCheckStatus(e.player)
     }
 
     @Ghost

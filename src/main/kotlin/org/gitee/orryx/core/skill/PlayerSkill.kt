@@ -198,6 +198,11 @@ class PlayerSkill(
         }
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (other !is PlayerSkill) return false
+        return other.key == key
+    }
+
     override fun toString(): String {
         return "PlayerSkill(player=${player.name}, job=$job, key=$key)"
     }

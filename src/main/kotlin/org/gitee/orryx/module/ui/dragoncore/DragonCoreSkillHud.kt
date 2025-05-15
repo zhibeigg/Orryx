@@ -4,6 +4,7 @@ import eos.moe.dragoncore.network.PacketSender
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.reload.Reload
+import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.module.ui.AbstractSkillHud
 import org.gitee.orryx.module.ui.IUIManager
 import org.gitee.orryx.module.ui.IUIManager.Companion.skillCooldownMap
@@ -48,15 +49,21 @@ open class DragonCoreSkillHud(override val viewer: Player, override val owner: P
         }
     }
 
-    override fun update() {
-        owner.job { job ->
-            job.bindSkills { bindSkills ->
-                val keys = bindKeys()
-                PacketSender.sendSyncPlaceholder(viewer, mapOf(
-                    "Orryx_bind_keys" to keys.joinToString("<br>") { it.key },
-                    "Orryx_bind_skills" to keys.joinToString("<br>") { bindSkills[it]?.key ?: "none" },
-                    "Orryx_bind_cooldowns" to keys.joinToString("<br>") { bindSkills[it]?.key?.let { skill -> skillCooldownMap[owner.uniqueId]?.get(skill)?.getCountdown(owner) }.toString() }
-                ))
+    override fun update(skill: IPlayerSkill?) {
+        if (skill != null) {
+            PacketSender.sendSyncPlaceholder(viewer, mapOf(
+                "Orryx_bind_cooldown_${skill.key}" to skillCooldownMap[owner.uniqueId]?.get(skill.key)?.getCountdown(owner).toString()
+            ))
+        } else {
+            owner.job { job ->
+                job.bindSkills { bindSkills ->
+                    val keys = bindKeys()
+                    PacketSender.sendSyncPlaceholder(viewer, mapOf(
+                        "Orryx_bind_keys" to keys.joinToString("<br>") { it.key },
+                        "Orryx_bind_skills" to keys.joinToString("<br>") { bindSkills[it]?.key ?: "none" },
+                        "Orryx_bind_cooldowns" to keys.joinToString("<br>") { bindSkills[it]?.key?.let { skill -> skillCooldownMap[owner.uniqueId]?.get(skill)?.getCountdown(owner) }.toString() }
+                    ))
+                }
             }
         }
     }

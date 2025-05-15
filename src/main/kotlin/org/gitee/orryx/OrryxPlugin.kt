@@ -34,6 +34,7 @@ object OrryxPlugin : Plugin() {
         info("&e┃&a                             /\\___/                    ".colored())
         info("&e┃&a                             \\/__/                     ".colored())
         info("&e┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".colored())
+        println()
     }
 
     override fun onDisable() {

@@ -9,6 +9,7 @@ import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillCooldownEvents
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillUnBindKeyEvent
 import org.gitee.orryx.core.common.timer.SkillTimer
 import org.gitee.orryx.core.reload.Reload
+import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.module.ui.bukkit.BukkitSkillHud.Companion.bukkitSkillHudMap
 import org.gitee.orryx.module.ui.bukkit.BukkitUIManager
 import org.gitee.orryx.module.ui.dragoncore.DragonCoreSkillHud.Companion.dragonSkillHudMap
@@ -61,15 +62,15 @@ interface IUIManager {
             }
         }
 
-        private fun updateAll(player: Player) {
+        private fun updateAll(player: Player, skill: IPlayerSkill? = null) {
             bukkitSkillHudMap[player.uniqueId]?.forEach { (_, u) ->
-                u.update()
+                u.update(skill)
             }
             germSkillHudMap[player.uniqueId]?.forEach { (_, u) ->
-                u.update()
+                u.update(skill)
             }
             dragonSkillHudMap[player.uniqueId]?.forEach { (_, u) ->
-                u.update()
+                u.update(skill)
             }
         }
 
@@ -84,17 +85,17 @@ interface IUIManager {
                 }
             }
             cooldownMap[e.skill.key] = Cooldown(e.skill.key, e.amount)
-            updateAll(e.player)
+            updateAll(e.player, e.skill)
         }
 
         @SubscribeEvent
         private fun cooldown(e: OrryxPlayerSkillCooldownEvents.Increase.Post) {
-            updateAll(e.player)
+            updateAll(e.player, e.skill)
         }
 
         @SubscribeEvent
         private fun cooldown(e: OrryxPlayerSkillCooldownEvents.Reduce.Post) {
-            updateAll(e.player)
+            updateAll(e.player, e.skill)
         }
 
         @SubscribeEvent

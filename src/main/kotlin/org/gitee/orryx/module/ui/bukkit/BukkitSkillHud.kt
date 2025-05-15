@@ -3,6 +3,7 @@ package org.gitee.orryx.module.ui.bukkit
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.key.BindKeyLoaderManager.getBindKey
 import org.gitee.orryx.core.reload.Reload
+import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.module.ui.AbstractSkillHud
 import org.gitee.orryx.module.ui.IUIManager
 import org.gitee.orryx.module.ui.IUIManager.Companion.skillCooldownMap
@@ -54,42 +55,69 @@ open class BukkitSkillHud(override val viewer: Player, override val owner: Playe
         update()
     }
 
-    override fun update() {
-        slotIndex.forEach { i ->
-            val bindKey = getBindKey("MC" + (i + 1)) ?: return@forEach
-            bindKey.getBindSkill(owner).thenApply { skill ->
-                skill ?: run {
+    override fun update(skill: IPlayerSkill?) {
+        if (skill != null) {
+            slotIndex.forEach { i ->
+                val bindKey = getBindKey("MC" + (i + 1)) ?: return@forEach
+                bindKey.getBindSkill(owner).thenAccept { s ->
+                    if (s != skill) return@thenAccept
+                    val material = XMaterial.matchXMaterial(skill.skill.xMaterial).orElse(XMaterial.BLAZE_ROD)
                     viewer.inventory.setItem(
                         i,
-                        buildItem(XMaterial.BARRIER) {
-                            name = "&f技能槽"
-                            lore += "&f无技能绑定的技能槽位"
+                        buildItem(material) {
+                            name = skill.getIcon()
+                            lore += skill.getDescriptionComparison()
                             amount = i + 1
                             hideAll()
                             unique()
+                            material.get()?.maxDurability?.let {
+                                val percent = skillCooldownMap[owner.uniqueId]?.get(skill.key)?.percent(owner) ?: 1.0
+                                if (percent < 1) {
+                                    damage = (it.cdouble * percent).cint
+                                }
+                            }
                             colored()
                         }
                     )
-                    return@thenApply
                 }
-                val material = XMaterial.matchXMaterial(skill.skill.xMaterial).orElse(XMaterial.BLAZE_ROD)
-                viewer.inventory.setItem(
-                    i,
-                    buildItem(material) {
-                        name = skill.getIcon()
-                        lore += skill.getDescriptionComparison()
-                        amount = i + 1
-                        hideAll()
-                        unique()
-                        material.get()?.maxDurability?.let {
-                            val percent = skillCooldownMap[owner.uniqueId]?.get(skill.key)?.percent(owner) ?: 1.0
-                            if (percent < 1) {
-                                damage = (it.cdouble * percent).cint
+            }
+        } else {
+            slotIndex.forEach { i ->
+                val bindKey = getBindKey("MC" + (i + 1)) ?: return@forEach
+                bindKey.getBindSkill(owner).thenAccept { skill ->
+                    skill ?: run {
+                        viewer.inventory.setItem(
+                            i,
+                            buildItem(XMaterial.BARRIER) {
+                                name = "&f技能槽"
+                                lore += "&f无技能绑定的技能槽位"
+                                amount = i + 1
+                                hideAll()
+                                unique()
+                                colored()
                             }
-                        }
-                        colored()
+                        )
+                        return@thenAccept
                     }
-                )
+                    val material = XMaterial.matchXMaterial(skill.skill.xMaterial).orElse(XMaterial.BLAZE_ROD)
+                    viewer.inventory.setItem(
+                        i,
+                        buildItem(material) {
+                            name = skill.getIcon()
+                            lore += skill.getDescriptionComparison()
+                            amount = i + 1
+                            hideAll()
+                            unique()
+                            material.get()?.maxDurability?.let {
+                                val percent = skillCooldownMap[owner.uniqueId]?.get(skill.key)?.percent(owner) ?: 1.0
+                                if (percent < 1) {
+                                    damage = (it.cdouble * percent).cint
+                                }
+                            }
+                            colored()
+                        }
+                    )
+                }
             }
         }
     }

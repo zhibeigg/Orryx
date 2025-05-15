@@ -4,6 +4,7 @@ import com.germ.germplugin.api.dynamic.gui.*
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.reload.Reload
+import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.module.ui.AbstractSkillHud
 import org.gitee.orryx.module.ui.IUIManager
 import org.gitee.orryx.module.ui.IUIManager.Companion.skillCooldownMap
@@ -47,7 +48,7 @@ open class GermPluginSkillHud(override val viewer: Player, override val owner: P
     protected open lateinit var screen: GermGuiScreen
     protected open var isH = true
 
-    override fun update() {
+    override fun update(skill: IPlayerSkill?) {
         if (isH) {
             screen.pickPart<GermGuiCanvas>("skillBindCanvasV").enable = false
             screen.pickPart<GermGuiCanvas>("canvasV").enable = false
@@ -126,8 +127,8 @@ open class GermPluginSkillHud(override val viewer: Player, override val owner: P
                 skillBindCanvas.height = canvas.height
                 skillBindCanvas.enable = true
 
-                screen.options.drag.setWidth(canvas.width)
-                screen.options.drag.setHeight(canvas.height)
+                screen.options.drag.width = canvas.width
+                screen.options.drag.height = canvas.height
 
                 checkButton.locationX = canvas.locationX
                 checkButton.locationY = canvas.locationY
