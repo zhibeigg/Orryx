@@ -10,7 +10,7 @@ import taboolib.common.OpenResult
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
 
-object OrryxPlayerLevelUpTrigger: AbstractPropertyEventTrigger<OrryxPlayerJobLevelEvents.Up>("Orryx Player Exp Up") {
+object OrryxPlayerLevelUpTrigger: AbstractPropertyEventTrigger<OrryxPlayerJobLevelEvents.Up>("Orryx Player Level Up") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.ORRYX, event)
