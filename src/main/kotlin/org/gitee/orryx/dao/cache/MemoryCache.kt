@@ -42,13 +42,11 @@ object MemoryCache {
         .buildAsync { uuid, _ ->
             debug("Cache 加载玩家 Profile")
             val po = ISyncCacheManager.INSTANCE.getPlayerProfile(uuid)
-            po.thenApply {
-                it?.let { p ->
-                    val list = p.flags.mapNotNull { (key, value) ->
-                        value.toFlag()?.let { flag -> key to flag }
-                    }
-                    PlayerProfile(it.id, Bukkit.getPlayer(uuid) ?: return@let null, p.job, p.point, list.toMap(ConcurrentHashMap(list.size)))
-                } ?: PlayerProfile(it.id, Bukkit.getPlayer(uuid) ?: return@thenApply null, null, 0, ConcurrentHashMap())
+            po.thenApply { po ->
+                val list = po.flags.mapNotNull { (key, value) ->
+                    value.toFlag()?.let { flag -> key to flag }
+                }
+                PlayerProfile(po.id, uuid, po.job, po.point, list.toMap(ConcurrentHashMap(list.size)))
             }
         }
 
@@ -64,9 +62,7 @@ object MemoryCache {
             val po = ISyncCacheManager.INSTANCE.getPlayerJob(info.second, info.third, info.first)
             po.thenApply {
                 it?.let { p ->
-                    Bukkit.getPlayer(info.second)?.let { player ->
-                        PlayerJob(p.id, player, p.job, p.experience, p.group, bindKeyOfGroupToMutableMap(p.bindKeyOfGroup))
-                    }
+                    PlayerJob(p.id, info.second, p.job, p.experience, p.group, bindKeyOfGroupToMutableMap(p.bindKeyOfGroup))
                 }
             }
         }
@@ -85,7 +81,7 @@ object MemoryCache {
                     val skillLoader = SkillLoaderManager.getSkillLoader(p.skill) ?: return@let null
                     PlayerSkill(
                         p.id,
-                        Bukkit.getPlayer(p.player) ?: return@let null,
+                        p.player,
                         p.skill,
                         p.job,
                         p.level,
@@ -106,8 +102,7 @@ object MemoryCache {
             debug("Cache 加载玩家 KeySetting")
             playerProfileCache.get(uuid).thenCompose { profile ->
                 ISyncCacheManager.INSTANCE.getPlayerKeySetting(uuid, profile.id).thenApply {
-                    val player = Bukkit.getPlayer(uuid)?: return@thenApply null
-                    it?.let { p -> PlayerKeySetting(player, p)} ?: PlayerKeySetting(profile.id, player)
+                    it?.let { p -> PlayerKeySetting(uuid, p) } ?: PlayerKeySetting(profile.id, uuid)
                 }
             }
         }
@@ -123,35 +118,35 @@ object MemoryCache {
         printStats("按键", playerKeyCache.synchronous().stats())
     }
 
-    fun getPlayerProfile(player: Player): CompletableFuture<IPlayerProfile> {
-        return playerProfileCache.get(player.uniqueId)
+    fun getPlayerProfile(player: UUID): CompletableFuture<IPlayerProfile> {
+        return playerProfileCache.get(player)
     }
 
-    fun getPlayerJob(player: Player, id: Int, job: String): CompletableFuture<IPlayerJob?> {
-        return playerJobCache.get(playerJobDataTag(player.uniqueId, id, job))
+    fun getPlayerJob(player: UUID, id: Int, job: String): CompletableFuture<IPlayerJob?> {
+        return playerJobCache.get(playerJobDataTag(player, id, job))
     }
 
-    fun getPlayerSkill(player: Player, id: Int, job: String, skill: String): CompletableFuture<IPlayerSkill?> {
-        return playerSkillCache.get(playerJobSkillDataTag(player.uniqueId, id, job, skill))
+    fun getPlayerSkill(player: UUID, id: Int, job: String, skill: String): CompletableFuture<IPlayerSkill?> {
+        return playerSkillCache.get(playerJobSkillDataTag(player, id, job, skill))
     }
 
-    fun getPlayerKey(player: Player): CompletableFuture<PlayerKeySetting> {
-        return playerKeyCache.get(player.uniqueId)
+    fun getPlayerKey(player: UUID): CompletableFuture<PlayerKeySetting> {
+        return playerKeyCache.get(player)
     }
 
     fun savePlayerProfile(playerProfile: IPlayerProfile) {
         debug("Cache 保存玩家 Profile")
-        playerProfileCache.put(playerProfile.player.uniqueId, CompletableFuture.completedFuture(playerProfile))
+        playerProfileCache.put(playerProfile.uuid, CompletableFuture.completedFuture(playerProfile))
     }
 
     fun savePlayerJob(playerJob: IPlayerJob) {
         debug("Cache 保存玩家 Job")
-        playerJobCache.put(playerJobDataTag(playerJob.player.uniqueId, playerJob.id, playerJob.key), CompletableFuture.completedFuture(playerJob))
+        playerJobCache.put(playerJobDataTag(playerJob.uuid, playerJob.id, playerJob.key), CompletableFuture.completedFuture(playerJob))
     }
 
     fun savePlayerSkill(playerSkill: IPlayerSkill) {
         debug("Cache 保存玩家 Skill")
-        playerSkillCache.put(playerJobSkillDataTag(playerSkill.player.uniqueId, playerSkill.id, playerSkill.job, playerSkill.key), CompletableFuture.completedFuture(playerSkill))
+        playerSkillCache.put(playerJobSkillDataTag(playerSkill.uuid, playerSkill.id, playerSkill.job, playerSkill.key), CompletableFuture.completedFuture(playerSkill))
     }
 
     fun savePlayerKeySetting(player: UUID, setting: PlayerKeySetting) {

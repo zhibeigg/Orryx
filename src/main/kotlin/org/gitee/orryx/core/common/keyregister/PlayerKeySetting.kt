@@ -31,9 +31,9 @@ class PlayerKeySetting(
     val player
         get() = Bukkit.getPlayer(uuid)!!
 
-    constructor(player: Player, playerKeySettingPO: PlayerKeySettingPO) : this(
+    constructor(player: UUID, playerKeySettingPO: PlayerKeySettingPO) : this(
         playerKeySettingPO.id,
-        player.uniqueId,
+        player,
         bindKeys().associateWith { playerKeySettingPO.bindKeyMap[it.key] ?: it.key },
         playerKeySettingPO.aimConfirmKey,
         playerKeySettingPO.aimCancelKey,
@@ -44,6 +44,8 @@ class PlayerKeySetting(
     )
 
     constructor(id: Int, player: Player): this(id, player.uniqueId, bindKeyMap = bindKeys().associateWith { it.key })
+
+    constructor(id: Int, player: UUID): this(id, player, bindKeyMap = bindKeys().associateWith { it.key })
 
     private fun createPO(): PlayerKeySettingPO {
         return PlayerKeySettingPO(

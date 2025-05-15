@@ -7,6 +7,7 @@ import org.gitee.orryx.core.key.IGroup
 import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.dao.cache.Saveable
 import org.gitee.orryx.dao.pojo.PlayerJobPO
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
 
 interface IPlayerJob: Saveable {
@@ -15,6 +16,11 @@ interface IPlayerJob: Saveable {
      * 玩家ID
      * */
     val id: Int
+
+    /**
+     * 拥有玩家
+     * */
+    val uuid: UUID
 
     /**
      * 拥有玩家

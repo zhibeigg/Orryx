@@ -4,6 +4,7 @@ import org.bukkit.entity.Player
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.dao.cache.Saveable
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
+import java.util.UUID
 
 interface IPlayerProfile: Saveable {
 
@@ -11,6 +12,11 @@ interface IPlayerProfile: Saveable {
      * 玩家ID
      * */
     val id: Int
+
+    /**
+     * 玩家
+     * */
+    val uuid: UUID
 
     /**
      * 玩家

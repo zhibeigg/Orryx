@@ -132,9 +132,9 @@ internal fun Player.getSkill(skill: String, create: Boolean = false): Completabl
 internal fun Player.getSkill(job: String, skill: String, create: Boolean = false): CompletableFuture<IPlayerSkill?> {
     val skillLoader = SkillLoaderManager.getSkillLoader(skill) ?: return CompletableFuture.completedFuture(null)
     return orryxProfile { profile ->
-        MemoryCache.getPlayerSkill(this, profile.id, job, skill).thenApply {
+        MemoryCache.getPlayerSkill(uniqueId, profile.id, job, skill).thenApply {
             it ?: if (create) {
-                PlayerSkill(profile.id, this, skill, job, skillLoader.minLevel, skillLoader.isLocked).apply {
+                PlayerSkill(profile.id, uniqueId, skill, job, skillLoader.minLevel, skillLoader.isLocked).apply {
                     save(remove = false)
                 }
             } else {

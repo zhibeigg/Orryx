@@ -34,7 +34,7 @@ import java.util.concurrent.CompletableFuture
 
 class PlayerSkill(
     override val id: Int,
-    val uuid: UUID,
+    override val uuid: UUID,
     override val key: String,
     override val job: String,
     private var privateLevel: Int,

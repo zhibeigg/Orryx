@@ -34,7 +34,7 @@ import java.util.concurrent.CompletableFuture
 
 class PlayerJob(
     override val id: Int,
-    val uuid: UUID,
+    override val uuid: UUID,
     override val key: String,
     private var privateExperience: Int,
     private var privateGroup: String = DEFAULT,

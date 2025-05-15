@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentMap
 
 class PlayerProfile(
     override val id: Int,
-    val uuid: UUID,
+    override val uuid: UUID,
     private var privateJob: String?,
     private var privatePoint: Int,
     private val privateFlags: ConcurrentMap<String, IFlag>

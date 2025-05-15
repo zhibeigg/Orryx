@@ -51,7 +51,7 @@ fun Player.checkAndCast(key: String, timeout: Long, actionType: IKeyRegister. Ac
 }
 
 fun <T> Player.keySetting(func: (setting: PlayerKeySetting) -> T): CompletableFuture<T> {
-    return MemoryCache.getPlayerKey(this).thenApply {
+    return MemoryCache.getPlayerKey(uniqueId).thenApply {
         func(it)
     }
 }

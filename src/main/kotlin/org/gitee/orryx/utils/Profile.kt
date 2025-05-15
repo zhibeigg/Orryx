@@ -7,7 +7,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionStage
 
 fun Player.orryxProfile(): CompletableFuture<IPlayerProfile> {
-    return MemoryCache.getPlayerProfile(this)
+    return MemoryCache.getPlayerProfile(uniqueId)
 }
 
 fun <T> Player.orryxProfileTo(func: (profile: IPlayerProfile) -> T): CompletableFuture<T> {
