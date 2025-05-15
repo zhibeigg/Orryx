@@ -22,7 +22,6 @@ open class BukkitSkillHud(override val viewer: Player, override val owner: Playe
 
     companion object {
 
-        internal const val TAG = "OrryxHud"
         internal val slots = (36..44).toList()
         internal val slotIndex = (0..8).toList()
 
