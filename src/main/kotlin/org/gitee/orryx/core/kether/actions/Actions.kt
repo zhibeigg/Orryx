@@ -100,7 +100,6 @@ object Actions {
                 "maxSpirit" -> OpenResult.successful(instance.getMaxSpirit())
                 "regainSpirit" -> OpenResult.successful(instance.getRegainSpirit())
                 "attributes" -> OpenResult.successful(instance.getAttributes())
-                "mana" -> OpenResult.successful(IManaManager.INSTANCE.getMana(instance.player))
                 "spirit" -> OpenResult.successful(ISpiritManager.INSTANCE.getSpirit(instance.player))
                 else -> OpenResult.failed()
             }
