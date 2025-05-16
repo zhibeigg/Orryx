@@ -1,14 +1,17 @@
 package org.gitee.orryx.core.kether.actions.game
 
+import org.gitee.orryx.api.adapters.vector.AbstractVector
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
 import org.gitee.orryx.utils.raytrace.FluidHandling
 import org.gitee.orryx.utils.raytrace.RayTraceResult
+import org.joml.Matrix3d
 import org.joml.Vector3d
 import taboolib.module.kether.KetherParser
 import taboolib.module.kether.script
+import taboolib.module.navigation.set
 import java.util.concurrent.CompletableFuture
 
 object VectorActions {
@@ -44,6 +47,7 @@ object VectorActions {
             .addEntry("视角上方移动距离", Type.DOUBLE, false)
             .addEntry("视角右方移动距离", Type.DOUBLE, false)
             .addEntry("视角向量", Type.VECTOR, false)
+            .addEntry("偏移yaw和pitch(os 90.0 90.0)", Type.DOUBLE, head = "offset/os")
             .addContainerEntry(optional = true, default = "@self")
     ) {
         it.group(
@@ -51,12 +55,23 @@ object VectorActions {
             double(),
             double(),
             vector(),
+            command("offset", "os", then = double().and(double())).option().defaultsTo(Pair(0.0, 0.0)),
             theyContainer(true)
-        ).apply(it) { x, y, z, direction, container ->
+        ).apply(it) { x, y, z, direction, offset, container ->
             future {
+                val (yaw, pitch) = offset
                 ensureSync {
                     container.orElse(self()).forEachInstance<ITargetEntity<*>> { entity ->
-                        val dir = entity.direction(x, y, z, true)
+                        val dir = entity.direction(x, y, z, true).also { v ->
+                            val joml = Vector3d(v.x, 0.0, v.z)
+                            val z = joml.cross(0.0, 1.0, 0.0)
+                            val y = z.cross(Vector3d(v.x, v.y, v.z), Vector3d())
+                            val matrix = Matrix3d().rotate(Math.toRadians(yaw), y).rotate(Math.toRadians(pitch), z)
+                            Vector3d(v.x, v.y, v.z).apply {
+                                mul(matrix, this)
+                                v.set(this.x, this.y, this.z)
+                            }
+                        }
 
                         val result = entity.entity.world.rayTraceBlocks(
                             entity.entity.eyeLocation.joml(),

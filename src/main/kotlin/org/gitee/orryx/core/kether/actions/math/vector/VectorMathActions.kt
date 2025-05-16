@@ -225,7 +225,7 @@ object VectorMathActions {
                                     val joml = Vector3d(v.x, 0.0, v.z)
                                     val z = joml.cross(0.0, 1.0, 0.0)
                                     val y = z.cross(Vector3d(v.x, v.y, v.z), Vector3d())
-                                    val matrix = Matrix3d().rotate(yaw, y).rotate(pitch, z)
+                                    val matrix = Matrix3d().rotate(Math.toRadians(yaw), y).rotate(Math.toRadians(pitch), z)
                                     AbstractVector(v.x, v.y, v.z).apply {
                                         mul(matrix, this.joml)
                                     }

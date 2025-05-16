@@ -1,8 +1,12 @@
 package org.gitee.orryx.api.interfaces
 
 import org.bukkit.entity.Player
+import org.gitee.orryx.api.events.damage.DamageType
+import org.gitee.orryx.api.events.damage.OrryxDamageEvents
 import org.gitee.orryx.core.profile.IPlayerProfile
 import java.util.concurrent.CompletableFuture
+import java.util.function.Consumer
+import java.util.function.Function
 
 interface IProfileAPI {
 
@@ -122,38 +126,50 @@ interface IProfileAPI {
 
     /**
      * 是否在格挡状态
+     * @param blockType 格挡的伤害类型 [DamageType]
      * @return 是否在格挡状态
      */
-    fun isBlock(player: Player): Boolean
+    fun isBlock(player: Player, blockType: DamageType): Boolean
 
     /**
      * 获取格挡状态的倒计时
+     * @param blockType 格挡的伤害类型 [DamageType]
      * @return [Long] 毫秒
      */
-    fun blockCountdown(player: Player): Long
+    fun blockCountdown(player: Player, blockType: DamageType): Long
 
     /**
      * 设置格挡时间
+     * @param blockType 格挡的伤害类型 [DamageType]
      * @param timeout 格挡时长（毫秒）
+     * @param success 格挡成功执行
      */
-    fun setBlock(player: Player, timeout: Long)
+    fun setBlock(player: Player, blockType: DamageType, timeout: Long, success: Consumer<OrryxDamageEvents.Pre>)
 
     /**
      * 取消格挡
+     * @param blockType 格挡的伤害类型 [DamageType]
+     */
+    fun cancelBlock(player: Player, blockType: DamageType)
+
+    /**
+     * 取消所有格挡
      */
     fun cancelBlock(player: Player)
 
     /**
      * 延长格挡时间
+     * @param blockType 格挡的伤害类型 [DamageType]
      * @param timeout 延长的格挡时长（毫秒）
      */
-    fun addBlock(player: Player, timeout: Long)
+    fun addBlock(player: Player, blockType: DamageType, timeout: Long)
 
     /**
      * 减少格挡时间
+     * @param blockType 格挡的伤害类型 [DamageType]
      * @param timeout 减少的格挡时长（毫秒）
      */
-    fun reduceBlock(player: Player, timeout: Long)
+    fun reduceBlock(player: Player, blockType: DamageType, timeout: Long)
 
     /**
      * 是否在沉默状态

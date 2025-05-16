@@ -19,6 +19,8 @@ import taboolib.common.platform.function.submit
 import taboolib.common.util.unsafeLazy
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.function.Consumer
+import java.util.function.Function
 
 class ProfileAPI: IProfileAPI {
 
@@ -158,27 +160,44 @@ class ProfileAPI: IProfileAPI {
         }
     }
 
-    override fun isBlock(player: Player): Boolean {
-        return (blockMap[player.uniqueId]?.timeout ?: return false) >= System.currentTimeMillis()
+    override fun isBlock(player: Player, blockType: DamageType): Boolean {
+        val info = blockMap.getOrPut(player.uniqueId) { BlockInfo() }
+        val task = info.map[blockType]
+        return (task?.timeout ?: return false) >= System.currentTimeMillis()
     }
 
-    override fun blockCountdown(player: Player): Long {
-        return ((blockMap[player.uniqueId]?.timeout ?: return 0) - System.currentTimeMillis()).coerceAtLeast(0)
+    override fun blockCountdown(player: Player, blockType: DamageType): Long {
+        val info = blockMap.getOrPut(player.uniqueId) { BlockInfo() }
+        val task = info.map[blockType]
+        return ((task?.timeout ?: return 0) - System.currentTimeMillis()).coerceAtLeast(0)
     }
 
-    override fun setBlock(player: Player, timeout: Long) {
-        val info = blockMap.getOrPut(player.uniqueId) { BlockInfo(0) }
-        if (info.timeout - System.currentTimeMillis() < timeout) {
-            info.timeout = System.currentTimeMillis() + timeout
+    override fun setBlock(
+        player: Player,
+        blockType: DamageType,
+        timeout: Long,
+        success: Consumer<OrryxDamageEvents.Pre>
+    ) {
+        val info = blockMap.getOrPut(player.uniqueId) { BlockInfo() }
+        val task = info.map.getOrPut(blockType) { BlockInfo.Task(0) { success.accept(it) } }
+        if (task.timeout - System.currentTimeMillis() < timeout) {
+            task.timeout = System.currentTimeMillis() + timeout
         }
+    }
+
+    override fun cancelBlock(player: Player, blockType: DamageType) {
+        blockMap[player.uniqueId]?.map?.remove(blockType)
     }
 
     override fun cancelBlock(player: Player) {
         blockMap.remove(player.uniqueId)
     }
 
-    override fun addBlock(player: Player, timeout: Long) {
-        blockMap.getOrPut(player.uniqueId) { BlockInfo(0) }.also {
+    override fun addBlock(player: Player, blockType: DamageType, timeout: Long) {
+        val info = blockMap.getOrPut(player.uniqueId) { BlockInfo() }
+        val task = info.map.getOrPut(blockType) { BlockInfo.Task(0) { } }
+
+        task.also {
             if (it.timeout >= System.currentTimeMillis()) {
                 it.timeout += timeout
             } else {
@@ -187,8 +206,11 @@ class ProfileAPI: IProfileAPI {
         }
     }
 
-    override fun reduceBlock(player: Player, timeout: Long) {
-        blockMap[player.uniqueId]?.also {
+    override fun reduceBlock(player: Player, blockType: DamageType, timeout: Long) {
+        val info = blockMap.getOrPut(player.uniqueId) { BlockInfo() }
+        val task = info.map[blockType]
+
+        task?.also {
             it.timeout -= timeout
             if (it.timeout < System.currentTimeMillis()) {
                 blockMap.remove(player.uniqueId)
@@ -252,7 +274,11 @@ class ProfileAPI: IProfileAPI {
         class SuperBodyInfo(var timeout: Long)
         class InvincibleInfo(var timeout: Long)
         class SuperFootInfo(var timeout: Long)
-        class BlockInfo(var timeout: Long)
+        class BlockInfo {
+
+            val map = mutableMapOf<DamageType, Task>()
+            class Task(var timeout: Long, val function: (OrryxDamageEvents.Pre) -> Unit)
+        }
         class SilenceInfo(var timeout: Long)
 
         @Awake(LifeCycle.CONST)
@@ -261,7 +287,7 @@ class ProfileAPI: IProfileAPI {
         }
 
         @SubscribeEvent
-        private fun drop(e: EntityDamageEvent) {
+        private fun damage(e: EntityDamageEvent) {
             val player = e.entity as? Player ?: return
             if (e.cause != EntityDamageEvent.DamageCause.SUICIDE) {
                 if (Orryx.api().profileAPI.isInvincible(player)) {
@@ -279,9 +305,9 @@ class ProfileAPI: IProfileAPI {
         @SubscribeEvent
         private fun block(e: OrryxDamageEvents.Pre) {
             val player = e.defenderPlayer() ?: return
-            if (e.type == DamageType.PHYSICS && Orryx.api().profileAPI.isBlock(player)) {
+            if (Orryx.api().profileAPI.isBlock(player, e.type)) {
                 e.isCancelled = true
-                player.statusData()
+                blockMap[player.uniqueId]?.map?.get(e.type)?.function(e)
             }
         }
 

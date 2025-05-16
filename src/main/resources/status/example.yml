@@ -45,6 +45,7 @@ States:
     Check: "4-16"
     # 格挡成功后的无敌时间
     Invincible: "4"
+    DamageType: PHYSICS
     Animation:
       # 动作名
       Key: "长剑招架"
@@ -52,6 +53,8 @@ States:
       Duration: "18"
       # 成功格挡动作名
       SuccessKey: "长剑招架"
+    BlockAction: |-
+      tell 格挡成功
   闪避:
     # 状态类型
     Type: "Dodge"
