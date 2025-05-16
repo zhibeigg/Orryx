@@ -1,6 +1,8 @@
 package org.gitee.orryx.core.damage
 
 import org.bukkit.event.entity.EntityDamageByEntityEvent
+import org.gitee.nodens.api.events.entity.NodensEntityDamageEvents
+import org.gitee.nodens.core.attribute.Damage
 import org.gitee.orryx.api.events.damage.DamageType
 import org.gitee.orryx.api.events.damage.OrryxDamageEvents
 import org.gitee.orryx.utils.AttributePlusPlugin
@@ -14,10 +16,12 @@ import taboolib.common.platform.event.SubscribeEvent
 
 object ProxyDamageManager {
 
+    val ignoreBukkit by lazy { NodensPlugin.isEnabled || AttributePlusPlugin.isEnabled }
+
     //Bukkit
     @SubscribeEvent(ignoreCancelled = true, priority = EventPriority.MONITOR)
     private fun bukkit(e: EntityDamageByEntityEvent) {
-        if (NodensPlugin.isEnabled || AttributePlusPlugin.isEnabled) return
+        if (ignoreBukkit) return
         val event = OrryxDamageEvents.Pre(e.damager, e.entity, e.damage, e, transfer(e.cause))
         if (event.call()) {
             e.damage = event.damage
@@ -27,7 +31,7 @@ object ProxyDamageManager {
         }
     }
 
-    //AttributePlus
+    // AttributePlus
     @Ghost
     @SubscribeEvent(ignoreCancelled = true, priority = EventPriority.MONITOR)
     private fun onApDamagePre(e: AttrEntityDamageBeforeEvent) {
@@ -46,6 +50,37 @@ object ProxyDamageManager {
     @Ghost
     @SubscribeEvent(ignoreCancelled = true, priority = EventPriority.MONITOR)
     private fun onApDamage(e: AttrEntityDamageEvent) {
-        OrryxDamageEvents.Post(e.attacker, e.target, e.targetDamage, null, DamageType.CONSOLE).call()
+        OrryxDamageEvents.Post(e.attacker, e.target, e.targetDamage, null, DamageType.CUSTOM).call()
+    }
+
+    // Nodens
+    @Ghost
+    @SubscribeEvent(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    private fun onNoDamage(e: NodensEntityDamageEvents.Pre) {
+        val type = when(e.processor.damageType) {
+            Damage.Physics.name -> DamageType.PHYSICS
+            Damage.Magic.name -> DamageType.MAGIC
+            Damage.Real.name -> DamageType.REAL
+            Damage.Fire.name -> DamageType.FIRE
+            else -> DamageType.CUSTOM
+        }
+        val event = OrryxDamageEvents.Pre(e.processor.attacker, e.processor.defender, e.processor.getFinalDamage(), null, type)
+        event.origin = e
+        if (!event.call()) {
+            e.isCancelled = true
+        }
+    }
+
+    @Ghost
+    @SubscribeEvent(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    private fun onNoDamage(e: NodensEntityDamageEvents.Post) {
+        val type = when(e.processor.damageType) {
+            Damage.Physics.name -> DamageType.PHYSICS
+            Damage.Magic.name -> DamageType.MAGIC
+            Damage.Real.name -> DamageType.REAL
+            Damage.Fire.name -> DamageType.FIRE
+            else -> DamageType.CUSTOM
+        }
+        OrryxDamageEvents.Post(e.processor.attacker, e.processor.defender, e.processor.getFinalDamage(), null, type).call()
     }
 }

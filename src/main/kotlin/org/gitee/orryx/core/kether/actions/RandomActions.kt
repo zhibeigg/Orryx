@@ -3,11 +3,9 @@ package org.gitee.orryx.core.kether.actions
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.ORRYX_NAMESPACE
+import org.gitee.orryx.utils.combinationParser
 import org.gitee.orryx.utils.scriptParser
-import taboolib.module.kether.KetherParser
-import taboolib.module.kether.ScriptAction
-import taboolib.module.kether.actionFuture
-import taboolib.module.kether.switch
+import taboolib.module.kether.*
 
 object RandomActions {
 
@@ -27,6 +25,22 @@ object RandomActions {
     private fun randomUUID(): ScriptAction<Any?> {
         return actionFuture { future ->
             future.complete(java.util.UUID.randomUUID().toString())
+        }
+    }
+
+    @KetherParser(["randomAction"], namespace = ORRYX_NAMESPACE, shared = true)
+    private fun randomAction() = combinationParser(
+        Action.new("普通语句", "随机运行一段Action", "randomAction", true)
+            .addEntry("语句列表[ { tell me }, { tell her } ]", Type.ITERABLE, false)
+            .description("随机运行一段Action")
+            .result("运行的Action返回值", Type.ANY)
+    ) {
+        it.group(
+            actionList()
+        ).apply(it) { array ->
+            future {
+                run(array.random())
+            }
         }
     }
 }

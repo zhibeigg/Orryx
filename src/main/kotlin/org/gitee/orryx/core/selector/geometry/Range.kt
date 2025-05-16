@@ -34,7 +34,7 @@ object Range: ISelectorGeometry {
         val r = parameter.read<Double>(0, 10.0)
         val ray = RayAabIntersection()
 
-        val entities = ensureSync { origin.world.livingEntities }.join()
+        val entities = ensureSync { origin.world.getNearbyEntities(origin.location, r, r, r) }.join()
         return entities.mapNotNull {
             if (it == origin.getSource()) return@mapNotNull it.toTarget()
             if (it is LivingEntity) {

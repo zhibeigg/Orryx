@@ -5,9 +5,12 @@ import org.gitee.orryx.api.adapters.vector.AbstractVector
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
+import org.joml.Matrix3d
+import org.joml.Quaterniond
 import org.joml.Vector3d
 import org.joml.Vector3dc
 import taboolib.common.OpenResult
+import taboolib.common5.Quat
 import taboolib.common5.cdouble
 import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*
@@ -153,6 +156,7 @@ object VectorMathActions {
         Action.new("Math数学运算", "原点的视角向量", "vector", true)
             .description("原点的视角向量")
             .addEntry("原点视角标识符", Type.SYMBOL, head = "eye")
+            .addEntry("偏移yaw和pitch(os 90.0 90.0)", Type.DOUBLE, head = "offset/os")
             .result("origin原点的视角向量", Type.VECTOR),
         Action.new("Math数学运算", "根据法线反射向量", "vector", true)
             .description("根据法线反射向量")
@@ -200,14 +204,35 @@ object VectorMathActions {
             }
             case("origin") {
                 actionNow {
-                    script().getParameter().origin?.location?.toVector()?.let { v -> AbstractVector(v.x, v.y, v.z) }
-                        ?: AbstractVector(0.0, 0.0, 0.0)
+                    script().getParameter().origin?.location?.toVector()?.let { v -> AbstractVector(v.x, v.y, v.z) } ?: AbstractVector(0.0, 0.0, 0.0)
                 }
             }
             case("eye") {
-                actionNow {
-                    script().getParameter().origin?.location?.direction?.let { v -> AbstractVector(v.x, v.y, v.z) }
-                        ?: AbstractVector(0.0, 0.0, 0.0)
+                val (yaw, pitch) = try {
+                    it.mark()
+                    it.expects("offset", "os")
+                    it.nextParsedAction() to it.nextParsedAction()
+                } catch (_: Throwable) {
+                    it.reset()
+                    literalAction(0) to literalAction(0)
+                }
+
+                actionFuture { future ->
+                    run(yaw).double { yaw ->
+                        run(pitch).double { pitch ->
+                            future.complete(
+                                script().getParameter().origin?.location?.direction?.let { v ->
+                                    val joml = Vector3d(v.x, 0.0, v.z)
+                                    val z = joml.cross(0.0, 1.0, 0.0)
+                                    val y = z.cross(Vector3d(v.x, v.y, v.z), Vector3d())
+                                    val matrix = Matrix3d().rotate(yaw, y).rotate(pitch, z)
+                                    AbstractVector(v.x, v.y, v.z).apply {
+                                        mul(matrix, this.joml)
+                                    }
+                                }
+                            )
+                        }
+                    }
                 }
             }
             other { create(it) }

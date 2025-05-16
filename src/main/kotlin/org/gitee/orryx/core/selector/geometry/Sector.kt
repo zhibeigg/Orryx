@@ -30,11 +30,11 @@ object Sector: ISelectorGeometry {
         val origin = context.getParameter().origin ?: return emptyList()
 
         val r = parameter.read<Double>(0, 10.0)
-        val radians = Math.toRadians(parameter.read<Double>(1, 120.0))
+        val angle = Math.toRadians(parameter.read<Double>(1, 120.0))
         val h = parameter.read<Double>(2, 2.0)
         val offsetY = parameter.read<Double>(3, 0.0)
 
-        val entities = ensureSync { origin.world.livingEntities }.join()
+        val entities = ensureSync { origin.world.getNearbyEntities(origin.location, r, r, r) }.join()
         val dir = origin.location.direction.clone().setY(0).normalize()
 
         return entities.mapNotNull {
@@ -46,7 +46,7 @@ object Sector: ISelectorGeometry {
             //          ----------
             if (it.location.y <= (origin.eyeLocation.y + h / 2 + offsetY) && (it.location.y + it.height) >= (origin.eyeLocation.y - h / 2 + offsetY)) {
                 val vec = it.location.clone().apply { y = 0.0 }.toVector().subtract(origin.eyeLocation.clone().apply { y = 0.0 }.toVector())
-                if (dir.angle(vec) <= radians / 2) {
+                if (dir.angle(vec) <= angle / 2) {
                     it.toTarget()
                 } else {
                     null
