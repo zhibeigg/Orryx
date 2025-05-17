@@ -13,4 +13,6 @@ interface IOrryxAPI {
     val jobAPI: IJobAPI
 
     val skillAPI: ISkillAPI
+
+    val taskAPI: ITaskAPI
 }

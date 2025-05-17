@@ -3,6 +3,8 @@ package org.gitee.orryx.core.station.pipe
 import taboolib.module.kether.ScriptContext
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.function.Consumer
+import java.util.function.Function
 
 class PipeBuilder {
 
@@ -18,38 +20,31 @@ class PipeBuilder {
         return PipeTask(uuid, scriptContext, brokeTriggers, timeout ?: error("创建PipeTask时未设置timeout"), onBrock, onComplete, periodTask)
     }
 
-    fun uuid(uuid: UUID): PipeBuilder {
+    fun uuid(uuid: UUID): PipeBuilder = apply {
         this.uuid = uuid
-        return this
     }
 
-    fun scriptContext(scriptContext: ScriptContext): PipeBuilder {
+    fun scriptContext(scriptContext: ScriptContext): PipeBuilder = apply {
         this.scriptContext = scriptContext
-        return this
     }
 
-    fun brokeTriggers(vararg triggers: String): PipeBuilder {
-        this.brokeTriggers = triggers.toSet()
-        return this
+    fun brokeTriggers(vararg triggers: String): PipeBuilder = apply {
+        brokeTriggers = triggers.toSet()
     }
 
-    fun timeout(timeout: Long): PipeBuilder {
+    fun timeout(timeout: Long): PipeBuilder = apply {
         this.timeout = timeout
-        return this
     }
 
-    fun onBrock(onBrock: (IPipeTask) -> CompletableFuture<Any?>): PipeBuilder {
-        this.onBrock = onBrock
-        return this
+    fun onBrock(onBrock: Function<IPipeTask, CompletableFuture<Any?>>): PipeBuilder = apply {
+        this.onBrock = { onBrock.apply(it) }
     }
 
-    fun onComplete(onComplete: (IPipeTask) -> CompletableFuture<Any?>): PipeBuilder {
-        this.onComplete = onComplete
-        return this
+    fun onComplete(onComplete: Function<IPipeTask, CompletableFuture<Any?>>): PipeBuilder = apply {
+        this.onComplete = { onComplete.apply(it) }
     }
 
-    fun periodTask(period: Long, func: (IPipeTask) -> Unit): PipeBuilder {
-        this.periodTask = PipePeriodTask(period, func)
-        return this
+    fun periodTask(period: Long, func: Consumer<IPipeTask>): PipeBuilder = apply {
+        periodTask = PipePeriodTask(period) { func.accept(it) }
     }
 }

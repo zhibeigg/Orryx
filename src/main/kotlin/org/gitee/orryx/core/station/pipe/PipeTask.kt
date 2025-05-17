@@ -18,6 +18,11 @@ class PipeTask(
     override val periodTask: IPipePeriodTask?
 ) : IPipeTask {
 
+    companion object {
+
+        fun builder(): PipeBuilder = PipeBuilder()
+    }
+
     override val startStamp: Long = System.currentTimeMillis()
 
     override val result: CompletableFuture<Any?> = CompletableFuture()

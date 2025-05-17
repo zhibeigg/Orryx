@@ -62,6 +62,8 @@ class OrryxAPI: IOrryxAPI {
 
     override val skillAPI: ISkillAPI = PlatformFactory.getAPI<ISkillAPI>()
 
+    override val taskAPI: ITaskAPI = PlatformFactory.getAPI<ITaskAPI>()
+
     companion object {
 
         val ketherScriptLoader by lazy { KetherScriptLoader() }

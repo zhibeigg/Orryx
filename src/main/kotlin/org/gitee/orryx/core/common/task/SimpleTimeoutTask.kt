@@ -47,7 +47,5 @@ open class SimpleTimeoutTask(val tick: Long, open val closed: () -> Unit = EMPTY
         fun createSimpleTask(tick: Long, closed: () -> Unit): SimpleTimeoutTask {
             return SimpleTimeoutTask(tick, closed).register()
         }
-
     }
-
 }
