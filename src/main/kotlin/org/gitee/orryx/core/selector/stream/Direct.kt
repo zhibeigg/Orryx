@@ -28,7 +28,7 @@ object Direct: ISelectorStream {
             .addParm(Type.DOUBLE, "z", "0.0")
             .description("将所有目标的视角向量修改")
 
-    override fun joinContainer(container: IContainer, context: ScriptContext, parameter: StringParser.Entry) {
+    override fun processStream(container: IContainer, context: ScriptContext, parameter: StringParser.Entry) {
         val x = parameter.read<Double>(0, 0.0)
         val y = parameter.read<Double>(1, 0.0)
         val z = parameter.read<Double>(2, 0.0)
@@ -43,5 +43,4 @@ object Direct: ISelectorStream {
         }
         container.removeIf { it is ITargetLocation }.addAll(list)
     }
-
 }

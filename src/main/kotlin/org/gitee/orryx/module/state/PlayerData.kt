@@ -116,9 +116,4 @@ class PlayerData(val player: Player) {
             MoveState.RIGHT.key -> changeMoveState = MoveState.RIGHT
         }
     }
-
-    fun blockSuccess() {
-        val state = nowRunningState as? BlockState.Running ?: return
-        state.success()
-    }
 }

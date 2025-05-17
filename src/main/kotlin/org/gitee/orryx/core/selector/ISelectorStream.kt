@@ -7,8 +7,7 @@ import taboolib.module.kether.ScriptContext
 interface ISelectorStream: ISelector, WikiSelector {
 
     /**
-     * 将目标流入容器
+     * 将容器流进行加工
      * */
-    fun joinContainer(container: IContainer, context: ScriptContext, parameter: StringParser.Entry)
-
+    fun processStream(container: IContainer, context: ScriptContext, parameter: StringParser.Entry)
 }

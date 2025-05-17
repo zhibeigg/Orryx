@@ -26,7 +26,7 @@ object Type: ISelectorStream {
         return "LOCATION" in types || "LOC" in types
     }
 
-    override fun joinContainer(container: IContainer, context: ScriptContext, parameter: StringParser.Entry) {
+    override fun processStream(container: IContainer, context: ScriptContext, parameter: StringParser.Entry) {
         val types = parameter.read<String>(0, "player").uppercase().split(",")
 
         if (parameter.reverse) {
@@ -47,5 +47,4 @@ object Type: ISelectorStream {
             }
         }
     }
-
 }

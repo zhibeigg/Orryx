@@ -109,7 +109,7 @@ internal fun Any?.readContainer(context: ScriptContext): IContainer? = when {
     this == null -> null.also { debug("readNull") }
     this is String -> StringParser(this).container(context).also { debug("readString") }
     this is IContainer -> this.also { debug("readIContainer") }
-    this is ITarget<*> -> Container(mutableSetOf(this)).also { debug("readTarget") }
+    this is ITarget<*> -> Container(linkedSetOf(this)).also { debug("readTarget") }
 
     // 实体相关处理
     this is Player -> toTarget().readContainer(context).also { debug("readPlayer") }

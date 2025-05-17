@@ -30,7 +30,7 @@ object Offset: ISelectorStream {
             .addParm(Type.BOOLEAN, "是否随PITCH改变", "false")
             .description("将所有目标转换成location并位移")
 
-    override fun joinContainer(container: IContainer, context: ScriptContext, parameter: StringParser.Entry) {
+    override fun processStream(container: IContainer, context: ScriptContext, parameter: StringParser.Entry) {
         val x = parameter.read<Double>(0, 0.0)
         val y = parameter.read<Double>(1, 0.0)
         val z = parameter.read<Double>(2, 0.0)

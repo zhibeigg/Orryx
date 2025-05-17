@@ -21,8 +21,7 @@ object Server: ISelectorStream {
             .addExample("@online")
             .description("获取全服在线玩家")
 
-    override fun joinContainer(container: IContainer, context: ScriptContext, parameter: StringParser.Entry) {
+    override fun processStream(container: IContainer, context: ScriptContext, parameter: StringParser.Entry) {
         container.addAll(onlinePlayers.map { it.toTarget() })
     }
-
 }

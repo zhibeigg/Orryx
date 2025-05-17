@@ -86,7 +86,7 @@ object EntityActions {
                                         }
 
                                         ensureSync {
-                                            Container(builder.build(locations).mapTo(mutableSetOf()) { entity ->
+                                            Container(builder.build(locations).mapTo(linkedSetOf()) { entity ->
                                                 entity as AbstractBukkitEntity
                                             })
                                         }.thenApply { container ->
@@ -143,7 +143,7 @@ object EntityActions {
                                         }
 
                                         ensureSync {
-                                            Container(builder.build(locations, players.map { playerTarget -> playerTarget.getSource() }, true).mapTo(mutableSetOf()) { entity ->
+                                            Container(builder.build(locations, players.map { playerTarget -> playerTarget.getSource() }, true).mapTo(linkedSetOf()) { entity ->
                                                 entity as AbstractAdyeshachEntity
                                             })
                                         }.thenAccept { container ->
@@ -180,5 +180,4 @@ object EntityActions {
             }
         }
     }
-
 }

@@ -23,7 +23,7 @@ object Team: ISelectorStream {
             .addExample("!@team")
             .description("只保留队内人员,或只保留队外人员")
 
-    override fun joinContainer(container: IContainer, context: ScriptContext, parameter: StringParser.Entry) {
+    override fun processStream(container: IContainer, context: ScriptContext, parameter: StringParser.Entry) {
         val teamPlayers = DungeonPlus.teamManager.getTeam(context.bukkitPlayer())?.getPlayers(PlayerStateType.ONLINE) ?: return
         if (parameter.reverse) {
             container.removeIf {
@@ -35,5 +35,4 @@ object Team: ISelectorStream {
             }
         }
     }
-
 }

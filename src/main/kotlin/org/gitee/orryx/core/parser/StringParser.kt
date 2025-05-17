@@ -45,10 +45,10 @@ class StringParser(val value: String) {
         entries.forEach { entry ->
             when(val selector = SelectorInit.getSelector(entry.head.uppercase())) {
                 is ISelectorStream -> {
-                    selector.joinContainer(container, context, entry)
+                    selector.processStream(container, context, entry)
                 }
                 is ISelectorGeometry -> {
-                    container.targets += selector.getTargets(context, entry)
+                    container.targets.addAll(selector.getTargets(context, entry))
                 }
                 null -> {
                     info("选择器${entry.head}未注册")

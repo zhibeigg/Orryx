@@ -25,11 +25,7 @@ object World: ISelectorStream {
             .addParm(Type.STRING, "指定世界或者sender世界", "sender")
             .description("添加/剔除世界成员")
 
-    override fun joinContainer(
-        container: IContainer,
-        context: ScriptContext,
-        parameter: StringParser.Entry
-    ) {
+    override fun processStream(container: IContainer, context: ScriptContext, parameter: StringParser.Entry) {
         val world = parameter.read(0, "sender")
         if (parameter.reverse) {
             if (world == "sender") {
@@ -60,5 +56,4 @@ object World: ISelectorStream {
             }.join()
         }
     }
-
 }

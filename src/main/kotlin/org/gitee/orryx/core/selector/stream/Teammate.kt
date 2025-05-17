@@ -22,7 +22,7 @@ object Teammate: ISelectorStream {
             .addExample("@teammate")
             .description("dp队员")
 
-    override fun joinContainer(
+    override fun processStream(
         container: IContainer,
         context: ScriptContext,
         parameter: StringParser.Entry
@@ -30,5 +30,4 @@ object Teammate: ISelectorStream {
         val teamPlayers = DungeonPlus.teamManager.getTeam(context.bukkitPlayer())?.getPlayers(PlayerStateType.ONLINE)
         teamPlayers?.let { players -> container.addAll(players.map { it.toTarget() }) }
     }
-
 }

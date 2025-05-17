@@ -22,7 +22,7 @@ object Origin: ISelectorStream {
             .addParm(Type.SYMBOL, "位置模式，l代表脚底，e代表眼睛", "l")
             .description("原点位置")
 
-    override fun joinContainer(
+    override fun processStream(
         container: IContainer,
         context: ScriptContext,
         parameter: StringParser.Entry

@@ -20,7 +20,7 @@ object Self: ISelectorStream {
             .addExample("!@self")
             .description("Sender转化为玩家")
 
-    override fun joinContainer(
+    override fun processStream(
         container: IContainer,
         context: ScriptContext,
         parameter: StringParser.Entry
@@ -37,5 +37,4 @@ object Self: ISelectorStream {
             container.add(context.bukkitPlayer().toTarget())
         }
     }
-
 }

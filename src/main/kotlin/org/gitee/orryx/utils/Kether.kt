@@ -63,7 +63,7 @@ internal fun ScriptFrame.self(): IContainer {
 }
 
 internal fun ScriptFrame.world(): IContainer {
-    return Container(bukkitPlayer().world.livingEntities.mapTo(mutableSetOf()) { it.toTarget() })
+    return Container(bukkitPlayer().world.livingEntities.mapTo(linkedSetOf()) { it.toTarget() })
 }
 
 internal fun <T> ScriptFrame.keySetting(func: (setting: PlayerKeySetting) -> T): CompletableFuture<T> {

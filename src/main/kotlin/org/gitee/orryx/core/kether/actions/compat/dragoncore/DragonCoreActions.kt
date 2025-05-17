@@ -1030,7 +1030,7 @@ object DragonCoreActions {
                                         modelEffect0.entity.entity.remove()
                                     }
                                 }
-                                future.complete(Container(it.mapTo(mutableSetOf()) { modelEffect -> modelEffect.entity }))
+                                future.complete(Container(it.mapTo(linkedSetOf()) { modelEffect -> modelEffect.entity }))
                             }
                         }
                     }

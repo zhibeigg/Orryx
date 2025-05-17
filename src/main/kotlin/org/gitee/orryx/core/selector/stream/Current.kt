@@ -22,7 +22,7 @@ object Current: ISelectorStream {
             .addParm(Type.SYMBOL, "位置模式，l代表脚底，e代表眼睛", "l")
             .description("Sender的当前位置")
 
-    override fun joinContainer(
+    override fun processStream(
         container: IContainer,
         context: ScriptContext,
         parameter: StringParser.Entry
@@ -33,5 +33,4 @@ object Current: ISelectorStream {
             "e" -> container.add(context.bukkitPlayer().eyeLocation.toTarget())
         }
     }
-
 }
