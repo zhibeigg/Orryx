@@ -18,7 +18,7 @@ fun bindKeys(): List<IBindKey> {
 fun IBindKey.getBindSkill(player: Player): CompletableFuture<IPlayerSkill?> {
     val future = CompletableFuture<IPlayerSkill?>()
     player.job {
-        it.getBindSkills()[this]?.thenApply { skill ->
+        it.getBindSkills()[this]?.thenAccept { skill ->
             future.complete(skill)
         } ?: future.complete(null)
     }
@@ -27,7 +27,7 @@ fun IBindKey.getBindSkill(player: Player): CompletableFuture<IPlayerSkill?> {
 
 fun IBindKey.tryCast(player: Player): CompletableFuture<CastResult?> {
     return getBindSkill(player).thenCompose { skill ->
-        skill?.tryCast()
+        skill?.tryCast() ?: CompletableFuture.completedFuture(null)
     }
 }
 
