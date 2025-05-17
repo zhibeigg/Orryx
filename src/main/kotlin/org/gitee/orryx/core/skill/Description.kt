@@ -21,25 +21,33 @@ class Description(val description: List<String>) {
     }
 
     private fun getDescription(sender: ProxyCommandSender, skillParameter: SkillParameter): List<String> {
-        return description.map { parseScript(sender, skillParameter, it.removePrefix("*")) }.colored()
+        return description.map { parseScript(sender, skillParameter, it.removePrefix("*")) {
+            set("level", skillParameter.level)
+        } }.colored()
     }
 
     fun getDescriptionComparison(player: Player, skillParameter: SkillParameter): List<String> {
         val sender = adaptCommandSender(player)
         if (skillParameter.level >= (skillParameter.getSkill()?.maxLevel ?: error("获取Description时未能读取到技能"))) return getDescription(sender, skillParameter)
         val list = mutableListOf<String>()
+        val levelUpParameter = SkillParameter(skillParameter.skill, skillParameter.player, skillParameter.level + 1)
         description.forEach {
             list += if (it.startsWith("*")) {
-                parseScript(sender, skillParameter, it.removePrefix("*"))
+                parseScript(sender, skillParameter, it.removePrefix("*")) {
+                    set("level", skillParameter.level)
+                }
             } else {
                 reader.replaceNested(it) { str, startPos ->
-                    val pre = runScript(sender, skillParameter, str).orNull()
-                    val next = runScript(sender, skillParameter.apply { level += 1 }, str).orNull()
+                    val pre = runScript(sender, skillParameter, str) {
+                        set("level", skillParameter.level)
+                    }.orNull()
+                    val next = runScript(sender, levelUpParameter, str) {
+                        set("level", skillParameter.level)
+                    }.orNull()
                     "$pre$descriptionSplit&r${getFormatAtPosition(it.colored(), startPos)}$next&r"
                 }
             }
         }
         return list.colored()
     }
-
 }

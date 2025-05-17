@@ -17,6 +17,8 @@ import taboolib.library.kether.Parser.*
 import taboolib.library.kether.QuestAction
 import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*
+import taboolib.module.kether.KetherFunction.parse
+import taboolib.module.kether.KetherFunction.reader
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
@@ -125,34 +127,28 @@ object ScriptManager {
     }
 
     fun parseScript(sender: ProxyCommandSender, parameter: IParameter, actions: String, context: (ScriptContext.() -> Unit)? = null): String {
-        return try {
-            KetherFunction.parse(
-                actions,
-                ScriptOptions.builder().sandbox(false).namespace(namespace = orryxEnvironmentNamespaces).sender(sender = sender).context {
-                    context?.invoke(this)
-                    this[PARAMETER] = parameter
-                }.build()
-            )
-        } catch (e: Throwable) {
-            if (e is IllegalStateException) warning(e.message)
-            e.printKetherErrorMessage()
-            "none-error"
+        val uuid = UUID.randomUUID().toString()
+        return reader.replaceNested(actions) {
+            val script = scriptMap.getOrPut(this) {
+                ketherScriptLoader.load(ScriptService, "orryx_temp_${uuid}", getBytes(this), orryxEnvironmentNamespaces)
+            }
+
+            try {
+                ScriptContext.create(script).also {
+                    context?.invoke(it)
+                    it.sender = sender
+                    it.id = uuid
+                    it[PARAMETER] = parameter
+                }.runActions().orNull().toString()
+            } catch (e: Throwable) {
+                if (e is IllegalStateException) warning(e.message)
+                e.printKetherErrorMessage()
+                "none-error"
+            }
         }
     }
 
     fun parseScript(sender: ProxyCommandSender, parameter: IParameter, actions: List<String>, context: (ScriptContext.() -> Unit)? = null): List<String> {
-        return try {
-            KetherFunction.parse(
-                actions,
-                ScriptOptions.builder().sandbox(false).namespace(namespace = orryxEnvironmentNamespaces).sender(sender = sender).context {
-                    context?.invoke(this)
-                    this[PARAMETER] = parameter
-                }.build()
-            )
-        } catch (e: Throwable) {
-            if (e is IllegalStateException) warning(e.message)
-            e.printKetherErrorMessage()
-            listOf("none-error")
-        }
+        return actions.map { parseScript(sender, parameter, it, context) }
     }
 }
