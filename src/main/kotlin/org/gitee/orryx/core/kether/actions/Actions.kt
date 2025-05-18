@@ -93,7 +93,7 @@ object Actions {
     @KetherParser(["runExtend"], namespace = ORRYX_NAMESPACE)
     private fun callExtend() = scriptParser(
         Action.new("普通语句", "运行拓展子Action", "runExtend")
-            .description("运行拓展子Action，返回运行结果(只能在技能环境中使用)")
+            .description("运行拓展子Action，继承母环境上下文，但是私有上下文，返回运行结果(只能在技能环境中使用)")
             .addEntry("拓展名", Type.STRING)
             .addEntry("私有原点", Type.TARGET, true, "@self", "origin")
     ) {
@@ -105,7 +105,8 @@ object Actions {
                 containerOrSelf(origin) { container ->
                     val origin =  container.firstInstanceOrNull<ITargetLocation<*>>()
                     val extendParameter = SkillParameter(skillParameter, origin)
-                    extendParameter.runSkillExtendAction(key)?.whenComplete { value, ex ->
+
+                    extendParameter.runSkillExtendAction(key, script().rootFrame().variables().toMap())?.whenComplete { value, ex ->
                         if (ex != null) {
                             future.completeExceptionally(ex)
                         } else {

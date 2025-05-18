@@ -49,10 +49,10 @@ internal fun SkillParameter.runSkillAction(map: Map<String, Any> = emptyMap()): 
     }
 }
 
-internal fun SkillParameter.runSkillExtendAction(extend: String): CompletableFuture<Any?>? {
+internal fun SkillParameter.runSkillExtendAction(extend: String, map: Map<String, Any> = emptyMap()): CompletableFuture<Any?>? {
     return SkillLoaderManager.getSkillLoader(skill ?: return CompletableFuture.completedFuture(null))?.let { skill ->
         skill as ICastSkill
-        KetherScript(skill.key, skill.extendScripts[extend] ?: error("请修复技能配置中的错误${skill.key} extend $extend")).runExtendActions(this, extend)
+        KetherScript(skill.key, skill.extendScripts[extend] ?: error("请修复技能配置中的错误${skill.key} extend $extend")).runExtendActions(this, extend, map)
     }
 }
 

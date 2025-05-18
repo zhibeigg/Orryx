@@ -10,5 +10,5 @@ interface IKetherScript {
 
     fun runActions(skillParameter: SkillParameter, map: Map<String, Any>? = null): CompletableFuture<Any?>
 
-    fun runExtendActions(skillParameter: SkillParameter, extend: String): CompletableFuture<Any?>
+    fun runExtendActions(skillParameter: SkillParameter, extend: String, map: Map<String, Any>? = null): CompletableFuture<Any?>
 }

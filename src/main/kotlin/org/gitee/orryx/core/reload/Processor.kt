@@ -20,5 +20,4 @@ class Processor: AbstractProcessor() {
         }
         return true // 表示此处理器已经声明了它处理的注解
     }
-
 }

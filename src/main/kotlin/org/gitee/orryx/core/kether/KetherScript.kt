@@ -46,7 +46,7 @@ class KetherScript(val skill: String, override val script: Script): IKetherScrip
         return future
     }
 
-    override fun runExtendActions(skillParameter: SkillParameter, extend: String): CompletableFuture<Any?> {
+    override fun runExtendActions(skillParameter: SkillParameter, extend: String, map: Map<String, Any>?): CompletableFuture<Any?> {
         val future = CompletableFuture<Any?>()
         pluginScope.launch {
             debug("run skill: $skill extend: $extend action")
@@ -55,6 +55,7 @@ class KetherScript(val skill: String, override val script: Script): IKetherScrip
             var context: ScriptContext? = null
             ScriptManager.runScript(adaptPlayer(skillParameter.player), skillParameter, script) {
                 playerRunningSpace.invoke(this, "$skill@$extend")
+                map?.let { extend(it) }
                 context = this
             }.whenComplete { v, ex ->
                 playerRunningSpace.release(context!!, "$skill@$extend")
