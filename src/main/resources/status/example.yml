@@ -5,6 +5,7 @@ Options:
   CancelHeldEventWhenPlaying: true
   # 龙核动作控制器
   Controller: "长剑"
+  CancelBukkitAttack: false
   # 时装
   Armourers: []
 States:

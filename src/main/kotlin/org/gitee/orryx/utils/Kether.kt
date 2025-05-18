@@ -21,6 +21,8 @@ import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptCommandSender
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common.platform.function.submit
+import taboolib.common.platform.function.warning
+import taboolib.common.util.t
 import taboolib.library.kether.ParsedAction
 import taboolib.library.kether.Parser
 import taboolib.library.kether.Parser.Action
@@ -292,4 +294,30 @@ fun <T> combinationParser(action: org.gitee.orryx.module.wiki.Action, builder: P
 fun <T> combinationParser(builder: ParserHolder.(Instance) -> App<Mu, Action<T>>): ScriptActionParser<T> {
     val parser = Parser.build(builder(ParserHolder, instance()))
     return ScriptActionParser { parser.resolve<T>(this) }
+}
+
+fun Throwable.printKetherErrorMessage(detailError: Boolean = false) {
+    if (localizedMessage == null || detailError) {
+        printStackTrace()
+        return
+    }
+    if (this is IllegalStateException) {
+        warning(message)
+    }
+    if (javaClass.name.endsWith("kether.LocalizedException") || javaClass.name.endsWith("kether.LocalizedException\$Concat")) {
+        warning(
+            """
+                解析 Kether 语句时发生了意外的异常：
+                Unexpected exception while parsing kether script:
+            """.t()
+        )
+    } else {
+        warning(
+            """
+                运行 Kether 语句时发生了意外的异常：
+                Unexpected exception while running the kether script.
+            """.t()
+        )
+    }
+    localizedMessage.split('\n').forEach { warning(it) }
 }

@@ -27,4 +27,6 @@ class PressingAimSkill(
     override val maxPressTickAction: String = options.getString("MaxPressTickAction", "20")!!
 
     override val script: Script? = SkillLoaderManager.loadScript(this)
+
+    override val extendScripts: Map<String, Script?> = SkillLoaderManager.loadExtendScript(this)
 }

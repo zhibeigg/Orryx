@@ -10,6 +10,7 @@ import eos.moe.dragoncore.api.gui.event.CustomPacketEvent
 import eos.moe.dragoncore.network.PacketSender
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
+import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.player.PlayerItemHeldEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.event.player.PlayerRespawnEvent
@@ -26,6 +27,7 @@ import org.gitee.orryx.utils.*
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.Ghost
+import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.info
 import taboolib.common.platform.function.warning
@@ -198,6 +200,15 @@ object StateManager {
         e.skinList.addAll(status.options.getArmourers(e.player))
     }
 
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    private fun damage(e: EntityDamageByEntityEvent) {
+        val player = e.damager as? Player ?: return
+        val status = player.statusData().status as? Status ?: return
+        if (status.options.cancelBukkitAttack) {
+            e.isCancelled = true
+        }
+    }
+
     internal fun setInvisibleHand(player: Player, tick: Long) {
         playerInvisibleHandTaskMap[player.uniqueId]?.let { SimpleTimeoutTask.cancel(it) }
         playerInvisibleHandTaskMap[player.uniqueId] = SimpleTimeoutTask.createSimpleTask(tick) {
@@ -254,18 +265,19 @@ object StateManager {
         return try {
             OrryxAPI.ketherScriptLoader.load(ScriptService, state.key, getBytes(action), orryxEnvironmentNamespaces)
         } catch (ex: Exception) {
-            ex.printStackTrace()
             warning("State: ${state.key}")
+            ex.printKetherErrorMessage()
             null
         }
     }
 
-    fun loadScript(status: IStatus, action: String): Script {
+    fun loadScript(status: IStatus, action: String): Script? {
         return try {
             OrryxAPI.ketherScriptLoader.load(ScriptService, status.key, getBytes(action), orryxEnvironmentNamespaces)
         } catch (ex: Exception) {
-            ex.printStackTrace()
-            error("Status: ${status.key}")
+            warning("Status: ${status.key}")
+            ex.printKetherErrorMessage()
+            null
         }
     }
 

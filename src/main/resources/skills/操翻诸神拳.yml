@@ -164,3 +164,7 @@ Actions: |-
     damage 1 false they "@rayhit dir0 1 !@self"
     sleep 1
   }
+  runExtend 完成
+ExtendActions:
+  完成: |-
+    tell test

@@ -1,6 +1,5 @@
 package org.gitee.orryx.core.kether
 
-import com.mojang.datafixers.kinds.App
 import org.bukkit.event.player.PlayerQuitEvent
 import org.gitee.orryx.api.OrryxAPI.Companion.ketherScriptLoader
 import org.gitee.orryx.core.kether.parameter.IParameter
@@ -8,16 +7,13 @@ import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.utils.PARAMETER
 import org.gitee.orryx.utils.getBytes
 import org.gitee.orryx.utils.orryxEnvironmentNamespaces
+import org.gitee.orryx.utils.printKetherErrorMessage
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.warning
 import taboolib.common.util.unsafeLazy
-import taboolib.library.kether.Parser.*
-import taboolib.library.kether.QuestAction
-import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*
-import taboolib.module.kether.KetherFunction.parse
 import taboolib.module.kether.KetherFunction.reader
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -109,7 +105,14 @@ object ScriptManager {
     fun runScript(sender: ProxyCommandSender, parameter: IParameter, action: String, context: (ScriptContext.() -> Unit)? = null): CompletableFuture<Any?> {
         val uuid = UUID.randomUUID().toString()
         val script = scriptMap.getOrPut(action) {
-            ketherScriptLoader.load(ScriptService, "orryx_temp_${uuid}", getBytes(action), orryxEnvironmentNamespaces)
+            runKether {
+                ketherScriptLoader.load(
+                    ScriptService,
+                    "orryx_temp_${uuid}",
+                    getBytes(action),
+                    orryxEnvironmentNamespaces
+                )
+            }
         }
 
         return try {
@@ -130,7 +133,14 @@ object ScriptManager {
         val uuid = UUID.randomUUID().toString()
         return reader.replaceNested(actions) {
             val script = scriptMap.getOrPut(this) {
-                ketherScriptLoader.load(ScriptService, "orryx_temp_${uuid}", getBytes(this), orryxEnvironmentNamespaces)
+                runKether {
+                    ketherScriptLoader.load(
+                        ScriptService,
+                        "orryx_temp_${uuid}",
+                        getBytes(this),
+                        orryxEnvironmentNamespaces
+                    )
+                }
             }
 
             try {

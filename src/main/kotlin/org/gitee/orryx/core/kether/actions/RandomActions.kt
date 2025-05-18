@@ -1,5 +1,6 @@
 package org.gitee.orryx.core.kether.actions
 
+import com.eatthepath.uuid.FastUUID
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.ORRYX_NAMESPACE
@@ -24,7 +25,7 @@ object RandomActions {
 
     private fun randomUUID(): ScriptAction<Any?> {
         return actionFuture { future ->
-            future.complete(java.util.UUID.randomUUID().toString())
+            future.complete(FastUUID.toString(java.util.UUID.randomUUID()))
         }
     }
 

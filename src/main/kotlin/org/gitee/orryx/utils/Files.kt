@@ -43,6 +43,16 @@ internal fun ConfigurationSection.getMap(path: String): Map<String, String> {
     return map
 }
 
+internal fun <T> ConfigurationSection.getMap(path: String, func: (String) -> T): Map<String, T> {
+    val map = HashMap<String, T>()
+    getConfigurationSection(path)?.let { section ->
+        section.getKeys(false).forEach { key ->
+            map[key] = func(section.getString(key)!!)
+        }
+    }
+    return map
+}
+
 internal fun loadFromFile(name: String): Configuration {
     return if (ConfigLoader.files.containsKey(name)) {
         ConfigLoader.files[name]!!.configuration

@@ -4,7 +4,6 @@ import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.api.events.OrryxSkillReloadEvent
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.core.skill.skills.*
-import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.module.state.StateManager
 import org.gitee.orryx.utils.*
 import taboolib.common.LifeCycle
@@ -16,7 +15,6 @@ import taboolib.module.chat.colored
 import taboolib.module.configuration.Configuration
 import taboolib.module.kether.Script
 import taboolib.module.kether.ScriptService
-import java.util.UUID
 
 object SkillLoaderManager {
 
@@ -59,9 +57,21 @@ object SkillLoaderManager {
         return try {
             OrryxAPI.ketherScriptLoader.load(ScriptService, skill.key, getBytes(skill.actions), orryxEnvironmentNamespaces)
         } catch (ex: Exception) {
-            ex.printStackTrace()
-            warning("Skill: ${skill.key}")
+            warning("Skill: ${skill.key} 主Action加载失败")
+            ex.printKetherErrorMessage()
             null
+        }
+    }
+
+    internal fun loadExtendScript(skill: ICastSkill): Map<String, Script?> {
+        return skill.extendActions.mapValues {
+            try {
+                OrryxAPI.ketherScriptLoader.load(ScriptService, "${skill.key}@${it.key}", getBytes(it.value), orryxEnvironmentNamespaces)
+            } catch (ex: Exception) {
+                warning("Skill: ${skill.key} ExtendAction: ${it.key} 加载失败")
+                ex.printKetherErrorMessage()
+                null
+            }
         }
     }
 }

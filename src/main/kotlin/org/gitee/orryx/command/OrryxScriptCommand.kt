@@ -58,7 +58,7 @@ object OrryxScriptCommand {
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
                     val skill = ctx["skill"]
-                    ScriptManager.runningSkillScriptsMap[player.uniqueId]?.terminate(skill)
+                    ScriptManager.runningSkillScriptsMap[player.uniqueId]?.terminate(skill, true)
                     sender.sendMessage("已终止玩家${player.name} 技能 $skill")
                 }
             }

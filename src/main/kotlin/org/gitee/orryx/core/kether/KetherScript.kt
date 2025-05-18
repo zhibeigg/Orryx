@@ -6,10 +6,10 @@ import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.skill.SkillLoaderManager
 import org.gitee.orryx.utils.debug
 import taboolib.common.platform.function.adaptPlayer
-import taboolib.common.platform.function.submitAsync
 import taboolib.module.kether.Script
 import taboolib.module.kether.ScriptContext
 import taboolib.module.kether.extend
+import java.util.concurrent.CompletableFuture
 
 /**
  * @author zhibei
@@ -23,20 +23,48 @@ class KetherScript(val skill: String, override val script: Script): IKetherScrip
         if (SkillLoaderManager.getSkillLoader(skill) == null) error("KetherScript初始化时检测到不存在的技能$skill")
     }
 
-    override fun runActions(skillParameter: SkillParameter, map: Map<String, Any>?) {
+    override fun runActions(skillParameter: SkillParameter, map: Map<String, Any>?): CompletableFuture<Any?> {
+        val future = CompletableFuture<Any?>()
         pluginScope.launch {
-            debug("run skill action $map")
-            val playerRunningSpace =
-                ScriptManager.runningSkillScriptsMap.getOrPut(skillParameter.player.uniqueId) { PlayerRunningSpace(skillParameter.player) }
+            debug("run skill: $skill action map: $map")
+            val playerRunningSpace = ScriptManager.runningSkillScriptsMap.getOrPut(skillParameter.player.uniqueId) { PlayerRunningSpace(skillParameter.player) }
 
             var context: ScriptContext? = null
             ScriptManager.runScript(adaptPlayer(skillParameter.player), skillParameter, script) {
                 playerRunningSpace.invoke(this, skill)
                 map?.let { extend(it) }
                 context = this
-            }.whenComplete { _, _ ->
+            }.whenComplete { v, ex ->
                 playerRunningSpace.release(context!!, skill)
+                if (ex != null) {
+                    future.completeExceptionally(ex)
+                } else {
+                    future.complete(v)
+                }
             }
         }
+        return future
+    }
+
+    override fun runExtendActions(skillParameter: SkillParameter, extend: String): CompletableFuture<Any?> {
+        val future = CompletableFuture<Any?>()
+        pluginScope.launch {
+            debug("run skill: $skill extend: $extend action")
+            val playerRunningSpace = ScriptManager.runningSkillScriptsMap.getOrPut(skillParameter.player.uniqueId) { PlayerRunningSpace(skillParameter.player) }
+
+            var context: ScriptContext? = null
+            ScriptManager.runScript(adaptPlayer(skillParameter.player), skillParameter, script) {
+                playerRunningSpace.invoke(this, "$skill@$extend")
+                context = this
+            }.whenComplete { v, ex ->
+                playerRunningSpace.release(context!!, "$skill@$extend")
+                if (ex != null) {
+                    future.completeExceptionally(ex)
+                } else {
+                    future.complete(v)
+                }
+            }
+        }
+        return future
     }
 }

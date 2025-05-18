@@ -28,7 +28,12 @@ class PlayerRunningSpace(val player: Player) {
         }
     }
 
-    fun terminate(tag: String) {
+    fun terminate(tag: String, isStartWith: Boolean = false) {
+        if (isStartWith) {
+            runningSpaceMap.filter { it.key.startsWith("$tag@") }.forEach {
+                it.value.terminate()
+            }
+        }
         runningSpaceMap[tag]?.terminate()
     }
 }

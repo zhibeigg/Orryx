@@ -3,15 +3,23 @@ package org.gitee.orryx.core.kether.actions
 import org.gitee.orryx.core.job.IJob
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.kether.ScriptManager.addOrryxCloseable
+import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.profile.IPlayerProfile
 import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.core.skill.ISkill
-import org.gitee.orryx.module.mana.IManaManager
+import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.module.spirit.ISpiritManager
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.ORRYX_NAMESPACE
+import org.gitee.orryx.utils.container
+import org.gitee.orryx.utils.containerOrSelf
 import org.gitee.orryx.utils.ensureSync
+import org.gitee.orryx.utils.firstInstanceOrNull
+import org.gitee.orryx.utils.getParameterOrNull
+import org.gitee.orryx.utils.nextHeadActionOrNull
+import org.gitee.orryx.utils.readContainer
+import org.gitee.orryx.utils.runSkillExtendAction
 import org.gitee.orryx.utils.scriptParser
 import taboolib.common.OpenResult
 import taboolib.common.platform.function.isPrimaryThread
@@ -77,6 +85,33 @@ object Actions {
                             else -> false
                         }
                     )
+                }
+            }
+        }
+    }
+
+    @KetherParser(["runExtend"], namespace = ORRYX_NAMESPACE)
+    private fun callExtend() = scriptParser(
+        Action.new("普通语句", "运行拓展子Action", "runExtend")
+            .description("运行拓展子Action，返回运行结果(只能在技能环境中使用)")
+            .addEntry("拓展名", Type.STRING)
+            .addEntry("私有原点", Type.TARGET, true, "@self", "origin")
+    ) {
+        val key = it.nextParsedAction()
+        val origin = it.nextHeadActionOrNull(arrayOf("origin"))
+        actionFuture { future ->
+            val skillParameter = script().getParameterOrNull() as? SkillParameter ?: return@actionFuture future.complete(null)
+            run(key).str { key ->
+                containerOrSelf(origin) { container ->
+                    val origin =  container.firstInstanceOrNull<ITargetLocation<*>>()
+                    val extendParameter = SkillParameter(skillParameter, origin)
+                    extendParameter.runSkillExtendAction(key)?.whenComplete { value, ex ->
+                        if (ex != null) {
+                            future.completeExceptionally(ex)
+                        } else {
+                            future.complete(value)
+                        }
+                    } ?: future.complete(null)
                 }
             }
         }

@@ -15,6 +15,11 @@ import taboolib.module.kether.orNull
 
 class SkillParameter(val skill: String?, val player: Player, var level: Int = 1): IParameter {
 
+    constructor(skillParameter: SkillParameter, origin: ITargetLocation<*>?): this(skillParameter.skill, skillParameter.player, skillParameter.level) {
+
+        this.origin = origin ?: player.toTarget()
+    }
+
     override var origin: ITargetLocation<*>? = player.toTarget()
 
     private val proxyCommandSender by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { adaptPlayer(player) }
