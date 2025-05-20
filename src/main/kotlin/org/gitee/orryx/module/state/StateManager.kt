@@ -33,6 +33,7 @@ import taboolib.common.platform.function.info
 import taboolib.common.platform.function.warning
 import taboolib.common.util.unsafeLazy
 import taboolib.common5.cbool
+import taboolib.common5.cfloat
 import taboolib.common5.clong
 import taboolib.library.configuration.ConfigurationSection
 import taboolib.module.chat.colored
@@ -107,13 +108,11 @@ object StateManager {
     private fun join(e: EntityJoinWorldEvent) {
         val joiner = Bukkit.getPlayer(e.entityUUID) ?: return
         val joinerData = joiner.statusData()
-        val joinerStatus = joinerData.status as? Status ?: return
         val data = e.player.statusData()
-        if (joiner.uniqueId !in data.cacheJoiner) {
-            data.cacheJoiner.add(joiner.uniqueId)
-            val controller = controllerMap[joinerStatus.options.controller] ?: return
-            DragonCoreCustomPacketSender.setPlayerAnimationController(e.player, joiner.uniqueId, controller.saveToString())
-        }
+        data.cacheJoiner.add(joiner.uniqueId)
+        val joinerStatus = joinerData.status as? Status ?: return
+        val controller = controllerMap[joinerStatus.options.controller] ?: return
+        DragonCoreCustomPacketSender.setPlayerAnimationController(e.player, joiner.uniqueId, controller.saveToString())
     }
 
     @Ghost
@@ -169,6 +168,12 @@ object StateManager {
                         cancelInvisibleHand(e.player)
                     }
                 }
+                "PlayHand" -> {
+                    val animation = e.data[1]
+                    val tick = e.data[2].clong
+                    val speed = e.data[3].cfloat
+                    setPlayHand(e.player, animation, tick, speed)
+                }
             }
         }
     }
@@ -209,16 +214,28 @@ object StateManager {
         }
     }
 
-    internal fun setInvisibleHand(player: Player, tick: Long) {
-        playerInvisibleHandTaskMap[player.uniqueId]?.let { SimpleTimeoutTask.cancel(it) }
+    internal fun setPlayHand(player: Player, animation: String, tick: Long, speed: Float = 1.0f) {
+        val players = player.statusData().cacheJoiner.mapNotNull { Bukkit.getPlayer(it) }
+        playerInvisibleHandTaskMap[player.uniqueId]?.let { SimpleTimeoutTask.cancel(it, false) }
         playerInvisibleHandTaskMap[player.uniqueId] = SimpleTimeoutTask.createSimpleTask(tick) {
-            PacketSender.setEntityModelItemAnimation(player, "invisible", 1.0f)
+            DragonCoreCustomPacketSender.setEntityModelItemAnimation(player, player.uniqueId, animation, speed)
+            players.forEach { target ->
+                DragonCoreCustomPacketSender.setEntityModelItemAnimation(target, player.uniqueId, animation, speed)
+            }
         }
     }
 
+    internal fun setInvisibleHand(player: Player, tick: Long) {
+        setPlayHand(player, "invisible", tick)
+    }
+
     internal fun cancelInvisibleHand(player: Player) {
-        playerInvisibleHandTaskMap[player.uniqueId]?.let { SimpleTimeoutTask.cancel(it) }
-        PacketSender.setEntityModelItemAnimation(player, "idle", 1.0f)
+        val players = player.statusData().cacheJoiner.mapNotNull { Bukkit.getPlayer(it) }
+        playerInvisibleHandTaskMap[player.uniqueId]?.let { SimpleTimeoutTask.cancel(it, false) }
+        DragonCoreCustomPacketSender.setEntityModelItemAnimation(player, player.uniqueId, "idle", 1.0f)
+        players.forEach { target ->
+            DragonCoreCustomPacketSender.setEntityModelItemAnimation(target, player.uniqueId, "idle", 1.0f)
+        }
     }
 
     fun autoCheckStatus(player: Player): CompletableFuture<Status?> {

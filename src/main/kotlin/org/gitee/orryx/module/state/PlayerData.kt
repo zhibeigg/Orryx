@@ -19,7 +19,7 @@ class PlayerData(val player: Player) {
 
     private var changeMoveState = MoveState.FRONT
 
-    val cacheJoiner = hashSetOf<UUID>()
+    val cacheJoiner = linkedSetOf<UUID>()
 
     //移动方向
     val moveState: MoveState

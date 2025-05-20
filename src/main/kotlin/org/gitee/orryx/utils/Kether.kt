@@ -3,6 +3,7 @@ package org.gitee.orryx.utils
 import com.mojang.datafixers.kinds.App
 import org.bukkit.entity.Player
 import org.bukkit.util.Vector
+import org.gitee.nodens.util.NODENS_NAMESPACE
 import org.gitee.orryx.api.adapters.IVector
 import org.gitee.orryx.api.adapters.vector.AbstractVector
 import org.gitee.orryx.core.common.keyregister.PlayerKeySetting
@@ -40,7 +41,7 @@ import kotlin.collections.plusAssign
 
 const val ORRYX_NAMESPACE = "Orryx"
 
-val orryxEnvironmentNamespaces = listOf(ORRYX_NAMESPACE, "kether")
+val orryxEnvironmentNamespaces = listOf(ORRYX_NAMESPACE, NODENS_NAMESPACE, "kether")
 
 val EMPTY_FUNCTION = {}
 

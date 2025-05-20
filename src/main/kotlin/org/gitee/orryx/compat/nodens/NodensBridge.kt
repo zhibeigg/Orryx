@@ -3,19 +3,11 @@ package org.gitee.orryx.compat.nodens
 import org.bukkit.entity.LivingEntity
 import org.gitee.nodens.api.Nodens
 import org.gitee.nodens.common.DamageProcessor
-import org.gitee.nodens.common.DigitalParser
-import org.gitee.nodens.common.EntitySyncProfile
-import org.gitee.nodens.common.RegainProcessor
-import org.gitee.nodens.core.AttributeConfig
-import org.gitee.nodens.core.AttributeManager
-import org.gitee.nodens.core.IAttributeGroup
 import org.gitee.nodens.core.TempAttributeData
-import org.gitee.nodens.core.attribute.AbstractNumber
 import org.gitee.nodens.core.attribute.Damage
 import org.gitee.orryx.api.events.damage.DamageType
 import org.gitee.orryx.api.events.damage.DamageType.*
 import org.gitee.orryx.compat.IAttributeBridge
-import taboolib.common.platform.Ghost
 import taboolib.module.kether.ScriptContext
 
 class NodensBridge: IAttributeBridge {
@@ -42,7 +34,8 @@ class NodensBridge: IAttributeBridge {
             CONSOLE -> processor.addDamageSource("Orryx", Damage.Real, damage)
             CUSTOM -> processor.addDamageSource("Orryx", Damage.Real, damage)
         }
-        Nodens.api().attackEntity(processor)
+        processor.handleDefender()
+        processor.callDamage()
     }
 
     override fun removeAttribute(entity: LivingEntity, key: String) {
