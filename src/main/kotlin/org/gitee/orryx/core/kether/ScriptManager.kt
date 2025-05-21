@@ -1,5 +1,6 @@
 package org.gitee.orryx.core.kether
 
+import com.eatthepath.uuid.FastUUID
 import org.bukkit.event.player.PlayerQuitEvent
 import org.gitee.orryx.api.OrryxAPI.Companion.ketherScriptLoader
 import org.gitee.orryx.core.kether.parameter.IParameter
@@ -92,7 +93,7 @@ object ScriptManager {
             ScriptContext.create(script).also {
                 context?.invoke(it)
                 it.sender = sender
-                it.id = UUID.randomUUID().toString()
+                it.id = FastUUID.toString(UUID.randomUUID())
                 it[PARAMETER] = parameter
             }.runActions()
         } catch (e: Throwable) {
@@ -103,7 +104,7 @@ object ScriptManager {
     }
 
     fun runScript(sender: ProxyCommandSender, parameter: IParameter, action: String, context: (ScriptContext.() -> Unit)? = null): CompletableFuture<Any?> {
-        val uuid = UUID.randomUUID().toString()
+        val uuid = FastUUID.toString(UUID.randomUUID())
         val script = scriptMap.getOrPut(action) {
             runKether {
                 ketherScriptLoader.load(
@@ -130,7 +131,7 @@ object ScriptManager {
     }
 
     fun parseScript(sender: ProxyCommandSender, parameter: IParameter, actions: String, context: (ScriptContext.() -> Unit)? = null): String {
-        val uuid = UUID.randomUUID().toString()
+        val uuid = FastUUID.toString(UUID.randomUUID())
         return reader.replaceNested(actions) {
             val script = scriptMap.getOrPut(this) {
                 runKether {

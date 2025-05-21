@@ -1,16 +1,9 @@
 package org.gitee.orryx.module.state
 
+import com.eatthepath.uuid.FastUUID
 import org.bukkit.entity.Player
-import org.gitee.orryx.module.state.states.SkillState
-import org.gitee.orryx.utils.checkAndCast
-import org.gitee.orryx.utils.getActionType
-import org.gitee.orryx.utils.getKeySort
-import org.gitee.orryx.utils.getTimeout
-import org.gitee.orryx.utils.keySetting
 import org.gitee.orryx.utils.parse
-import org.gitee.orryx.utils.tryCast
 import taboolib.common.platform.function.adaptPlayer
-import taboolib.common.platform.function.info
 import taboolib.common.platform.function.warning
 import taboolib.library.configuration.ConfigurationSection
 import taboolib.module.configuration.Configuration
@@ -51,7 +44,7 @@ class Status(override val key: String, configuration: Configuration): IStatus {
         }
         return ScriptContext.create(script).also {
             it.sender = adaptPlayer(playerData.player)
-            it.id = UUID.randomUUID().toString()
+            it.id = FastUUID.toString(UUID.randomUUID())
             it["input"] = input
         }.runActions().thenApply {
             it as IRunningState?

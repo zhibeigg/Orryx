@@ -13,19 +13,35 @@ import taboolib.library.reflex.Reflex.Companion.getProperty
 import taboolib.library.reflex.Reflex.Companion.setProperty
 
 fun AbstractDamageEvent.isAttributePlus(): Boolean {
-    return origin is AttrEntityDamageBeforeEvent
+    return try {
+        origin is AttrEntityDamageBeforeEvent
+    } catch (_: Throwable) {
+        false
+    }
 }
 
 fun AbstractDamageEvent.isNodens(): Boolean {
-    return origin is NodensEntityDamageEvents.Pre
+    return try {
+        origin is NodensEntityDamageEvents.Pre
+    } catch (_: Throwable) {
+        false
+    }
 }
 
 fun AbstractDamageEvent.apEvent(): AttrEntityDamageBeforeEvent? {
-    return origin as? AttrEntityDamageBeforeEvent
+    return try {
+        origin as? AttrEntityDamageBeforeEvent
+    } catch (_: Throwable) {
+        null
+    }
 }
 
 fun AbstractDamageEvent.noEvent(): NodensEntityDamageEvents.Pre? {
-    return origin as? NodensEntityDamageEvents.Pre
+    return try {
+        origin as? NodensEntityDamageEvents.Pre
+    } catch (_: Throwable) {
+        null
+    }
 }
 
 fun doDamage(source: LivingEntity?, entity: LivingEntity, damageCause: DamageCause, damage: Double) {

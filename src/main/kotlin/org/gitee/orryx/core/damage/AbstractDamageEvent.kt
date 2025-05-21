@@ -31,6 +31,7 @@ abstract class AbstractDamageEvent(
     var damage: Double
         get() = when {
             isAttributePlus() -> apEvent()!!.damage
+            isNodens() -> noEvent()!!.processor.getFinalDamage()
             else -> privateDamage
         }
         set(value) {
