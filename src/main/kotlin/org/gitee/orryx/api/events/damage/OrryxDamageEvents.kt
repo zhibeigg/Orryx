@@ -12,7 +12,7 @@ class OrryxDamageEvents {
 
     class Pre(attacker: Entity, defender: Entity, privateDamage: Double, event: EntityDamageByEntityEvent?, type: DamageType, context: ScriptContext? = null): AbstractDamageEvent(attacker, defender, privateDamage, event, type, context)
 
-    class Post(val attacker: Entity, val defender: Entity, val damage: Double, val event: EntityDamageByEntityEvent?, val type: DamageType, val context: ScriptContext? = null): BukkitProxyEvent() {
+    class Post(val attacker: Entity, val defender: Entity, val damage: Double, val event: EntityDamageByEntityEvent?, val type: DamageType, val crit: Boolean = false, val context: ScriptContext? = null): BukkitProxyEvent() {
 
         fun attackPlayer(): Player? {
 

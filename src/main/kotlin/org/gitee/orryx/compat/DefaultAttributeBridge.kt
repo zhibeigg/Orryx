@@ -24,7 +24,7 @@ class DefaultAttributeBridge: IAttributeBridge {
         val event = OrryxDamageEvents.Pre(attacker, target, damage, bukkitEvent, type, context)
         if (event.call()) {
             doDamage(event.attacker as? LivingEntity, event.defender as? LivingEntity ?: return, event.event!!.cause, event.damage)
-            OrryxDamageEvents.Post(attacker, target, event.damage, bukkitEvent, event.type, context).call()
+            OrryxDamageEvents.Post(attacker, target, event.damage, bukkitEvent, event.type, false, context).call()
         }
     }
 

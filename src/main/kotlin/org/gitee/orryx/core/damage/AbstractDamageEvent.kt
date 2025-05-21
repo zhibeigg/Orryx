@@ -28,6 +28,20 @@ abstract class AbstractDamageEvent(
 
     internal var origin: Any? = null
 
+    var crit: Boolean
+        get() = when {
+            isAttributePlus() -> error("unsupported AttributePlus Crit")
+            isNodens() -> noEvent()!!.processor.crit
+            else -> error("unsupported Orryx Crit")
+        }
+        set(value) {
+            when {
+                isAttributePlus() -> error("unsupported AttributePlus Crit")
+                isNodens() -> noEvent()!!.processor.setCrit(value)
+                else -> error("unsupported Orryx Crit")
+            }
+        }
+
     var damage: Double
         get() = when {
             isAttributePlus() -> apEvent()!!.damage

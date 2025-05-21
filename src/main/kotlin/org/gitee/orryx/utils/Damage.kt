@@ -9,37 +9,46 @@ import org.gitee.nodens.api.events.entity.NodensEntityDamageEvents
 import org.gitee.orryx.api.events.damage.DamageType
 import org.gitee.orryx.core.damage.AbstractDamageEvent
 import org.serverct.ersha.api.event.AttrEntityDamageBeforeEvent
+import taboolib.common.platform.function.warning
 import taboolib.library.reflex.Reflex.Companion.getProperty
 import taboolib.library.reflex.Reflex.Companion.setProperty
 
 fun AbstractDamageEvent.isAttributePlus(): Boolean {
+    if (!AttributePlusPlugin.isEnabled) return false
     return try {
         origin is AttrEntityDamageBeforeEvent
     } catch (_: Throwable) {
+        warning("unsupported ${AttrEntityDamageBeforeEvent::class}")
         false
     }
 }
 
 fun AbstractDamageEvent.isNodens(): Boolean {
+    if (!NodensPlugin.isEnabled) return false
     return try {
         origin is NodensEntityDamageEvents.Pre
     } catch (_: Throwable) {
+        warning("unsupported ${NodensEntityDamageEvents.Pre::class}")
         false
     }
 }
 
 fun AbstractDamageEvent.apEvent(): AttrEntityDamageBeforeEvent? {
+    if (!AttributePlusPlugin.isEnabled) return null
     return try {
         origin as? AttrEntityDamageBeforeEvent
     } catch (_: Throwable) {
+        warning("unsupported ${AttrEntityDamageBeforeEvent::class}")
         null
     }
 }
 
 fun AbstractDamageEvent.noEvent(): NodensEntityDamageEvents.Pre? {
+    if (!NodensPlugin.isEnabled) return null
     return try {
         origin as? NodensEntityDamageEvents.Pre
     } catch (_: Throwable) {
+        warning("unsupported ${NodensEntityDamageEvents.Pre::class}")
         null
     }
 }

@@ -8,6 +8,8 @@ import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.abstract
+import org.gitee.orryx.utils.apEvent
+import org.gitee.orryx.utils.noEvent
 import taboolib.common.OpenResult
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
@@ -51,11 +53,24 @@ object PlayerDamagePreTrigger: AbstractPropertyEventTrigger<OrryxDamageEvents.Pr
             "attacker" -> OpenResult.successful(instance.attacker.abstract())
             "defender" -> OpenResult.successful(instance.defender.abstract())
             "type" -> OpenResult.successful(instance.type.name)
+            "crit" -> OpenResult.successful(instance.crit)
+            "no" -> OpenResult.successful(instance.noEvent())
+            "ap" -> OpenResult.successful(instance.apEvent())
             else -> OpenResult.failed()
         }
     }
 
     override fun write(instance: OrryxDamageEvents.Pre, key: String, value: Any?): OpenResult {
-        return OpenResult.failed()
+        return when (key) {
+            "damage" -> {
+                instance.damage = value as Double
+                OpenResult.successful(instance.damage)
+            }
+            "crit" -> {
+                instance.crit = value as Boolean
+                OpenResult.successful(instance.crit)
+            }
+            else -> OpenResult.failed()
+        }
     }
 }

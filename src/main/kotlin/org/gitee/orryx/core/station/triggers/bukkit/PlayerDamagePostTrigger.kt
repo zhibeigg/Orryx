@@ -3,7 +3,6 @@ package org.gitee.orryx.core.station.triggers.bukkit
 import org.gitee.orryx.api.events.damage.OrryxDamageEvents
 import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.station.stations.IStation
-import org.gitee.orryx.core.station.triggers.AbstractEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
@@ -12,7 +11,6 @@ import org.gitee.orryx.utils.abstract
 import taboolib.common.OpenResult
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
-import taboolib.common5.cdouble
 import taboolib.module.kether.ScriptContext
 import taboolib.module.kether.deepVars
 import taboolib.module.kether.extend

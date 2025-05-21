@@ -58,10 +58,10 @@ object ProxyDamageManager {
     @SubscribeEvent(ignoreCancelled = true, priority = EventPriority.MONITOR)
     private fun onNoDamage(e: NodensEntityDamageEvents.Pre) {
         val type = when(e.processor.damageType) {
-            Damage.Physics.name -> DamageType.PHYSICS
-            Damage.Magic.name -> DamageType.MAGIC
-            Damage.Real.name -> DamageType.REAL
-            Damage.Fire.name -> DamageType.FIRE
+            Damage.Physics.name.uppercase() -> DamageType.PHYSICS
+            Damage.Magic.name.uppercase() -> DamageType.MAGIC
+            Damage.Real.name.uppercase() -> DamageType.REAL
+            Damage.Fire.name.uppercase() -> DamageType.FIRE
             else -> DamageType.CUSTOM
         }
         val event = OrryxDamageEvents.Pre(e.processor.attacker, e.processor.defender, e.processor.getFinalDamage(), null, type)
@@ -75,12 +75,12 @@ object ProxyDamageManager {
     @SubscribeEvent(ignoreCancelled = true, priority = EventPriority.MONITOR)
     private fun onNoDamage(e: NodensEntityDamageEvents.Post) {
         val type = when(e.processor.damageType) {
-            Damage.Physics.name -> DamageType.PHYSICS
-            Damage.Magic.name -> DamageType.MAGIC
-            Damage.Real.name -> DamageType.REAL
-            Damage.Fire.name -> DamageType.FIRE
+            Damage.Physics.name.uppercase() -> DamageType.PHYSICS
+            Damage.Magic.name.uppercase() -> DamageType.MAGIC
+            Damage.Real.name.uppercase() -> DamageType.REAL
+            Damage.Fire.name.uppercase() -> DamageType.FIRE
             else -> DamageType.CUSTOM
         }
-        OrryxDamageEvents.Post(e.processor.attacker, e.processor.defender, e.processor.getFinalDamage(), null, type).call()
+        OrryxDamageEvents.Post(e.processor.attacker, e.processor.defender, e.processor.getFinalDamage(), null, type, e.processor.crit).call()
     }
 }
