@@ -30,15 +30,12 @@ abstract class AbstractDamageEvent(
 
     var crit: Boolean
         get() = when {
-            isAttributePlus() -> error("unsupported AttributePlus Crit")
             isNodens() -> noEvent()!!.processor.crit
-            else -> error("unsupported Orryx Crit")
+            else -> false
         }
         set(value) {
             when {
-                isAttributePlus() -> error("unsupported AttributePlus Crit")
                 isNodens() -> noEvent()!!.processor.setCrit(value)
-                else -> error("unsupported Orryx Crit")
             }
         }
 
