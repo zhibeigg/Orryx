@@ -24,8 +24,8 @@ interface IRunningState {
 
     /**
      * 是否能过渡到下一个状态
-     * @param runningState 下一个状态
+     * @param nextRunningState 下一个状态
      * @return 是否能
      * */
-    fun hasNext(runningState: IRunningState): Boolean
+    fun hasNext(nextRunningState: IRunningState): Boolean
 }

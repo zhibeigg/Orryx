@@ -68,10 +68,10 @@ class VertigoState(override val key: String, configurationSection: Configuration
             stop = true
         }
 
-        override fun hasNext(runningState: IRunningState): Boolean {
-            if (!super.hasNext(runningState)) return false
+        override fun hasNext(nextRunningState: IRunningState): Boolean {
+            if (!super.hasNext(nextRunningState)) return false
             if (stop) return true
-            return when (runningState) {
+            return when (nextRunningState) {
                 is DodgeState.Running -> false
                 is BlockState.Running -> false
                 is GeneralAttackState.Running -> false

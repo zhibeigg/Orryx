@@ -91,10 +91,10 @@ class BlockState(override val key: String, override val configurationSection: Co
             stop = true
         }
 
-        override fun hasNext(runningState: IRunningState): Boolean {
-            if (!super.hasNext(runningState)) return false
+        override fun hasNext(nextRunningState: IRunningState): Boolean {
+            if (!super.hasNext(nextRunningState)) return false
             if (stop) return true
-            return when (runningState) {
+            return when (nextRunningState) {
                 is Running -> false
                 is DodgeState.Running -> true
                 is GeneralAttackState.Running -> false

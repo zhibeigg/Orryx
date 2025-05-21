@@ -1,7 +1,5 @@
 package org.gitee.orryx.module.state.states
 
-import eos.moe.armourers.da
-import eos.moe.armourers.fa
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.compat.IAnimationBridge
 import org.gitee.orryx.core.kether.ScriptManager
@@ -47,7 +45,6 @@ class DodgeState(override val key: String, override val configurationSection: Co
         private var context: ScriptContext? = null
 
         override fun start() {
-            startTimestamp = System.currentTimeMillis()
             ISpiritManager.INSTANCE.takeSpirit(data.player, state.spirit)
             state.runScript(data) { context = this }
             val key = when(data.moveState) {
@@ -61,6 +58,7 @@ class DodgeState(override val key: String, override val configurationSection: Co
             }
             if(state.connection.first != 0L) {
                 task1 = submit(delay = state.connection.first) {
+                    startTimestamp = System.currentTimeMillis()
                     StateManager.callNext(data.player)
                 }
             }
@@ -71,7 +69,7 @@ class DodgeState(override val key: String, override val configurationSection: Co
                 task0 = submit(delay = state.animation.duration - state.invincible.first + 1) {
                     stop = true
                     StateManager.callNext(data.player)
-                    val lessTime = state.connection.second - state.animation.duration - 1
+                    val lessTime = state.connection.second - state.animation.duration
                     if (lessTime > 0) {
                         submit(delay = lessTime) {
                             if (data.nowRunningState == this@Running) {
@@ -93,11 +91,11 @@ class DodgeState(override val key: String, override val configurationSection: Co
             stop = true
         }
 
-        override fun hasNext(runningState: IRunningState): Boolean {
-            if (!super.hasNext(runningState)) return false
+        override fun hasNext(nextRunningState: IRunningState): Boolean {
+            if (!super.hasNext(nextRunningState)) return false
             if (stop) return true
-            return when (runningState) {
-                is Running -> (System.currentTimeMillis() - startTimestamp) in state.connection.first * 50 until state.connection.second * 50
+            return when (nextRunningState) {
+                is Running -> (System.currentTimeMillis() - startTimestamp) in 0..state.connection.second * 50L
                 is BlockState.Running -> false
                 is GeneralAttackState.Running -> false
                 is SkillState.Running -> true
