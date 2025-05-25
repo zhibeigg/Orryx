@@ -15,7 +15,5 @@ class FovModifierPacketListener: PacketListener {
         val packet = WrapperPlayServerPlayerAbilities(e)
         packet.fovModifier = 0f
         e.markForReEncode(true)
-        packet.write()
-        e.byteBuf = packet.readByte()
     }
 }

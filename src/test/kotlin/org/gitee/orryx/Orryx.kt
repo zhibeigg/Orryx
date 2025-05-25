@@ -41,5 +41,10 @@ object Orryx {
         }
         println("test = ${test/10000}")
         println("spirit".split(",").associateWith { it })
+
+        val list = mutableListOf<Int>()
+        repeat(10000) {
+            list += it
+        }
     }
 }

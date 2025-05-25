@@ -14,5 +14,4 @@ object PlaceHolder: PlaceholderExpansion {
     override fun onPlaceholderRequest(player: Player?, args: String): String {
         return player?.eval(args, emptyMap())?.orNull()?.toString() ?: console().eval(args, emptyMap()).orNull().toString()
     }
-
 }

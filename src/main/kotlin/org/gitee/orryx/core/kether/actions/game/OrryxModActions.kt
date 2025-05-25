@@ -1,6 +1,5 @@
 package org.gitee.orryx.core.kether.actions.game
 
-import eos.moe.armourers.tr
 import org.gitee.orryx.core.message.PluginMessageHandler
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.core.targets.ITargetLocation
@@ -9,7 +8,7 @@ import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
 import taboolib.common5.cfloat
-import taboolib.module.kether.KetherParser
+import taboolib.module.kether.*
 
 object OrryxModActions {
 
@@ -139,6 +138,45 @@ object OrryxModActions {
                     entities.forEach { entity ->
                         PluginMessageHandler.removeEntityShowEffect(player.getSource(), entity.entity.uniqueId, group)
                     }
+                }
+            }
+        }
+    }
+
+    @KetherParser(["navigation"], namespace = ORRYX_NAMESPACE, shared = true)
+    private fun actionNavigation() = scriptParser(
+        Action.new("Orryx Mod额外功能", "开始一个自动寻路导航", "navigation", true)
+            .description("开始一个自动寻路导航")
+            .addEntry("开始占位符", Type.SYMBOL, false, head = "start")
+            .addEntry("x", Type.INT, false)
+            .addEntry("y", Type.INT, false)
+            .addEntry("z", Type.INT, false)
+            .addEntry("range", Type.INT, false),
+        Action.new("Orryx Mod额外功能", "停止自动寻路导航", "navigation", true)
+            .description("停止自动寻路导航")
+            .addEntry("停止占位符", Type.SYMBOL, false, head = "stop")
+    ) {
+        it.switch {
+            case("start") {
+                val x = it.nextParsedAction()
+                val y = it.nextParsedAction()
+                val z = it.nextParsedAction()
+                val r = it.nextParsedAction()
+                actionNow {
+                    run(x).int { x ->
+                        run(y).int { y ->
+                            run(z).int { z ->
+                                run(r).int { r ->
+                                    PluginMessageHandler.playerNavigation(script().bukkitPlayer(), x, y, z, r)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            case("stop") {
+                actionNow {
+                    PluginMessageHandler.stopPlayerNavigation(script().bukkitPlayer())
                 }
             }
         }

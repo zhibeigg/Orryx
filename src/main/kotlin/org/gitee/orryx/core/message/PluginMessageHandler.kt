@@ -54,6 +54,8 @@ object PluginMessageHandler {
         data object MouseRequest : PacketType(7)
         data object EntityShow : PacketType(8)
         data object EntityShowRemove : PacketType(9)
+        data object PlayerNavigation : PacketType(10)
+        data object PlayerNavigationStop : PacketType(11)
     }
 
     @Awake(LifeCycle.ENABLE)
@@ -314,6 +316,31 @@ object PluginMessageHandler {
         }
     }
 
+    /**
+     * 发起客户端寻路导航
+     * @param player 玩家
+     * @param x x
+     * @param y y
+     * @param z z
+     * @param range 目标点范围半径
+     */
+    fun playerNavigation(player: Player, x: Int, y: Int, z: Int, range: Int) {
+        sendDataPacket(player, PacketType.PlayerNavigation) {
+            writeInt(x)
+            writeInt(y)
+            writeInt(z)
+            writeInt(range)
+        }
+    }
+
+    /**
+     * 停止客户端寻路导航
+     * @param player 玩家
+     */
+    fun stopPlayerNavigation(player: Player) {
+        sendDataPacket(player, PacketType.PlayerNavigationStop)
+    }
+
     /* 内部实现 */
     private fun handleConfirmation(player: Player, isConfirmed: Boolean): Boolean {
         pendingRequests[player.uniqueId] ?: return false
@@ -333,7 +360,7 @@ object PluginMessageHandler {
     private inline fun sendDataPacket(
         player: Player,
         type: PacketType,
-        block: ByteArrayDataOutput.() -> Unit
+        block: ByteArrayDataOutput.() -> Unit = {},
     ) {
         try {
             val output = ByteStreams.newDataOutput().apply {

@@ -11,16 +11,7 @@ import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.module.spirit.ISpiritManager
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
-import org.gitee.orryx.utils.ORRYX_NAMESPACE
-import org.gitee.orryx.utils.container
-import org.gitee.orryx.utils.containerOrSelf
-import org.gitee.orryx.utils.ensureSync
-import org.gitee.orryx.utils.firstInstanceOrNull
-import org.gitee.orryx.utils.getParameterOrNull
-import org.gitee.orryx.utils.nextHeadActionOrNull
-import org.gitee.orryx.utils.readContainer
-import org.gitee.orryx.utils.runSkillExtendAction
-import org.gitee.orryx.utils.scriptParser
+import org.gitee.orryx.utils.*
 import taboolib.common.OpenResult
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common.platform.function.submit

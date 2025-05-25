@@ -62,6 +62,9 @@ object OrryxCommand {
     val script = OrryxScriptCommand
 
     @CommandBody
+    val navigation = OrryxPlayerNavigationCommand
+
+    @CommandBody
     val info = subCommand {
         player {
             exec<ProxyCommandSender> {
