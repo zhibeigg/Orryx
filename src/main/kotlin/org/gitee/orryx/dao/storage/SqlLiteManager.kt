@@ -1,6 +1,8 @@
 package org.gitee.orryx.dao.storage
 
 import com.eatthepath.uuid.FastUUID
+import com.google.common.collect.Interner
+import com.google.common.collect.Interners
 import kotlinx.serialization.json.Json
 import org.gitee.orryx.dao.pojo.PlayerJobPO
 import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
@@ -17,11 +19,17 @@ import taboolib.module.database.Table
 import taboolib.module.database.getHost
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentHashMap
+
 
 class SqlLiteManager: IStorageManager {
 
     private val host = newFile(getDataFolder(), "data.db").getHost()
     private val dataSource = host.createDataSource()
+
+    private val internerMap = ConcurrentHashMap<UUID, Interner<String>>()
+
+    fun getInternerByUUID(uuid: UUID): Interner<String> = internerMap.getOrPut(uuid) { Interners.newStrongInterner() }
 
     private val playerTable: Table<*, *> = Table("orryx_player", host) {
         add { id() }
@@ -34,31 +42,31 @@ class SqlLiteManager: IStorageManager {
     private val jobsTable: Table<*, *> = Table("orryx_player_jobs", host) {
         add(USER_ID) {
             type(ColumnTypeSQLite.INTEGER)
-            { options(ColumnOptionSQLite.UNIQUE, ColumnOptionSQLite.NOTNULL) }
+            { options(ColumnOptionSQLite.NOTNULL) }
         }
         add(JOB) { type(ColumnTypeSQLite.TEXT) }
         add(EXPERIENCE) { type(ColumnTypeSQLite.INTEGER) }
         add(GROUP) { type(ColumnTypeSQLite.TEXT) }
         add(BIND_KEY_OF_GROUP) { type(ColumnTypeSQLite.TEXT) }
-        primaryKeyForLegacy += listOf(USER_ID, JOB)
+        primaryKeyForLegacy += arrayOf(USER_ID, JOB)
     }
 
     private val skillsTable: Table<*, *> = Table("orryx_player_job_skills", host) {
         add(USER_ID) {
             type(ColumnTypeSQLite.INTEGER)
-            { options(ColumnOptionSQLite.UNIQUE, ColumnOptionSQLite.NOTNULL) }
+            { options(ColumnOptionSQLite.NOTNULL) }
         }
         add(JOB) { type(ColumnTypeSQLite.TEXT) }
         add(SKILL) { type(ColumnTypeSQLite.TEXT) }
         add(LOCKED) { type(ColumnTypeSQLite.BLOB) }
         add(LEVEL) { type(ColumnTypeSQLite.INTEGER) }
-        primaryKeyForLegacy += listOf(USER_ID, JOB, SKILL)
+        primaryKeyForLegacy += arrayOf(USER_ID, JOB, SKILL)
     }
 
     private val keyTable: Table<*, *> = Table("orryx_player_key_setting", host) {
         add(USER_ID) {
             type(ColumnTypeSQLite.INTEGER)
-            { options(ColumnOptionSQLite.UNIQUE, ColumnOptionSQLite.NOTNULL, ColumnOptionSQLite.PRIMARY_KEY) }
+            { options(ColumnOptionSQLite.NOTNULL, ColumnOptionSQLite.PRIMARY_KEY) }
         }
         add(KEY_SETTING) { type(ColumnTypeSQLite.TEXT) }
     }
@@ -76,9 +84,11 @@ class SqlLiteManager: IStorageManager {
         fun read() {
             try {
                 val uuid = FastUUID.toString(player)
-                if (!playerTable.find(dataSource) { where { PLAYER_UUID eq uuid } }) {
-                    playerTable.insert(dataSource, PLAYER_UUID, JOB, POINT, FLAGS) {
-                        value(uuid, null, 0, null)
+                synchronized(getInternerByUUID(player).intern("PlayerData${uuid}")) {
+                    if (!playerTable.find(dataSource) { where { PLAYER_UUID eq uuid } }) {
+                        playerTable.insert(dataSource, PLAYER_UUID, JOB, POINT, FLAGS) {
+                            value(uuid, null, 0, null)
+                        }
                     }
                 }
                 future.complete(
@@ -219,67 +229,77 @@ class SqlLiteManager: IStorageManager {
 
     override fun savePlayerJob(playerJobPO: PlayerJobPO, onSuccess: () -> Unit) {
         debug("SqlLite 保存玩家 Job")
-        jobsTable.transaction(dataSource) {
-            if (select { where { USER_ID eq playerJobPO.id and (JOB eq playerJobPO.job) } }.find()) {
-                update {
-                    where { USER_ID eq playerJobPO.id and (JOB eq playerJobPO.job) }
-                    set(EXPERIENCE, playerJobPO.experience)
-                    set(GROUP, playerJobPO.group)
-                    set(BIND_KEY_OF_GROUP, Json.encodeToString(playerJobPO.bindKeyOfGroup))
+        synchronized(getInternerByUUID(playerJobPO.player).intern("PlayerJob${playerJobPO.id}${playerJobPO.job}")) {
+            jobsTable.transaction(dataSource) {
+                if (select { where { USER_ID eq playerJobPO.id and (JOB eq playerJobPO.job) } }.find()) {
+                    update {
+                        where { USER_ID eq playerJobPO.id and (JOB eq playerJobPO.job) }
+                        set(EXPERIENCE, playerJobPO.experience)
+                        set(GROUP, playerJobPO.group)
+                        set(BIND_KEY_OF_GROUP, Json.encodeToString(playerJobPO.bindKeyOfGroup))
+                    }
+                } else {
+                    insert(USER_ID, JOB, EXPERIENCE, GROUP, BIND_KEY_OF_GROUP) {
+                        value(
+                            playerJobPO.id,
+                            playerJobPO.job,
+                            playerJobPO.experience,
+                            playerJobPO.group,
+                            Json.encodeToString(playerJobPO.bindKeyOfGroup)
+                        )
+                    }
                 }
-            } else {
-                insert(USER_ID, JOB, EXPERIENCE, GROUP, BIND_KEY_OF_GROUP) {
-                    value(
-                        playerJobPO.id,
-                        playerJobPO.job,
-                        playerJobPO.experience,
-                        playerJobPO.group,
-                        Json.encodeToString(playerJobPO.bindKeyOfGroup)
-                    )
-                }
-            }
-        }.onSuccess { onSuccess() }
+            }.onSuccess { onSuccess() }
+        }
     }
 
     override fun savePlayerSkill(playerSkillPO: PlayerSkillPO, onSuccess: () -> Unit) {
         debug("SqlLite 保存玩家 Skill")
-        skillsTable.transaction(dataSource) {
-            if (select { where { USER_ID eq playerSkillPO.id and (JOB eq playerSkillPO.job) and (SKILL eq playerSkillPO.skill) } }.find()) {
-                update {
-                    where { USER_ID eq playerSkillPO.id and (JOB eq playerSkillPO.job) and (SKILL eq playerSkillPO.skill) }
-                    set(LOCKED, playerSkillPO.locked)
-                    set(LEVEL, playerSkillPO.level)
+        synchronized(getInternerByUUID(playerSkillPO.player).intern("PlayerSkill${playerSkillPO.id}${playerSkillPO.job}${playerSkillPO.skill}")) {
+            skillsTable.transaction(dataSource) {
+                if (select { where { USER_ID eq playerSkillPO.id and (JOB eq playerSkillPO.job) and (SKILL eq playerSkillPO.skill) } }.find()) {
+                    update {
+                        where { USER_ID eq playerSkillPO.id and (JOB eq playerSkillPO.job) and (SKILL eq playerSkillPO.skill) }
+                        set(LOCKED, playerSkillPO.locked)
+                        set(LEVEL, playerSkillPO.level)
+                    }
+                } else {
+                    insert(USER_ID, JOB, SKILL, LOCKED, LEVEL) {
+                        value(
+                            playerSkillPO.id,
+                            playerSkillPO.job,
+                            playerSkillPO.skill,
+                            playerSkillPO.locked,
+                            playerSkillPO.level
+                        )
+                    }
                 }
-            } else {
-                insert(USER_ID, JOB, SKILL, LOCKED, LEVEL) {
-                    value(
-                        playerSkillPO.id,
-                        playerSkillPO.job,
-                        playerSkillPO.skill,
-                        playerSkillPO.locked,
-                        playerSkillPO.level
-                    )
-                }
-            }
-        }.onSuccess { onSuccess() }
+            }.onSuccess { onSuccess() }
+        }
     }
 
     override fun savePlayerKey(playerKeySettingPO: PlayerKeySettingPO, onSuccess: () -> Unit) {
         debug("SqlLite 保存玩家 KeySetting")
-        keyTable.transaction(dataSource) {
-            if (select { where { USER_ID eq playerKeySettingPO.id } }.find()) {
-                update {
-                    where { USER_ID eq playerKeySettingPO.id }
-                    set(KEY_SETTING, Json.encodeToString(playerKeySettingPO))
+        synchronized(getInternerByUUID(playerKeySettingPO.player).intern("KeySetting${playerKeySettingPO.id}")) {
+            keyTable.transaction(dataSource) {
+                if (select { where { USER_ID eq playerKeySettingPO.id } }.find()) {
+                    update {
+                        where { USER_ID eq playerKeySettingPO.id }
+                        set(KEY_SETTING, Json.encodeToString(playerKeySettingPO))
+                    }
+                } else {
+                    insert(USER_ID, KEY_SETTING) {
+                        value(
+                            playerKeySettingPO.id,
+                            Json.encodeToString(playerKeySettingPO)
+                        )
+                    }
                 }
-            } else {
-                insert(USER_ID, KEY_SETTING) {
-                    value(
-                        playerKeySettingPO.id,
-                        Json.encodeToString(playerKeySettingPO)
-                    )
-                }
-            }
-        }.onSuccess { onSuccess() }
+            }.onSuccess { onSuccess() }
+        }
+    }
+
+    fun quit(player: UUID) {
+        internerMap.remove(player)
     }
 }

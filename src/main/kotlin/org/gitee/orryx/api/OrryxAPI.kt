@@ -36,6 +36,12 @@ import taboolib.module.kether.KetherScriptLoader
         transitive = false
     ),
     RuntimeDependency(
+        "!com.google.guava:guava:33.4.8-jre",
+        test = "!org.gitee.orryx.google.common.base.Defaults",
+        relocate = ["!com.google", "!org.gitee.orryx.google"],
+        transitive = false
+    ),
+    RuntimeDependency(
         "!org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.8.1",
         test = "!org.gitee.orryx.serialization.Serializer",
         relocate = ["!kotlin.", "!kotlin2120.", "!kotlinx.serialization.", "!org.gitee.orryx.serialization."],

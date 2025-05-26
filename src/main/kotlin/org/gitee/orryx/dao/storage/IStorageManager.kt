@@ -1,5 +1,6 @@
 package org.gitee.orryx.dao.storage
 
+import org.bukkit.event.player.PlayerQuitEvent
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.dao.pojo.PlayerJobPO
@@ -8,6 +9,7 @@ import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
+import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.info
 import taboolib.common.util.unsafeLazy
 import taboolib.module.chat.colored
@@ -47,6 +49,10 @@ interface IStorageManager {
             }
         }
 
+        @SubscribeEvent
+        private fun quit(e: PlayerQuitEvent) {
+            (INSTANCE as? SqlLiteManager)?.quit(e.player.uniqueId)
+        }
     }
 
     /**

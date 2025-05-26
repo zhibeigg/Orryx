@@ -50,6 +50,7 @@ class PlayerKeySetting(
     private fun createPO(): PlayerKeySettingPO {
         return PlayerKeySettingPO(
             id,
+            uuid,
             bindKeyMap.mapKeys { it.key.key },
             aimConfirmKey,
             aimCancelKey,

@@ -1,41 +1,50 @@
 package org.gitee.orryx.core.station.triggers.dungeonplus
 
 import com.eatthepath.uuid.FastUUID
+import org.gitee.orryx.api.events.compat.PlayerDungeonEvent
 import org.gitee.orryx.core.station.Plugin
 import org.gitee.orryx.core.station.pipe.IPipeTask
-import org.gitee.orryx.core.station.triggers.AbstractPipeEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
-import org.serverct.ersha.dungeon.common.api.event.DungeonEvent
 import org.serverct.ersha.dungeon.common.api.event.dungeon.DungeonEndEvent
-import org.serverct.ersha.dungeon.common.team.type.PlayerStateType
-import taboolib.module.kether.ScriptContext
+import taboolib.common.OpenResult
+import taboolib.common.platform.ProxyCommandSender
+import taboolib.common.platform.function.adaptPlayer
 
 @Plugin("DungeonPlus")
-object DungeonEndTrigger: AbstractPipeEventTrigger<DungeonEvent>() {
-
-    override val event = "Dungeon End"
+object DungeonEndTrigger: AbstractPropertyEventTrigger<PlayerDungeonEvent>("Dungeon End") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.DRAGONCORE, event)
             .addParm(Type.STRING, "dungeonName", "副本名")
             .addParm(Type.STRING, "dungeonUUID", "副本UUID")
             .addParm(Type.ITERABLE, "params", "副本参数")
-            .description("副本结束时触发（仅Pipe）")
+            .description("副本结束时触发")
 
     override val clazz
-        get() = DungeonEvent::class.java
+        get() = PlayerDungeonEvent::class.java
 
-    override fun onCheck(pipeTask: IPipeTask, event: DungeonEvent, map: Map<String, Any?>): Boolean {
-        val e = event.event
-        return e is DungeonEndEvent.After && (pipeTask.scriptContext?.sender?.origin in e.dungeon.team.getPlayers(PlayerStateType.ONLINE))
+    override fun onCheck(pipeTask: IPipeTask, event: PlayerDungeonEvent, map: Map<String, Any?>): Boolean {
+        val e = event.event.event
+        return e is DungeonEndEvent.After && (pipeTask.scriptContext?.sender?.origin == event.player)
     }
 
-    override fun onStart(context: ScriptContext, event: DungeonEvent, map: Map<String, Any?>) {
-        super.onStart(context, event, map)
-        context["dungeonName"] = event.dungeon.dungeonName
-        context["dungeonUUID"] = FastUUID.toString(event.dungeon.dungeonUuid)
-        context["params"] = event.dungeon.params
+    override fun onJoin(event: PlayerDungeonEvent, map: Map<String, Any?>): ProxyCommandSender {
+        return adaptPlayer(event.player)
+    }
+
+    override fun read(instance: PlayerDungeonEvent, key: String): OpenResult {
+        return when(key) {
+            "dungeonName" -> OpenResult.successful(instance.event.dungeon.dungeonName)
+            "dungeonUUID" -> OpenResult.successful(FastUUID.toString(instance.event.dungeon.dungeonUuid))
+            "params" -> OpenResult.successful(instance.event.dungeon.params)
+            else -> OpenResult.failed()
+        }
+    }
+
+    override fun write(instance: PlayerDungeonEvent, key: String, value: Any?): OpenResult {
+        return OpenResult.failed()
     }
 }

@@ -70,6 +70,7 @@ taboolib {
     relocate("com.larksuite.oapi", "org.gitee.orryx.larksuite.oapi")
     relocate("com.eatthepath.uuid", "org.gitee.orryx.eatthepath.uuid")
     relocate("kotlinx.serialization", "org.gitee.orryx.serialization")
+    relocate("com.google", "org.gitee.orryx.google")
     version {
         taboolib = "6.2.3-test"
         coroutines = "1.8.0"
@@ -86,7 +87,9 @@ repositories {
 dependencies {
     compileOnly("ink.ptms.core:v12004:12004:mapped")
     compileOnly("ink.ptms.core:v12004:12004:universal")
-    compileOnly("ink.ptms.core:v11200:11200")
+    implementation("ink.ptms.core:v11200:11200") {
+        exclude("com.google.guava", "guava")
+    }
     compileOnly("ink.ptms:nms-all:1.0.0")
 
     compileOnly("org.gitee.nodens:Nodens:1.8.10:api")
@@ -96,7 +99,9 @@ dependencies {
     compileOnly("org.eldergod.ext:DragonCore:2.6.2.9")
     compileOnly("org.eldergod.ext:GermPlugin:4.4.1-5")
     compileOnly("org.eldergod.ext:DragonArmourers:6.72")
-    compileOnly("org.eldergod.ext:MythicMobs:4.11.0")
+    implementation("org.eldergod.ext:MythicMobs:4.11.0") {
+        exclude("com.google.guava", "guava")
+    }
     compileOnly("org.eldergod.ext:GDDTitle:2.1")
     compileOnly("org.eldergod.ext:GlowAPI:1.4.6")
     compileOnly("org.eldergod.ext:AttributePlus:3.3.3.0")
@@ -108,6 +113,7 @@ dependencies {
     compileOnly("org.joml:joml:1.10.7")
     compileOnly("com.larksuite.oapi:oapi-sdk:2.4.7")
     compileOnly("com.eatthepath:fast-uuid:0.2.0")
+    compileOnly("com.google.guava:guava:33.4.8-jre")
 
     testCompileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
     testCompileOnly("com.github.ben-manes.caffeine:caffeine:2.9.3")
