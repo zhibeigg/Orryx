@@ -7,7 +7,7 @@ val publishPassword: String by project
 val build: String by project
 
 plugins {
-    java
+    `java-library`
     `maven-publish`
     kotlin("jvm") version "2.1.20"
     kotlin("plugin.serialization") version "2.1.20"
@@ -93,7 +93,7 @@ dependencies {
     compileOnly("ink.ptms:nms-all:1.0.0")
 
     compileOnly("org.gitee.nodens:Nodens:1.8.10:api")
-    compileOnly("com.gitee.redischannel:RedisChannel:1.5.2:api")
+    implementation("com.gitee.redischannel:RedisChannel:1.7.4:api")
     compileOnly("ink.ptms.adyeshach:plugin:2.0.26:api")
     compileOnly("com.github.retrooper:packetevents-spigot:2.7.0")
     compileOnly("org.eldergod.ext:DragonCore:2.6.2.9")
