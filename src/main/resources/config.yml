@@ -29,8 +29,11 @@ UI:
 # 持久存储数据库
 Database:
   # ！修改后需要重启
-  # SQLLITE,MYSQL
+  # SQLLITE,MYSQL,H2
   use: SQLLITE
+  # sqllite/h2 专用设置文件存储位置
+  # {0} 为插件文件夹位置
+  path: "{0}"
   sql:
     password: 123456
     database: orryx

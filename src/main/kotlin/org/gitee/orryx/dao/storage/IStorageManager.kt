@@ -1,5 +1,6 @@
 package org.gitee.orryx.dao.storage
 
+import eos.moe.armourers.tr
 import org.bukkit.event.player.PlayerQuitEvent
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.core.reload.Reload
@@ -8,11 +9,14 @@ import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import taboolib.common.LifeCycle
+import taboolib.common.io.newFile
 import taboolib.common.platform.Awake
 import taboolib.common.platform.event.SubscribeEvent
+import taboolib.common.platform.function.getDataFolder
 import taboolib.common.platform.function.info
 import taboolib.common.util.unsafeLazy
 import taboolib.module.chat.colored
+import java.io.File
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
@@ -23,13 +27,20 @@ interface IStorageManager {
         private val type
             get() = Orryx.config.getString("Database.use", "SQLLITE")!!.uppercase()
 
-        private val lazy: String by unsafeLazy { type }
+        internal val file: File
+            get() = newFile(
+                Orryx.config.getString("Database.file", getDataFolder().absolutePath)!!.replace("{0}", getDataFolder().absolutePath),
+                create = true,
+                folder = true
+            )
+
+        internal val lazyType: String by unsafeLazy { type }
 
         internal lateinit var INSTANCE: IStorageManager
 
         @Awake(LifeCycle.ENABLE)
         private fun enable() {
-            INSTANCE = when(lazy) {
+            INSTANCE = when(lazyType) {
                 "SQLLITE", "SQL_LITE" -> {
                     info(("&e┣&7已选择SqlLite存储 &a√").colored())
                     SqlLiteManager()
@@ -38,13 +49,17 @@ interface IStorageManager {
                     info(("&e┣&7已选择MySql存储 &a√").colored())
                     MySqlManager()
                 }
-                else -> error("未知的持久化数据库类型: $lazy")
+                "H2" -> {
+                    info(("&e┣&7已选择H2存储 &a√").colored())
+                    H2Manager()
+                }
+                else -> error("未知的持久化数据库类型: $lazyType")
             }
         }
 
         @Reload(1)
         private fun load() {
-            if (type != lazy) {
+            if (type != lazyType) {
                 info(("&e┣&6请勿在运行时修改数据库选择 &4×").colored())
             }
         }

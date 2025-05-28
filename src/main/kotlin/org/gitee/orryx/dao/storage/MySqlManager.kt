@@ -1,6 +1,5 @@
 package org.gitee.orryx.dao.storage
 
-import com.eatthepath.uuid.FastUUID
 import kotlinx.serialization.json.Json
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.dao.pojo.PlayerJobPO
@@ -16,11 +15,12 @@ import taboolib.module.database.Table
 import taboolib.module.database.getHost
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import javax.sql.DataSource
 
-class MySqlManager: IStorageManager {
+class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
 
-    private val host = Orryx.config.getHost("Database.sql")
-    private val dataSource = host.createDataSource()
+    private val host by lazy { Orryx.config.getHost("Database.sql") }
+    private val dataSource: DataSource = replaceDataSource ?: host.createDataSource()
 
     private val playerTable: Table<*, *> = Table("orryx_player", host) {
         add { id() }
@@ -70,7 +70,7 @@ class MySqlManager: IStorageManager {
     }
 
     override fun getPlayerData(player: UUID): CompletableFuture<PlayerProfilePO> {
-        debug("Mysql 获取玩家 Profile")
+        debug("${IStorageManager.lazyType} 获取玩家 Profile")
         val future = CompletableFuture<PlayerProfilePO>()
         fun read() {
             try {
@@ -107,7 +107,7 @@ class MySqlManager: IStorageManager {
     }
 
     override fun getPlayerJob(player: UUID, id: Int, job: String): CompletableFuture<PlayerJobPO?> {
-        debug("Mysql 获取玩家 Job")
+        debug("${IStorageManager.lazyType} 获取玩家 Job")
         val future = CompletableFuture<PlayerJobPO?>()
         fun read() {
             try {
@@ -137,7 +137,7 @@ class MySqlManager: IStorageManager {
     }
 
     override fun getPlayerSkill(player: UUID, id: Int, job: String, skill: String): CompletableFuture<PlayerSkillPO?> {
-        debug("Mysql 获取玩家 Skill")
+        debug("${IStorageManager.lazyType} 获取玩家 Skill")
         val future = CompletableFuture<PlayerSkillPO?>()
         fun read() {
             try {
@@ -160,7 +160,7 @@ class MySqlManager: IStorageManager {
     }
 
     override fun getPlayerSkills(player: UUID, id: Int, job: String): CompletableFuture<List<PlayerSkillPO>> {
-        debug("Mysql 获取玩家 Skills")
+        debug("${IStorageManager.lazyType} 获取玩家 Skills")
         val future = CompletableFuture<List<PlayerSkillPO>>()
         fun read() {
             try {
@@ -183,7 +183,7 @@ class MySqlManager: IStorageManager {
     }
 
     override fun getPlayerKey(id: Int): CompletableFuture<PlayerKeySettingPO?> {
-        debug("Mysql 获取玩家 KeySetting")
+        debug("${IStorageManager.lazyType} 获取玩家 KeySetting")
         val future = CompletableFuture<PlayerKeySettingPO?>()
         fun read() {
             try {
@@ -206,7 +206,7 @@ class MySqlManager: IStorageManager {
     }
 
     override fun savePlayerData(playerProfilePO: PlayerProfilePO, onSuccess: () -> Unit) {
-        debug("Mysql 保存玩家 Profile")
+        debug("${IStorageManager.lazyType} 保存玩家 Profile")
         playerTable.update(dataSource) {
             where { USER_ID eq playerProfilePO.id }
             set(JOB, playerProfilePO.job)
@@ -217,7 +217,7 @@ class MySqlManager: IStorageManager {
     }
 
     override fun savePlayerJob(playerJobPO: PlayerJobPO, onSuccess: () -> Unit) {
-        debug("Mysql 保存玩家 Job")
+        debug("${IStorageManager.lazyType} 保存玩家 Job")
         jobsTable.transaction(dataSource) {
             insert(USER_ID, JOB, EXPERIENCE, GROUP, BIND_KEY_OF_GROUP) {
                 onDuplicateKeyUpdate {
@@ -237,7 +237,7 @@ class MySqlManager: IStorageManager {
     }
 
     override fun savePlayerSkill(playerSkillPO: PlayerSkillPO, onSuccess: () -> Unit) {
-        debug("Mysql 保存玩家 Skill")
+        debug("${IStorageManager.lazyType} 保存玩家 Skill")
         skillsTable.transaction(dataSource) {
             insert(USER_ID, JOB, SKILL, LOCKED, LEVEL) {
                 onDuplicateKeyUpdate {
@@ -256,7 +256,7 @@ class MySqlManager: IStorageManager {
     }
 
     override fun savePlayerKey(playerKeySettingPO: PlayerKeySettingPO, onSuccess: () -> Unit) {
-        debug("Mysql 保存玩家 KeySetting")
+        debug("${IStorageManager.lazyType} 保存玩家 KeySetting")
         keyTable.transaction(dataSource) {
             insert(USER_ID, KEY_SETTING) {
                 onDuplicateKeyUpdate {

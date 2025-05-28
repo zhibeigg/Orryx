@@ -10,7 +10,6 @@ import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.utils.*
 import taboolib.common.io.newFile
-import taboolib.common.platform.function.getDataFolder
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common.platform.function.submitAsync
 import taboolib.module.database.ColumnOptionSQLite
@@ -21,10 +20,9 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 
-
 class SqlLiteManager: IStorageManager {
 
-    private val host = newFile(getDataFolder(), "data.db").getHost()
+    private val host = newFile(IStorageManager.file, "data.db").getHost()
     private val dataSource = host.createDataSource()
 
     private val internerMap = ConcurrentHashMap<UUID, Interner<String>>()
