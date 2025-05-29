@@ -1,5 +1,7 @@
 package org.gitee.orryx.dao.cache
 
+import com.gitee.redischannel.RedisChannelPlugin
+import com.gitee.redischannel.RedisChannelPlugin.Type.*
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.dao.pojo.PlayerJobPO
@@ -30,7 +32,10 @@ interface ISyncCacheManager {
             INSTANCE = when(lazy) {
                 "REDIS" -> {
                     info(("&e┣&7已选择Redis缓存 &a√").colored())
-                    RedisManager()
+                    when (RedisChannelPlugin.type) {
+                        CLUSTER -> ClusterRedisManager()
+                        SINGLE -> RedisManager()
+                    }
                 }
                 "BROKER" -> {
                     info(("&e┣&7已选择BROKE通道缓存 &a√").colored())

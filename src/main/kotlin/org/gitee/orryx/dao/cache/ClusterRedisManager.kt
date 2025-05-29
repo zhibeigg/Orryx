@@ -1,7 +1,7 @@
 package org.gitee.orryx.dao.cache
 
 import com.gitee.redischannel.RedisChannelPlugin
-import com.gitee.redischannel.util.commandAPI
+import com.gitee.redischannel.util.clusterCommandAPI
 import kotlinx.serialization.json.Json
 import org.gitee.orryx.dao.pojo.PlayerJobPO
 import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
@@ -14,14 +14,14 @@ import taboolib.common.platform.function.submitAsync
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
-class RedisManager: ISyncCacheManager {
+class ClusterRedisManager: ISyncCacheManager {
 
     companion object {
         const val SECOND_6_HOURS = 6 * 60 * 60L
         const val SECOND_12_HOURS = 12 * 60 * 60L
     }
 
-    private val api by lazy { RedisChannelPlugin.api.commandAPI() }
+    private val api by lazy { RedisChannelPlugin.api.clusterCommandAPI() }
 
     override fun getPlayerProfile(player: UUID): CompletableFuture<PlayerProfilePO> {
         debug("Redis 获取玩家 Profile")

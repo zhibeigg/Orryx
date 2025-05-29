@@ -94,7 +94,7 @@ dependencies {
     compileOnly("ink.ptms:nms-all:1.0.0")
 
     compileOnly("org.gitee.nodens:Nodens:1.8.10:api")
-    implementation("com.gitee.redischannel:RedisChannel:1.9.4:api")
+    implementation("com.gitee.redischannel:RedisChannel:1.10.5:api")
     compileOnly("ink.ptms.adyeshach:plugin:2.0.26:api")
     compileOnly("com.github.retrooper:packetevents-spigot:2.7.0")
     compileOnly("org.eldergod.ext:DragonCore:2.6.2.9")
