@@ -1,33 +1,18 @@
 package org.gitee.orryx.command
 
-import com.eatthepath.uuid.FastUUID
-import org.bukkit.command.ConsoleCommandSender
-import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
-import org.gitee.orryx.api.adapters.vector.AbstractVector
-import org.gitee.orryx.core.GameManager
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.job.JobLoaderManager
-import org.gitee.orryx.core.kether.actions.game.entity.EntityBuilder
-import org.gitee.orryx.core.message.PluginMessageHandler
 import org.gitee.orryx.core.reload.ReloadAPI
 import org.gitee.orryx.core.skill.SkillLoaderManager
 import org.gitee.orryx.dao.cache.MemoryCache
-import org.gitee.orryx.dao.pojo.PlayerJobPO
-import org.gitee.orryx.dao.pojo.PlayerProfilePO
-import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.utils.*
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.command.*
-import taboolib.common.platform.function.info
-import taboolib.common.platform.function.submitAsync
 import taboolib.expansion.createHelper
-import taboolib.module.database.ColumnTypeSQLite
 import taboolib.module.lang.sendLang
 import taboolib.platform.util.sendLang
-import java.util.UUID
-import kotlin.system.measureTimeMillis
 
 @CommandHeader("Orryx", ["or"], "Orryx技能插件主指令", permission = "Orryx.Command.Main", permissionMessage = "你没有权限使用此指令")
 object OrryxCommand {

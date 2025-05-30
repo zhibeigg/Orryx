@@ -6,7 +6,6 @@ import com.germ.germplugin.api.event.GermKeyDownEvent
 import com.google.common.io.ByteArrayDataInput
 import com.google.common.io.ByteArrayDataOutput
 import com.google.common.io.ByteStreams
-import eos.moe.armourers.s
 import eos.moe.dragoncore.api.event.KeyPressEvent
 import org.bukkit.Bukkit
 import org.bukkit.Location
@@ -16,17 +15,12 @@ import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.plugin.messaging.PluginMessageListener
 import org.gitee.orryx.core.reload.Reload
-import org.gitee.orryx.utils.DragonCorePlugin
-import org.gitee.orryx.utils.GermPluginPlugin
-import org.gitee.orryx.utils.MOUSE_LEFT
-import org.gitee.orryx.utils.MOUSE_RIGHT
-import org.gitee.orryx.utils.keySetting
+import org.gitee.orryx.utils.*
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.Ghost
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
-import taboolib.common.platform.function.info
 import taboolib.common.platform.function.submit
 import taboolib.common.platform.function.warning
 import taboolib.common.util.unsafeLazy
@@ -362,6 +356,7 @@ object PluginMessageHandler {
         type: PacketType,
         block: ByteArrayDataOutput.() -> Unit = {},
     ) {
+        debug("SendPacket Send: $type")
         try {
             val output = ByteStreams.newDataOutput().apply {
                 writeInt(type.header)
@@ -384,7 +379,9 @@ object PluginMessageHandler {
 
             val input = ByteStreams.newDataInput(message)
             try {
-                when (val header = input.readInt()) {
+                val header = input.readInt()
+                debug("SendPacket Receive: $header")
+                when (header) {
                     PacketType.AimResponse.header -> handleAimResponse(player, input)
                     else -> warning("收到未知数据包类型: $header")
                 }
