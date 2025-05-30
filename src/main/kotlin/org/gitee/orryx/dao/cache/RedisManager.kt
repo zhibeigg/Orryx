@@ -1,7 +1,6 @@
 package org.gitee.orryx.dao.cache
 
 import com.gitee.redischannel.RedisChannelPlugin
-import com.gitee.redischannel.util.commandAPI
 import kotlinx.serialization.json.Json
 import org.gitee.orryx.dao.pojo.PlayerJobPO
 import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
@@ -21,7 +20,7 @@ class RedisManager: ISyncCacheManager {
         const val SECOND_12_HOURS = 12 * 60 * 60L
     }
 
-    private val api by lazy { RedisChannelPlugin.api.commandAPI() }
+    private val api by lazy { RedisChannelPlugin.commandAPI() }
 
     override fun getPlayerProfile(player: UUID): CompletableFuture<PlayerProfilePO> {
         debug("Redis 获取玩家 Profile")
