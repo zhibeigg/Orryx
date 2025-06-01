@@ -36,7 +36,11 @@ object StationTimer: ITimer {
     }
 
     override fun increase(sender: ProxyCommandSender, tag: String, amount: Long) {
-        getCooldownMap(sender)[tag]?.addDuration(amount)
+        getCooldownMap(sender).let { map ->
+            map[tag]?.addDuration(amount) ?: run {
+                map[tag] = CooldownEntry(tag, amount)
+            }
+        }
     }
 
     override fun reduce(sender: ProxyCommandSender, tag: String, amount: Long) {

@@ -54,13 +54,13 @@ object CooldownActions {
                     when (val parm = script().getParameter()) {
                         is SkillParameter -> {
                             run(skill ?: literalAction(parm.skill!!)).str { skill ->
-                                future.complete(SkillTimer.hasNext(script().sender!!, skill))
+                                future.complete(!SkillTimer.hasNext(script().sender!!, skill))
                             }
                         }
 
                         is StationParameter<*> -> {
                             run(skill ?: literalAction(parm.stationLoader)).str { station ->
-                                future.complete(StationTimer.hasNext(script().sender!!, station))
+                                future.complete(!StationTimer.hasNext(script().sender!!, station))
                             }
                         }
 

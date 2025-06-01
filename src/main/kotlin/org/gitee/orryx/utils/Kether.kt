@@ -80,7 +80,7 @@ internal fun QuestReader.nextHeadActionOrNull(array: Array<out String>): ParsedA
         mark()
         expects(*array)
         this.nextParsedAction()
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         reset()
         null
     }

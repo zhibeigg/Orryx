@@ -54,7 +54,11 @@ object SkillTimer : ITimer {
         player.getSkill(tag).thenApply {
             val event = OrryxPlayerSkillCooldownEvents.Increase.Pre(player, it ?: return@thenApply, amount)
             if (event.call()) {
-                getCooldownMap(sender)[tag]?.addDuration(event.amount)
+                getCooldownMap(sender).let { map ->
+                    map[tag]?.addDuration(event.amount) ?: run {
+                        map[tag] = CooldownEntry(tag, event.amount)
+                    }
+                }
                 OrryxPlayerSkillCooldownEvents.Increase.Post(event.player, event.skill, event.amount).call()
             }
         }
@@ -77,7 +81,7 @@ object SkillTimer : ITimer {
             val event = OrryxPlayerSkillCooldownEvents.Set.Pre(player, it ?: return@thenApply, amount)
             if (event.call()) {
                 val cooldownMap = getCooldownMap(sender)
-                cooldownMap.values.removeIf { it.isReady }
+                cooldownMap.values.removeIf { c -> c.isReady }
                 if (event.amount <= 0L) {
                     cooldownMap.remove(tag)
                 } else {
