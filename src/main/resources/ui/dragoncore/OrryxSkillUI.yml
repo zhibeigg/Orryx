@@ -90,6 +90,9 @@ Functions:
     if(局部变量.args.0 == 'Orryx_skills_name') {
       界面变量.技能名列表 = 方法.分割(局部变量.args.1, '<br>');
     };
+    if(局部变量.args.0 == 'Orryx_skills_canBind') {
+      界面变量.技能是否能绑定列表 = 方法.分割(局部变量.args.1, '<br>');
+    };
     if(局部变量.args.0 == 'Orryx_skills_level') {
       界面变量.技能等级列表 = 方法.分割(局部变量.args.1, '<br>');
     };
