@@ -181,4 +181,80 @@ object OrryxModActions {
             }
         }
     }
+
+    @KetherParser(["circleShockwave"], namespace = ORRYX_NAMESPACE, shared = true)
+    private fun actionCircleShockwave() = combinationParser(
+        Action.new("Orryx Mod额外功能", "发送一个圆形地震波效果", "circleShockwave", true)
+            .description("发送一个圆形地震波效果")
+            .addEntry("半径", Type.DOUBLE, false)
+            .addContainerEntry("位置", optional = true, "@self")
+            .addContainerEntry("可视玩家", optional = true, default = "@world", head = "viewer")
+    ) {
+        it.group(
+            double(),
+            theyContainer(true),
+            command("viewer", then = container()).option()
+        ).apply(it) { r, loc, viewer ->
+            now {
+                val locs = loc.orElse(self()).get<ITargetLocation<*>>()
+                viewer.orElse(world()).forEachInstance<PlayerTarget> { player ->
+                    locs.forEach { loc ->
+                        PluginMessageHandler.sendCircleShockwave(player.getSource(), loc.location.x, loc.location.y - 0.2, loc.location.z, r)
+                    }
+                }
+            }
+        }
+    }
+
+    @KetherParser(["squareShockwave"], namespace = ORRYX_NAMESPACE, shared = true)
+    private fun actionSquareShockwave() = combinationParser(
+        Action.new("Orryx Mod额外功能", "发送一个方形地震波效果", "squareShockwave", true)
+            .description("发送一个方形地震波效果")
+            .addEntry("宽度", Type.DOUBLE, false)
+            .addEntry("长度", Type.DOUBLE, false)
+            .addContainerEntry("位置", optional = true, "@self")
+            .addContainerEntry("可视玩家", optional = true, default = "@world", head = "viewer")
+    ) {
+        it.group(
+            double(),
+            double(),
+            theyContainer(true),
+            command("viewer", then = container()).option()
+        ).apply(it) { width, length, loc, viewer ->
+            now {
+                val locs = loc.orElse(self()).get<ITargetLocation<*>>()
+                viewer.orElse(world()).forEachInstance<PlayerTarget> { player ->
+                    locs.forEach { loc ->
+                        PluginMessageHandler.sendSquareShockwave(player.getSource(), loc.location.x, loc.location.y - 0.2, loc.location.z, width, length, loc.location.yaw.toDouble())
+                    }
+                }
+            }
+        }
+    }
+
+    @KetherParser(["sectorShockwave"], namespace = ORRYX_NAMESPACE, shared = true)
+    private fun actionSectorShockwave() = combinationParser(
+        Action.new("Orryx Mod额外功能", "发送一个扇形地震波效果", "sectorShockwave", true)
+            .description("发送一个扇形地震波效果")
+            .addEntry("半径", Type.DOUBLE, false)
+            .addEntry("开合角度", Type.DOUBLE, false)
+            .addContainerEntry("位置", optional = true, "@self")
+            .addContainerEntry("可视玩家", optional = true, default = "@world", head = "viewer")
+    ) {
+        it.group(
+            double(),
+            double(),
+            theyContainer(true),
+            command("viewer", then = container()).option()
+        ).apply(it) { r, angle, loc, viewer ->
+            now {
+                val locs = loc.orElse(self()).get<ITargetLocation<*>>()
+                viewer.orElse(world()).forEachInstance<PlayerTarget> { player ->
+                    locs.forEach { loc ->
+                        PluginMessageHandler.sendSectorShockwave(player.getSource(), loc.location.x, loc.location.y - 0.2, loc.location.z, r, loc.location.yaw.toDouble(), angle)
+                    }
+                }
+            }
+        }
+    }
 }

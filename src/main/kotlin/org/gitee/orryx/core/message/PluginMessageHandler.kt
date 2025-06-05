@@ -50,6 +50,9 @@ object PluginMessageHandler {
         data object EntityShowRemove : PacketType(9)
         data object PlayerNavigation : PacketType(10)
         data object PlayerNavigationStop : PacketType(11)
+        data object SquareShockwave : PacketType(12)
+        data object CircleShockwave : PacketType(13)
+        data object SectorShockwave : PacketType(14)
     }
 
     @Awake(LifeCycle.ENABLE)
@@ -333,6 +336,65 @@ object PluginMessageHandler {
      */
     fun stopPlayerNavigation(player: Player) {
         sendDataPacket(player, PacketType.PlayerNavigationStop)
+    }
+
+    /**
+     * 发送圆形地震波效果
+     * @param player 玩家
+     * @param x x
+     * @param y y
+     * @param z z
+     * @param r 半径
+     */
+    fun sendCircleShockwave(player: Player, x: Double, y: Double, z: Double, r: Double) {
+        sendDataPacket(player, PacketType.CircleShockwave) {
+            writeDouble(x)
+            writeDouble(y)
+            writeDouble(z)
+            writeDouble(r)
+        }
+    }
+
+    /**
+     * 发送方形地震波效果
+     * @param player 玩家
+     * @param x x
+     * @param y y
+     * @param z z
+     * @param width 宽度
+     * @param length 长度
+     * @param yaw 方向
+     */
+    fun sendSquareShockwave(player: Player, x: Double, y: Double, z: Double, width: Double, length: Double, yaw: Double) {
+        sendDataPacket(player, PacketType.SquareShockwave) {
+            writeDouble(x)
+            writeDouble(y)
+            writeDouble(z)
+            writeDouble(length)
+            writeDouble(width)
+            writeDouble(yaw)
+        }
+    }
+
+    /**
+     * 发送扇形地震波效果
+     * @param player 玩家
+     * @param x x
+     * @param y y
+     * @param z z
+     * @param r 半径
+     * @param yaw 方向
+     * @param angle 开合角度
+     */
+    fun sendSectorShockwave(player: Player, x: Double, y: Double, z: Double, r: Double, yaw: Double, angle: Double) {
+        sendDataPacket(player, PacketType.SectorShockwave) {
+            writeDouble(x)
+            writeDouble(y)
+            writeDouble(z)
+            writeDouble(r)
+            writeDouble(yaw)
+            writeDouble(angle)
+        }
     }
 
     /* 内部实现 */

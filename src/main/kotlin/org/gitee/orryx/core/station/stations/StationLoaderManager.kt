@@ -1,7 +1,9 @@
 package org.gitee.orryx.core.station.stations
 
+import kotlinx.coroutines.launch
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.OrryxAPI
+import org.gitee.orryx.api.OrryxAPI.Companion.pluginScope
 import org.gitee.orryx.core.common.timer.StationTimer
 import org.gitee.orryx.core.kether.PlayerRunningSpace
 import org.gitee.orryx.core.kether.ScriptManager
@@ -101,20 +103,28 @@ object StationLoaderManager {
     private fun <E> IStationTrigger<E>.startStation(sender: ProxyCommandSender, station: IStation, map: Map<String, Any?>, event: E, parameter: StationParameter<E>) {
         lateinit var context: ScriptContext
         val player = sender.castSafely<Player>()
-        val playerRunningSpace =
-            if (player != null) {
-                ScriptManager.runningStationScriptsMap.getOrPut(player.uniqueId) { PlayerRunningSpace(player) }
-            } else {
-                null
-            }
+        fun run() {
+            val playerRunningSpace =
+                if (player != null) {
+                    ScriptManager.runningStationScriptsMap.getOrPut(player.uniqueId) { PlayerRunningSpace(player) }
+                } else {
+                    null
+                }
 
-        ScriptManager.runScript(sender, parameter, station.script ?: error("请修复中转站${station.key}的脚本配置")) {
-            context = this
-            onStart(this, event, map)
-            playerRunningSpace?.invoke(context, station.key)
-        }.whenComplete { _, _ ->
-            onEnd(context, event, map)
-            playerRunningSpace?.release(context, station.key)
+            ScriptManager.runScript(sender, parameter, station.script ?: error("请修复中转站${station.key}的脚本配置")) {
+                context = this
+                onStart(this, event, map)
+                playerRunningSpace?.invoke(context, station.key)
+            }.whenComplete { _, _ ->
+                onEnd(context, event, map)
+                playerRunningSpace?.release(context, station.key)
+            }
+        }
+
+        if (station.async) {
+            pluginScope.launch { run() }
+        } else {
+            run()
         }
     }
 }

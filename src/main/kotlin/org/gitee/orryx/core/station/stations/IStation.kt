@@ -41,6 +41,11 @@ interface IStation {
     val weight: Int
 
     /**
+     * 是否异步执行
+     * */
+    val async: Boolean
+
+    /**
      * 中转站执行语句
      * */
     val actions: String

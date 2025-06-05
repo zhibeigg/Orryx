@@ -72,7 +72,7 @@ taboolib {
     relocate("com.eatthepath.uuid", "org.gitee.orryx.eatthepath.uuid")
     relocate("kotlinx.serialization", "org.gitee.orryx.serialization")
     version {
-        taboolib = "6.2.3-test"
+        taboolib = "6.2.3-test9"
         coroutines = "1.8.0"
     }
 }
