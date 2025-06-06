@@ -17,5 +17,4 @@ class Icon(val icon: String) {
         val sender = adaptCommandSender(player)
         return getIcon(sender, skillParameter)
     }
-
 }

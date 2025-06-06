@@ -3,6 +3,7 @@ package org.gitee.orryx.module.state
 import com.germ.germplugin.api.event.GermClientLinkedEvent
 import com.germ.germplugin.api.event.GermKeyDownEvent
 import eos.moe.armourers.api.PlayerSkinUpdateEvent
+import eos.moe.armourers.nu
 import eos.moe.dragoncore.api.event.EntityJoinWorldEvent
 import eos.moe.dragoncore.api.event.EntityLeaveWorldEvent
 import eos.moe.dragoncore.api.event.KeyPressEvent
@@ -253,6 +254,7 @@ object StateManager {
             }.toTypedArray()
         ).whenComplete { _, _ ->
             if (!future.isDone) {
+                data.setStatus(null)
                 future.complete(null)
             }
         }

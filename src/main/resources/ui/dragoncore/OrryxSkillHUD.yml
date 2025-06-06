@@ -37,6 +37,9 @@ Functions:
     if(局部变量.args.0 == 'Orryx_bind_skills') {
       界面变量.绑定技能列表 = 方法.分割(局部变量.args.1, '<br>');
     };
+    if(局部变量.args.0 == 'Orryx_bind_skills_Icon') {
+      界面变量.绑定技能图标列表 = 方法.分割(局部变量.args.1, '<br>');
+    };
     if(局部变量.args.0 == 'Orryx_bind_cooldowns') {
       局部变量.冷却列表 = 方法.分割(局部变量.args.1, '<br>');
       局部变量.临时数组 = 方法.新建数组;
@@ -214,7 +217,7 @@ check_texture:
   index: "0"
   width: "18*界面变量.界面大小"
   height: "18*界面变量.界面大小"
-  texture: "方法.合并文本('icon/技能/', 方法.取成员(界面变量.绑定技能列表, 局部变量.当前组件.index), '.png')"
+  texture: "方法.合并文本('icon/技能/', 方法.取成员(界面变量.绑定技能图标列表, 局部变量.当前组件.index), '.png')"
   alpha: "背景_up_texture.alpha"
   visible: "方法.取组件值(方法.合并文本('绑定技能背景_' & 局部变量.当前组件.index & '_texture'),'visible') && 方法.取成员(界面变量.绑定技能列表, 局部变量.当前组件.index) != 'none'"
 冷却遮罩:

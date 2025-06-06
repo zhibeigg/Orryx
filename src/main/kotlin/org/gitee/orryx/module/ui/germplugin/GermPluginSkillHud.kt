@@ -93,7 +93,7 @@ open class GermPluginSkillHud(override val viewer: Player, override val owner: P
 
                     val skill = bind[it]
                     if (bind[it] != null) {
-                        bindKeyIcon.path = bindKeyIcon.path.replace("{skill}", skill!!.key)
+                        bindKeyIcon.path = bindKeyIcon.path.replace("{skill}", skill!!.getIcon())
                         bindKeyIcon.enable = true
 
                         val cooldown = skillCooldownMap[owner.uniqueId]?.get(skill.key)
@@ -182,7 +182,7 @@ open class GermPluginSkillHud(override val viewer: Player, override val owner: P
 
                     val skill = bind[it]
                     if (bind[it] != null) {
-                        bindKeyIcon.path = bindKeyIcon.path.replace("{skill}", skill!!.key)
+                        bindKeyIcon.path = bindKeyIcon.path.replace("{skill}", skill!!.getIcon())
                         bindKeyIcon.enable = true
 
                         val cooldown = skillCooldownMap[owner.uniqueId]?.get(skill.key)
@@ -252,7 +252,7 @@ open class GermPluginSkillHud(override val viewer: Player, override val owner: P
         )
         update()
         screen.openHud(viewer)
-        GermPluginSkillHud.Companion.germSkillHudMap.getOrPut(owner.uniqueId) { hashMapOf() }[viewer.uniqueId] = this
+        germSkillHudMap.getOrPut(owner.uniqueId) { hashMapOf() }[viewer.uniqueId] = this
     }
 
     override fun close() {

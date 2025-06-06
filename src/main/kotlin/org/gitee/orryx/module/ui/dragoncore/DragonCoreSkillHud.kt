@@ -11,6 +11,7 @@ import org.gitee.orryx.module.ui.IUIManager.Companion.skillCooldownMap
 import org.gitee.orryx.module.ui.germplugin.GermPluginSkillHud
 import org.gitee.orryx.utils.bindKeys
 import org.gitee.orryx.utils.bindSkills
+import org.gitee.orryx.utils.getIcon
 import org.gitee.orryx.utils.job
 import taboolib.common.platform.function.getDataFolder
 import taboolib.common.util.unsafeLazy
@@ -61,6 +62,7 @@ open class DragonCoreSkillHud(override val viewer: Player, override val owner: P
                     PacketSender.sendSyncPlaceholder(viewer, mapOf(
                         "Orryx_bind_keys" to keys.joinToString("<br>") { it.key },
                         "Orryx_bind_skills" to keys.joinToString("<br>") { bindSkills[it]?.key ?: "none" },
+                        "Orryx_bind_skills_Icon" to keys.joinToString("<br>") { bindSkills[it]?.getIcon() ?: "none" },
                         "Orryx_bind_cooldowns" to keys.joinToString("<br>") { bindSkills[it]?.key?.let { skill -> skillCooldownMap[owner.uniqueId]?.get(skill)?.getCountdown(owner) }.toString() }
                     ))
                 }
