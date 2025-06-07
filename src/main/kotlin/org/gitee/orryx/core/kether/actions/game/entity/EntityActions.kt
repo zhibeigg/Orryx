@@ -19,36 +19,35 @@ import taboolib.module.kether.*
 object EntityActions {
 
     @KetherParser(["entity"], namespace = ORRYX_NAMESPACE)
-    private fun entityParser() = scriptParser {
-        arrayOf(
-            Action.new("Entity实体操作", "获取实体参数", "entity", true)
-                .description("获取实体参数")
-                .addEntry("实体参数key", Type.STRING, default = "uuid")
-                .addContainerEntry("被获取的实体", optional = true, default = "@self")
-                .result("指定参数", Type.ANY),
-            Action.new("Entity实体操作", "生成原版实体", "entity", true)
-                .description("生成原版实体，脚本运行时间必须大于实体存在时间，若提前停止将会直接回收实体")
-                .addEntry("生成标识符", Type.SYMBOL, head = "spawn")
-                .addEntry("实体名", Type.STRING)
-                .addEntry("实体类型", Type.STRING)
-                .addEntry("实体血量", Type.DOUBLE, optional = true, head = "health")
-                .addEntry("实体冲量", Type.VECTOR, optional = true, head = "vector")
-                .addEntry("实体是否具有重力", Type.BOOLEAN, optional = true, head = "gravity", default = "true")
-                .addEntry("实体存在时间(0为永久)", Type.LONG, optional = true, head = "timeout", default = "0")
-                .addContainerEntry("实体生成位置", optional = true, default = "@self")
-                .result("生成的实体列表", Type.CONTAINER),
-            Action.new("Entity实体操作", "生成Ady实体", "entity", true)
-                .description("生成Ady实体，脚本运行时间必须大于实体存在时间，若提前停止将会直接回收实体")
-                .addEntry("ady标识符", Type.SYMBOL, head = "ady")
-                .addEntry("实体名", Type.STRING)
-                .addEntry("实体类型", Type.STRING)
-                .addEntry("实体冲量", Type.VECTOR, optional = true, head = "vector")
-                .addEntry("实体是否具有重力", Type.BOOLEAN, optional = true, head = "gravity", default = "true")
-                .addEntry("实体存在时间(0为永久)", Type.LONG, optional = true, head = "timeout", default = "0")
-                .addContainerEntry("实体生成位置", optional = true, default = "@self")
-                .addContainerEntry("能看到实体的玩家（默认私有）", optional = true, head = "viewer", default = "@self")
-                .result("生成的实体列表", Type.CONTAINER),
-        )
+    private fun entityParser() = scriptParser(
+        Action.new("Entity实体操作", "获取实体参数", "entity", true)
+            .description("获取实体参数")
+            .addEntry("实体参数key", Type.STRING, default = "uuid")
+            .addContainerEntry("被获取的实体", optional = true, default = "@self")
+            .result("指定参数", Type.ANY),
+        Action.new("Entity实体操作", "生成原版实体", "entity", true)
+            .description("生成原版实体，脚本运行时间必须大于实体存在时间，若提前停止将会直接回收实体")
+            .addEntry("生成标识符", Type.SYMBOL, head = "spawn")
+            .addEntry("实体名", Type.STRING)
+            .addEntry("实体类型", Type.STRING)
+            .addEntry("实体血量", Type.DOUBLE, optional = true, head = "health")
+            .addEntry("实体冲量", Type.VECTOR, optional = true, head = "vector")
+            .addEntry("实体是否具有重力", Type.BOOLEAN, optional = true, head = "gravity", default = "true")
+            .addEntry("实体存在时间(0为永久)", Type.LONG, optional = true, head = "timeout", default = "0")
+            .addContainerEntry("实体生成位置", optional = true, default = "@self")
+            .result("生成的实体列表", Type.CONTAINER),
+        Action.new("Entity实体操作", "生成Ady实体", "entity", true)
+            .description("生成Ady实体，脚本运行时间必须大于实体存在时间，若提前停止将会直接回收实体")
+            .addEntry("ady标识符", Type.SYMBOL, head = "ady")
+            .addEntry("实体名", Type.STRING)
+            .addEntry("实体类型", Type.STRING)
+            .addEntry("实体冲量", Type.VECTOR, optional = true, head = "vector")
+            .addEntry("实体是否具有重力", Type.BOOLEAN, optional = true, head = "gravity", default = "true")
+            .addEntry("实体存在时间(0为永久)", Type.LONG, optional = true, head = "timeout", default = "0")
+            .addContainerEntry("实体生成位置", optional = true, default = "@self")
+            .addContainerEntry("能看到实体的玩家（默认私有）", optional = true, head = "viewer", default = "@self")
+            .result("生成的实体列表", Type.CONTAINER)
+    ) {
         it.switch {
             case("spawn") { spawn(this) }
             case("ady") { adySpawn(this) }

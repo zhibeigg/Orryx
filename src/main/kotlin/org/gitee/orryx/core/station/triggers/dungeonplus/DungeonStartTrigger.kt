@@ -17,7 +17,7 @@ import taboolib.common.platform.function.adaptPlayer
 object DungeonStartTrigger: AbstractPropertyEventTrigger<PlayerDungeonEvent>("Dungeon Start") {
 
     override val wiki: Trigger
-        get() = Trigger.new(TriggerGroup.DRAGONCORE, event)
+        get() = Trigger.new(TriggerGroup.DUNGEON_PLUS, event)
             .addParm(Type.STRING, "dungeonName", "副本名")
             .addParm(Type.STRING, "dungeonUUID", "副本UUID")
             .addParm(Type.ITERABLE, "params", "副本参数")
