@@ -90,7 +90,7 @@ enum class SerializableType(val key: String, val type: KClass<*>) {
         override fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long) = Adyeshach.api().getEntityFinder().getEntityFromEntityId(Json.decodeFromString(value))?.let { Flag(AbstractAdyeshachEntity(it), isPersistence, timeout) }
     },
     Array("array", kotlin.Array::class) {
-        override fun encodeToString(value: Any) = Json.encodeToString((value as kotlin.Array<*>).map {
+        override fun encodeToString(value: Any) = Json.encodeToString((value as Array<*>).map {
             val type = getType(it!!)
             SerializableFlag(type.key, type.encodeToString(it), true, 0)
         })

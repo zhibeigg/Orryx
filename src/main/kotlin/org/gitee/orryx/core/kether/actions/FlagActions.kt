@@ -55,7 +55,7 @@ object FlagActions {
             when (it.expects("clear")) {
                 "clear" -> clear(it)
             }
-        } catch (e: LocalizedException) {
+        } catch (_: LocalizedException) {
             it.reset()
         }
         val key = it.nextParsedAction()
@@ -84,8 +84,7 @@ object FlagActions {
                                 containerOrSelf(they) {
                                     it.forEachInstance<PlayerTarget> { target ->
                                         target.getSource().orryxProfileTo { profile ->
-                                            value?.flag(persistence, timeout * 50)
-                                                ?.let { it1 -> profile.setFlag(key, it1) }
+                                            value?.flag(persistence, timeout * 50)?.let { it1 -> profile.setFlag(key, it1) }
                                         }
                                     }
                                 }

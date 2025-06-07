@@ -31,5 +31,4 @@ enum class ParameterOperators(
         writer = if (writer != null) ParameterOperator.Writer(writer) else null,
         usable = arrayOf(*usable)
     )
-
 }

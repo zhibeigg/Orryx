@@ -13,6 +13,7 @@ import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.kether.ScriptManager.wikiActions
 import org.gitee.orryx.core.kether.actions.effect.EffectBuilder
 import org.gitee.orryx.core.kether.actions.effect.EffectSpawner
+import org.gitee.orryx.core.kether.parameter.IParameter
 import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.kether.parameter.StationParameter
 import org.gitee.orryx.core.targets.ITargetLocation
@@ -253,18 +254,18 @@ internal fun ScriptContext.vector(key: String, def: IVector? = null): IVector? {
     }
 }
 
-fun ScriptFrame.skillCaster(func: Player.() -> CompletableFuture<Any?>): CompletableFuture<Any?> {
+fun ScriptFrame.skillCaster(func: Player.(parm: IParameter?) -> CompletableFuture<Any?>): CompletableFuture<Any?> {
     return when (val parm = script().getParameterOrNull()) {
         is SkillParameter -> {
-            parm.player.func()
+            parm.player.func(parm)
         }
 
         is StationParameter<*> -> {
-            parm.sender.castSafely<Player>()?.func() ?: error("Station发送者无Orryx信息")
+            parm.sender.castSafely<Player>()?.func(parm) ?: error("Station发送者无Orryx信息")
         }
 
         else -> {
-            script().bukkitPlayer().func()
+            script().bukkitPlayer().func(parm)
         }
     }
 }

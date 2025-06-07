@@ -5,6 +5,7 @@ import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.OrryxAPI
+import org.gitee.orryx.api.events.player.OrryxPlayerFlagChangeEvents
 import org.gitee.orryx.api.events.player.OrryxPlayerPointEvents
 import org.gitee.orryx.api.events.player.job.OrryxPlayerJobChangeEvents
 import org.gitee.orryx.core.GameManager
@@ -43,32 +44,47 @@ class PlayerProfile(
         get() = privatePoint
 
     override fun setFlag(flagName: String, flag: IFlag, save: Boolean) {
-        privateFlags[flagName] = flag
-        if (save && flag.isPersistence) {
-            save(isPrimaryThread)
+        val event = OrryxPlayerFlagChangeEvents.Pre(player, this, flagName, privateFlags[flagName], flag)
+        if (event.call()) {
+            event.oldFlag?.cancel(player, event.flagName)
+            privateFlags[event.flagName] = event.newFlag
+            event.newFlag?.init(player, event.flagName)
+            if (save && flag.isPersistence) {
+                save(isPrimaryThread) {
+                    OrryxPlayerFlagChangeEvents.Post(player, this, event.flagName, event.oldFlag, event.newFlag).call()
+                }
+            } else {
+                OrryxPlayerFlagChangeEvents.Post(player, this, event.flagName, event.oldFlag, event.newFlag).call()
+            }
         }
     }
 
     override fun getFlag(flagName: String): IFlag? {
-        val iterator = privateFlags.iterator()
-        while (iterator.hasNext()) {
-            val value = iterator.next()
-            if (value.value.isTimeout()) {
-                iterator.remove()
-            }
-        }
         return privateFlags[flagName]
     }
 
     override fun removeFlag(flagName: String, save: Boolean): IFlag? {
-        val flag = privateFlags.remove(flagName) ?: return null
-        if (save && flag.isPersistence) {
-            save(isPrimaryThread)
+        val event = OrryxPlayerFlagChangeEvents.Pre(player, this, flagName, privateFlags[flagName], null)
+        if (event.call()) {
+            val flag = privateFlags.remove(event.flagName) ?: return null
+            flag.cancel(player, event.flagName)
+            if (save && flag.isPersistence) {
+                save(isPrimaryThread) {
+                    OrryxPlayerFlagChangeEvents.Post(player, this, event.flagName, event.oldFlag, event.newFlag).call()
+                }
+            } else {
+                OrryxPlayerFlagChangeEvents.Post(player, this, event.flagName, event.oldFlag, event.newFlag).call()
+            }
+            return flag
+        } else {
+            return null
         }
-        return flag
     }
 
     override fun clearFlags() {
+        privateFlags.forEach {
+            it.value.cancel(player, it.key)
+        }
         privateFlags.clear()
         save(isPrimaryThread)
     }

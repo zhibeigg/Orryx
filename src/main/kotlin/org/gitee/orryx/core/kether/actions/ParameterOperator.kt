@@ -16,5 +16,4 @@ class ParameterOperator(
     enum class Method {
         INCREASE, DECREASE, MODIFY, NONE
     }
-
 }

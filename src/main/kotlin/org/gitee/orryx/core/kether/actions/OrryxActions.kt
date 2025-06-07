@@ -1,5 +1,6 @@
 package org.gitee.orryx.core.kether.actions
 
+import eos.moe.armourers.tr
 import org.gitee.orryx.core.common.timer.SkillTimer
 import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.key.BindKeyLoaderManager
@@ -7,6 +8,7 @@ import org.gitee.orryx.core.skill.SkillLoaderManager
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
+import taboolib.common5.clong
 import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*
 
@@ -109,6 +111,14 @@ object OrryxActions {
             .addEntry("沉默标识符", Type.SYMBOL, false, head = "silence")
             .addEntry("技能", Type.STRING, false)
             .addJob(optional = true, default = "当前职业")
+            .result("技能释放沉默时间", Type.DOUBLE),
+        Action.new("Orryx信息获取", "获取玩家技能前置变量", "orryx", true)
+            .description("获取玩家技能前置变量")
+            .addEntry("技能标识符", Type.SYMBOL, false, head = "skill")
+            .addEntry("变量标识符", Type.SYMBOL, false, head = "variables/var")
+            .addEntry("技能", Type.STRING, false)
+            .addEntry("变量名", Type.STRING, false)
+            .addJob(optional = true, default = "当前职业")
             .result("技能释放沉默时间", Type.DOUBLE)
     ) {
         it.switch {
@@ -122,51 +132,17 @@ object OrryxActions {
             case("group") { group(it) }
             case("bindSkill") { bindSkill(it) }
             case("skill") {
-                when (expects(
-                    "level",
-                    "locked",
-                    "minLevel",
-                    "maxLevel",
-                    "min",
-                    "max",
-                    "cooldown",
-                    "countdown",
-                    "mana",
-                    "silence"
-                )) {
-                    "level" -> {
-                        skillLevel(it)
-                    }
-
-                    "locked" -> {
-                        skillLocked(it)
-                    }
-
-                    "minLevel", "min" -> {
-                        skillMinLevel(it)
-                    }
-
-                    "maxLevel", "max" -> {
-                        skillMaxLevel(it)
-                    }
-
-                    "cooldown" -> {
-                        skillCooldown(it)
-                    }
-
-                    "countdown" -> {
-                        skillCountdown(it)
-                    }
-
-                    "mana" -> {
-                        skillMana(it)
-                    }
-
-                    "silence" -> {
-                        skillSilence(it)
-                    }
-
-                    else -> error("kether orryx skill书写错误")
+                it.switch {
+                    case("level") { skillLevel(it) }
+                    case("locked") { skillLocked(it) }
+                    case("minLevel", "min") { skillMinLevel(it) }
+                    case("maxLevel", "max") { skillMaxLevel(it) }
+                    case("cooldown") { skillCooldown(it) }
+                    case("countdown") { skillCountdown(it) }
+                    case("mana") { skillMana(it) }
+                    case("silence") { skillSilence(it) }
+                    case("variables", "var") { skillVariables(it) }
+                    other { error("kether orryx skill书写错误") }
                 }
             }
         }
@@ -340,12 +316,8 @@ object OrryxActions {
                             }
                         }
                     } else {
-                        orryxProfileTo {
-                            it.job?.let { job -> getSkill(job, skill, true) }?.thenApply { skill ->
-                                future.complete(skill?.level)
-                            } ?: kotlin.run {
-                                future.complete(null)
-                            }
+                        getSkill(skill, true).thenApply {
+                            future.complete(it?.level)
                         }
                     }
                 }
@@ -367,12 +339,8 @@ object OrryxActions {
                             }
                         }
                     } else {
-                        orryxProfileTo {
-                            it.job?.let { job -> getSkill(job, skill, true) }?.thenApply { skill ->
-                                future.complete(skill?.locked)
-                            } ?: kotlin.run {
-                                future.complete(null)
-                            }
+                        getSkill(skill, true).thenApply {
+                            future.complete(it?.locked)
                         }
                     }
                 }
@@ -402,13 +370,23 @@ object OrryxActions {
 
     private fun skillCooldown(reader: QuestReader): ScriptAction<Any?> {
         val skill = reader.nextParsedAction()
+        val job = reader.nextHeadActionOrNull("job")
 
         return actionFuture { future ->
             skillCaster {
                 run(skill).str { skill ->
-                    getSkill(skill, true).thenApply {
-                        val skillParameter = it?.level?.let { level -> SkillParameter(skill, this, level) }
-                        future.complete(skillParameter?.cooldownValue(true) ?: 0)
+                    if (job != null) {
+                        run(job).str { job ->
+                            getSkill(job, skill, true).thenApply {
+                                val skillParameter = it?.level?.let { level -> SkillParameter(skill, this, level) }
+                                future.complete(skillParameter?.getVariable("COOLDOWN", true).clong)
+                            }
+                        }
+                    } else {
+                        getSkill(skill, true).thenApply {
+                            val skillParameter = it?.level?.let { level -> SkillParameter(skill, this, level) }
+                            future.complete(skillParameter?.getVariable("COOLDOWN", true).clong)
+                        }
                     }
                 }
             }
@@ -417,11 +395,22 @@ object OrryxActions {
 
     private fun skillCountdown(reader: QuestReader): ScriptAction<Any?> {
         val skill = reader.nextParsedAction()
+        val job = reader.nextHeadActionOrNull("job")
 
         return actionFuture { future ->
             skillCaster {
                 run(skill).str { skill ->
-                    future.complete(SkillTimer.getCountdown(this, skill))
+                    if (job != null) {
+                        run(job).str { job ->
+                            getSkill(job, skill, true).thenApply {
+                                future.complete(SkillTimer.getCountdown(this, skill))
+                            }
+                        }
+                    } else {
+                        getSkill(skill, true).thenApply {
+                            future.complete(SkillTimer.getCountdown(this, skill))
+                        }
+                    }
                 }
             }
         }
@@ -429,13 +418,23 @@ object OrryxActions {
 
     private fun skillMana(reader: QuestReader): ScriptAction<Any?> {
         val skill = reader.nextParsedAction()
+        val job = reader.nextHeadActionOrNull("job")
 
         return actionFuture { future ->
             skillCaster {
                 run(skill).str { skill ->
-                    getSkill(skill, true).thenApply {
-                        val skillParameter = it?.level?.let { level -> SkillParameter(skill, this, level) }
-                        future.complete(skillParameter?.manaValue(true) ?: 0)
+                    if (job != null) {
+                        run(job).str { job ->
+                            getSkill(job, skill, true).thenApply {
+                                val skillParameter = it?.level?.let { level -> SkillParameter(skill, this, level) }
+                                future.complete(skillParameter?.manaValue(true) ?: 0)
+                            }
+                        }
+                    } else {
+                        getSkill(skill, true).thenApply {
+                            val skillParameter = it?.level?.let { level -> SkillParameter(skill, this, level) }
+                            future.complete(skillParameter?.manaValue(true) ?: 0)
+                        }
                     }
                 }
             }
@@ -444,13 +443,51 @@ object OrryxActions {
 
     private fun skillSilence(reader: QuestReader): ScriptAction<Any?> {
         val skill = reader.nextParsedAction()
+        val job = reader.nextHeadActionOrNull("job")
 
         return actionFuture { future ->
             skillCaster {
                 run(skill).str { skill ->
-                    getSkill(skill, true).thenApply {
-                        val skillParameter = it?.level?.let { level -> SkillParameter(skill, this, level) }
-                        future.complete(skillParameter?.silenceValue(true) ?: 0)
+                    if (job != null) {
+                        run(job).str { job ->
+                            getSkill(job, skill, true).thenApply {
+                                val skillParameter = it?.level?.let { level -> SkillParameter(skill, this, level) }
+                                future.complete(skillParameter?.getVariable("SILENCE", true).clong)
+                            }
+                        }
+                    } else {
+                        getSkill(skill, true).thenApply {
+                            val skillParameter = it?.level?.let { level -> SkillParameter(skill, this, level) }
+                            future.complete(skillParameter?.getVariable("SILENCE", true).clong)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun skillVariables(reader: QuestReader): ScriptAction<Any?> {
+        val skill = reader.nextParsedAction()
+        val variable = reader.nextParsedAction()
+        val job = reader.nextHeadActionOrNull("job")
+
+        return actionFuture { future ->
+            skillCaster {
+                run(skill).str { skill ->
+                    run(variable).str { variable ->
+                        if (job != null) {
+                            run(job).str { job ->
+                                getSkill(job, skill, true).thenApply {
+                                    val skillParameter = it?.level?.let { level -> SkillParameter(skill, this, level) }
+                                    future.complete(skillParameter?.getVariable(variable, false))
+                                }
+                            }
+                        } else {
+                            getSkill(skill, true).thenApply {
+                                val skillParameter = it?.level?.let { level -> SkillParameter(skill, this, level) }
+                                future.complete(skillParameter?.getVariable(variable, false))
+                            }
+                        }
                     }
                 }
             }
