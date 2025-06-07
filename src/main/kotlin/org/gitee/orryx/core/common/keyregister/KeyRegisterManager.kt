@@ -1,6 +1,5 @@
 package org.gitee.orryx.core.common.keyregister
 
-import com.germ.germplugin.api.GermKeyAPI
 import com.germ.germplugin.api.GermPacketAPI
 import com.germ.germplugin.api.KeyType
 import com.germ.germplugin.api.event.GermClientLinkedEvent
@@ -10,12 +9,7 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.gitee.orryx.compat.dragoncore.DragonCoreCustomPacketSender
 import org.gitee.orryx.core.reload.Reload
-import org.gitee.orryx.utils.DragonCorePlugin
-import org.gitee.orryx.utils.GermPluginPlugin
-import org.gitee.orryx.utils.MOUSE_LEFT
-import org.gitee.orryx.utils.MOUSE_RIGHT
-import org.gitee.orryx.utils.keySetting
-import org.gitee.orryx.utils.keySettingSet
+import org.gitee.orryx.utils.*
 import taboolib.common.platform.Ghost
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent

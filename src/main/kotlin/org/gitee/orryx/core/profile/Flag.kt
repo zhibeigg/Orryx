@@ -15,8 +15,10 @@ open class Flag<T: Any>(override val value: T, override val isPersistence: Boole
     override fun init(player: Player, key: String) {
         if (timeout == 0L) return
         taskMap.getOrPut(player.uniqueId) { hashMapOf() }[key] = submit(delay = timeout / 50) {
-            player.orryxProfileTo { profile ->
-                profile.removeFlag(key)
+            if (player.isOnline) {
+                player.orryxProfileTo { profile ->
+                    profile.removeFlag(key)
+                }
             }
         }
     }

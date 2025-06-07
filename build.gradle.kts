@@ -71,10 +71,7 @@ taboolib {
     relocate("com.larksuite.oapi", "org.gitee.orryx.larksuite.oapi")
     relocate("com.eatthepath.uuid", "org.gitee.orryx.eatthepath.uuid")
     relocate("kotlinx.serialization", "org.gitee.orryx.serialization")
-    version {
-        taboolib = "6.2.3-test9"
-        coroutines = "1.8.0"
-    }
+    version { taboolib = "6.2.3-test9" }
 }
 
 repositories {

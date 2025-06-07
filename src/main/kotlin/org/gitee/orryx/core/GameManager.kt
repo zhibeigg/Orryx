@@ -19,6 +19,8 @@ import org.gitee.orryx.module.spirit.ISpiritManager
 import org.gitee.orryx.utils.ConfigLazy
 import org.gitee.orryx.utils.ReloadableLazy
 import org.gitee.orryx.utils.job
+import org.gitee.orryx.utils.orryxProfile
+import org.gitee.orryx.utils.orryxProfileTo
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.event.EventPriority
@@ -38,7 +40,29 @@ object GameManager {
 
     @SubscribeEvent
     private fun onPlayerJoin(e: PlayerJoinEvent) {
+        initTimeoutFlag(e.player)
         updateJobAttribute(e.player)
+    }
+
+    @SubscribeEvent
+    private fun onPlayerQuit(e: PlayerJoinEvent) {
+        cancelTimeoutFlag(e.player)
+    }
+
+    private fun initTimeoutFlag(player: Player) {
+        player.orryxProfile().thenAccept {
+            it.flags.forEach { (key, flag) ->
+                flag.init(player, key)
+            }
+        }
+    }
+
+    private fun cancelTimeoutFlag(player: Player) {
+        player.orryxProfile().thenAccept {
+            it.flags.forEach { (key, flag) ->
+                flag.cancel(player, key)
+            }
+        }
     }
 
     @SubscribeEvent
