@@ -75,6 +75,7 @@ object ContainerActions {
         Action.new("Container容器", "删除如果目标容器", "removeIf", true)
             .description("检测Container容器，删除返回值为true的Target，可读取@Target参数")
             .addContainerEntry("被检测的Container容器")
+            .addEntry("方法体返回布尔类型", Type.BOOLEAN)
             .result("被删除后的容器", Type.CONTAINER)
     ) {
         it.group(

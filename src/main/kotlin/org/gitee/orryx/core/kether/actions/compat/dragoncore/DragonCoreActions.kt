@@ -348,7 +348,7 @@ object DragonCoreActions {
 
     private fun sendArmourers(reader: QuestReader): ScriptAction<Any?> {
         val armourers = reader.nextParsedAction()
-        val timeout = reader.nextHeadAction("timeout", "100")
+        val timeout = reader.nextHeadAction("timeout", def = "100")
         val container = reader.nextTheyContainerOrNull()
 
         return actionNow {
@@ -416,9 +416,9 @@ object DragonCoreActions {
     private fun sendEffect(reader: QuestReader): ScriptAction<Any?> {
         val id = reader.nextParsedAction()
         val name = reader.nextParsedAction()
-        val rotation = reader.nextHeadAction("rotation", "0,0,0")
-        val translate = reader.nextHeadAction("translate", "")
-        val lifeTime = reader.nextHeadAction("timeout", "100")
+        val rotation = reader.nextHeadAction("rotation", def = "0,0,0")
+        val translate = reader.nextHeadAction("translate", def = "")
+        val lifeTime = reader.nextHeadAction("timeout", def = 100)
         val viewers = reader.nextHeadActionOrNull(arrayOf("viewers"))
         val they = reader.nextTheyContainerOrNull()
 
@@ -662,7 +662,7 @@ object DragonCoreActions {
         val soundFile = reader.nextParsedAction()
         val category = reader.nextParsedAction()
         val vector = reader.nextHeadActionOrNull(arrayOf("loc"))
-        val loop = reader.nextHeadAction("loop", false)
+        val loop = reader.nextHeadAction("loop", def = false)
         val (volume, pitch) = try {
             reader.mark()
             reader.expects("by", "with")

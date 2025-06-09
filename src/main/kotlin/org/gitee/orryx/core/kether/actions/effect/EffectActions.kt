@@ -367,7 +367,7 @@ object EffectActions {
         val effect = reader.nextParsedAction()
         val duration = reader.nextParsedAction()
         val tick = reader.nextParsedAction()
-        val mode = reader.nextHeadAction("mode", "show")
+        val mode = reader.nextHeadAction("mode", def = "show")
         val they = reader.nextTheyContainerOrNull()
         val viewer = reader.nextHeadActionOrNull(arrayOf("viewer"))
         return actionFuture { future ->

@@ -365,7 +365,7 @@ object VectorMathActions {
 
     private fun normalize(reader: QuestReader): ScriptAction<Any?> {
         val a = reader.nextParsedAction()
-        val length = reader.nextHeadAction("length", 1.0)
+        val length = reader.nextHeadAction("length", def = 1.0)
         val dest = reader.nextDest()
         return actionFuture { future ->
             run(a).vector { a ->

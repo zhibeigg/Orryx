@@ -91,8 +91,8 @@ internal fun QuestReader.nextHeadActionOrNull(id: String): ParsedAction<*>? {
     return nextHeadActionOrNull(arrayOf(id))
 }
 
-internal fun QuestReader.nextHeadAction(id: String, def: Any): ParsedAction<*> {
-    return nextHeadActionOrNull(arrayOf(id)) ?: literalAction(def)
+internal fun QuestReader.nextHeadAction(vararg id: String, def: Any): ParsedAction<*> {
+    return nextHeadActionOrNull(id) ?: literalAction(def)
 }
 
 internal fun QuestReader.nextTheyContainerOrNull(): ParsedAction<*>? {
@@ -100,7 +100,7 @@ internal fun QuestReader.nextTheyContainerOrNull(): ParsedAction<*>? {
 }
 
 internal fun QuestReader.nextTheyContainerOrSelf(): ParsedAction<*> {
-    return this.nextHeadAction("they", "@self")
+    return this.nextHeadAction("they", def = "@self")
 }
 
 internal fun QuestReader.nextDest(): ParsedAction<*>? {

@@ -94,7 +94,7 @@ object GameActions {
             case("set") {
                 val effect = nextToken().uppercase()
                 val duration = nextParsedAction()
-                val level = nextHeadAction("level", 1)
+                val level = nextHeadAction("level", def = 1)
                 val they = nextTheyContainerOrNull()
                 actionFuture { future ->
                     run(duration).int { duration ->

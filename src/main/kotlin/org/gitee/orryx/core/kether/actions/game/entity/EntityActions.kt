@@ -46,11 +46,16 @@ object EntityActions {
             .addEntry("实体存在时间(0为永久)", Type.LONG, optional = true, head = "timeout", default = "0")
             .addContainerEntry("实体生成位置", optional = true, default = "@self")
             .addContainerEntry("能看到实体的玩家（默认私有）", optional = true, head = "viewer", default = "@self")
-            .result("生成的实体列表", Type.CONTAINER)
+            .result("生成的实体列表", Type.CONTAINER),
+        Action.new("Entity实体操作", "移除实体", "entity", true)
+            .description("移除实体")
+            .addEntry("移除标识符", Type.SYMBOL, head = "remove/destroy")
+            .addContainerEntry("实体", optional = false)
     ) {
         it.switch {
             case("spawn") { spawn(this) }
             case("ady") { adySpawn(this) }
+            case("remove", "destroy") { remove(this) }
             other { fieldGet(this) }
         }
     }
@@ -58,10 +63,10 @@ object EntityActions {
     private fun spawn(reader: QuestReader): ScriptAction<Any?> {
         val name = reader.nextParsedAction()
         val type = reader.nextParsedAction()
-        val health = reader.nextHeadAction("health", 0.0)
-        val vector = reader.nextHeadAction("vector", AbstractVector())
-        val gravity = reader.nextHeadAction("gravity", true)
-        val timeout = reader.nextHeadAction("timeout", 0.0)
+        val health = reader.nextHeadAction("health", def = 0.0)
+        val vector = reader.nextHeadAction("vector", def = AbstractVector())
+        val gravity = reader.nextHeadAction("gravity", def = true)
+        val timeout = reader.nextHeadAction("timeout", def = 0.0)
         val they = reader.nextTheyContainerOrNull()
         return actionFuture { future ->
             run(name).str { name ->
@@ -115,9 +120,9 @@ object EntityActions {
     private fun adySpawn(reader: QuestReader): ScriptAction<Any?> {
         val name = reader.nextParsedAction()
         val type = reader.nextParsedAction()
-        val vector = reader.nextHeadAction("vector", AbstractVector())
-        val gravity = reader.nextHeadAction("gravity", true)
-        val timeout = reader.nextHeadAction("timeout", 0.0)
+        val vector = reader.nextHeadAction("vector", def = AbstractVector())
+        val gravity = reader.nextHeadAction("gravity", def = true)
+        val timeout = reader.nextHeadAction("timeout", def = 0.0)
         val viewer = reader.nextHeadActionOrNull("viewer")
         val they = reader.nextTheyContainerOrNull()
         return actionFuture { future ->
@@ -164,6 +169,20 @@ object EntityActions {
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+
+    private fun remove(reader: QuestReader): ScriptAction<Any?> {
+        val they = reader.nextTheyContainerOrNull()
+        return actionFuture { future ->
+            ensureSync {
+                containerOrSelf(they) {
+                    it.forEachInstance<ITargetEntity<*>> { target ->
+                        if (target.entity.isValid) target.entity.remove()
+                    }
+                    future.complete(null)
                 }
             }
         }

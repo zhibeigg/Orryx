@@ -72,8 +72,8 @@ object FlagActions {
             reader.mark()
             reader.expects("to", "set")
             val value = reader.nextParsedAction()
-            val persistence = reader.nextHeadAction("pst", false)
-            val timeout = reader.nextHeadAction("timeout", 0)
+            val persistence = reader.nextHeadAction("pst", def = false)
+            val timeout = reader.nextHeadAction("timeout", def = 0)
             val they = reader.nextTheyContainerOrNull()
 
             return actionNow {

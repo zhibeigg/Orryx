@@ -114,6 +114,7 @@ object Actions {
         override fun read(instance: IPlayerJob, key: String): OpenResult {
             return when(key) {
                 "key" -> OpenResult.successful(instance.key)
+                "name" -> OpenResult.successful(instance.job.name)
                 "config" -> OpenResult.successful(instance.job)
                 "player" -> OpenResult.successful(instance.player)
                 "level" -> OpenResult.successful(instance.level)
