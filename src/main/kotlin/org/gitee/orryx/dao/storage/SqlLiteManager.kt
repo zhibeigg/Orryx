@@ -10,12 +10,19 @@ import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.utils.*
 import taboolib.common.io.newFile
+import taboolib.common.platform.function.info
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common.platform.function.submitAsync
+import taboolib.common.platform.function.warning
+import taboolib.module.database.Action
+import taboolib.module.database.ActionUpdate
 import taboolib.module.database.ColumnOptionSQLite
 import taboolib.module.database.ColumnTypeSQLite
+import taboolib.module.database.ResultProcessor
 import taboolib.module.database.Table
 import taboolib.module.database.getHost
+import taboolib.module.database.use
+import java.sql.SQLException
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
@@ -228,7 +235,7 @@ class SqlLiteManager: IStorageManager {
     override fun savePlayerJob(playerJobPO: PlayerJobPO, onSuccess: () -> Unit) {
         debug("SqlLite 保存玩家 Job")
         synchronized(getInternerByUUID(playerJobPO.player).intern("PlayerJob${playerJobPO.id}${playerJobPO.job}")) {
-            jobsTable.transaction(dataSource) {
+            jobsTable.workspace(dataSource) {
                 if (select { where { USER_ID eq playerJobPO.id and (JOB eq playerJobPO.job) } }.find()) {
                     update {
                         where { USER_ID eq playerJobPO.id and (JOB eq playerJobPO.job) }
@@ -247,14 +254,15 @@ class SqlLiteManager: IStorageManager {
                         )
                     }
                 }
-            }.onSuccess { onSuccess() }
+            }.run()
+            onSuccess()
         }
     }
 
     override fun savePlayerSkill(playerSkillPO: PlayerSkillPO, onSuccess: () -> Unit) {
         debug("SqlLite 保存玩家 Skill")
         synchronized(getInternerByUUID(playerSkillPO.player).intern("PlayerSkill${playerSkillPO.id}${playerSkillPO.job}${playerSkillPO.skill}")) {
-            skillsTable.transaction(dataSource) {
+            skillsTable.workspace(dataSource) {
                 if (select { where { USER_ID eq playerSkillPO.id and (JOB eq playerSkillPO.job) and (SKILL eq playerSkillPO.skill) } }.find()) {
                     update {
                         where { USER_ID eq playerSkillPO.id and (JOB eq playerSkillPO.job) and (SKILL eq playerSkillPO.skill) }
@@ -272,14 +280,15 @@ class SqlLiteManager: IStorageManager {
                         )
                     }
                 }
-            }.onSuccess { onSuccess() }
+            }.run()
+            onSuccess()
         }
     }
 
     override fun savePlayerKey(playerKeySettingPO: PlayerKeySettingPO, onSuccess: () -> Unit) {
         debug("SqlLite 保存玩家 KeySetting")
         synchronized(getInternerByUUID(playerKeySettingPO.player).intern("KeySetting${playerKeySettingPO.id}")) {
-            keyTable.transaction(dataSource) {
+            keyTable.workspace(dataSource) {
                 if (select { where { USER_ID eq playerKeySettingPO.id } }.find()) {
                     update {
                         where { USER_ID eq playerKeySettingPO.id }
@@ -293,7 +302,8 @@ class SqlLiteManager: IStorageManager {
                         )
                     }
                 }
-            }.onSuccess { onSuccess() }
+            }.run()
+            onSuccess()
         }
     }
 
