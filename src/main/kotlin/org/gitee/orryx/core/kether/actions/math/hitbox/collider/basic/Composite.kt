@@ -5,10 +5,7 @@ import org.gitee.orryx.api.collider.ICollider
 import org.gitee.orryx.api.collider.IComposite
 import org.gitee.orryx.core.targets.ITargetLocation
 
-class Composite<T : ITargetLocation<*>, C : ICollider<T>>(
-    private val colliders: MutableList<C>,
-    override val onCollideFunction: ICollideFunction
-) : IComposite<T, C> {
+class Composite<T : ITargetLocation<*>, C : ICollider<T>>(private val colliders: MutableList<C>) : IComposite<T, C> {
 
     private var disable = false
 

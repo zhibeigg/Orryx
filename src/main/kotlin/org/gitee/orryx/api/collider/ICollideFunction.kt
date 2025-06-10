@@ -1,5 +1,6 @@
 package org.gitee.orryx.api.collider
 
+@FunctionalInterface
 interface ICollideFunction {
 
     /**

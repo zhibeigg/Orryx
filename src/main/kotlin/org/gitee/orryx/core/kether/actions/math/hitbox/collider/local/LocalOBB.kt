@@ -1,19 +1,16 @@
 package org.gitee.orryx.core.kether.actions.math.hitbox.collider.local
 
-import org.gitee.orryx.api.collider.ICollideFunction
 import org.gitee.orryx.api.collider.local.ICoordinateConverter
 import org.gitee.orryx.api.collider.local.ILocalOBB
 import org.gitee.orryx.core.targets.ITargetLocation
 import org.joml.Quaterniond
 import org.joml.Vector3d
-import kotlin.collections.toTypedArray
 
 open class LocalOBB<T : ITargetLocation<*>>(
     halfExtents: Vector3d,
     localCenter: Vector3d,
     localRotation: Quaterniond,
-    private val parent: ICoordinateConverter,
-    override val onCollideFunction: ICollideFunction
+    private val parent: ICoordinateConverter
 ) : ILocalOBB<T> {
 
     private val globalCenter = Vector3d()
@@ -122,7 +119,7 @@ open class LocalOBB<T : ITargetLocation<*>>(
         dirty[2] = true
     }
 
-    private fun update() {
+    override fun update() {
         if ((!dirty[1] && !dirty[2] && (version[0] != parent.positionVersion() && version[1] == parent.rotationVersion()) || dirty[0])) {
             dirty[0] = false
             version[0] = parent.positionVersion()

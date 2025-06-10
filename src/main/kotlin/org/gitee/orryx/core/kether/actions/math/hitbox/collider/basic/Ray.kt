@@ -8,8 +8,7 @@ import org.joml.Vector3d
 class Ray<T : ITargetLocation<*>>(
     override val origin: Vector3d,
     override var length: Double,
-    override var direction: Vector3d,
-    override val onCollideFunction: ICollideFunction
+    override var direction: Vector3d
 ) : IRay<T> {
 
     private var disable = false

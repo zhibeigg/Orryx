@@ -7,8 +7,7 @@ import org.joml.Vector3d
 
 class Sphere<T : ITargetLocation<*>>(
     override var center: Vector3d,
-    override var radius: Double,
-    override val onCollideFunction: ICollideFunction
+    override var radius: Double
 ) : ISphere<T> {
 
     private var disable = false

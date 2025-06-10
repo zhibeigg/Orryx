@@ -106,6 +106,7 @@ object MatrixMathActions {
     }
 
     private fun create(reader: QuestReader): ScriptAction<Any?> {
+
         val m00 = reader.nextParsedAction()
         val m01 = reader.nextParsedAction()
         val m02 = reader.nextParsedAction()
@@ -115,6 +116,7 @@ object MatrixMathActions {
         val m20 = reader.nextParsedAction()
         val m21 = reader.nextParsedAction()
         val m22 = reader.nextParsedAction()
+
         return actionFuture { future ->
             run(m00).double { m00 ->
                 run(m01).double { m01 ->
@@ -139,9 +141,11 @@ object MatrixMathActions {
     }
 
     private fun rotateX(reader: QuestReader): ScriptAction<Any?> {
+
         val matrix = reader.nextParsedAction()
         val angle = reader.nextParsedAction()
         val dest = reader.nextDest()
+
         return actionFuture { future ->
             run(matrix).matrix { matrix ->
                 run(angle).double { angle ->
@@ -154,9 +158,11 @@ object MatrixMathActions {
     }
 
     private fun rotateY(reader: QuestReader): ScriptAction<Any?> {
+
         val matrix = reader.nextParsedAction()
         val angle = reader.nextParsedAction()
         val dest = reader.nextDest()
+
         return actionFuture { future ->
             run(matrix).matrix { matrix ->
                 run(angle).double { angle ->
@@ -169,9 +175,11 @@ object MatrixMathActions {
     }
 
     private fun rotateZ(reader: QuestReader): ScriptAction<Any?> {
+
         val matrix = reader.nextParsedAction()
         val angle = reader.nextParsedAction()
         val dest = reader.nextDest()
+
         return actionFuture { future ->
             run(matrix).matrix { matrix ->
                 run(angle).double { angle ->
@@ -184,10 +192,12 @@ object MatrixMathActions {
     }
 
     private fun rotate(reader: QuestReader): ScriptAction<Any?> {
+
         val matrix = reader.nextParsedAction()
         val vector = reader.nextParsedAction()
         val angle = reader.nextParsedAction()
         val dest = reader.nextDest()
+
         return actionFuture { future ->
             run(matrix).matrix { matrix ->
                 run(vector).vector { vector ->
@@ -202,9 +212,11 @@ object MatrixMathActions {
     }
 
     private fun scale(reader: QuestReader): ScriptAction<Any?> {
+
         val matrix = reader.nextParsedAction()
         val scale = reader.nextParsedAction()
         val dest = reader.nextDest()
+
         return actionFuture { future ->
             run(matrix).matrix { matrix ->
                 run(scale).double { scale ->
@@ -217,11 +229,13 @@ object MatrixMathActions {
     }
 
     private fun scaleXYZ(reader: QuestReader): ScriptAction<Any?> {
+
         val matrix = reader.nextParsedAction()
         val scaleX = reader.nextParsedAction()
         val scaleY = reader.nextParsedAction()
         val scaleZ = reader.nextParsedAction()
         val dest = reader.nextDest()
+
         return actionFuture { future ->
             run(matrix).matrix { matrix ->
                 run(scaleX).double { scaleX ->
@@ -238,9 +252,11 @@ object MatrixMathActions {
     }
 
     private fun transform(reader: QuestReader): ScriptAction<Any?> {
+
         val matrix = reader.nextParsedAction()
         val vector = reader.nextParsedAction()
         val dest = reader.nextDest()
+
         return actionFuture { future ->
             run(matrix).matrix { matrix ->
                 run(vector).vector { vector ->

@@ -1,18 +1,21 @@
 package org.gitee.orryx.core.kether.actions.math.hitbox.collider.local
 
-import org.gitee.orryx.api.adapters.IEntity
 import org.gitee.orryx.api.collider.local.ICoordinateConverter
+import org.gitee.orryx.core.targets.ITargetLocation
 import org.joml.Quaterniond
 import org.joml.Vector3d
 
-/** Entity坐标转换器 */
-class EntityCoordinateConverter(private val entity: IEntity) : ICoordinateConverter {
+/**
+ * Target 坐标转换器
+ * */
+class TargetCoordinateConverter(private val target: ITargetLocation<*>) : ICoordinateConverter {
 
     private val version = ShortArray(2)
 
     override val position: Vector3d = Vector3d()
 
-    private val yRot = 0.0
+    val yRot: Double
+        get() = target.location.yaw.toDouble()
 
     override val rotation: Quaterniond = Quaterniond()
 
@@ -25,7 +28,7 @@ class EntityCoordinateConverter(private val entity: IEntity) : ICoordinateConver
     }
 
     fun update() {
-        val pos = entity.location
+        val pos = target.location
 
         if (!position.equals(pos.x, pos.y, pos.z)) {
             position.set(pos.x, pos.y, pos.z)

@@ -240,9 +240,11 @@ object VectorMathActions {
     }
 
     private fun create(reader: QuestReader): ScriptAction<Any?> {
+
         val x = reader.nextParsedAction()
         val y = reader.nextParsedAction()
         val z = reader.nextParsedAction()
+
         return actionFuture {
             run(x).double { x ->
                 run(y).double { y ->
@@ -256,9 +258,11 @@ object VectorMathActions {
     }
 
     private fun add(reader: QuestReader): ScriptAction<Any?> {
+
         val a = reader.nextParsedAction()
         val b = reader.nextParsedAction()
         val dest = reader.nextDest()
+
         return actionFuture { future ->
             run(a).vector { a ->
                 run(b).vector { b ->
@@ -271,9 +275,11 @@ object VectorMathActions {
     }
 
     private fun sub(reader: QuestReader): ScriptAction<Any?> {
+
         val a = reader.nextParsedAction()
         val b = reader.nextParsedAction()
         val dest = reader.nextDest()
+
         return actionFuture { future ->
             run(a).vector { a ->
                 run(b).vector { b ->
@@ -286,9 +292,11 @@ object VectorMathActions {
     }
 
     private fun cross(reader: QuestReader): ScriptAction<Any?> {
+
         val a = reader.nextParsedAction()
         val b = reader.nextParsedAction()
         val dest = reader.nextDest()
+
         return actionFuture { future ->
             run(a).vector { a ->
                 run(b).vector { b ->
@@ -301,8 +309,10 @@ object VectorMathActions {
     }
 
     private fun dot(reader: QuestReader): ScriptAction<Any?> {
+
         val a = reader.nextParsedAction()
         val b = reader.nextParsedAction()
+
         return actionFuture { future ->
             run(a).vector { a ->
                 run(b).vector { b ->
@@ -313,9 +323,11 @@ object VectorMathActions {
     }
 
     private fun mul(reader: QuestReader): ScriptAction<Any?> {
+
         val v = reader.nextParsedAction()
         val scale = reader.nextParsedAction()
         val dest = reader.nextDest()
+
         return actionFuture { future ->
             run(v).vector { v ->
                 run(scale).double { scale ->
@@ -328,8 +340,10 @@ object VectorMathActions {
     }
 
     private fun angle(reader: QuestReader): ScriptAction<Any?> {
+
         val a = reader.nextParsedAction()
         val b = reader.nextParsedAction()
+
         return actionFuture {
             run(a).vector { a ->
                 run(b).vector { b ->
@@ -340,8 +354,10 @@ object VectorMathActions {
     }
 
     private fun distance(reader: QuestReader): ScriptAction<Any?> {
+
         val a = reader.nextParsedAction()
         val b = reader.nextParsedAction()
+
         return actionFuture {
             run(a).vector { a ->
                 run(b).vector { b ->
@@ -352,8 +368,10 @@ object VectorMathActions {
     }
 
     private fun negate(reader: QuestReader): ScriptAction<Any?> {
+
         val a = reader.nextParsedAction()
         val dest = reader.nextDest()
+
         return actionFuture { future ->
             run(a).vector { a ->
                 destVector(dest) {
@@ -364,9 +382,11 @@ object VectorMathActions {
     }
 
     private fun normalize(reader: QuestReader): ScriptAction<Any?> {
+
         val a = reader.nextParsedAction()
         val length = reader.nextHeadAction("length", def = 1.0)
         val dest = reader.nextDest()
+
         return actionFuture { future ->
             run(a).vector { a ->
                 run(length).double { length ->
@@ -379,7 +399,9 @@ object VectorMathActions {
     }
 
     private fun length(reader: QuestReader): ScriptAction<Any?> {
+
         val a = reader.nextParsedAction()
+
         return actionFuture { future ->
             run(a).vector { a ->
                 future.complete(a.length())
@@ -388,9 +410,11 @@ object VectorMathActions {
     }
 
     private fun reflect(reader: QuestReader): ScriptAction<Any?> {
+
         val a = reader.nextParsedAction()
         val normal = reader.nextParsedAction()
         val dest = reader.nextDest()
+
         return actionFuture { future ->
             run(a).vector { a ->
                 run(normal).vector { normal ->
@@ -403,10 +427,12 @@ object VectorMathActions {
     }
 
     private fun closer(reader: QuestReader): ScriptAction<Any?> {
+
         val a = reader.nextParsedAction()
         val to = reader.nextParsedAction()
         val length = reader.nextParsedAction()
         val dest = reader.nextDest()
+
         return actionFuture { future ->
             run(a).vector { a ->
                 run(to).vector { to ->
@@ -422,10 +448,12 @@ object VectorMathActions {
     }
 
     private fun further(reader: QuestReader): ScriptAction<Any?> {
+
         val a = reader.nextParsedAction()
         val to = reader.nextParsedAction()
         val length = reader.nextParsedAction()
         val dest = reader.nextDest()
+
         return actionFuture { future ->
             run(a).vector { a ->
                 run(to).vector { to ->

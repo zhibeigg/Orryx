@@ -10,8 +10,7 @@ class Capsule<T : ITargetLocation<*>>(
     override var center: Vector3d,
     override var rotation: Quaterniond,
     override var radius: Double,
-    override var height: Double,
-    override val onCollideFunction: ICollideFunction
+    override var height: Double
 ) : ICapsule<T> {
 
     private var disable = false

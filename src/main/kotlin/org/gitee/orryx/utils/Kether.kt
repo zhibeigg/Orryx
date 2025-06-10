@@ -6,6 +6,8 @@ import org.bukkit.util.Vector
 import org.gitee.nodens.util.NODENS_NAMESPACE
 import org.gitee.orryx.api.adapters.IVector
 import org.gitee.orryx.api.adapters.vector.AbstractVector
+import org.gitee.orryx.api.collider.ICollider
+import org.gitee.orryx.api.collider.local.ILocalCollider
 import org.gitee.orryx.core.common.keyregister.PlayerKeySetting
 import org.gitee.orryx.core.container.Container
 import org.gitee.orryx.core.container.IContainer
@@ -13,11 +15,13 @@ import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.kether.ScriptManager.wikiActions
 import org.gitee.orryx.core.kether.actions.effect.EffectBuilder
 import org.gitee.orryx.core.kether.actions.effect.EffectSpawner
+import org.gitee.orryx.core.kether.actions.math.hitbox.collider.local.None
 import org.gitee.orryx.core.kether.parameter.IParameter
 import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.kether.parameter.StationParameter
 import org.gitee.orryx.core.targets.ITargetLocation
 import org.joml.Matrix3d
+import org.joml.Quaterniond
 import org.joml.Vector3d
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptCommandSender
@@ -107,6 +111,16 @@ internal fun QuestReader.nextDest(): ParsedAction<*>? {
     return this.nextHeadActionOrNull(arrayOf("dest"))
 }
 
+internal fun <T> ScriptFrame.destQuaternion(dest: ParsedAction<*>?, func: (ScriptFrame.(dest: Quaterniond) -> T)): CompletableFuture<T> {
+    return if (dest == null) {
+        CompletableFuture.completedFuture(func(Quaterniond()))
+    } else {
+        run(dest).quaternion { quaternion ->
+            func(quaternion)
+        }
+    }
+}
+
 internal fun <T> ScriptFrame.destMatrix(dest: ParsedAction<*>?, func: (ScriptFrame.(dest: Matrix3d) -> T)): CompletableFuture<T> {
     return if (dest == null) {
         CompletableFuture.completedFuture(func(Matrix3d()))
@@ -190,6 +204,14 @@ fun <T> CompletableFuture<Any?>.effectSpawner(then: (EffectSpawner) -> T): Compl
 
 fun <T> CompletableFuture<Any?>.matrix(then: (Matrix3d) -> T): CompletableFuture<T> {
     return thenApply { matrix -> then(matrix as? Matrix3d ?: error("应传入矩阵但是传入了${matrix?.javaClass?.name}")) }.except { then(Matrix3d()) }
+}
+
+fun <T> CompletableFuture<Any?>.quaternion(then: (Quaterniond) -> T): CompletableFuture<T> {
+    return thenApply { quaternion -> then(quaternion as? Quaterniond ?: error("应传入四元数但是传入了${quaternion?.javaClass?.name}")) }.except { then(Quaterniond()) }
+}
+
+fun <T> CompletableFuture<Any?>.collider(then: (ILocalCollider<*>) -> T): CompletableFuture<T> {
+    return thenApply { collider -> then(collider as? ILocalCollider<*> ?: error("应传入碰撞箱但是传入了${collider?.javaClass?.name}")) }.except { then(None()) }
 }
 
 internal fun theyContainer(optional: Boolean = false) = if (optional) {

@@ -8,6 +8,8 @@ import org.gitee.orryx.api.collider.IComposite
 import org.gitee.orryx.api.collider.IOBB
 import org.gitee.orryx.api.collider.IRay
 import org.gitee.orryx.api.collider.ISphere
+import org.gitee.orryx.api.collider.local.ICoordinateConverter
+import org.gitee.orryx.core.kether.actions.math.hitbox.collider.local.TargetCoordinateConverter
 import org.gitee.orryx.core.targets.ITargetLocation
 import org.joml.Intersectiond
 import org.joml.Math.clamp
@@ -58,6 +60,7 @@ fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> colliding(collider: ICollid
             ColliderType.AABB -> isColliding(collider as IOBB, other as IAABB)
             ColliderType.RAY -> isColliding(other as IRay, collider as IOBB)
             ColliderType.COMPOSITE -> isColliding(other as IComposite<T2, ICollider<T2>>, collider)
+            ColliderType.NONE -> false
         }
         ColliderType.SPHERE -> when (other.type) {
             ColliderType.OBB -> isColliding(collider as ISphere, other as IOBB)
@@ -66,6 +69,7 @@ fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> colliding(collider: ICollid
             ColliderType.AABB -> isColliding(collider as ISphere, other as IAABB)
             ColliderType.RAY -> isColliding(other as IRay, collider as ISphere)
             ColliderType.COMPOSITE -> isColliding(other as IComposite<T2, ICollider<T2>>, collider)
+            ColliderType.NONE -> false
         }
         ColliderType.CAPSULE -> when (other.type) {
             ColliderType.OBB -> isColliding(collider as ICapsule, other as IOBB)
@@ -74,6 +78,7 @@ fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> colliding(collider: ICollid
             ColliderType.AABB -> isColliding(collider as ICapsule, other as IAABB)
             ColliderType.RAY -> isColliding(other as IRay, collider as ICapsule)
             ColliderType.COMPOSITE -> isColliding(other as IComposite<T2, ICollider<T2>>, collider)
+            ColliderType.NONE -> false
         }
         ColliderType.AABB -> when (other.type) {
             ColliderType.OBB -> isColliding(other as IOBB, collider as IAABB)
@@ -82,6 +87,7 @@ fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> colliding(collider: ICollid
             ColliderType.AABB -> isColliding(collider as IAABB, other as IAABB)
             ColliderType.RAY -> isColliding(other as IRay, collider as IAABB)
             ColliderType.COMPOSITE -> isColliding(other as IComposite<T2, ICollider<T2>>, collider)
+            ColliderType.NONE -> false
         }
         ColliderType.RAY -> when (other.type) {
             ColliderType.OBB -> isColliding(collider as IRay, other as IOBB)
@@ -90,8 +96,10 @@ fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> colliding(collider: ICollid
             ColliderType.AABB -> isColliding(collider as IRay, other as IAABB)
             ColliderType.RAY -> isColliding(collider as IRay, other as IRay)
             ColliderType.COMPOSITE -> isColliding(other as IComposite<T2, ICollider<T2>>, collider)
+            ColliderType.NONE -> false
         }
         ColliderType.COMPOSITE -> isColliding(collider as IComposite<T2, ICollider<T2>>, other)
+        ColliderType.NONE -> false
     }
 }
 
@@ -585,4 +593,8 @@ private fun <T: ITargetLocation<*>> getClosestPointAABB(point: Vector3d, aabb: I
     nearP.y = clamp(point.y, min.y, max.y)
     nearP.z = clamp(point.z, min.z, max.z)
     return nearP
+}
+
+fun ITargetLocation<*>.coordinateConverter(): ICoordinateConverter {
+    return TargetCoordinateConverter(this)
 }

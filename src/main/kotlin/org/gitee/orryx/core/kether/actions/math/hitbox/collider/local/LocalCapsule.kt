@@ -1,6 +1,5 @@
 package org.gitee.orryx.core.kether.actions.math.hitbox.collider.local
 
-import org.gitee.orryx.api.collider.ICollideFunction
 import org.gitee.orryx.api.collider.local.ICoordinateConverter
 import org.gitee.orryx.api.collider.local.ILocalCapsule
 import org.gitee.orryx.core.targets.ITargetLocation
@@ -12,8 +11,7 @@ open class LocalCapsule<T : ITargetLocation<*>>(
     override var radius: Double,
     localCenter: Vector3d,
     localRotation: Quaterniond,
-    private val parent: ICoordinateConverter,
-    override val onCollideFunction: ICollideFunction
+    private val parent: ICoordinateConverter
 ) : ILocalCapsule<T> {
 
     private val globalCenter = Vector3d()
@@ -94,7 +92,7 @@ open class LocalCapsule<T : ITargetLocation<*>>(
         dirty[1] = true
     }
 
-    private fun update() {
+    override fun update() {
         if (parent.rotationVersion() != version[1] || dirty[1]) {
             dirty[1] = false
             val rotation = parent.rotation

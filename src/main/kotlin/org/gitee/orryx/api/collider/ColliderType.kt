@@ -6,5 +6,6 @@ enum class ColliderType {
     CAPSULE,
     AABB,
     RAY,
-    COMPOSITE
+    COMPOSITE,
+    NONE
 }

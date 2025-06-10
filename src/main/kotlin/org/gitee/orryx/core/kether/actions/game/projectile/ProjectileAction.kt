@@ -1,13 +1,10 @@
 package org.gitee.orryx.core.kether.actions.game.projectile
 
+import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
-import org.gitee.orryx.utils.ORRYX_NAMESPACE
-import org.gitee.orryx.utils.nextHeadAction
-import org.gitee.orryx.utils.nextHeadActionOrNull
-import org.gitee.orryx.utils.scriptParser
-import taboolib.module.kether.KetherParser
-import taboolib.module.kether.actionFuture
+import org.gitee.orryx.utils.*
+import taboolib.module.kether.*
 
 object ProjectileAction {
 
@@ -57,10 +54,12 @@ object ProjectileAction {
             .addEntry("碰撞箱", Type.HITBOX, false)
             .addEntry("碰撞时执行", Type.ANY, true, head = "onHit")
             .addEntry("每周期执行", Type.ANY, true, head = "onPeriod")
-            .addEntry("周期", Type.ANY, true, "1", head = "period/p")
-            .addEntry("存活时间", Type.ANY, true, "0", head = "timeout/t")
+            .addEntry("周期", Type.LONG, true, "1", head = "period/p")
+            .addEntry("存活时间", Type.LONG, true, "0", head = "timeout/t")
+            .addEntry("是否与实体碰撞", Type.BOOLEAN, true, "true", head = "hitEntity/he")
+            .addEntry("是否与方块碰撞", Type.BOOLEAN, true, "false", head = "hitBlock/hb")
             .addContainerEntry("生成位置", optional = true, default = "@self")
-            .result("抛射物坐标", Type.TARGET)
+            .result("抛射物", Type.TARGET)
     ) {
         val type = Projectile.ProjectileType.parseIgnoreCase(it.nextToken())
         val vector = it.nextParsedAction()
@@ -69,9 +68,38 @@ object ProjectileAction {
         val onPeriod = it.nextHeadActionOrNull("onPeriod")
         val period = it.nextHeadAction("period", "p", def = 1)
         val timeout = it.nextHeadAction("timeout", "t", def = 0)
+        val hitEntity = it.nextHeadAction("hitEntity", "he", def = true)
+        val hitBlock = it.nextHeadAction("hitBlock", "hb", def = false)
+        val they = it.nextTheyContainerOrNull()
 
         actionFuture { future ->
-
+            run(hitbox).collider { hitbox ->
+                run(period).long { period ->
+                    run(timeout).long { timeout ->
+                        run(hitEntity).bool { hitEntity ->
+                            run(hitBlock).bool { hitBlock ->
+                                container(they, self()) { container ->
+                                    val location = container.firstInstance<ITargetLocation<*>>()
+                                    val projectile = Projectile(
+                                        type,
+                                        period,
+                                        timeout,
+                                        location,
+                                        hitbox,
+                                        vector,
+                                        onHit,
+                                        onPeriod,
+                                        hitBlock,
+                                        hitEntity
+                                    )
+                                    projectile.start(this)
+                                    future.complete(projectile)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

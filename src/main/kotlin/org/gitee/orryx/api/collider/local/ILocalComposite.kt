@@ -5,7 +5,7 @@ import org.gitee.orryx.core.targets.ITargetLocation
 import org.joml.Quaterniond
 import org.joml.Vector3d
 
-interface ILocalComposite<T: ITargetLocation<*>, C : ILocalCollider<T>> : IComposite<T, C> {
+interface ILocalComposite<T: ITargetLocation<*>, C : ILocalCollider<T>> : IComposite<T, C>, ILocalCollider<T> {
 
     /**
      * 设置局部坐标系坐标

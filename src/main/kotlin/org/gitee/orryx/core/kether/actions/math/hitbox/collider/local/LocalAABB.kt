@@ -1,6 +1,5 @@
 package org.gitee.orryx.core.kether.actions.math.hitbox.collider.local
 
-import org.gitee.orryx.api.collider.ICollideFunction
 import org.gitee.orryx.api.collider.local.ICoordinateConverter
 import org.gitee.orryx.api.collider.local.ILocalAABB
 import org.gitee.orryx.core.targets.ITargetLocation
@@ -10,8 +9,7 @@ import org.joml.Vector3d
 open class LocalAABB<T : ITargetLocation<*>>(
     localCenter: Vector3d,
     override var halfExtents: Vector3d,
-    private val parent: ICoordinateConverter,
-    override val onCollideFunction: ICollideFunction
+    private val parent: ICoordinateConverter
 ) : ILocalAABB<T> {
     
     private val globalCenter: Vector3d = Vector3d()
@@ -73,7 +71,7 @@ open class LocalAABB<T : ITargetLocation<*>>(
         dirty = true
     }
 
-    private fun update() {
+    override fun update() {
         if (parent.positionVersion() == version[0] && parent.rotationVersion() == version[1] && !dirty) {
             return
         }

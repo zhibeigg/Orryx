@@ -5,11 +5,7 @@ import org.gitee.orryx.api.collider.ICollideFunction
 import org.gitee.orryx.core.targets.ITargetLocation
 import org.joml.Vector3d
 
-class AABBPlus<T : ITargetLocation<*>>(
-    override var halfExtents: Vector3d,
-    override var center: Vector3d,
-    override val onCollideFunction: ICollideFunction
-) : IAABB<T> {
+class AABBPlus<T : ITargetLocation<*>>(override var halfExtents: Vector3d, override var center: Vector3d) : IAABB<T> {
 
     private var disable = false
 

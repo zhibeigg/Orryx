@@ -1,6 +1,5 @@
 package org.gitee.orryx.core.kether.actions.math.hitbox.collider.local
 
-import org.gitee.orryx.api.collider.ICollideFunction
 import org.gitee.orryx.api.collider.local.ICoordinateConverter
 import org.gitee.orryx.api.collider.local.ILocalCollider
 import org.gitee.orryx.api.collider.local.ILocalComposite
@@ -11,8 +10,7 @@ import org.joml.Vector3d
 open class LocalComposite<T : ITargetLocation<*>, C : ILocalCollider<T>>(
     localPosition: Vector3d,
     localRotation: Quaterniond,
-    private val parent: ICoordinateConverter,
-    override val onCollideFunction: ICollideFunction
+    private val parent: ICoordinateConverter
 ) : ILocalComposite<T, C> {
 
     private val colliderMap = hashMapOf<String, Pair<Int, C>>()
@@ -202,7 +200,7 @@ open class LocalComposite<T : ITargetLocation<*>, C : ILocalCollider<T>>(
         dirty[1] = true
     }
 
-    private fun update() {
+    override fun update() {
         if (parent.positionVersion() != version[0] || parent.rotationVersion() != version[1] || dirty[0] || dirty[1]) {
             dirty[0] = false
             dirty[1] = false

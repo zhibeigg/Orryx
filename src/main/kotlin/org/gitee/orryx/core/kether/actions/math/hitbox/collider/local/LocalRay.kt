@@ -11,8 +11,7 @@ open class LocalRay<T : ITargetLocation<*>>(
     localOrigin: Vector3d, // 射线的起点
     localDirection: Vector3d, // 射线的长度
     override var length: Double,
-    private val parent: ICoordinateConverter,
-    override val onCollideFunction: ICollideFunction
+    private val parent: ICoordinateConverter
 ) : ILocalRay<T> {
 
     private val globalOrigin = Vector3d() // 射线的起点
@@ -79,7 +78,7 @@ open class LocalRay<T : ITargetLocation<*>>(
         dirty = true
     }
 
-    private fun update() {
+    override fun update() {
         if (parent.positionVersion() == version[0] && parent.rotationVersion() == version[1] && !dirty) {
             return
         }

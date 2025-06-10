@@ -63,5 +63,4 @@ interface IEntity {
     fun teleport(location: Location)
 
     fun remove()
-
 }

@@ -13,27 +13,21 @@ import org.gitee.orryx.core.targets.ITargetLocation
 interface ICollider<T: ITargetLocation<*>> {
 
     /**
-     * 当与其他碰撞体发生碰撞时调用
-     */
-    val onCollideFunction: ICollideFunction
-
-    /**
      * @return 碰撞箱类型
      */
     val type: ColliderType
 
+    /** 通过AABB碰撞箱进行快速排除，提高碰撞检测效率。
+     *
+     * AABB要求：
+     * - 完整涵盖整个碰撞箱
+     * - 尽可能小
+     *
+     * 可为Null，则不进行快速排除。
+     *
+     * @return 快速碰撞箱
+     */
     val fastCollider: IAABB<T>?
-
-        /** 通过AABB碰撞箱进行快速排除，提高碰撞检测效率。
-         *
-         * AABB要求：
-         * - 完整涵盖整个碰撞箱
-         * - 尽可能小
-         *
-         * 可为Null，则不进行快速排除。
-         *
-         * @return 快速碰撞箱
-         */
         get() = null
 
     /**

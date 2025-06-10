@@ -10,8 +10,7 @@ import kotlin.collections.ArrayList
 class OBB<T : ITargetLocation<*>>(
     override var halfExtents: Vector3d,
     override var center: Vector3d,
-    override var rotation: Quaterniond,
-    override val onCollideFunction: ICollideFunction
+    override var rotation: Quaterniond
 ) : IOBB<T> {
 
     private var disable = false

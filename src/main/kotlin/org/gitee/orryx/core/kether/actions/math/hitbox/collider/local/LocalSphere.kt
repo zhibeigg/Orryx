@@ -10,8 +10,7 @@ import org.joml.Vector3d
 open class LocalSphere<T : ITargetLocation<*>>(
     localCenter: Vector3d,
     override var radius: Double,
-    private val parent: ICoordinateConverter,
-    override val onCollideFunction: ICollideFunction
+    private val parent: ICoordinateConverter
 ) : ILocalSphere<T> {
 
     private val globalCenter = Vector3d()
@@ -59,7 +58,7 @@ open class LocalSphere<T : ITargetLocation<*>>(
         dirty = true
     }
 
-    private fun update() {
+    override fun update() {
         if (parent.positionVersion() == version[0] && parent.rotationVersion() == version[1] && !dirty) {
             return
         }
