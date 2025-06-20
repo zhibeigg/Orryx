@@ -1,11 +1,9 @@
 package org.gitee.orryx.core.kether.actions.math.hitbox.collider.basic
 
-import org.gitee.orryx.api.collider.ICollideFunction
 import org.gitee.orryx.api.collider.IOBB
 import org.gitee.orryx.core.targets.ITargetLocation
 import org.joml.Quaterniond
 import org.joml.Vector3d
-import kotlin.collections.ArrayList
 
 class OBB<T : ITargetLocation<*>>(
     override var halfExtents: Vector3d,
@@ -15,7 +13,7 @@ class OBB<T : ITargetLocation<*>>(
 
     private var disable = false
 
-    override val vertices: Array<Vector3d>
+    override val vertices: ArrayList<Vector3d>
         get() {
             val vertices = ArrayList<Vector3d>(8)
 
@@ -39,19 +37,16 @@ class OBB<T : ITargetLocation<*>>(
                 vertices[i] = vertex
             }
 
-            return vertices.toTypedArray()
+            return vertices
         }
 
-    override val axes: Array<Vector3d>
+    override val axes: ArrayList<Vector3d>
         get() {
-            val axes = arrayOf(
-                Vector3d(1.0, 0.0, 0.0),
-                Vector3d(0.0, 1.0, 0.0),
-                Vector3d(0.0, 0.0, 1.0)
-            )
-            rotation.transform(axes[0])
-            rotation.transform(axes[1])
-            rotation.transform(axes[2])
+            val axes = ArrayList<Vector3d>(3)
+            axes.add(0, rotation.transform(Vector3d(1.0, 0.0, 0.0)))
+            axes.add(1, rotation.transform(Vector3d(0.0, 1.0, 0.0)))
+            axes.add(2, rotation.transform(Vector3d(0.0, 0.0, 1.0)))
+
             return axes
         }
 

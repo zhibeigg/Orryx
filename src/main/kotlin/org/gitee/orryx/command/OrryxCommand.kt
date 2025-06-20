@@ -3,13 +3,18 @@ package org.gitee.orryx.command
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.job.JobLoaderManager
+import org.gitee.orryx.core.kether.actions.math.hitbox.collider.local.LocalOBB
 import org.gitee.orryx.core.reload.ReloadAPI
 import org.gitee.orryx.core.skill.SkillLoaderManager
+import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.utils.*
+import org.joml.Quaterniond
+import org.joml.Vector3d
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.command.*
+import taboolib.common.platform.function.info
 import taboolib.expansion.createHelper
 import taboolib.module.lang.sendLang
 import taboolib.platform.util.sendLang
@@ -155,5 +160,23 @@ object OrryxCommand {
     @CommandBody
     val printStats = subCommandExec<ProxyCommandSender> {
         MemoryCache.printStats()
+    }
+
+    @CommandBody
+    val test = subCommandExec<Player> {
+        val bind = sender.abstract().coordinateConverter()
+        val halfExtents = Vector3d(1.0, 1.0, 1.0)
+        val hitbox = LocalOBB<ITargetLocation<*>>(
+            halfExtents,
+            Vector3d(0.0, 1.0, 0.0),
+            Quaterniond(),
+            bind
+        )
+        info(hitbox.parent.position)
+        info(hitbox.parent.position)
+        info(hitbox.localCenter)
+        sender.sendMessage(hitbox.toString())
+        hitbox.update()
+        sender.sendMessage(hitbox.toString())
     }
 }

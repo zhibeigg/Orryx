@@ -1,5 +1,6 @@
 package org.gitee.orryx.core.kether.actions.game.projectile
 
+import org.gitee.orryx.core.kether.ScriptManager.addOrryxCloseable
 import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
@@ -22,12 +23,15 @@ object ProjectileAction {
      * } period 5 timeout 100 they "@self"
      *
      * // bukkit 实体抛射物
-     * projectile entity vector 1 0 0 onHit {
-     *   tell &hitLocation
-     *   tell &hitEntity
+     * set a to entity spawn 金色飞剑 ARMOR_STAND health 10 timeout 20
+     * set b to hitbox obb 1 1 1 they &a
+     * projectile entity vector 1 0 0 &b onHit {
+     *   tell &@hitBlock
+     *   tell &@hitEntity
      * } onPeriod {
-     *   tell &projectile
-     * } period 5 timeout 100 they "@self"
+     *   tell &@ticked
+     * } period 1 timeout 20 they &a
+     * sleep 20
      *
      * // ady 实体抛射物
      * set v to vector 1 0 0
@@ -58,6 +62,7 @@ object ProjectileAction {
             .addEntry("存活时间", Type.LONG, true, "0", head = "timeout/t")
             .addEntry("是否与实体碰撞", Type.BOOLEAN, true, "true", head = "hitEntity/he")
             .addEntry("是否与方块碰撞", Type.BOOLEAN, true, "false", head = "hitBlock/hb")
+            .addEntry("是否可以穿透方块", Type.BOOLEAN, true, "false", head = "through/th")
             .addContainerEntry("生成位置", optional = true, default = "@self")
             .result("抛射物", Type.TARGET)
     ) {
@@ -70,6 +75,7 @@ object ProjectileAction {
         val timeout = it.nextHeadAction("timeout", "t", def = 0)
         val hitEntity = it.nextHeadAction("hitEntity", "he", def = true)
         val hitBlock = it.nextHeadAction("hitBlock", "hb", def = false)
+        val through = it.nextHeadAction("through", "th", def = false)
         val they = it.nextTheyContainerOrNull()
 
         actionFuture { future ->
@@ -78,22 +84,28 @@ object ProjectileAction {
                     run(timeout).long { timeout ->
                         run(hitEntity).bool { hitEntity ->
                             run(hitBlock).bool { hitBlock ->
-                                container(they, self()) { container ->
-                                    val location = container.firstInstance<ITargetLocation<*>>()
-                                    val projectile = Projectile(
-                                        type,
-                                        period,
-                                        timeout,
-                                        location,
-                                        hitbox,
-                                        vector,
-                                        onHit,
-                                        onPeriod,
-                                        hitBlock,
-                                        hitEntity
-                                    )
-                                    projectile.start(this)
-                                    future.complete(projectile)
+                                run(through).bool { through ->
+                                    container(they, self()) { container ->
+                                        val location = container.firstInstance<ITargetLocation<*>>()
+                                        val projectile = Projectile(
+                                            type,
+                                            period,
+                                            timeout,
+                                            location,
+                                            hitbox,
+                                            vector,
+                                            onHit,
+                                            onPeriod,
+                                            hitBlock,
+                                            hitEntity,
+                                            through
+                                        )
+                                        addOrryxCloseable(projectile.removed) {
+                                            ensureSync { projectile.remove() }
+                                        }
+                                        projectile.start(this)
+                                        future.complete(projectile)
+                                    }
                                 }
                             }
                         }

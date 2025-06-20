@@ -413,30 +413,7 @@ fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(obb: IOBB<T1>, 
  * @param other     其他碰撞体
  * @return 有碰撞返回true
  */
-fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(
-    composite: IComposite<T1, ICollider<T1>>,
-    other: ICollider<T2>
-): Boolean {
-    val count = composite.collidersCount
-    for (i in 0..<count) {
-        if (colliding(composite.getCollider(i), other)) {
-            return true
-        }
-    }
-    return false
-}
-
-/**
- * 判断复合碰撞箱与其他碰撞体是否碰撞
- *
- * @param composite 复合碰撞箱
- * @param other     其他碰撞体
- * @return 有碰撞返回true
- */
-fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(
-    composite: IComposite<T1, ICollider<T1>>,
-    other: ICollider<T2>?
-): Boolean {
+fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(composite: IComposite<T1, ICollider<T1>>, other: ICollider<T2>): Boolean {
     val count = composite.collidersCount
     for (i in 0..<count) {
         if (colliding(composite.getCollider(i), other)) {
@@ -454,7 +431,7 @@ fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(
  * @param point 待判定点
  * @return 线段上最接近判定点的坐标
  */
-fun getClosestPointOnSegment(start: Vector3d?, end: Vector3d, point: Vector3d): Vector3d {
+fun getClosestPointOnSegment(start: Vector3d, end: Vector3d, point: Vector3d): Vector3d {
     val se = end.sub(start, Vector3d())
     val sp = point.sub(start, Vector3d())
     var f = se.dot(sp) / se.lengthSquared()

@@ -89,17 +89,13 @@ object ScriptManager {
     }
 
     fun runScript(sender: ProxyCommandSender, parameter: IParameter, script: Script, context: (ScriptContext.() -> Unit)? = null): CompletableFuture<Any?> {
-        return try {
+        return runKether(CompletableFuture.completedFuture(null)) {
             ScriptContext.create(script).also {
                 context?.invoke(it)
                 it.sender = sender
                 it.id = FastUUID.toString(UUID.randomUUID())
                 it[PARAMETER] = parameter
             }.runActions()
-        } catch (e: Throwable) {
-            if (e is IllegalStateException) warning(e.message)
-            e.printKetherErrorMessage()
-            CompletableFuture.completedFuture(null)
         }
     }
 
@@ -116,17 +112,13 @@ object ScriptManager {
             }
         }
 
-        return try {
+        return runKether(CompletableFuture.completedFuture(null)) {
             ScriptContext.create(script).also {
                 context?.invoke(it)
                 it.sender = sender
                 it.id = uuid
                 it[PARAMETER] = parameter
             }.runActions()
-        } catch (e: Throwable) {
-            if (e is IllegalStateException) warning(e.message)
-            e.printKetherErrorMessage()
-            CompletableFuture.completedFuture(null)
         }
     }
 
@@ -144,22 +136,40 @@ object ScriptManager {
                 }
             }
 
-            try {
+            runKether("none-error") {
                 ScriptContext.create(script).also {
                     context?.invoke(it)
                     it.sender = sender
                     it.id = uuid
                     it[PARAMETER] = parameter
                 }.runActions().orNull().toString()
-            } catch (e: Throwable) {
-                if (e is IllegalStateException) warning(e.message)
-                e.printKetherErrorMessage()
-                "none-error"
             }
         }
     }
 
     fun parseScript(sender: ProxyCommandSender, parameter: IParameter, actions: List<String>, context: (ScriptContext.() -> Unit)? = null): List<String> {
         return actions.map { parseScript(sender, parameter, it, context) }
+    }
+
+    fun <T> runKether(el: T, detailError: Boolean = false, function: () -> T): T {
+        try {
+            return function()
+        } catch (e: Throwable) {
+            if (e is IllegalStateException) warning(e.message)
+            e.printKetherErrorMessage(detailError)
+            CompletableFuture.completedFuture(null)
+        }
+        return el
+    }
+
+    fun <T> runKether(detailError: Boolean = false, function: () -> T): T? {
+        try {
+            return function()
+        } catch (e: Throwable) {
+            if (e is IllegalStateException) warning(e.message)
+            e.printKetherErrorMessage(detailError)
+            CompletableFuture.completedFuture(null)
+        }
+        return null
     }
 }

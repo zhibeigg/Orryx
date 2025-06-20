@@ -1,7 +1,11 @@
 package org.gitee.orryx.core.kether.actions.game.projectile
 
 import org.bukkit.block.Block
+import org.bukkit.potion.PotionEffect
+import org.bukkit.potion.PotionEffectType
+import org.bukkit.util.Vector
 import org.gitee.orryx.api.adapters.IEntity
+import org.gitee.orryx.api.adapters.IVector
 import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
 import org.gitee.orryx.api.collider.local.ILocalCollider
 import org.gitee.orryx.core.kether.actions.game.projectile.Projectile.ProjectileType.*
@@ -27,17 +31,26 @@ class Projectile<T: ITargetLocation<*>>(
     val onHit: ParsedAction<*>?,
     val onPeriod: ParsedAction<*>?,
     val hitBlock: Boolean,
-    val hitEntity: Boolean
+    val hitEntity: Boolean,
+    val through: Boolean
 ) {
 
     var isSyncClient = false
 
     val source: IEntity = parent as IEntity
 
+    val removed = CompletableFuture<Boolean>()
+
     lateinit var task: PlatformExecutor.PlatformTask
     private var ticked = -period
+    private var hitCount = 0
 
     fun start(frame: QuestContext.Frame) {
+        ensureSync {
+            val entity = source.getBukkitLivingEntity() ?: return@ensureSync
+            entity.setGravity(true)
+            entity.addPotionEffect(PotionEffect(PotionEffectType.LEVITATION, timeout.toInt(), -1, false, false))
+        }
         task = submitAsync(delay = period, period = period) {
             nextTick(frame)
         }
@@ -57,6 +70,7 @@ class Projectile<T: ITargetLocation<*>>(
         }
 
         hitBlockFuture.thenAccept {
+            hitCount ++
             onHit?.also {
                 frame.variables().set("@hitBlock", it)
                 frame.run(it)
@@ -64,6 +78,7 @@ class Projectile<T: ITargetLocation<*>>(
         }
 
         hitEntityFuture.thenAccept {
+            hitCount ++
             onHit?.also {
                 frame.variables().set("@hitEntity", it)
                 frame.run(it)
@@ -74,7 +89,7 @@ class Projectile<T: ITargetLocation<*>>(
         frame.run(vector).vector { vector ->
             when (type) {
                 BUKKIT_ENTITY, BUKKIT_PROJECTILE -> ensureSync {
-                    source.teleport(source.location.clone().add(vector.bukkit()))
+                    lookAndMove(vector)
                     hitbox.update()
                     periodFuture.complete(null)
                     if (!checkHitBlock { hitBlockFuture.complete(it) }) {
@@ -84,7 +99,7 @@ class Projectile<T: ITargetLocation<*>>(
                     }
                 }
                 ADY_ENTITY, NONE -> {
-                    source.teleport(source.location.clone().add(vector.bukkit()))
+                    lookAndMove(vector)
                     hitbox.update()
                     periodFuture.complete(null)
                     ensureSync {
@@ -100,6 +115,16 @@ class Projectile<T: ITargetLocation<*>>(
 
         if (ticked >= timeout) {
             remove()
+        }
+    }
+
+    fun lookAndMove(vector: IVector) {
+        val face = vector.normalize(Vector3d()).bukkit()
+        if (through) {
+            source.teleport(source.location.clone().add(vector.bukkit()).setDirection(face))
+        } else {
+            source.teleport(source.location.clone().setDirection(face))
+            source.velocity = vector.bukkit()
         }
     }
 
@@ -129,6 +154,7 @@ class Projectile<T: ITargetLocation<*>>(
     }
 
     fun hit(frame: QuestContext.Frame) {
+        hitCount ++
         onHit?.also { frame.run(it) }
     }
 
@@ -137,9 +163,13 @@ class Projectile<T: ITargetLocation<*>>(
     }
 
     fun remove() {
+        if (removed.isDone) return
+        removed.complete(true)
         task.cancel()
-        if (source.isValid) {
-            source.remove()
+        ensureSync {
+            if (source.isValid) {
+                source.remove()
+            }
         }
     }
 
@@ -158,5 +188,18 @@ class Projectile<T: ITargetLocation<*>>(
                 }
             }
         }
+    }
+
+    override fun toString(): String {
+        return "Projectile(" +
+                "type=$type, " +
+                "period=${period}, " +
+                "timeout=${timeout}, " +
+                "parent=$source, " +
+                "hitbox=${hitbox}, " +
+                "vector=${vector}, " +
+                "hitBlock=$hitBlock, " +
+                "hitEntity=$hitEntity" +
+                ")"
     }
 }

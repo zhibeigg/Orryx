@@ -30,8 +30,8 @@ object EntityActions {
             .addEntry("生成标识符", Type.SYMBOL, head = "spawn")
             .addEntry("实体名", Type.STRING)
             .addEntry("实体类型", Type.STRING)
-            .addEntry("实体血量", Type.DOUBLE, optional = true, head = "health")
-            .addEntry("实体冲量", Type.VECTOR, optional = true, head = "vector")
+            .addEntry("实体血量", Type.DOUBLE, optional = true, head = "health", default = "0.0")
+            .addEntry("实体冲量", Type.VECTOR, optional = true, head = "vector", default = "0,0,0")
             .addEntry("实体是否具有重力", Type.BOOLEAN, optional = true, head = "gravity", default = "true")
             .addEntry("实体存在时间(0为永久)", Type.LONG, optional = true, head = "timeout", default = "0")
             .addContainerEntry("实体生成位置", optional = true, default = "@self")
@@ -41,7 +41,7 @@ object EntityActions {
             .addEntry("ady标识符", Type.SYMBOL, head = "ady")
             .addEntry("实体名", Type.STRING)
             .addEntry("实体类型", Type.STRING)
-            .addEntry("实体冲量", Type.VECTOR, optional = true, head = "vector")
+            .addEntry("实体冲量", Type.VECTOR, optional = true, head = "vector", default = "0,0,0")
             .addEntry("实体是否具有重力", Type.BOOLEAN, optional = true, head = "gravity", default = "true")
             .addEntry("实体存在时间(0为永久)", Type.LONG, optional = true, head = "timeout", default = "0")
             .addContainerEntry("实体生成位置", optional = true, default = "@self")
@@ -105,7 +105,7 @@ object EntityActions {
                                                 }
                                                 ensureSync { clean() }
                                             }
-                                            future.complete(it)
+                                            future.complete(container)
                                         }
                                     }
                                 }
