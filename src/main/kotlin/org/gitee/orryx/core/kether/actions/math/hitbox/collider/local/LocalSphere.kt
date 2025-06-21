@@ -1,5 +1,8 @@
 package org.gitee.orryx.core.kether.actions.math.hitbox.collider.local
 
+import eos.moe.armourers.r
+import ink.ptms.adyeshach.module.editor.page.Vector3
+import org.gitee.orryx.api.collider.IAABB
 import org.gitee.orryx.api.collider.local.ICoordinateConverter
 import org.gitee.orryx.api.collider.local.ILocalSphere
 import org.gitee.orryx.core.targets.ITargetLocation
@@ -58,6 +61,8 @@ open class LocalSphere<T : ITargetLocation<*>>(
     }
 
     override fun update() {
+        parent.update()
+
         if (parent.positionVersion() == version[0] && parent.rotationVersion() == version[1] && !dirty) {
             return
         }
@@ -69,4 +74,11 @@ open class LocalSphere<T : ITargetLocation<*>>(
         val rotation = parent.rotation
         rotation.transform(this.localCenter, globalCenter).add(position)
     }
+
+    override val fastCollider: IAABB<T>?
+        get() = LocalAABB(
+            localCenter,
+            Vector3d(radius, radius, radius),
+            parent
+        )
 }

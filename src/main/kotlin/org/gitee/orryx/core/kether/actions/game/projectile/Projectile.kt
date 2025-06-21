@@ -3,7 +3,6 @@ package org.gitee.orryx.core.kether.actions.game.projectile
 import org.bukkit.block.Block
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
-import org.bukkit.util.Vector
 import org.gitee.orryx.api.adapters.IEntity
 import org.gitee.orryx.api.adapters.IVector
 import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
@@ -13,12 +12,14 @@ import org.gitee.orryx.core.kether.actions.math.hitbox.collider.local.LocalAABB
 import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.utils.*
 import org.joml.Vector3d
+import taboolib.common.platform.function.info
 import taboolib.common.platform.function.submitAsync
 import taboolib.common.platform.function.warning
 import taboolib.common.platform.service.PlatformExecutor
 import taboolib.library.kether.ParsedAction
 import taboolib.library.kether.QuestContext
 import taboolib.module.kether.run
+import taboolib.platform.util.onlinePlayers
 import java.util.concurrent.CompletableFuture
 
 class Projectile<T: ITargetLocation<*>>(
@@ -57,8 +58,16 @@ class Projectile<T: ITargetLocation<*>>(
         nextTick(frame)
     }
 
+    fun validCheck() {
+        if (!source.isValid) {
+            remove()
+            return
+        }
+    }
+
     fun nextTick(frame: QuestContext.Frame) {
         ticked += period
+        validCheck()
 
         val periodFuture = CompletableFuture<Void>()
         val hitBlockFuture = CompletableFuture<Block>()
@@ -69,18 +78,20 @@ class Projectile<T: ITargetLocation<*>>(
             onPeriod?.also { frame.run(it) }
         }
 
-        hitBlockFuture.thenAccept {
+        hitBlockFuture.thenAccept { block ->
             hitCount ++
+            if (!source.isValid) return@thenAccept
             onHit?.also {
-                frame.variables().set("@hitBlock", it)
+                frame.variables().set("@hitBlock", block)
                 frame.run(it)
             }
         }
 
-        hitEntityFuture.thenAccept {
+        hitEntityFuture.thenAccept { entity ->
             hitCount ++
+            if (!source.isValid) return@thenAccept
             onHit?.also {
-                frame.variables().set("@hitEntity", it)
+                frame.variables().set("@hitEntity", entity)
                 frame.run(it)
             }
         }
@@ -94,7 +105,8 @@ class Projectile<T: ITargetLocation<*>>(
                     periodFuture.complete(null)
                     if (!checkHitBlock { hitBlockFuture.complete(it) }) {
                         hitBlockFuture.cancel(true)
-                    } else if (!checkHitEntity { hitEntityFuture.complete(it) }) {
+                    }
+                    if (!checkHitEntity { hitEntityFuture.complete(it) }) {
                         hitEntityFuture.cancel(true)
                     }
                 }
@@ -105,7 +117,8 @@ class Projectile<T: ITargetLocation<*>>(
                     ensureSync {
                         if (!checkHitBlock { hitBlockFuture.complete(it) }) {
                             hitBlockFuture.cancel(true)
-                        } else if (!checkHitEntity { hitEntityFuture.complete(it) }) {
+                        }
+                        if (!checkHitEntity { hitEntityFuture.complete(it) }) {
                             hitEntityFuture.cancel(true)
                         }
                     }
@@ -138,12 +151,14 @@ class Projectile<T: ITargetLocation<*>>(
             val length = hitbox.fastCollider?.halfExtents?.length() ?: return false
             val entities = source.world.getNearbyEntities(source.location, length, length, length)
             entities.forEach {
+                if (it.uniqueId == source.uniqueId) return@forEach
                 val abstract = it.abstract()
                 val hitbox = LocalAABB<AbstractBukkitEntity>(
                     Vector3d(0.0, it.height/2, 0.0),
                     Vector3d(it.width/2, it.height/2,it.width/2),
                     abstract.coordinateConverter()
                     )
+                hitbox.update()
                 if (colliding(this.hitbox, hitbox)) {
                     onHit(abstract)
                     return true

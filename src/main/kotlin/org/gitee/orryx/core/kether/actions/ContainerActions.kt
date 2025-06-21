@@ -1,13 +1,10 @@
 package org.gitee.orryx.core.kether.actions
 
 import org.gitee.orryx.core.container.Container
+import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
-import org.gitee.orryx.utils.ORRYX_NAMESPACE
-import org.gitee.orryx.utils.combinationParser
-import org.gitee.orryx.utils.container
-import org.gitee.orryx.utils.orElse
-import org.gitee.orryx.utils.theyContainer
+import org.gitee.orryx.utils.*
 import taboolib.common5.cbool
 import taboolib.module.kether.KetherParser
 import taboolib.module.kether.orNull
@@ -89,6 +86,29 @@ object ContainerActions {
                     variables().remove("@Target")
                     result
                 }
+            }
+        }
+    }
+
+    @KetherParser(["contain"], namespace = ORRYX_NAMESPACE, shared = true)
+    private fun actionContain() = combinationParser(
+        Action.new("Container容器", "检测包含", "contain", true)
+            .description("检测Container容器中是否包含另一个容器中的目标，或是否包含实体")
+            .addEntry("实体或容器", Type.CONTAINER)
+            .addContainerEntry("被检测的容器")
+            .result("是否包含", Type.BOOLEAN)
+    ) {
+        it.group(
+            container(),
+            theyContainer(true)
+        ).apply(it) { entities, container ->
+            now {
+                val container = container.orElse(self())
+                entities?.all<ITargetEntity<*>> { entity ->
+                    container.any<ITargetEntity<*>> { targetEntity ->
+                        targetEntity.entity.uniqueId == entity.entity.uniqueId
+                    }
+                } ?: true
             }
         }
     }

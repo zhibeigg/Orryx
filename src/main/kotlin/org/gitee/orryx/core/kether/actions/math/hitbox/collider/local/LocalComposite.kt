@@ -201,6 +201,8 @@ open class LocalComposite<T : ITargetLocation<*>, C : ILocalCollider<T>>(
     }
 
     override fun update() {
+        parent.update()
+
         if (parent.positionVersion() != version[0] || parent.rotationVersion() != version[1] || dirty[0] || dirty[1]) {
             dirty[0] = false
             dirty[1] = false

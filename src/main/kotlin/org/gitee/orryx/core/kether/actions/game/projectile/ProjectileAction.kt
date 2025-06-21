@@ -15,12 +15,17 @@ object ProjectileAction {
      * 抛射物在每 period 后计算一次 vector 来决定下次的位置
      * ```
      * // 无实体自定义碰撞箱抛射物，客户端同步渲染碰撞箱
-     * projectile none vector 1 0 0 hitbox obb 1 1 1 0 0 0 onHit {
+     * set a to entity none timeout 20
+     * set b to hitbox obb 1 1 1 they &a
+     *
+     * projectile none vector 1 0 0 &b onHit {
      *   tell &hitLocation
      *   tell &hitEntity
      * } onPeriod {
      *   tell &projectile
-     * } period 5 timeout 100 they "@self"
+     * } period 5 timeout 100 they &a
+     *
+     * sleep 100
      *
      * // bukkit 实体抛射物
      * set a to entity spawn 金色飞剑 ARMOR_STAND health 10 timeout 20
@@ -31,22 +36,24 @@ object ProjectileAction {
      * } onPeriod {
      *   tell &@ticked
      * } period 1 timeout 20 they &a
+     *
      * sleep 20
      *
      * // ady 实体抛射物
+     * set a to entity ady 金色飞剑 ARMOR_STAND timeout 20
      * set v to vector 1 0 0
      *
-     * set p to projectile ady &v onHit {
+     * projectile ady &v onHit {
      *   tell &hitLocation
      *   tell &hitEntity
      * } onPeriod {
      *   set v to vector &tick 0 0
      *   tell &projectile
-     * } period 5 timeout 100 they "@self"
+     * } period 5 timeout 100 they  &a
      *
      * sleep 40
      *
-     * entity remove &p
+     * entity remove they &a
      * ```
      * */
     @KetherParser(["projectile"], namespace = ORRYX_NAMESPACE, shared = true)
@@ -88,17 +95,17 @@ object ProjectileAction {
                                     container(they, self()) { container ->
                                         val location = container.firstInstance<ITargetLocation<*>>()
                                         val projectile = Projectile(
-                                            type,
-                                            period,
-                                            timeout,
-                                            location,
-                                            hitbox,
-                                            vector,
-                                            onHit,
-                                            onPeriod,
-                                            hitBlock,
-                                            hitEntity,
-                                            through
+                                            type = type,
+                                            period = period,
+                                            timeout = timeout,
+                                            parent = location,
+                                            hitbox = hitbox,
+                                            vector = vector,
+                                            onHit = onHit,
+                                            onPeriod = onPeriod,
+                                            hitBlock = hitBlock,
+                                            hitEntity = hitEntity,
+                                            through = through
                                         )
                                         addOrryxCloseable(projectile.removed) {
                                             ensureSync { projectile.remove() }

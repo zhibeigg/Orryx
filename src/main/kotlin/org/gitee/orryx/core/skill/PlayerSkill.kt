@@ -44,7 +44,7 @@ class PlayerSkill(
     constructor(id: Int, player: Player, key: String, job: String, privateLevel: Int, privateLocked: Boolean): this(id, player.uniqueId, key, job, privateLevel, privateLocked)
 
     override val player
-        get() = Bukkit.getPlayer(uuid)!!
+        get() = Bukkit.getPlayer(uuid) ?: error("Player Offline")
 
     override val level: Int
         get() = privateLevel
@@ -205,5 +205,19 @@ class PlayerSkill(
 
     override fun toString(): String {
         return "PlayerSkill(player=${player.name}, job=$job, key=$key)"
+    }
+
+    override fun hashCode(): Int {
+        var result = id
+        result = 31 * result + privateLevel
+        result = 31 * result + privateLocked.hashCode()
+        result = 31 * result + uuid.hashCode()
+        result = 31 * result + key.hashCode()
+        result = 31 * result + job.hashCode()
+        result = 31 * result + level
+        result = 31 * result + locked.hashCode()
+        result = 31 * result + player.hashCode()
+        result = 31 * result + skill.hashCode()
+        return result
     }
 }

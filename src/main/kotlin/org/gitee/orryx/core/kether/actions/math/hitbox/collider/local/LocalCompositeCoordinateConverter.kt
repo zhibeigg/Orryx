@@ -22,7 +22,7 @@ class LocalCompositeCoordinateConverter(private val composite: LocalComposite<*,
     override val rotation: Quaterniond
         get() = composite.rotation
 
-    fun update() {
+    override fun update() {
         version[0]++
         version[1]++
     }

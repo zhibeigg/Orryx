@@ -178,7 +178,8 @@ object EntityActions {
         val they = reader.nextTheyContainerOrNull()
         return actionFuture { future ->
             ensureSync {
-                containerOrSelf(they) {
+                they ?: error("必须使用they")
+                container(they) {
                     it.forEachInstance<ITargetEntity<*>> { target ->
                         if (target.entity.isValid) target.entity.remove()
                     }

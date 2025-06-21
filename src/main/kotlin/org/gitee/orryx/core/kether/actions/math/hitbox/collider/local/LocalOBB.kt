@@ -1,10 +1,14 @@
 package org.gitee.orryx.core.kether.actions.math.hitbox.collider.local
 
+import org.gitee.orryx.api.collider.IAABB
 import org.gitee.orryx.api.collider.local.ICoordinateConverter
 import org.gitee.orryx.api.collider.local.ILocalOBB
 import org.gitee.orryx.core.targets.ITargetLocation
+import org.gitee.orryx.utils.bukkit
 import org.joml.Quaterniond
 import org.joml.Vector3d
+import taboolib.platform.util.onlinePlayers
+import kotlin.collections.get
 
 open class LocalOBB<T : ITargetLocation<*>>(
     halfExtents: Vector3d,
@@ -16,8 +20,8 @@ open class LocalOBB<T : ITargetLocation<*>>(
     private val globalCenter = Vector3d()
     private val globalRotation = Quaterniond()
 
-    override val vertices = ArrayList<Vector3d>(8)
-    override val axes = ArrayList<Vector3d>(3)
+    override val vertices = Array(8) { Vector3d() }
+    override val axes = Array(3) { Vector3d() }
 
     /** 0 - 中心点, 1 - 旋转 */
     private val version = ShortArray(2)
@@ -91,6 +95,8 @@ open class LocalOBB<T : ITargetLocation<*>>(
     }
 
     override fun update() {
+        parent.update()
+
         if ((!dirty[1] && !dirty[2] && (version[0] != parent.positionVersion() && version[1] == parent.rotationVersion()) || dirty[0])) {
             dirty[0] = false
             version[0] = parent.positionVersion()
@@ -119,20 +125,30 @@ open class LocalOBB<T : ITargetLocation<*>>(
         rotation.mul(this.localRotation, globalRotation)
 
         // 旋转轴向
-        axes.add(0, globalRotation.transform(Vector3d(1.0, 0.0, 0.0)))
-        axes.add(1, globalRotation.transform(Vector3d(0.0, 1.0, 0.0)))
-        axes.add(2, globalRotation.transform(Vector3d(0.0, 0.0, 1.0)))
+        axes[0] = globalRotation.transform(Vector3d(1.0, 0.0, 0.0))
+        axes[1] = globalRotation.transform(Vector3d(0.0, 1.0, 0.0))
+        axes[2] = globalRotation.transform(Vector3d(0.0, 0.0, 1.0))
 
         val v = Vector3d()
 
         // 计算顶点
-        vertices.add(0, Vector3d().set(center).add(axes[0].mul(halfExtents.x, v)).add(axes[1].mul(halfExtents.y, v)).add(axes[2].mul(halfExtents.z, v)))
-        vertices.add(1, Vector3d().set(center).add(axes[0].mul(halfExtents.x, v)).add(axes[1].mul(halfExtents.y, v)).sub(axes[2].mul(halfExtents.z, v)))
-        vertices.add(2, Vector3d().set(center).add(axes[0].mul(halfExtents.x, v)).sub(axes[1].mul(halfExtents.y, v)).add(axes[2].mul(halfExtents.z, v)))
-        vertices.add(3, Vector3d().set(center).add(axes[0].mul(halfExtents.x, v)).sub(axes[1].mul(halfExtents.y, v)).sub(axes[2].mul(halfExtents.z, v)))
-        vertices.add(4, Vector3d().set(center).sub(axes[0].mul(halfExtents.x, v)).add(axes[1].mul(halfExtents.y, v)).add(axes[2].mul(halfExtents.z, v)))
-        vertices.add(5, Vector3d().set(center).sub(axes[0].mul(halfExtents.x, v)).add(axes[1].mul(halfExtents.y, v)).sub(axes[2].mul(halfExtents.z, v)))
-        vertices.add(6, Vector3d().set(center).sub(axes[0].mul(halfExtents.x, v)).sub(axes[1].mul(halfExtents.y, v)).add(axes[2].mul(halfExtents.z, v)))
-        vertices.add(7, Vector3d().set(center).sub(axes[0].mul(halfExtents.x, v)).sub(axes[1].mul(halfExtents.y, v)).sub(axes[2].mul(halfExtents.z, v)))
+        vertices[0] = Vector3d().set(center).add(axes[0].mul(halfExtents.x, v)).add(axes[1].mul(halfExtents.y, v)).add(axes[2].mul(halfExtents.z, v))
+        vertices[1] = Vector3d().set(center).add(axes[0].mul(halfExtents.x, v)).add(axes[1].mul(halfExtents.y, v)).sub(axes[2].mul(halfExtents.z, v))
+        vertices[2] = Vector3d().set(center).add(axes[0].mul(halfExtents.x, v)).sub(axes[1].mul(halfExtents.y, v)).add(axes[2].mul(halfExtents.z, v))
+        vertices[3] = Vector3d().set(center).add(axes[0].mul(halfExtents.x, v)).sub(axes[1].mul(halfExtents.y, v)).sub(axes[2].mul(halfExtents.z, v))
+        vertices[4] = Vector3d().set(center).sub(axes[0].mul(halfExtents.x, v)).add(axes[1].mul(halfExtents.y, v)).add(axes[2].mul(halfExtents.z, v))
+        vertices[5] = Vector3d().set(center).sub(axes[0].mul(halfExtents.x, v)).add(axes[1].mul(halfExtents.y, v)).sub(axes[2].mul(halfExtents.z, v))
+        vertices[6] = Vector3d().set(center).sub(axes[0].mul(halfExtents.x, v)).sub(axes[1].mul(halfExtents.y, v)).add(axes[2].mul(halfExtents.z, v))
+        vertices[7] = Vector3d().set(center).sub(axes[0].mul(halfExtents.x, v)).sub(axes[1].mul(halfExtents.y, v)).sub(axes[2].mul(halfExtents.z, v))
     }
+
+    override val fastCollider: IAABB<T>?
+        get() {
+            val length = halfExtents.length()
+            return LocalAABB(
+                localCenter,
+                Vector3d(length, length, length),
+                parent
+            )
+        }
 }

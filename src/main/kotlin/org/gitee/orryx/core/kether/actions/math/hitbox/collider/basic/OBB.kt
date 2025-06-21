@@ -13,9 +13,9 @@ class OBB<T : ITargetLocation<*>>(
 
     private var disable = false
 
-    override val vertices: ArrayList<Vector3d>
+    override val vertices: Array<Vector3d>
         get() {
-            val vertices = ArrayList<Vector3d>(8)
+            val vertices = Array(8) { Vector3d() }
 
             // 计算局部坐标系下的顶点位置
             val localVertices = arrayOf(
@@ -40,12 +40,12 @@ class OBB<T : ITargetLocation<*>>(
             return vertices
         }
 
-    override val axes: ArrayList<Vector3d>
+    override val axes: Array<Vector3d>
         get() {
-            val axes = ArrayList<Vector3d>(3)
-            axes.add(0, rotation.transform(Vector3d(1.0, 0.0, 0.0)))
-            axes.add(1, rotation.transform(Vector3d(0.0, 1.0, 0.0)))
-            axes.add(2, rotation.transform(Vector3d(0.0, 0.0, 1.0)))
+            val axes = Array(3) { Vector3d() }
+            axes[0] = rotation.transform(Vector3d(1.0, 0.0, 0.0))
+            axes[1] = rotation.transform(Vector3d(0.0, 1.0, 0.0))
+            axes[2] = rotation.transform(Vector3d(0.0, 0.0, 1.0))
 
             return axes
         }

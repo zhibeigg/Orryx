@@ -29,7 +29,7 @@ class PlayerKeySetting(
 ): Saveable {
 
     val player
-        get() = Bukkit.getPlayer(uuid)!!
+        get() = Bukkit.getPlayer(uuid) ?: error("Player Offline")
 
     constructor(player: UUID, playerKeySettingPO: PlayerKeySettingPO) : this(
         playerKeySettingPO.id,

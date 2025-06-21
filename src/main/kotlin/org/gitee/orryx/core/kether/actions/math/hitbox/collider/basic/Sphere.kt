@@ -1,6 +1,5 @@
 package org.gitee.orryx.core.kether.actions.math.hitbox.collider.basic
 
-import org.gitee.orryx.api.collider.ICollideFunction
 import org.gitee.orryx.api.collider.ISphere
 import org.gitee.orryx.core.targets.ITargetLocation
 import org.joml.Vector3d

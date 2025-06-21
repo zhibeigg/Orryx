@@ -1,6 +1,6 @@
 package org.gitee.orryx.core.kether.actions.math.hitbox.collider.local
 
-import org.gitee.orryx.api.collider.ICollideFunction
+import org.gitee.orryx.api.collider.IAABB
 import org.gitee.orryx.api.collider.local.ICoordinateConverter
 import org.gitee.orryx.api.collider.local.ILocalRay
 import org.gitee.orryx.core.targets.ITargetLocation
@@ -79,6 +79,8 @@ open class LocalRay<T : ITargetLocation<*>>(
     }
 
     override fun update() {
+        parent.update()
+
         if (parent.positionVersion() == version[0] && parent.rotationVersion() == version[1] && !dirty) {
             return
         }
@@ -91,4 +93,11 @@ open class LocalRay<T : ITargetLocation<*>>(
         rotation.transform(this.localOrigin, globalOrigin).add(position)
         rotation.transform(this.localDirection, globalDirection)
     }
+
+    override val fastCollider: IAABB<T>?
+        get() = LocalAABB(
+            localOrigin.add(localDirection.normalize(length/2, Vector3d()), Vector3d()),
+            Vector3d(length/2, length/2, length/2),
+            parent
+        )
 }

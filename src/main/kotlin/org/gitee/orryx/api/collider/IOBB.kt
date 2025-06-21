@@ -31,12 +31,12 @@ interface IOBB<T: ITargetLocation<*>> : ICollider<T> {
     /**
      * 顶点
      * */
-    val vertices: ArrayList<Vector3d>
+    val vertices: Array<Vector3d>
 
     /**
      * 轴向
      * */
-    val axes: ArrayList<Vector3d>
+    val axes: Array<Vector3d>
 
     override val type: ColliderType
         get() = ColliderType.OBB

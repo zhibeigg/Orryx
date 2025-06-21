@@ -16,4 +16,9 @@ interface ICoordinateConverter {
 
     /** 旋转 */
     val rotation: Quaterniond
+
+    /**
+     * 更新
+     * */
+    fun update()
 }

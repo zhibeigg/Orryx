@@ -32,7 +32,7 @@ class PlayerProfile(
     constructor(id: Int, player: Player, privateJob: String?, privatePoint: Int, privateFlags: ConcurrentMap<String, IFlag>): this(id, player.uniqueId, privateJob, privatePoint, privateFlags)
 
     override val player: Player
-        get() = Bukkit.getPlayer(uuid)!!
+        get() = Bukkit.getPlayer(uuid) ?: error("Player Offline")
 
     override val flags: Map<String, IFlag>
         get() = privateFlags
