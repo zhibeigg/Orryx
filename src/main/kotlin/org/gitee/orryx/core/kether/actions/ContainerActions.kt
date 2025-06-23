@@ -1,16 +1,21 @@
 package org.gitee.orryx.core.kether.actions
 
 import org.gitee.orryx.core.container.Container
+import org.gitee.orryx.core.container.IContainer
+import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
+import taboolib.common.OpenResult
 import taboolib.common5.cbool
-import taboolib.module.kether.KetherParser
-import taboolib.module.kether.orNull
-import taboolib.module.kether.run
+import taboolib.module.kether.*
 
 object ContainerActions {
+
+    init {
+        KetherLoader.registerProperty(containerProperty(), IContainer::class.java, false)
+    }
 
     @KetherParser(["container"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun actionContainer() = combinationParser(
@@ -110,6 +115,39 @@ object ContainerActions {
                     }
                 } ?: true
             }
+        }
+    }
+
+    @KetherParser(["stream"], namespace = ORRYX_NAMESPACE, shared = true)
+    private fun actionStream() = combinationParser(
+        Action.new("Container容器", "流过流式选择器", "stream", true)
+            .description("将指定容器流过流式选择器")
+            .addEntry("选择器文本", Type.STRING)
+            .addContainerEntry("被检测的Container容器")
+            .result("经过流后的容器", Type.CONTAINER)
+    ) {
+        it.group(
+            text(),
+            theyContainer(false)
+        ).apply(it) { selector, container ->
+            now {
+                StringParser(selector).stream(container!!, script())
+            }
+        }
+    }
+
+    private fun containerProperty() = object : ScriptProperty<IContainer>("orryx.container.operator") {
+
+        override fun read(instance: IContainer, key: String): OpenResult {
+            return when (key) {
+                "list" -> OpenResult.successful(instance.targets)
+                "length", "size" -> OpenResult.successful(instance.targets.size)
+                else -> OpenResult.failed()
+            }
+        }
+
+        override fun write(instance: IContainer, key: String, value: Any?): OpenResult {
+            return OpenResult.failed()
         }
     }
 }

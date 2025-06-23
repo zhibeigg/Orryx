@@ -49,7 +49,7 @@ class PlayerProfile(
             event.oldFlag?.cancel(player, event.flagName)
             privateFlags[event.flagName] = event.newFlag
             event.newFlag?.init(player, event.flagName)
-            if (save && flag.isPersistence) {
+            if (save && (event.oldFlag?.isPersistence == true || event.newFlag?.isPersistence == true)) {
                 save(isPrimaryThread) {
                     OrryxPlayerFlagChangeEvents.Post(player, this, event.flagName, event.oldFlag, event.newFlag).call()
                 }
@@ -68,7 +68,7 @@ class PlayerProfile(
         if (event.call()) {
             val flag = privateFlags.remove(event.flagName) ?: return null
             flag.cancel(player, event.flagName)
-            if (save && flag.isPersistence) {
+            if (save && (event.oldFlag?.isPersistence == true || event.newFlag?.isPersistence == true)) {
                 save(isPrimaryThread) {
                     OrryxPlayerFlagChangeEvents.Post(player, this, event.flagName, event.oldFlag, event.newFlag).call()
                 }

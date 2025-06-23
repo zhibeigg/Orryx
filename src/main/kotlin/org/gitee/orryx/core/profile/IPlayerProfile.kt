@@ -94,5 +94,4 @@ interface IPlayerProfile: Saveable {
      * 创建序列化存储数据
      * */
     fun createPO(): PlayerProfilePO
-
 }

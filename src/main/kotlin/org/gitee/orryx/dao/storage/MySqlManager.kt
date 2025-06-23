@@ -2,6 +2,7 @@ package org.gitee.orryx.dao.storage
 
 import kotlinx.serialization.json.Json
 import org.gitee.orryx.api.Orryx
+import org.gitee.orryx.core.profile.IFlag
 import org.gitee.orryx.dao.pojo.PlayerJobPO
 import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
@@ -62,11 +63,18 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
         add(KEY_SETTING) { type(ColumnTypeSQL.TEXT) }
     }
 
+    private val globalFlagTable: Table<*, *> = Table("orryx_global_flag", host) {
+        add { id() }
+        add(FLAG_KEY) { type(ColumnTypeSQL.VARCHAR, 255) { options(ColumnOptionSQL.UNIQUE_KEY, ColumnOptionSQL.NOTNULL) } }
+        add(FLAG) { type(ColumnTypeSQL.TEXT) }
+    }
+
     init {
         playerTable.createTable(dataSource)
         jobsTable.createTable(dataSource)
         skillsTable.createTable(dataSource)
         keyTable.createTable(dataSource)
+        globalFlagTable.createTable(dataSource)
     }
 
     override fun getPlayerData(player: UUID): CompletableFuture<PlayerProfilePO> {
@@ -266,6 +274,48 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
                     playerKeySettingPO.id,
                     Json.encodeToString(playerKeySettingPO)
                 )
+            }
+        }.onSuccess { onSuccess() }
+    }
+
+    override fun getGlobalFlag(key: String): CompletableFuture<IFlag?> {
+        debug("${IStorageManager.lazyType} 获取全局 Flag")
+        val future = CompletableFuture<IFlag?>()
+        fun read() {
+            try {
+                future.complete(globalFlagTable.select(dataSource) {
+                    where { FLAG_KEY eq key }
+                    rows(FLAG)
+                }.firstOrNull {
+                    Json.decodeFromString<IFlag>(getString(FLAG))
+                })
+            } catch (e: Throwable) {
+                future.completeExceptionally(e)
+            }
+        }
+        if (isPrimaryThread) {
+            submitAsync { read() }
+        } else {
+            read()
+        }
+        return future
+    }
+
+    override fun saveGlobalFlag(key: String, flag: IFlag?, onSuccess: () -> Unit) {
+        debug("${IStorageManager.lazyType} 保存全局 Flag")
+        globalFlagTable.transaction(dataSource) {
+            if (flag == null) {
+                delete { where { FLAG_KEY eq key } }
+            } else {
+                insert(FLAG_KEY, FLAG) {
+                    onDuplicateKeyUpdate {
+                        update(FLAG, Json.encodeToString(flag))
+                    }
+                    value(
+                        key,
+                        Json.encodeToString(flag)
+                    )
+                }
             }
         }.onSuccess { onSuccess() }
     }

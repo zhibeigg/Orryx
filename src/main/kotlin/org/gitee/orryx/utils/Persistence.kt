@@ -12,3 +12,6 @@ const val LOCKED = "locked"
 const val BIND_KEY_OF_GROUP = "bind_key_of_group"
 const val LEVEL = "level"
 const val KEY_SETTING = "key_setting"
+
+const val FLAG_KEY = "key"
+const val FLAG = "flag"

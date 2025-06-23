@@ -58,6 +58,23 @@ class StringParser(val value: String) {
         return container
     }
 
+    fun stream(container: IContainer, context: ScriptContext): IContainer {
+        entries.forEach { entry ->
+            when(val selector = SelectorInit.getSelector(entry.head.uppercase())) {
+                is ISelectorStream -> {
+                    selector.processStream(container, context, entry)
+                }
+                is ISelectorGeometry -> {
+                    container.targets.addAll(selector.getTargets(context, entry))
+                }
+                null -> {
+                    info("选择器${entry.head}未注册")
+                }
+            }
+        }
+        return container
+    }
+
     fun showAFrame(context: ScriptContext): IContainer {
         val container = Container()
         entries.forEach { entry ->

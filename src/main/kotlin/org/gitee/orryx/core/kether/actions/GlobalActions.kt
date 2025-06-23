@@ -1,54 +1,55 @@
 package org.gitee.orryx.core.kether.actions
 
+import org.gitee.orryx.api.events.OrryxGlobalFlagChangeEvents
 import org.gitee.orryx.core.profile.IFlag
-import org.gitee.orryx.core.targets.PlayerTarget
+import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
-import org.gitee.orryx.utils.*
+import org.gitee.orryx.utils.ORRYX_NAMESPACE
+import org.gitee.orryx.utils.flag
+import org.gitee.orryx.utils.nextHeadAction
+import org.gitee.orryx.utils.scriptParser
 import taboolib.library.kether.LocalizedException
 import taboolib.library.kether.ParsedAction
 import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*
+import java.util.concurrent.ConcurrentHashMap
 
-object FlagActions {
+object GlobalActions {
 
-    @KetherParser(["flag"], namespace = ORRYX_NAMESPACE, shared = true)
-    private fun actionFlag() = scriptParser(
-        Action.new("Flag数据标签", "获取数据标签", "flag", true)
+    private val globalFlagMap = ConcurrentHashMap<String, IFlag>()
+
+    @KetherParser(["global"], namespace = ORRYX_NAMESPACE, shared = true)
+    private fun actionGlobal() = scriptParser(
+        Action.new("Global全局数据标签", "获取数据标签", "global", true)
             .description("获取数据标签")
             .addEntry("键名", Type.STRING, false)
-            .addContainerEntry("获取的玩家", true, "@self")
             .result("数据", Type.ANY),
-        Action.new("Flag数据标签", "创建数据", "flag", true)
+        Action.new("Global全局数据标签", "创建数据", "global", true)
             .description("创建一个存储任意类型数据的标签，可持久化存储向量,矩阵,Bukkit实体,Ady实体,时间,和所有基础类型")
             .addEntry("键名", Type.STRING, false)
             .addEntry("创建占位符", Type.SYMBOL, false, head = "set/to")
             .addEntry("数据", Type.ANY, false)
             .addEntry("是否持久化，默认false", Type.BOOLEAN, true, default = "false", head = "pst")
             .addEntry("存活时长，默认永久", Type.LONG, true, default = "0", head = "timeout")
-            .addContainerEntry("创建的玩家", true, "@self")
             .result("数据", Type.ANY),
-        Action.new("Flag数据标签", "删除数据标签", "flag", true)
+        Action.new("Global全局数据标签", "删除数据标签", "global", true)
             .description("删除数据标签")
             .addEntry("键名", Type.STRING, false)
             .addEntry("删除占位符", Type.SYMBOL, head = "remove/delete")
-            .addContainerEntry("删除的玩家", true, "@self")
             .result("数据", Type.ANY),
-        Action.new("Flag数据标签", "清除所有数据标签", "flag", true)
+        Action.new("Global全局数据标签", "清除所有数据标签", "global", true)
             .description("清除所有数据标签")
-            .addEntry("清除占位符", Type.SYMBOL, head = "clear")
-            .addContainerEntry("清除的玩家", true, "@self"),
-        Action.new("Flag数据标签", "获取数据存活时间", "flag", true)
+            .addEntry("清除占位符", Type.SYMBOL, head = "clear"),
+        Action.new("Global全局数据标签", "获取数据存活时间", "global", true)
             .description("获取数据存活时间")
             .addEntry("键名", Type.STRING, false)
             .addEntry("存活占位符", Type.SYMBOL, head = "survival")
-            .addContainerEntry("获取的玩家", true, "@self")
             .result("数据存活时间(Tick)", Type.LONG),
-        Action.new("Flag数据标签", "获取数据剩余存活时间", "flag", true)
+        Action.new("Global全局数据标签", "获取数据剩余存活时间", "global", true)
             .description("获取数据剩余存活时间")
             .addEntry("键名", Type.STRING, false)
             .addEntry("剩余存活占位符", Type.SYMBOL, head = "countdown")
-            .addContainerEntry("获取的玩家", true, "@self")
             .result("数据剩余存活时间(Tick)", Type.LONG)
     ) {
         try {
@@ -75,20 +76,13 @@ object FlagActions {
             val value = reader.nextParsedAction()
             val persistence = reader.nextHeadAction("pst", def = false)
             val timeout = reader.nextHeadAction("timeout", def = 0)
-            val they = reader.nextTheyContainerOrNull()
 
             return actionNow {
                 run(key).str { key ->
                     run(value).thenAccept { value ->
                         run(persistence).bool { persistence ->
                             run(timeout).long { timeout ->
-                                containerOrSelf(they) {
-                                    it.forEachInstance<PlayerTarget> { target ->
-                                        target.getSource().orryxProfileTo { profile ->
-                                            value?.flag(persistence, timeout * 50)?.let { it1 -> profile.setFlag(key, it1) }
-                                        }
-                                    }
-                                }
+                                value?.flag(persistence, timeout * 50)?.let { it1 -> setFlag(key, it1) }
                             }
                         }
                     }
@@ -97,84 +91,121 @@ object FlagActions {
         } catch (_: LocalizedException) {
             reader.reset()
         }
-        val they = reader.nextTheyContainerOrNull()
 
         return actionFuture { future ->
             run(key).str { key ->
-                containerOrSelf(they) {
-                    it.firstInstance<PlayerTarget>().getSource().orryxProfileTo { profile ->
-                        future.complete(profile.getFlag(key)?.value)
-                    }
-                }
+                future.complete(getFlag(key)?.value)
             }
         }
     }
 
     private fun remove(reader: QuestReader, key: ParsedAction<*>): ScriptAction<Any?> {
-        val they = reader.nextTheyContainerOrNull()
 
         return actionFuture { future ->
             run(key).str { key ->
-                containerOrSelf(they) {
-                    it.firstInstance<PlayerTarget>().getSource().orryxProfileTo { profile ->
-                        future.complete(profile.removeFlag(key))
-                    }
-                }
+                future.complete(removeFlag(key))
             }
         }
+
     }
 
     private fun clear(reader: QuestReader): ScriptAction<Any?> {
-        val they = reader.nextTheyContainerOrNull()
 
         return actionNow {
-            containerOrSelf(they) {
-                it.forEachInstance<PlayerTarget> { target ->
-                    target.getSource().orryxProfileTo { profile ->
-                        profile.clearFlags()
-                    }
-                }
-            }
+            clearFlags()
         }
     }
 
     private fun survival(reader: QuestReader, key: ParsedAction<*>): ScriptAction<Any?> {
-        val they = reader.nextTheyContainerOrNull()
 
         return actionFuture { future ->
             run(key).str { key ->
-                containerOrSelf(they) {
-                    it.firstInstance<PlayerTarget>().getSource().orryxProfileTo { profile ->
-                        val flag = profile.getFlag(key)
+                val flag = getFlag(key)
 
-                        future.complete(
-                            flag?.let {
-                                (System.currentTimeMillis() - flag.timestamp) / 50
-                            } ?: 0
-                        )
-                    }
-                }
+                future.complete(
+                    flag?.let {
+                        (System.currentTimeMillis() - flag.timestamp) / 50
+                    } ?: 0
+                )
             }
         }
     }
 
     private fun countdown(reader: QuestReader, key: ParsedAction<*>): ScriptAction<Any?> {
-        val they = reader.nextTheyContainerOrNull()
 
         return actionFuture { future ->
             run(key).str { key ->
-                containerOrSelf(they) {
-                    it.firstInstance<PlayerTarget>().getSource().orryxProfileTo { profile ->
-                        val flag = profile.getFlag(key)
+                val flag = getFlag(key)
 
-                        future.complete(
-                            flag?.let {
-                                (flag.timestamp + flag.timeout - System.currentTimeMillis()) / 50
-                            } ?: 0
-                        )
-                    }
+                future.complete(
+                    flag?.let {
+                        (flag.timestamp + flag.timeout - System.currentTimeMillis()) / 50
+                    } ?: 0
+                )
+            }
+        }
+    }
+
+    /**
+     * 尝试获取flag
+     * @param flagName flag的键名
+     * @return flag
+     * */
+    fun getFlag(flagName: String): IFlag? {
+        return globalFlagMap[flagName]
+    }
+
+    /**
+     * 设置flag
+     * @param flagName flag的键名
+     * @param flag flag
+     * @param save 是否检测是否持久并保存
+     * */
+    fun setFlag(flagName: String, flag: IFlag, save: Boolean = true) {
+        val event = OrryxGlobalFlagChangeEvents.Pre(flagName, globalFlagMap[flagName], flag)
+
+        if (event.call()) {
+            if (event.newFlag == null) {
+                globalFlagMap.remove(flagName)
+            } else {
+                globalFlagMap[flagName] = event.newFlag!!
+            }
+            if (save && (event.oldFlag?.isPersistence == true || event.newFlag?.isPersistence == true)) {
+                IStorageManager.INSTANCE.saveGlobalFlag(flagName, event.newFlag!!) {
+                    OrryxGlobalFlagChangeEvents.Post(flagName, event.oldFlag, event.newFlag)
                 }
             }
         }
+    }
+
+    /**
+     * 移除flag
+     * @param flagName flag的键名
+     * @param save 是否检测是否持久并保存
+     * @return 移除的flag
+     * */
+    fun removeFlag(flagName: String, save: Boolean = true): IFlag? {
+        val event = OrryxGlobalFlagChangeEvents.Pre(flagName, globalFlagMap[flagName], null)
+
+        if (event.call()) {
+            if (event.newFlag == null) {
+                globalFlagMap.remove(flagName)
+            } else {
+                globalFlagMap[flagName] = event.newFlag!!
+            }
+            if (save && (event.oldFlag?.isPersistence == true || event.newFlag?.isPersistence == true)) {
+                IStorageManager.INSTANCE.saveGlobalFlag(flagName, event.newFlag) {
+                    OrryxGlobalFlagChangeEvents.Post(flagName, event.oldFlag, event.newFlag)
+                }
+            }
+        }
+        return event.oldFlag
+    }
+
+    /**
+     * 清除flag
+     * */
+    fun clearFlags() {
+        globalFlagMap.clear()
     }
 }

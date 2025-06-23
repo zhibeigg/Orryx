@@ -4,25 +4,19 @@ import com.eatthepath.uuid.FastUUID
 import com.google.common.collect.Interner
 import com.google.common.collect.Interners
 import kotlinx.serialization.json.Json
+import org.gitee.orryx.core.profile.IFlag
 import org.gitee.orryx.dao.pojo.PlayerJobPO
 import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.utils.*
 import taboolib.common.io.newFile
-import taboolib.common.platform.function.info
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common.platform.function.submitAsync
-import taboolib.common.platform.function.warning
-import taboolib.module.database.Action
-import taboolib.module.database.ActionUpdate
 import taboolib.module.database.ColumnOptionSQLite
 import taboolib.module.database.ColumnTypeSQLite
-import taboolib.module.database.ResultProcessor
 import taboolib.module.database.Table
 import taboolib.module.database.getHost
-import taboolib.module.database.use
-import java.sql.SQLException
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
@@ -32,6 +26,7 @@ class SqlLiteManager: IStorageManager {
     private val host = newFile(IStorageManager.file, "data.db").getHost()
     private val dataSource = host.createDataSource()
 
+    private val pluginInterner = Interners.newStrongInterner<String>()
     private val internerMap = ConcurrentHashMap<UUID, Interner<String>>()
 
     fun getInternerByUUID(uuid: UUID): Interner<String> = internerMap.getOrPut(uuid) { Interners.newStrongInterner() }
@@ -76,11 +71,21 @@ class SqlLiteManager: IStorageManager {
         add(KEY_SETTING) { type(ColumnTypeSQLite.TEXT) }
     }
 
+    private val globalFlagTable: Table<*, *> = Table("orryx_global_flag", host) {
+        add { id() }
+        add(FLAG_KEY) {
+            type(ColumnTypeSQLite.TEXT)
+            { options(ColumnOptionSQLite.NOTNULL, ColumnOptionSQLite.UNIQUE) }
+        }
+        add(FLAG) { type(ColumnTypeSQLite.TEXT) }
+    }
+
     init {
         playerTable.createTable(dataSource)
         jobsTable.createTable(dataSource)
         skillsTable.createTable(dataSource)
         keyTable.createTable(dataSource)
+        globalFlagTable.createTable(dataSource)
     }
 
     override fun getPlayerData(player: UUID): CompletableFuture<PlayerProfilePO> {
@@ -309,5 +314,54 @@ class SqlLiteManager: IStorageManager {
 
     fun quit(player: UUID) {
         internerMap.remove(player)
+    }
+
+    override fun getGlobalFlag(key: String): CompletableFuture<IFlag?> {
+        debug("SqlLite 获取全局 Flag")
+        val future = CompletableFuture<IFlag?>()
+        fun read() {
+            try {
+                future.complete(globalFlagTable.select(dataSource) {
+                    where { FLAG_KEY eq key }
+                    rows(FLAG)
+                }.firstOrNull {
+                    Json.decodeFromString<IFlag>(getString(FLAG))
+                })
+            } catch (e: Throwable) {
+                future.completeExceptionally(e)
+            }
+        }
+        if (isPrimaryThread) {
+            submitAsync { read() }
+        } else {
+            read()
+        }
+        return future
+    }
+
+    override fun saveGlobalFlag(key: String, flag: IFlag?, onSuccess: () -> Unit) {
+        debug("SqlLite 保存全局 Flag")
+        synchronized(pluginInterner.intern("GlobalFlag${key}")) {
+            globalFlagTable.workspace(dataSource) {
+                if (flag == null) {
+                    delete { where { FLAG_KEY eq key } }
+                } else {
+                    if (select { where { FLAG_KEY eq key } }.find()) {
+                        update {
+                            where { FLAG_KEY eq key }
+                            set(FLAG, Json.encodeToString(flag))
+                        }
+                    } else {
+                        insert(FLAG_KEY, FLAG) {
+                            value(
+                                key,
+                                Json.encodeToString(flag)
+                            )
+                        }
+                    }
+                }
+            }.run()
+            onSuccess()
+        }
     }
 }

@@ -3,6 +3,8 @@ package org.gitee.orryx.dao.storage
 import eos.moe.armourers.tr
 import org.bukkit.event.player.PlayerQuitEvent
 import org.gitee.orryx.api.Orryx
+import org.gitee.orryx.core.profile.Flag
+import org.gitee.orryx.core.profile.IFlag
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.dao.pojo.PlayerJobPO
 import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
@@ -139,4 +141,19 @@ interface IStorageManager {
      * @param onSuccess 成功时执行
      * */
     fun savePlayerKey(playerKeySettingPO: PlayerKeySettingPO, onSuccess: () -> Unit)
+
+    /**
+     * 获取全局 Flag
+     * @param key flag key
+     * @return [IFlag]
+     * */
+    fun getGlobalFlag(key: String): CompletableFuture<IFlag?>
+
+    /**
+     * 保存全局 Flag
+     * @param key flag key
+     * @param flag flag 为空时删除
+     * @param onSuccess 成功时执行
+     * */
+    fun saveGlobalFlag(key: String, flag: IFlag?, onSuccess: () -> Unit)
 }
