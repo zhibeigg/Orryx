@@ -1,5 +1,6 @@
 package org.gitee.orryx.core
 
+import eos.moe.armourers.nu
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import org.bukkit.Bukkit
@@ -83,6 +84,10 @@ object GameManager {
     private fun updateJobAttribute(player: Player) {
         player.job {
             IAttributeBridge.INSTANCE.addAttribute(player, ORRYX_JOB_ATTRIBUTE, it.getAttributes())
+        }.thenAccept {
+            if (it == null) {
+                IAttributeBridge.INSTANCE.removeAttribute(player, ORRYX_JOB_ATTRIBUTE)
+            }
         }
     }
 

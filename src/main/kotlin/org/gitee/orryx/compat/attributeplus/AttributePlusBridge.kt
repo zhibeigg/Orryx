@@ -5,29 +5,24 @@ import org.gitee.orryx.api.events.damage.DamageType
 import org.gitee.orryx.compat.IAttributeBridge
 import org.gitee.orryx.core.common.task.SimpleTimeoutTask
 import org.serverct.ersha.api.AttributeAPI
-import org.serverct.ersha.attribute.data.AttributeData
-import taboolib.common.util.unsafeLazy
 import taboolib.module.kether.ScriptContext
 
 class AttributePlusBridge: IAttributeBridge {
 
-    private val attributeMap by unsafeLazy { mutableMapOf<String, AttributeData>() }
-
     override fun addAttribute(entity: LivingEntity, key: String, value: List<String>, timeout: Long) {
-        val source = AttributeAPI.createStaticAttributeSource(value)
-        source.entity = entity
-        source.attributeData?.let {
-            attributeMap[key] = it
-            AttributeAPI.addStaticAttributeSource(it, key, value)
-        }
-        SimpleTimeoutTask.createSimpleTask(timeout) {
-            removeAttribute(entity, key)
+        val data = AttributeAPI.getAttrData(entity)
+        AttributeAPI.addSourceAttribute(data, key, value)
+        data.updateAttribute()
+        if (timeout != -1L) {
+            SimpleTimeoutTask.createSimpleTask(timeout) {
+                removeAttribute(entity, key)
+            }
         }
     }
 
     override fun removeAttribute(entity: LivingEntity, key: String) {
-        val attribute = attributeMap[key] ?: return
-        AttributeAPI.takeSourceAttribute(attribute, key)
+        val data = AttributeAPI.getAttrData(entity)
+        AttributeAPI.takeSourceAttribute(data, key)
     }
 
     override fun damage(attacker: LivingEntity, target: LivingEntity, damage: Double, type: DamageType, context: ScriptContext?) {

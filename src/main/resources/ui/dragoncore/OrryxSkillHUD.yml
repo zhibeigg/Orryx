@@ -1,4 +1,5 @@
 through: true
+updateInterval: 100
 Functions:
   open: |-
     界面变量.横纵 = 0;

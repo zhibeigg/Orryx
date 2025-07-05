@@ -1,6 +1,9 @@
 allowEscClose: false
 through: true
 
+# 方法.发包('OrryxState', 'stopAttack');
+# 用于打开UI后取消攻击
+
 Functions:
   keyPress: |-
     if(方法.取当前按下键 == 'ESCAPE' || 方法.取当前按下键 == 'E') {
@@ -12,6 +15,7 @@ Functions:
     界面变量.选中技能 = "none";
     方法.播放声音;
     方法.异步执行方法('动画1');
+    方法.发包('OrryxState', 'stopAttack');
   close: |-
     方法.播放声音;
   动画1: |-

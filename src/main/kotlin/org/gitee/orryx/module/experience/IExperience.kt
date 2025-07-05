@@ -31,5 +31,4 @@ interface IExperience {
      * @return 经验值
      * */
     fun getExperienceOfLevel(sender: ProxyCommandSender, level: Int): Int
-
 }

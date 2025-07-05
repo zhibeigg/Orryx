@@ -175,6 +175,11 @@ object StateManager {
                     val speed = e.data[3].cfloat
                     setPlayHand(e.player, animation, tick, speed)
                 }
+                "stopAttack" -> {
+                    e.player.keySetting {
+                        KeyRegisterManager.getKeyRegister(e.player.uniqueId)?.keyRelease(it.generalAttackKey)
+                    }
+                }
             }
         }
     }
