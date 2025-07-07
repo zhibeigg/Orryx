@@ -2,12 +2,15 @@ package org.gitee.orryx.core.kether.actions.compat.dragoncore
 
 import eos.moe.armourers.api.DragonAPI
 import eos.moe.armourers.api.PlayerSkinUpdateEvent
+import eos.moe.dragoncore.api.SlotAPI
+import eos.moe.dragoncore.database.IDataBase
 import eos.moe.dragoncore.network.PacketSender
 import ink.ptms.adyeshach.core.Adyeshach
 import ink.ptms.adyeshach.core.entity.EntityInstance
 import ink.ptms.adyeshach.core.entity.EntityTypes
 import org.bukkit.Bukkit
 import org.bukkit.event.player.PlayerQuitEvent
+import org.bukkit.inventory.ItemStack
 import org.gitee.orryx.api.adapters.IEntity
 import org.gitee.orryx.api.adapters.entity.AbstractAdyeshachEntity
 import org.gitee.orryx.compat.dragoncore.DragonCoreCustomPacketSender
@@ -268,7 +271,12 @@ object DragonCoreActions {
             .description("隐藏玩家手持武器")
             .addEntry("隐藏手持标识符", Type.SYMBOL, false, head = "invisibleHand")
             .addEntry("隐藏时间 0 为取消", Type.LONG, false)
-            .addContainerEntry("取消的玩家", true, "@self")
+            .addContainerEntry("取消的玩家", true, "@self"),
+        Action.new("DragonCore附属语句", "获取槽位内物品", "dragoncore", true)
+            .description("获取槽位内物品")
+            .addEntry("槽位标识符", Type.SYMBOL, false, head = "slot")
+            .addEntry("槽位名", Type.STRING, false)
+            .addContainerEntry("获取的玩家", true, "@self")
     ) {
         it.switch {
             case("armourers") {
@@ -343,6 +351,7 @@ object DragonCoreActions {
                 }
             }
             case("invisibleHand") { invisibleHand(it) }
+            case("slot") { slotItemStack(it) }
         }
     }
 
@@ -1133,6 +1142,28 @@ object DragonCoreActions {
                             StateManager.cancelInvisibleHand(target.getSource())
                         }
                     }
+                }
+            }
+        }
+    }
+
+    private fun slotItemStack(reader: QuestReader): ScriptAction<Any?> {
+        val identifier = reader.nextParsedAction()
+        val players = reader.nextTheyContainerOrNull()
+        return actionFuture { future ->
+            run(identifier).str { identifier ->
+                containerOrSelf(players) { container ->
+                    val target = container.firstInstance<PlayerTarget>()
+                    SlotAPI.getSlotItem(target.getSource(), identifier, object : IDataBase.Callback<ItemStack> {
+
+                        override fun onResult(item: ItemStack?) {
+                            future.complete(item)
+                        }
+
+                        override fun onFail() {
+                            future.completeExceptionally(Throwable("Failed to get slot item $identifier"))
+                        }
+                    })
                 }
             }
         }
