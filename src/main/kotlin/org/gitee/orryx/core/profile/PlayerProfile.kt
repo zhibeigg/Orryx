@@ -114,7 +114,7 @@ class PlayerProfile(
     override fun setPoint(point: Int) {
         when {
             point > privatePoint -> givePoint(point - privatePoint)
-            point < privatePoint -> givePoint(privatePoint - point)
+            point < privatePoint -> takePoint(privatePoint - point)
         }
     }
 

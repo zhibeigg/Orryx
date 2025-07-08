@@ -1,7 +1,6 @@
 package org.gitee.orryx.core.station.triggers.orryx.point
 
 import org.gitee.orryx.api.events.player.OrryxPlayerPointEvents
-import org.gitee.orryx.api.events.player.OrryxPlayerSpiritEvents
 import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.station.triggers.AbstractPropertyEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
@@ -10,9 +9,7 @@ import org.gitee.orryx.module.wiki.Type
 import taboolib.common.OpenResult
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
-import taboolib.common5.cdouble
 import taboolib.common5.cint
-import taboolib.module.kether.KetherProperty
 
 object OrryxPlayerPointDownTrigger: AbstractPropertyEventTrigger<OrryxPlayerPointEvents.Down.Pre>("Orryx Player Point Down") {
 
