@@ -2,11 +2,13 @@ package org.gitee.orryx.module.state
 
 import com.germ.germplugin.api.event.GermClientLinkedEvent
 import com.germ.germplugin.api.event.GermKeyDownEvent
+import com.germ.germplugin.api.event.GermKeyUpEvent
 import eos.moe.armourers.api.PlayerSkinUpdateEvent
 import eos.moe.armourers.nu
 import eos.moe.dragoncore.api.event.EntityJoinWorldEvent
 import eos.moe.dragoncore.api.event.EntityLeaveWorldEvent
 import eos.moe.dragoncore.api.event.KeyPressEvent
+import eos.moe.dragoncore.api.event.KeyReleaseEvent
 import eos.moe.dragoncore.api.gui.event.CustomPacketEvent
 import eos.moe.dragoncore.network.PacketSender
 import org.bukkit.Bukkit
@@ -99,6 +101,7 @@ object StateManager {
             BLOCK_STATE -> BlockState(key, configurationSection)
             DODGE_STATE -> DodgeState(key, configurationSection)
             GENERAL_ATTACK_STATE -> GeneralAttackState(key, configurationSection)
+            PRESS_ATTACK_STATE -> PressGeneralAttackState(key, configurationSection)
             VERTIGO_STATE -> VertigoState(key, configurationSection)
             else -> error("state not support $type")
         }
@@ -150,6 +153,34 @@ object StateManager {
         val data = playerDataMap.getOrPut(e.player.uniqueId) { PlayerData(e.player) }
         data.updateMoveState(e.keyType.simpleKey)
         data.tryNext(e.keyType.simpleKey)
+    }
+
+    @Ghost
+    @SubscribeEvent
+    private fun release(e: KeyReleaseEvent) {
+        if (e.isCancelled) return
+        val data = playerDataMap.getOrPut(e.player.uniqueId) { PlayerData(e.player) }
+        val running = data.nowRunningState as? PressGeneralAttackState.Running ?: return
+
+        e.player.keySetting {
+            if (it.generalAttackKey == e.key) {
+                running.castAttack()
+            }
+        }
+    }
+
+    @Ghost
+    @SubscribeEvent
+    private fun release(e: GermKeyUpEvent) {
+        if (e.isCancelled) return
+        val data = playerDataMap.getOrPut(e.player.uniqueId) { PlayerData(e.player) }
+        val running = data.nowRunningState as? PressGeneralAttackState.Running ?: return
+
+        e.player.keySetting {
+            if (it.generalAttackKey == e.keyType.simpleKey) {
+                running.castAttack()
+            }
+        }
     }
 
     @Ghost

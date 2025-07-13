@@ -192,7 +192,7 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean
                     parameter.runCustomAction(skill.pressPeriodAction, mapOf("pressTick" to (System.currentTimeMillis() - time) / 50))
                 }.onComplete {
                     if (consume) skill.consume(player, parameter)
-                    parameter.runSkillAction(mapOf("pressTick" to maxPressTick))
+                    parameter.runSkillAction(mapOf("pressTick" to (System.currentTimeMillis() - time) / 50))
                     PressSkillManager.pressTaskMap.remove(player.uniqueId)
                     CompletableFuture.completedFuture(null)
                 }.onBrock {

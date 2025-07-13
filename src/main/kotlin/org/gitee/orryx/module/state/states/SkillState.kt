@@ -43,6 +43,7 @@ class SkillState(val skill: ICastSkill): IActionState {
                 is DodgeState.Running -> false
                 is BlockState.Running -> false
                 is GeneralAttackState.Running -> false
+                is PressGeneralAttackState.Running -> false
                 is Running -> false
                 is VertigoState.Running -> !Orryx.api().profileAPI.isSuperBody(data.player)
                 else -> false

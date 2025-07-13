@@ -98,6 +98,7 @@ class BlockState(override val key: String, override val configurationSection: Co
                 is Running -> false
                 is DodgeState.Running -> true
                 is GeneralAttackState.Running -> false
+                is PressGeneralAttackState.Running -> false
                 is SkillState.Running -> true
                 is VertigoState.Running -> !Orryx.api().profileAPI.isSuperBody(data.player)
                 else -> false

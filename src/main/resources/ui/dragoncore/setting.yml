@@ -4,6 +4,6 @@ keyTime: 100
 KeySort: false
 # 按下时触发技能还是抬起时触发
 # press/release
-ActionType: release
+ActionType: press
 # 是否进服自动打开技能Hud
 JoinOpenHud: true

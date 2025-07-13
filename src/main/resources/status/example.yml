@@ -39,6 +39,22 @@ States:
       Key: "长剑普攻2"
       # 动作时长 (Tick)
       Duration: "18"
+  长剑蓄力普攻:
+    # 蓄力的 Action 将会在释放攻击动作时触发
+    # 可读取变量 pressTick 获取蓄力时间
+    # 状态类型
+    Type: "Press Attack"
+    # 衔接位置从播放攻击动作后算 (Tick)
+    Connection: "12-20"
+    Animation:
+      # 蓄力开始动作名（可以直接是长动作，也可以在控制器里改衔接动作）
+      StartKey: "长剑蓄力"
+      # 释放动作
+      CastKey: "长剑蓄力攻击"
+      # 蓄力最多时长
+      PressDuration: "40"
+      # 动作时长 (Tick)
+      CastDuration: "18"
   长剑招架:
     # 状态类型
     Type: "Block"

@@ -6,6 +6,7 @@ import org.gitee.orryx.module.state.Status
 import org.gitee.orryx.module.state.states.BlockState
 import org.gitee.orryx.module.state.states.DodgeState
 import org.gitee.orryx.module.state.states.GeneralAttackState
+import org.gitee.orryx.module.state.states.PressGeneralAttackState
 import org.gitee.orryx.module.state.states.VertigoState
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
@@ -37,6 +38,7 @@ object StateActions {
                         is BlockState -> BlockState.Running(data, actionState)
                         is DodgeState -> DodgeState.Running(data, actionState)
                         is GeneralAttackState -> GeneralAttackState.Running(data, actionState)
+                        is PressGeneralAttackState -> PressGeneralAttackState.Running(data, actionState)
                         is VertigoState -> VertigoState.Running(data, actionState)
                         else -> null
                     }
@@ -95,6 +97,7 @@ object StateActions {
                                 is BlockState -> BlockState.Running(data, actionState)
                                 is DodgeState -> DodgeState.Running(data, actionState)
                                 is GeneralAttackState -> GeneralAttackState.Running(data, actionState)
+                                is PressGeneralAttackState -> PressGeneralAttackState.Running(data, actionState)
                                 is VertigoState -> VertigoState.Running(data, actionState)
                                 else -> null
                             }

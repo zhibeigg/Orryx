@@ -68,7 +68,7 @@ object DragonCoreActions {
             .addEntry("时装名", Type.STRING, true, "ALL")
             .addContainerEntry(optional = true, default = "@self"),
         Action.new("DragonCore附属语句", "更新时装", "dragoncore", true)
-            .description("清除临时时装")
+            .description("更新时装")
             .addEntry("armourers标识符", Type.SYMBOL, false, head = "armourers")
             .addEntry("更新标识符", Type.SYMBOL, false, head = "update")
             .addContainerEntry(optional = true, default = "@self"),

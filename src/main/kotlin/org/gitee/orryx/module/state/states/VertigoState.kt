@@ -75,6 +75,7 @@ class VertigoState(override val key: String, configurationSection: Configuration
                 is DodgeState.Running -> false
                 is BlockState.Running -> false
                 is GeneralAttackState.Running -> false
+                is PressGeneralAttackState.Running -> false
                 is SkillState.Running -> false
                 is Running -> !Orryx.api().profileAPI.isSuperBody(data.player)
                 else -> false

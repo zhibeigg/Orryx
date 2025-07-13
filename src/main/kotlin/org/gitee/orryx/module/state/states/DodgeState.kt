@@ -98,6 +98,7 @@ class DodgeState(override val key: String, override val configurationSection: Co
                 is Running -> (System.currentTimeMillis() - startTimestamp) in 0..state.connection.second * 50L
                 is BlockState.Running -> false
                 is GeneralAttackState.Running -> false
+                is PressGeneralAttackState.Running -> false
                 is SkillState.Running -> true
                 is VertigoState.Running -> !Orryx.api().profileAPI.isSuperBody(data.player)
                 else -> false
