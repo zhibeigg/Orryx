@@ -13,6 +13,7 @@ import org.gitee.orryx.utils.bindKeys
 import org.gitee.orryx.utils.bindSkills
 import org.gitee.orryx.utils.getIcon
 import org.gitee.orryx.utils.job
+import org.gitee.orryx.utils.parameter
 import taboolib.common.platform.function.getDataFolder
 import taboolib.common.util.unsafeLazy
 import taboolib.platform.util.onlinePlayers
@@ -63,7 +64,8 @@ open class DragonCoreSkillHud(override val viewer: Player, override val owner: P
                         "Orryx_bind_keys" to keys.joinToString("<br>") { it.key },
                         "Orryx_bind_skills" to keys.joinToString("<br>") { bindSkills[it]?.key ?: "none" },
                         "Orryx_bind_skills_Icon" to keys.joinToString("<br>") { bindSkills[it]?.getIcon() ?: "none" },
-                        "Orryx_bind_cooldowns" to keys.joinToString("<br>") { bindSkills[it]?.key?.let { skill -> skillCooldownMap[owner.uniqueId]?.get(skill)?.getCountdown(owner) }.toString() }
+                        "Orryx_bind_cooldowns" to keys.joinToString("<br>") { bindSkills[it]?.key?.let { skill -> skillCooldownMap[owner.uniqueId]?.get(skill)?.getCountdown(owner) }.toString() },
+                        "Orryx_bind_skills_mana" to keys.joinToString("<br>") { bindSkills[it]?.parameter()?.manaValue()?.toString() ?: "0" },
                     ))
                 }
             }

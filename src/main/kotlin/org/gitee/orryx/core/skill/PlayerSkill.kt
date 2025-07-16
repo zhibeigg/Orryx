@@ -75,7 +75,7 @@ class PlayerSkill(
         // 指向性技能
         if (PluginMessageHandler.pendingRequests.containsKey(player.uniqueId)) return CompletableFuture.completedFuture(CastResult.AIMING)
         // 沉默
-        if (Orryx.api().profileAPI.isSilence(player)) return CompletableFuture.completedFuture(CastResult.SILENCE)
+        if (!skill.ignoreSilence && Orryx.api().profileAPI.isSilence(player)) return CompletableFuture.completedFuture(CastResult.SILENCE)
         // 冷却
         if (!SkillTimer.hasNext(player, key)) return CompletableFuture.completedFuture(CastResult.COOLDOWN)
         // 法力

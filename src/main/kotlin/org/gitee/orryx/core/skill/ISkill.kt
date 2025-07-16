@@ -68,6 +68,11 @@ interface ISkill {
     val upLevelSuccessAction: String?
 
     /**
+     * 是否无视沉默
+     * */
+    val ignoreSilence: Boolean
+
+    /**
      * 技能的延迟生成变量
      * */
     val variables: Map<String, String>

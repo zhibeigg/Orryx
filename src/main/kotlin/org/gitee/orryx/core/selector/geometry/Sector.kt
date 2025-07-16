@@ -18,8 +18,8 @@ object Sector: ISelectorGeometry {
 
     override val wiki: Selector
         get() = Selector.new("扇形范围", keys, SelectorType.GEOMETRY)
-            .addExample("@sector 10 120 2 0")
-            .addExample("@sec 10 120 2")
+            .addExample("@sector 10 120 2 0 false")
+            .addExample("@sec 10 120 2 true")
             .addParm(Type.DOUBLE, "半径", "10.0")
             .addParm(Type.DOUBLE, "角度", "120.0")
             .addParm(Type.DOUBLE, "高度", "2")

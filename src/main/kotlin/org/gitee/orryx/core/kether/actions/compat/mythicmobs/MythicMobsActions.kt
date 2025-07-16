@@ -1,5 +1,6 @@
 package org.gitee.orryx.core.kether.actions.compat.mythicmobs
 
+import eos.moe.armourers.fa
 import io.lumine.xikage.mythicmobs.MythicMobs
 import io.lumine.xikage.mythicmobs.adapters.bukkit.BukkitAdapter
 import org.bukkit.entity.Entity
@@ -14,8 +15,8 @@ import taboolib.module.kether.*
 
 object MythicMobsActions {
 
-    @KetherParser(["mythicmobs", "mythic", "mob"], namespace = ORRYX_NAMESPACE, shared = true)
-    private fun dragonCore() = scriptParser(
+    @KetherParser(["mythicmobs", "mm"], namespace = ORRYX_NAMESPACE, shared = true)
+    private fun mythicMobs() = scriptParser(
         Action.new("MythicMobs附属语句", "嘲讽怪物", "mythicmobs", true)
             .description("嘲讽怪物")
             .addEntry("嘲讽标识符", Type.SYMBOL, false, head = "taunt")
@@ -27,28 +28,34 @@ object MythicMobsActions {
             .addEntry("添加标识符", Type.SYMBOL, false, head = "add")
             .addEntry("仇恨值", Type.DOUBLE, optional = false)
             .addContainerEntry("怪物", optional = false, head = null)
-            .addContainerEntry("目标", true, "@self"),
+            .addContainerEntry("仇恨目标", true, "@self"),
         Action.new("MythicMobs附属语句", "减少仇恨值", "mythicmobs", true)
             .description("减少仇恨值")
             .addEntry("仇恨表标识符", Type.SYMBOL, false, head = "threat")
             .addEntry("减少标识符", Type.SYMBOL, false, head = "take")
             .addEntry("仇恨值", Type.DOUBLE, optional = false)
             .addContainerEntry("怪物", optional = false, head = null)
-            .addContainerEntry("目标", true, "@self"),
+            .addContainerEntry("仇恨目标", true, "@self"),
         Action.new("MythicMobs附属语句", "设置仇恨值", "mythicmobs", true)
             .description("设置仇恨值")
             .addEntry("仇恨表标识符", Type.SYMBOL, false, head = "threat")
             .addEntry("设置标识符", Type.SYMBOL, false, head = "set")
             .addEntry("仇恨值", Type.DOUBLE, optional = false)
             .addContainerEntry("怪物", optional = false, head = null)
-            .addContainerEntry("目标", true, "@self"),
+            .addContainerEntry("仇恨目标", true, "@self"),
+        Action.new("MythicMobs附属语句", "发送怪物信号", "mythicmobs", true)
+            .description("发送MythicMobs怪物信号")
+            .addEntry("信号标识符", Type.SYMBOL, false, head = "signal")
+            .addEntry("信号名", Type.STRING, optional = false)
+            .addContainerEntry("怪物", false, "@self", null)
+            .addContainerEntry("触发者", true, "@self", "trigger"),
         Action.new("MythicMobs附属语句", "释放MM技能", "mythicmobs", true)
             .description("释放MythicMobs技能")
             .addEntry("释放标识符", Type.SYMBOL, false, head = "cast")
             .addEntry("技能名", Type.STRING, optional = false)
             .addEntry("技能强度", Type.FLOAT, optional = false)
-            .addContainerEntry("怪物", true, "@self", "trigger")
-            .addContainerEntry("目标", true, "@self"),
+            .addContainerEntry("释放者", true, "@self")
+            .addContainerEntry("触发者", true, "@self", "trigger")
     ) {
         it.switch {
             case("taunt") { taunt(it) }
@@ -174,7 +181,7 @@ object MythicMobsActions {
     private fun signal(reader: QuestReader): ScriptAction<Any?> {
         val signal = reader.nextParsedAction()
         val mobs = reader.nextParsedAction()
-        val they = reader.nextTheyContainerOrNull()
+        val they = reader.nextHeadActionOrNull("trigger")
 
         return actionFuture { future ->
             run(signal).str { signal ->
@@ -208,22 +215,22 @@ object MythicMobsActions {
     private fun castSkill(reader: QuestReader): ScriptAction<Any?> {
         val skillName = reader.nextParsedAction()
         val power = reader.nextParsedAction()
-        val trigger = reader.nextHeadActionOrNull(arrayOf("trigger"))
         val they = reader.nextTheyContainerOrNull()
+        val trigger = reader.nextHeadActionOrNull("trigger")
 
         return actionFuture { future ->
             run(skillName).str { skillName ->
                 run(power).float { power ->
-                    containerOrSelf(trigger) { mobs ->
-                        containerOrSelf(they) { they ->
-                            val caster = they.get<ITargetEntity<Entity>>()
+                    containerOrSelf(they) { caster ->
+                        containerOrSelf(trigger) { trigger ->
+                            val trigger = trigger.get<ITargetEntity<Entity>>()
                             ensureSync {
-                                mobs.forEachInstance<ITargetEntity<Entity>> { target ->
-                                    caster.forEach {
+                                caster.forEachInstance<ITargetEntity<Entity>> { caster ->
+                                    trigger.forEach {
                                         MythicMobs.inst().apiHelper.castSkill(
-                                            it.getSource(),
+                                            caster.getSource(),
                                             skillName,
-                                            target.getSource(),
+                                            it.getSource(),
                                             script().getParameterOrNull()?.origin?.location,
                                             null,
                                             null,

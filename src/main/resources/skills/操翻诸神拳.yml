@@ -53,6 +53,8 @@ Options:
   CastCheckAction: |-
     tell "尝试释放时检测"
     true
+  # 是否无视沉默
+  IgnoreSilence: false
   Variables:
     # 释放后的沉默时间
     Silence: 5

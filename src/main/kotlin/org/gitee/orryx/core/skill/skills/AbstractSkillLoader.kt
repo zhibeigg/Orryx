@@ -35,5 +35,7 @@ abstract class AbstractSkillLoader(key: String, open val configuration: Configur
 
     override val upLevelSuccessAction: String? = options.getString("UpLevelSuccessAction")
 
+    override val ignoreSilence: Boolean = options.getBoolean("IgnoreSilence", false)
+
     override val variables = options.getMap("Variables").mapKeys { it.key.uppercase() }
 }

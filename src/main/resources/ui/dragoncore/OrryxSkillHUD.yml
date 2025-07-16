@@ -61,6 +61,9 @@ Functions:
         };
       });
     };
+    if(局部变量.args.0 == 'Orryx_bind_skills_mana') {
+      局部变量.法力值列表 = 方法.分割(局部变量.args.1, '<br>');
+    };
 背景_up_texture:
   x: "check_texture.x+check_texture.distanceX"
   y: "check_texture.y+check_texture.distanceY"
