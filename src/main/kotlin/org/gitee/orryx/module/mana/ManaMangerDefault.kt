@@ -3,6 +3,10 @@ package org.gitee.orryx.module.mana
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.bukkit.entity.Player
+import org.gitee.nodens.common.DigitalParser.Type.COUNT
+import org.gitee.nodens.common.DigitalParser.Type.PERCENT
+import org.gitee.nodens.core.attribute.Mana
+import org.gitee.nodens.core.entity.EntityAttributeMemory.Companion.attributeMemory
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.api.events.player.OrryxPlayerManaEvents
 import org.gitee.orryx.core.GameManager
@@ -12,7 +16,6 @@ import org.gitee.orryx.core.profile.IPlayerProfile
 import org.gitee.orryx.dao.cache.ISyncCacheManager
 import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.utils.*
-import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common5.cdouble
 import taboolib.module.kether.orNull
@@ -32,13 +35,24 @@ class ManaMangerDefault: IManaManager {
         }
     }
 
-    override fun getMaxMana(sender: ProxyCommandSender, job: IJob, level: Int): Double {
-        return sender.eval(job.maxManaActions, mapOf("level" to level)).orNull().cdouble
+    override fun getMaxMana(player: Player, job: IJob, level: Int): Double {
+        val mana = player.eval(job.maxManaActions, mapOf("level" to level)).orNull().cdouble
+        var extend = 0.0
+        if (NodensPlugin.isEnabled) {
+            val valueMap = player.attributeMemory()?.mergedAttribute(Mana.Max)
+            valueMap?.forEach { (type, double) ->
+                extend += when(type) {
+                    PERCENT -> ((valueMap[COUNT]?.get(0) ?: 0.0) + mana) * double[0]
+                    COUNT -> double[0]
+                }
+            }
+        }
+        return mana
     }
 
-    override fun getMaxMana(sender: ProxyCommandSender, job: String, level: Int): Double {
+    override fun getMaxMana(player: Player, job: String, level: Int): Double {
         val jobLoader = JobLoaderManager.getJobLoader(job) ?: return 0.0
-        return getMaxMana(sender, jobLoader, level)
+        return getMaxMana(player, jobLoader, level)
     }
 
     override fun giveMana(player: Player, mana: Double): CompletableFuture<ManaResult> {

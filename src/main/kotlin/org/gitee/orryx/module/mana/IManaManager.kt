@@ -86,21 +86,21 @@ interface IManaManager {
 
     /**
      * 获得职业的最大法力值
-     * @param sender 获取者
+     * @param player 获取者
      * @param job 职业键名
      * @param level 等级
      * @return 法力值
      * */
-    fun getMaxMana(sender: ProxyCommandSender, job: String, level: Int): Double
+    fun getMaxMana(player: Player, job: String, level: Int): Double
 
     /**
      * 获得职业的最大法力值
-     * @param sender 获取者
+     * @param player 获取者
      * @param job 职业
      * @param level 等级
      * @return 法力值
      * */
-    fun getMaxMana(sender: ProxyCommandSender, job: IJob, level: Int): Double
+    fun getMaxMana(player: Player, job: IJob, level: Int): Double
 
     /**
      * 自然恢复法力值
