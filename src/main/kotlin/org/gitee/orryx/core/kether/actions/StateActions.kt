@@ -65,7 +65,10 @@ object StateActions {
             .description("强制执行指定下一状态")
             .addEntry("下一占位符", Type.SYMBOL, false, head = "next")
             .addEntry("状态名", Type.STRING)
-            .result("运动状态", Type.STATE)
+            .result("运动状态", Type.STATE),
+        Action.new("State状态机", "强制停止当前状态", "state", true)
+            .description("强制停止当前状态")
+            .addEntry("停止位符", Type.SYMBOL, false, head = "stop")
     ) {
         it.switch {
             case("now") {
@@ -105,6 +108,11 @@ object StateActions {
                             future.complete(running)
                         }
                     }
+                }
+            }
+            case("stop") {
+                actionNow {
+                    script().bukkitPlayer().statusData().nowRunningState?.stop()
                 }
             }
         }

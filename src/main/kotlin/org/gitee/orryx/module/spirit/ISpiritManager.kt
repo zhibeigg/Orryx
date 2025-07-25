@@ -1,9 +1,6 @@
 package org.gitee.orryx.module.spirit
 
-import org.bukkit.Bukkit
 import org.bukkit.entity.Player
-import org.bukkit.scheduler.BukkitRunnable
-import org.gitee.nodens.core.attribute.Health.Regain.period
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.core.job.IJob
 import org.gitee.orryx.core.reload.Reload
@@ -13,7 +10,6 @@ import taboolib.common.platform.Awake
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.submitAsync
 import taboolib.common.platform.service.PlatformExecutor
-import taboolib.platform.BukkitPlugin
 import taboolib.platform.util.onlinePlayers
 import java.util.concurrent.CompletableFuture
 

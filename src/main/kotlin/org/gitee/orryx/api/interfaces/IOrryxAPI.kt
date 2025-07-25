@@ -15,4 +15,6 @@ interface IOrryxAPI {
     val skillAPI: ISkillAPI
 
     val taskAPI: ITaskAPI
+
+    val consumptionValueAPI: IConsumptionValueAPI
 }

@@ -59,6 +59,7 @@ class BlockState(override val key: String, override val configurationSection: Co
                     successContext = this
                 }
             }
+            StateManager.callNext(data.player)
         }
 
         override fun start() {
