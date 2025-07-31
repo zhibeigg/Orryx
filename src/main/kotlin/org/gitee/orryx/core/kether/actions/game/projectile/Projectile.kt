@@ -12,14 +12,13 @@ import org.gitee.orryx.core.kether.actions.math.hitbox.collider.local.LocalAABB
 import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.utils.*
 import org.joml.Vector3d
-import taboolib.common.platform.function.info
 import taboolib.common.platform.function.submitAsync
 import taboolib.common.platform.function.warning
 import taboolib.common.platform.service.PlatformExecutor
 import taboolib.library.kether.ParsedAction
 import taboolib.library.kether.QuestContext
 import taboolib.module.kether.run
-import taboolib.platform.util.onlinePlayers
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
 
 class Projectile<T: ITargetLocation<*>>(
@@ -45,6 +44,7 @@ class Projectile<T: ITargetLocation<*>>(
     lateinit var task: PlatformExecutor.PlatformTask
     private var ticked = -period
     private var hitCount = 0
+    private var hitCountMap = hashMapOf<UUID, Int>()
 
     fun start(frame: QuestContext.Frame) {
         ensureSync {
@@ -83,15 +83,20 @@ class Projectile<T: ITargetLocation<*>>(
             if (!source.isValid) return@thenAccept
             onHit?.also {
                 frame.variables().set("@hitBlock", block)
+                frame.variables().set("hitCount", hitCount)
                 frame.run(it)
             }
         }
 
         hitEntityFuture.thenAccept { entity ->
             hitCount ++
+            val entityHitCount = hitCountMap.getOrElse(entity.uniqueId) { 0 } + 1
+            hitCountMap[entity.uniqueId] = entityHitCount
             if (!source.isValid) return@thenAccept
             onHit?.also {
                 frame.variables().set("@hitEntity", entity)
+                frame.variables().set("hitCount", hitCount)
+                frame.variables().set("entityHitCount", entityHitCount)
                 frame.run(it)
             }
         }

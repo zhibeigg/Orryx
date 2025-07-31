@@ -3,6 +3,7 @@ package org.gitee.orryx.module.state
 import com.germ.germplugin.api.event.GermClientLinkedEvent
 import com.germ.germplugin.api.event.GermKeyDownEvent
 import com.germ.germplugin.api.event.GermKeyUpEvent
+import com.germ.germplugin.api.event.GermPlayerLoadWorldEvent
 import eos.moe.armourers.api.PlayerSkinUpdateEvent
 import eos.moe.armourers.nu
 import eos.moe.dragoncore.api.event.EntityJoinWorldEvent
