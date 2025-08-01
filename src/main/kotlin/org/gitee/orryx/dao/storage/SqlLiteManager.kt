@@ -48,7 +48,6 @@ class SqlLiteManager: IStorageManager {
         add(EXPERIENCE) { type(ColumnTypeSQLite.INTEGER) }
         add(GROUP) { type(ColumnTypeSQLite.TEXT) }
         add(BIND_KEY_OF_GROUP) { type(ColumnTypeSQLite.TEXT) }
-        primaryKeyForLegacy += arrayOf(USER_ID, JOB)
     }
 
     private val skillsTable: Table<*, *> = Table("orryx_player_job_skills", host) {
@@ -60,7 +59,6 @@ class SqlLiteManager: IStorageManager {
         add(SKILL) { type(ColumnTypeSQLite.TEXT) }
         add(LOCKED) { type(ColumnTypeSQLite.BLOB) }
         add(LEVEL) { type(ColumnTypeSQLite.INTEGER) }
-        primaryKeyForLegacy += arrayOf(USER_ID, JOB, SKILL)
     }
 
     private val keyTable: Table<*, *> = Table("orryx_player_key_setting", host) {
@@ -72,7 +70,6 @@ class SqlLiteManager: IStorageManager {
     }
 
     private val globalFlagTable: Table<*, *> = Table("orryx_global_flag", host) {
-        add { id() }
         add(FLAG_KEY) {
             type(ColumnTypeSQLite.TEXT)
             { options(ColumnOptionSQLite.NOTNULL, ColumnOptionSQLite.UNIQUE) }
