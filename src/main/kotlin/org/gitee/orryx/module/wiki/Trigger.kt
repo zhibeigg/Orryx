@@ -170,7 +170,7 @@ class Trigger(val group: TriggerGroup, val key: String, var description: String 
                     .blockId("${key}_quote_$i")
                     .children(arrayOf())
                     .blockType(BlockBlockTypeEnum.QUOTE)
-                    .quote(Text.newBuilder().elements(text("特殊配置Key： ${key.key} 类型： ${key.type.name} 介绍： ${key.description}")).build())
+                    .quote(Text.newBuilder().elements(text("特殊配置Key：(${key.key})，类型：(${key.type.name})，介绍：(${key.description})")).build())
                     .build()
             }
         }
