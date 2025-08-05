@@ -34,11 +34,11 @@ object GermKeyUpTrigger: AbstractPropertyEventTrigger<GermKeyUpEvent>("Germ Key 
     }
 
     override fun onCheck(station: IStation, event: GermKeyUpEvent, map: Map<String, Any?>): Boolean {
-        return super.onCheck(station, event, map) && ((map["keys"] as? List<*>)?.contains(event.keyType.simpleKey) ?: (map["keys"] == event.keyType.simpleKey))
+        return super.onCheck(station, event, map) && ((map["Keys"] as? List<*>)?.contains(event.keyType.simpleKey) ?: (map["keys"] == event.keyType.simpleKey))
     }
 
     override fun onCheck(pipeTask: IPipeTask, event: GermKeyUpEvent, map: Map<String, Any?>): Boolean {
-        return pipeTask.scriptContext?.sender?.origin == event.player && ((map["keys"] as? List<*>)?.contains(event.keyType.simpleKey) ?: (map["keys"] == event.keyType.simpleKey))
+        return pipeTask.scriptContext?.sender?.origin == event.player && ((map["Keys"] as? List<*>)?.contains(event.keyType.simpleKey) ?: (map["keys"] == event.keyType.simpleKey))
     }
 
     override fun read(instance: GermKeyUpEvent, key: String): OpenResult {

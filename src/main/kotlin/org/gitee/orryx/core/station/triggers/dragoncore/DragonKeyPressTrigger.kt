@@ -25,11 +25,11 @@ object DragonKeyPressTrigger: AbstractPropertyPlayerEventTrigger<KeyPressEvent>(
     override val specialKeys = arrayOf("Keys")
 
     override fun onCheck(station: IStation, event: KeyPressEvent, map: Map<String, Any?>): Boolean {
-        return super.onCheck(station, event, map) && ((map["keys"] as? List<*>)?.contains(event.key) ?: (map["keys"] == event.key))
+        return super.onCheck(station, event, map) && ((map["Keys"] as? List<*>)?.contains(event.key) ?: (map["keys"] == event.key))
     }
 
     override fun onCheck(pipeTask: IPipeTask, event: KeyPressEvent, map: Map<String, Any?>): Boolean {
-        return pipeTask.scriptContext?.sender?.origin == event.player && ((map["keys"] as? List<*>)?.contains(event.key) ?: (map["keys"] == event.key))
+        return pipeTask.scriptContext?.sender?.origin == event.player && ((map["Keys"] as? List<*>)?.contains(event.key) ?: (map["keys"] == event.key))
     }
 
     override fun read(instance: KeyPressEvent, key: String): OpenResult {

@@ -28,11 +28,11 @@ object DragonPacketTrigger: AbstractPropertyPlayerEventTrigger<CustomPacketEvent
     override val specialKeys: Array<String> = arrayOf("Identifier")
 
     override fun onCheck(station: IStation, event: CustomPacketEvent, map: Map<String, Any?>): Boolean {
-        return super.onCheck(station, event, map) && (map["identifier"] == null || event.identifier == map["identifier"])
+        return super.onCheck(station, event, map) && (map["Identifier"] == null || event.identifier == map["Identifier"])
     }
 
     override fun onCheck(pipeTask: IPipeTask, event: CustomPacketEvent, map: Map<String, Any?>): Boolean {
-        return (pipeTask.scriptContext?.sender?.origin == event.player) && (map["identifier"] == null || event.identifier == map["identifier"])
+        return (pipeTask.scriptContext?.sender?.origin == event.player) && (map["Identifier"] == null || event.identifier == map["Identifier"])
     }
 
     override fun read(instance: CustomPacketEvent, key: String): OpenResult {
