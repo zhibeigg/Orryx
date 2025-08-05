@@ -32,7 +32,7 @@ object GermKeyDownTrigger: AbstractPropertyEventTrigger<GermKeyDownEvent>("Germ 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.GERM_PLUGIN, event)
             .addParm(Type.STRING, "key", "按下的按键")
-            .addSpecialKey(Type.STRING, "keys", "按键，可写列表/单个")
+            .addSpecialKey(Type.STRING, "Keys", "按键，可写列表/单个")
             .description("玩家按下按键事件")
 
     override val clazz

@@ -161,6 +161,19 @@ class Trigger(val group: TriggerGroup, val key: String, var description: String 
                 .quote(Text.newBuilder().elements(text(description)).build())
                 .build()
         }
+        if (specialKeyEntries.isNotEmpty()) {
+            var i = 1
+            for (key in specialKeyEntries) {
+                i ++
+                id += "${key}_quote_$i"
+                list += Block.newBuilder()
+                    .blockId("${key}_quote_$i")
+                    .children(arrayOf())
+                    .blockType(BlockBlockTypeEnum.QUOTE)
+                    .quote(Text.newBuilder().elements(text("特殊配置Key： ${key.key} 类型： ${key.type.name} 介绍： ${key.description}")).build())
+                    .build()
+            }
+        }
         return list to id
     }
 }

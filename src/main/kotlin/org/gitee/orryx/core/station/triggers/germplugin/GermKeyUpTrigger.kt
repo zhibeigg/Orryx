@@ -21,13 +21,13 @@ object GermKeyUpTrigger: AbstractPropertyEventTrigger<GermKeyUpEvent>("Germ Key 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.GERM_PLUGIN, event)
             .addParm(Type.STRING, "key", "按下的按键")
-            .addSpecialKey(Type.STRING, "keys", "按键，可写列表/单个")
+            .addSpecialKey(Type.STRING, "Keys", "按键，可写列表/单个")
             .description("玩家释放按键事件")
 
     override val clazz
         get() = GermKeyUpEvent::class.java
 
-    override val specialKeys = arrayOf("keys")
+    override val specialKeys = arrayOf("Keys")
 
     override fun onJoin(event: GermKeyUpEvent, map: Map<String, Any?>): ProxyCommandSender {
         return adaptPlayer(event.player)

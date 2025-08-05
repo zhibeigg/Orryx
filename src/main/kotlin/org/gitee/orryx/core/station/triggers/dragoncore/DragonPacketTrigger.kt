@@ -19,13 +19,13 @@ object DragonPacketTrigger: AbstractPropertyPlayerEventTrigger<CustomPacketEvent
         get() = Trigger.new(TriggerGroup.DRAGONCORE, event)
             .addParm(Type.STRING, "identifier", "包名")
             .addParm(Type.ITERABLE, "data", "包数据")
-            .addSpecialKey(Type.STRING, "identifier", "包名")
+            .addSpecialKey(Type.STRING, "Identifier", "包名")
             .description("玩家龙核发包")
 
     override val clazz
         get() = CustomPacketEvent::class.java
 
-    override val specialKeys: Array<String> = arrayOf("identifier")
+    override val specialKeys: Array<String> = arrayOf("Identifier")
 
     override fun onCheck(station: IStation, event: CustomPacketEvent, map: Map<String, Any?>): Boolean {
         return super.onCheck(station, event, map) && (map["identifier"] == null || event.identifier == map["identifier"])
