@@ -22,6 +22,9 @@ abstract class AbstractPropertyEventTrigger<E>(override val event: String): ISta
 
     override val specialKeys: Array<String> = emptyArray()
 
+    override fun onRegister(station: IStation, map: Map<String, Any?>) {
+    }
+
     override fun onCheck(station: IStation, event: E, map: Map<String, Any?>): Boolean {
         return station.event.uppercase() == this.event.uppercase()
     }

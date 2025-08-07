@@ -59,4 +59,9 @@ interface IStation {
      * 技能运行脚本
      * */
     val script: Script?
+
+    /**
+     * 特殊配置读取
+     * */
+    var map: Map<String, Any?>
 }

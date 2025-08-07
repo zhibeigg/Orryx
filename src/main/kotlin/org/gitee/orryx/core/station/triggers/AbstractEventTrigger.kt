@@ -1,6 +1,7 @@
 package org.gitee.orryx.core.station.triggers
 
 import org.gitee.orryx.core.station.WikiTrigger
+import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.station.pipe.IPipeTrigger
 import org.gitee.orryx.core.station.stations.IStation
 import org.gitee.orryx.core.station.stations.IStationTrigger
@@ -12,6 +13,9 @@ abstract class AbstractEventTrigger<E>: IStationTrigger<E>, IPipeTrigger<E>, Wik
     override var listener: ProxyListener? = null
 
     override val specialKeys: Array<String> = emptyArray()
+
+    override fun onRegister(station: IStation, map: Map<String, Any?>) {
+    }
 
     override fun onCheck(station: IStation, event: E, map: Map<String, Any?>): Boolean {
         return station.event.uppercase() == this.event.uppercase()

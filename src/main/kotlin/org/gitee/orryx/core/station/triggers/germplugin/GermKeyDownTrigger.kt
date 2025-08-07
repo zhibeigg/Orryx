@@ -1,8 +1,10 @@
 package org.gitee.orryx.core.station.triggers.germplugin
 
+import com.germ.germplugin.api.GermKeyAPI
 import com.germ.germplugin.api.KeyType
 import com.germ.germplugin.api.bean.KeyBinding
 import com.germ.germplugin.api.event.GermKeyDownEvent
+import eos.moe.dragoncore.config.Config
 import org.bukkit.inventory.meta.BookMeta
 import org.gitee.orryx.core.station.Plugin
 import org.gitee.orryx.core.station.pipe.IPipeTask
@@ -39,6 +41,10 @@ object GermKeyDownTrigger: AbstractPropertyEventTrigger<GermKeyDownEvent>("Germ 
         get() = GermKeyDownEvent::class.java
 
     override val specialKeys = arrayOf("keys")
+
+    override fun onRegister(station: IStation, map: Map<String, Any?>) {
+        (map["Keys"] as? List<*>)?.forEach { GermKeyAPI.registerKey(KeyType.valueOf("KEY_${it}")) } ?: GermKeyAPI.registerKey(KeyType.valueOf("KEY_${map["keys"]}"))
+    }
 
     override fun onJoin(event: GermKeyDownEvent, map: Map<String, Any?>): ProxyCommandSender {
         return adaptPlayer(event.player)

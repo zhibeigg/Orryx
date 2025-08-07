@@ -11,6 +11,11 @@ interface IStationTrigger<E>: ITrigger<E> {
     val specialKeys: Array<String>
 
     /**
+     * 注册时预先触发
+     * */
+    fun onRegister(station: IStation, map: Map<String, Any?>)
+
+    /**
      * 当检测通过时
      * @param event 监听到的事件
      * @param map 传入的特殊参数

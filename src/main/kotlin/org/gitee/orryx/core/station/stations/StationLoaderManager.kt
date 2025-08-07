@@ -85,15 +85,18 @@ object StationLoaderManager {
     }
 
     private fun <E> IStationTrigger<E>.register(priority: EventPriority, stations: List<IStation>) {
+        stations.forEach { station ->
+            station.map = specialKeys.associateWith { (station as? StationLoader)?.options?.get(it) }
+            onRegister(station, station.map)
+        }
         listenerList += registerBukkitListener(clazz, priority, false) { event ->
             stations.forEach { station ->
-                val map = specialKeys.associateWith { (station as? StationLoader)?.options?.get(it) }
-                if (onCheck(station, event, map)) {
-                    val sender = onJoin(event, map)
+                if (onCheck(station, event, station.map)) {
+                    val sender = onJoin(event, station.map)
                     if (StationTimer.hasNext(sender, station.key)) {
                         val parameter = StationParameter(station.key, sender, event)
                         StationTimer.reset(sender, parameter)
-                        startStation(sender, station, map, event, parameter)
+                        startStation(sender, station, station.map, event, parameter)
                     }
                 }
             }

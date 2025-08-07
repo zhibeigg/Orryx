@@ -4,7 +4,6 @@ import com.github.benmanes.caffeine.cache.Caffeine
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.common.keyregister.IKeyRegister.ActionType.PRESS
 import org.gitee.orryx.core.common.keyregister.IKeyRegister.ActionType.RELEASE
-import taboolib.common.platform.function.info
 import java.util.concurrent.TimeUnit
 
 class KeyRegister(override val player: Player): IKeyRegister {

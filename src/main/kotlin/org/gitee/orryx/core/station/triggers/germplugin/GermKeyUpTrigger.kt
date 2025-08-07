@@ -1,5 +1,7 @@
 package org.gitee.orryx.core.station.triggers.germplugin
 
+import com.germ.germplugin.api.GermKeyAPI
+import com.germ.germplugin.api.KeyType
 import com.germ.germplugin.api.event.GermKeyDownEvent
 import com.germ.germplugin.api.event.GermKeyUpEvent
 import org.gitee.orryx.core.station.Plugin
@@ -28,6 +30,10 @@ object GermKeyUpTrigger: AbstractPropertyEventTrigger<GermKeyUpEvent>("Germ Key 
         get() = GermKeyUpEvent::class.java
 
     override val specialKeys = arrayOf("Keys")
+
+    override fun onRegister(station: IStation, map: Map<String, Any?>) {
+        (map["Keys"] as? List<*>)?.forEach { GermKeyAPI.registerKey(KeyType.valueOf("KEY_${it}")) } ?: GermKeyAPI.registerKey(KeyType.valueOf("KEY_${map["keys"]}"))
+    }
 
     override fun onJoin(event: GermKeyUpEvent, map: Map<String, Any?>): ProxyCommandSender {
         return adaptPlayer(event.player)
