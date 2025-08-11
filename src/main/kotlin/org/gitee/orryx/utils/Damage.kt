@@ -65,6 +65,18 @@ fun doDamage(source: LivingEntity?, entity: LivingEntity, damageCause: DamageCau
     entity.damage(damage)
 }
 
+fun doDamage(source: LivingEntity?, entity: LivingEntity, event: EntityDamageByEntityEvent, damage: Double) {
+    // 如果实体血量 - 预计伤害值 < 0 提前设置击杀者
+    if (entity.health - damage <= 0 && source is Player) {
+        entity.setProperty("entity/killer", source.getProperty("entity"))
+    }
+    entity.noDamageTicks = 0
+    if (source != null) {
+        entity.lastDamageCause = event
+    }
+    entity.damage(damage)
+}
+
 fun transfer(damageCause: DamageCause): DamageType {
     return try {
         when (damageCause) {

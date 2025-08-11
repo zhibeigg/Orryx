@@ -1,5 +1,8 @@
 package org.gitee.orryx.command
 
+import eos.moe.armourers.api.DragonAPI
+import org.bukkit.Bukkit
+import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.job.JobLoaderManager
@@ -12,6 +15,7 @@ import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.utils.*
 import org.joml.Quaterniond
 import org.joml.Vector3d
+import org.serverct.ersha.api.AttributeAPI
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.command.*
 import taboolib.common.platform.function.info
@@ -164,19 +168,9 @@ object OrryxCommand {
 
     @CommandBody
     val test = subCommandExec<Player> {
-        val bind = sender.abstract().coordinateConverter()
-        val halfExtents = Vector3d(1.0, 1.0, 1.0)
-        val hitbox = LocalOBB<ITargetLocation<*>>(
-            halfExtents,
-            Vector3d(0.0, 1.0, 0.0),
-            Quaterniond(),
-            bind
-        )
-        info(hitbox.parent.position)
-        info(hitbox.parent.position)
-        info(hitbox.localCenter)
-        sender.sendMessage(hitbox.toString())
-        hitbox.update()
-        sender.sendMessage(hitbox.toString())
+        sender.world.getNearbyEntities(sender.location, 10.0, 10.0, 10.0).forEach {
+            AttributeAPI.runAttributeAttackEntity(sender, it as? LivingEntity ?: return@forEach, 10.0, true, true)
+            AttributeAPI.runAttributeAttackEntity(sender, it, 10.0, false, true)
+        }
     }
 }

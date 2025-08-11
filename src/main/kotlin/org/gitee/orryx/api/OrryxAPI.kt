@@ -24,7 +24,7 @@ import taboolib.module.kether.KetherScriptLoader
         transitive = false
     ),
     RuntimeDependency(
-        "!com.larksuite.oapi:oapi-sdk:2.4.7",
+        "!com.larksuite.oapi:oapi-sdk:2.4.22",
         test = "!org.gitee.orryx.larksuite.oapi.Client",
         relocate = ["!com.larksuite.oapi", "!org.gitee.orryx.larksuite.oapi"],
         transitive = false

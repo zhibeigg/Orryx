@@ -37,11 +37,12 @@ object DamageActions {
                 val sources = source.orElse(self())
                 val damageType = type?.uppercase()?.let { it1 -> DamageType.valueOf(it1) } ?: DamageType.PHYSICS
                 ensureSync {
+                    val attacker = sources.firstInstance<ITargetEntity<LivingEntity>>().getSource()
                     if (attribute) {
                         container!!.forEachInstance<ITargetEntity<*>> { target ->
                             target.entity.getBukkitLivingEntity()?.let { entity ->
                                 IAttributeBridge.INSTANCE.damage(
-                                    sources.firstInstance<ITargetEntity<LivingEntity>>().getSource(),
+                                    attacker,
                                     entity,
                                     damage,
                                     damageType,
@@ -53,7 +54,7 @@ object DamageActions {
                         container!!.forEachInstance<ITargetEntity<*>> { target ->
                             target.entity.getBukkitLivingEntity()?.let { entity ->
                                 Default.damage(
-                                    sources.firstInstance<ITargetEntity<LivingEntity>>().getSource(),
+                                    attacker,
                                     entity,
                                     damage,
                                     damageType,

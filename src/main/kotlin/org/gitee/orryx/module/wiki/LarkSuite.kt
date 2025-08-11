@@ -412,6 +412,7 @@ object LarkSuite {
 
     private suspend fun createAction(token: String, action: Action, documentId: String) {
         withContext(Dispatchers.IO) {
+            delay(300)
             val blocks = action.createBlocks()
             val req = CreateDocumentBlockDescendantReq.newBuilder()
                 .documentId(documentId)

@@ -99,14 +99,14 @@ dependencies {
     }
     compileOnly("org.eldergod.ext:GDDTitle:2.1")
     compileOnly("org.eldergod.ext:GlowAPI:1.4.6")
-    compileOnly("org.eldergod.ext:AttributePlus:3.3.3.0")
+    compileOnly("org.eldergod.ext:AttributePlus:api")
     compileOnly("org.eldergod.ext:DungeonPlus:1.4.3")
     compileOnly("org.eldergod.ext:ProtocolLib:5.3.0")
 
     compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
     compileOnly("com.github.ben-manes.caffeine:caffeine:2.9.3")
     compileOnly("org.joml:joml:1.10.7")
-    compileOnly("com.larksuite.oapi:oapi-sdk:2.4.7")
+    compileOnly("com.larksuite.oapi:oapi-sdk:2.4.22")
     compileOnly("com.eatthepath:fast-uuid:0.2.0")
 
     testCompileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")

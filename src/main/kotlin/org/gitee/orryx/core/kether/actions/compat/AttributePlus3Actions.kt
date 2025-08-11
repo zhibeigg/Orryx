@@ -1,0 +1,44 @@
+package org.gitee.orryx.core.kether.actions.compat
+
+import org.bukkit.entity.LivingEntity
+import org.gitee.orryx.compat.IAttributeBridge
+import org.gitee.orryx.compat.attributeplus.AttributePlusBridge
+import org.gitee.orryx.core.targets.ITargetEntity
+import org.gitee.orryx.module.wiki.Action
+import org.gitee.orryx.module.wiki.Type
+import org.gitee.orryx.utils.*
+import taboolib.module.kether.KetherParser
+
+object AttributePlus3Actions {
+
+    @KetherParser(["apAttack"], namespace = ORRYX_NAMESPACE, shared = true)
+    private fun apAttack() = combinationParser(
+        Action.new("AttributePlus", "ap3攻击", "apAttack", true)
+            .description("ap3攻击")
+            .addEntry("重置属性", Type.BOOLEAN)
+            .addEntry("属性(用,分割)", Type.STRING, true, head = "attributes")
+            .addContainerEntry("防御者defender")
+    ) {
+        it.group(
+            bool(),
+            text(),
+            command("source", then = container()).option(),
+            theyContainer(false)
+        ).apply(it) { reset, attributes, source, they ->
+            now {
+                val sources = source.orElse(self())
+                val attacker = sources.firstInstance<ITargetEntity<LivingEntity>>().getSource()
+                val instance = IAttributeBridge.INSTANCE as? AttributePlusBridge ?: return@now
+                val attributes = attributes.split(",")
+
+                ensureSync {
+                    they!!.forEachInstance<ITargetEntity<*>> { target ->
+                        target.entity.getBukkitLivingEntity()?.let { entity ->
+                            instance.apAttack(attacker, entity, reset, attributes)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
