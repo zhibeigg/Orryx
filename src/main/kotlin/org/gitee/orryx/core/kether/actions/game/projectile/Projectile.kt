@@ -69,14 +69,8 @@ class Projectile<T: ITargetLocation<*>>(
         ticked += period
         validCheck()
 
-        val periodFuture = CompletableFuture<Void>()
         val hitBlockFuture = CompletableFuture<Block>()
         val hitEntityFuture = CompletableFuture<IEntity>()
-
-        periodFuture.thenAccept {
-            if (isSyncClient) syncClient()
-            onPeriod?.also { frame.run(it) }
-        }
 
         hitBlockFuture.thenAccept { block ->
             hitCount ++
@@ -101,30 +95,37 @@ class Projectile<T: ITargetLocation<*>>(
             }
         }
 
+        fun onPeriod(): CompletableFuture<Any?> {
+            if (isSyncClient) syncClient()
+            return onPeriod?.let { frame.run(it) } ?: CompletableFuture.completedFuture(null)
+        }
+
         frame.variables().set("@ticked", ticked)
         frame.run(vector).vector { vector ->
             when (type) {
                 BUKKIT_ENTITY, BUKKIT_PROJECTILE -> ensureSync {
                     lookAndMove(vector)
                     hitbox.update()
-                    periodFuture.complete(null)
-                    if (!checkHitBlock { hitBlockFuture.complete(it) }) {
-                        hitBlockFuture.cancel(true)
-                    }
-                    if (!checkHitEntity { hitEntityFuture.complete(it) }) {
-                        hitEntityFuture.cancel(true)
-                    }
-                }
-                ADY_ENTITY, NONE -> {
-                    lookAndMove(vector)
-                    hitbox.update()
-                    periodFuture.complete(null)
-                    ensureSync {
+                    onPeriod().whenComplete { _, _ ->
                         if (!checkHitBlock { hitBlockFuture.complete(it) }) {
                             hitBlockFuture.cancel(true)
                         }
                         if (!checkHitEntity { hitEntityFuture.complete(it) }) {
                             hitEntityFuture.cancel(true)
+                        }
+                    }
+                }
+                ADY_ENTITY, NONE -> {
+                    lookAndMove(vector)
+                    hitbox.update()
+                    onPeriod().whenComplete { _, _ ->
+                        ensureSync {
+                            if (!checkHitBlock { hitBlockFuture.complete(it) }) {
+                                hitBlockFuture.cancel(true)
+                            }
+                            if (!checkHitEntity { hitEntityFuture.complete(it) }) {
+                                hitEntityFuture.cancel(true)
+                            }
                         }
                     }
                 }
