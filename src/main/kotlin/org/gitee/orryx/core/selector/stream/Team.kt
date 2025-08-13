@@ -24,7 +24,7 @@ object Team: ISelectorStream {
             .description("只保留队内人员,或只保留队外人员")
 
     override fun processStream(container: IContainer, context: ScriptContext, parameter: StringParser.Entry) {
-        val teamPlayers = DungeonPlus.teamManager.getTeam(context.bukkitPlayer())?.getPlayers(PlayerStateType.ONLINE) ?: return
+        val teamPlayers = DungeonPlus.teamManager.getTeam(context.bukkitPlayer())?.getPlayers(PlayerStateType.ONLINE) ?: emptyList()
         if (parameter.reverse) {
             container.removeIf {
                 it is PlayerTarget && teamPlayers.contains(it.getSource())

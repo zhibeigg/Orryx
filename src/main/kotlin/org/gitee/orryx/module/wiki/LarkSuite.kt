@@ -575,6 +575,7 @@ object LarkSuite {
 
     private suspend fun createSelector(token: String, selector: Selector, documentId: String, last: Boolean) {
         withContext(Dispatchers.IO) {
+            delay(300)
             val blocks = selector.createBlocks()
             val req = CreateDocumentBlockDescendantReq.newBuilder()
                 .documentId(documentId)
@@ -739,6 +740,7 @@ object LarkSuite {
 
     private suspend fun createTrigger(token: String, trigger: Trigger, documentId: String, last: Boolean) {
         withContext(Dispatchers.IO) {
+            delay(300)
             val blocks = trigger.createBlocks()
             val req = CreateDocumentBlockDescendantReq.newBuilder()
                 .documentId(documentId)

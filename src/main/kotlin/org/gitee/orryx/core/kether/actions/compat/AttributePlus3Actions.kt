@@ -18,13 +18,14 @@ object AttributePlus3Actions {
             .addEntry("重置属性", Type.BOOLEAN)
             .addEntry("属性(用,分割)", Type.STRING, true, head = "attributes")
             .addContainerEntry("防御者defender")
+            .addEntry("攻击来源", Type.CONTAINER, true, "@self", head = "source")
     ) {
         it.group(
             bool(),
             text(),
+            theyContainer(false),
             command("source", then = container()).option(),
-            theyContainer(false)
-        ).apply(it) { reset, attributes, source, they ->
+        ).apply(it) { reset, attributes, they, source ->
             now {
                 val sources = source.orElse(self())
                 val attacker = sources.firstInstance<ITargetEntity<LivingEntity>>().getSource()
