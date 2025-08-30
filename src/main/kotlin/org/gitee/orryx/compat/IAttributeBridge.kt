@@ -2,8 +2,10 @@ package org.gitee.orryx.compat
 
 import org.bukkit.entity.LivingEntity
 import org.gitee.orryx.api.events.damage.DamageType
+import org.gitee.orryx.compat.astraxhero.AstraXHeroBridge
 import org.gitee.orryx.compat.attributeplus.AttributePlusBridge
 import org.gitee.orryx.compat.nodens.NodensBridge
+import org.gitee.orryx.utils.AstraXHeroPlugin
 import org.gitee.orryx.utils.AttributePlusPlugin
 import org.gitee.orryx.utils.NodensPlugin
 import taboolib.common.util.unsafeLazy
@@ -17,6 +19,7 @@ interface IAttributeBridge {
             when {
                 AttributePlusPlugin.isEnabled -> AttributePlusBridge()
                 NodensPlugin.isEnabled -> NodensBridge()
+                AstraXHeroPlugin.isEnabled -> AstraXHeroBridge()
                 else -> DefaultAttributeBridge()
             }
         }

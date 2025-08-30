@@ -1,5 +1,6 @@
 package org.gitee.orryx.utils
 
+import cn.bukkitmc.hero.api.event.FightEvent
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import org.bukkit.event.entity.EntityDamageByEntityEvent
@@ -12,6 +13,16 @@ import org.serverct.ersha.api.event.AttrEntityDamageBeforeEvent
 import taboolib.common.platform.function.warning
 import taboolib.library.reflex.Reflex.Companion.getProperty
 import taboolib.library.reflex.Reflex.Companion.setProperty
+
+fun AbstractDamageEvent.isAstraXHero(): Boolean {
+    if (!AstraXHeroPlugin.isEnabled) return false
+    return try {
+        origin is FightEvent.Pre
+    } catch (_: Throwable) {
+        warning("unsupported ${FightEvent.Pre::class}")
+        false
+    }
+}
 
 fun AbstractDamageEvent.isAttributePlus(): Boolean {
     if (!AttributePlusPlugin.isEnabled) return false
@@ -30,6 +41,16 @@ fun AbstractDamageEvent.isNodens(): Boolean {
     } catch (_: Throwable) {
         warning("unsupported ${NodensEntityDamageEvents.Pre::class}")
         false
+    }
+}
+
+fun AbstractDamageEvent.axhEvent(): FightEvent.Pre? {
+    if (!AstraXHeroPlugin.isEnabled) return null
+    return try {
+        origin as? FightEvent.Pre
+    } catch (_: Throwable) {
+        warning("unsupported ${FightEvent.Pre::class}")
+        null
     }
 }
 

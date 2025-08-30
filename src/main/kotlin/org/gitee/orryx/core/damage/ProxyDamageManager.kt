@@ -5,6 +5,7 @@ import org.gitee.nodens.api.events.entity.NodensEntityDamageEvents
 import org.gitee.nodens.core.attribute.Damage
 import org.gitee.orryx.api.events.damage.DamageType
 import org.gitee.orryx.api.events.damage.OrryxDamageEvents
+import org.gitee.orryx.utils.AstraXHeroPlugin
 import org.gitee.orryx.utils.AttributePlusPlugin
 import org.gitee.orryx.utils.NodensPlugin
 import org.gitee.orryx.utils.transfer
@@ -16,7 +17,7 @@ import taboolib.common.platform.event.SubscribeEvent
 
 object ProxyDamageManager {
 
-    val ignoreBukkit by lazy { NodensPlugin.isEnabled || AttributePlusPlugin.isEnabled }
+    val ignoreBukkit by lazy { NodensPlugin.isEnabled || AttributePlusPlugin.isEnabled || AstraXHeroPlugin.isEnabled}
 
     //Bukkit
     @SubscribeEvent(ignoreCancelled = true, priority = EventPriority.MONITOR)
