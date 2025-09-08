@@ -2,9 +2,9 @@ import io.izzel.taboolib.gradle.*
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-//val publishUsername: String by project
-//val publishPassword: String by project
-//val build: String by project
+val publishUsername: String by project
+val publishPassword: String by project
+val build: String by project
 
 plugins {
     `java-library`
@@ -124,7 +124,7 @@ tasks.withType<JavaCompile> {
 }
 
 tasks.withType<Jar> {
-//    destinationDirectory.set(File(build))
+    destinationDirectory.set(File(build))
 }
 
 tasks.withType<KotlinCompile> {
@@ -147,67 +147,67 @@ kotlin {
     }
 }
 
-//publishing {
-//    repositories {
-//        maven {
-//            url = uri("https://www.mcwar.cn/nexus/repository/maven-releases/")
-//            credentials {
-//                username = publishUsername
-//                password = publishPassword
-//            }
-//            authentication {
-//                create<BasicAuthentication>("basic")
-//            }
-//        }
-//    }
-//    publications {
-//        create<MavenPublication>("library") {
-//            from(components["java"])
-//            artifact(tasks["kotlinSourcesJar"]) {
-//                classifier = "sources"
-//            }
-//            artifact("${build}/${rootProject.name}-${version}-api.jar") {
-//                classifier = "api"
-//            }
-//            groupId = project.group.toString()
-//        }
-//    }
-//}
+publishing {
+    repositories {
+        maven {
+            url = uri("https://www.mcwar.cn/nexus/repository/maven-releases/")
+            credentials {
+                username = publishUsername
+                password = publishPassword
+            }
+            authentication {
+                create<BasicAuthentication>("basic")
+            }
+        }
+    }
+    publications {
+        create<MavenPublication>("library") {
+            from(components["java"])
+            artifact(tasks["kotlinSourcesJar"]) {
+                classifier = "sources"
+            }
+            artifact("${build}/${rootProject.name}-${version}-api.jar") {
+                classifier = "api"
+            }
+            groupId = project.group.toString()
+        }
+    }
+}
 
-//tasks.dokkaHtml {
-//    // 配置输出目录
-//    outputDirectory.set(file("${build}/${rootProject.name}-${version}-doc"))
-//    // 配置模块名称
-//    moduleName.set("Orryx")
-//    // 禁用自动生成文档链接
-//    suppressObviousFunctions.set(false)
-//    dokkaSourceSets {
-//        named("main") {
-//            // 配置源代码链接（GitHub）
-//            sourceLink {
-//                localDirectory.set(file("src/main/kotlin"))
-//                remoteUrl.set(uri("https://github.com/zhibeigg/Orryx/tree/master/src/main/kotlin").toURL())
-//                remoteLineSuffix.set("#L")
-//            }
-//            // 添加外部文档链接（如 JDK）
-//            externalDocumentationLink {
-//                url.set(uri("https://docs.oracle.com/javase/8/docs/api/").toURL())
-//                packageListUrl.set(uri("https://docs.oracle.com/javase/8/docs/api/package-list").toURL())
-//            }
-//        }
-//        configureEach {
-//            // 包含/排除包
-//            includeNonPublic.set(true)
-//            skipDeprecated.set(true)
-//            reportUndocumented.set(true)
-//
-//            platform.set(org.jetbrains.dokka.Platform.jvm)
-//            jdkVersion.set(8)
-//
-//            perPackageOption {
-//                matchingRegex.set(".*internal.*")
-//                suppress.set(true) // 隐藏 internal API
-//            }
-//        }
-//    }
-//}
+tasks.dokkaHtml {
+    // 配置输出目录
+    outputDirectory.set(file("${build}/${rootProject.name}-${version}-doc"))
+    // 配置模块名称
+    moduleName.set("Orryx")
+    // 禁用自动生成文档链接
+    suppressObviousFunctions.set(false)
+    dokkaSourceSets {
+        named("main") {
+            // 配置源代码链接（GitHub）
+            sourceLink {
+                localDirectory.set(file("src/main/kotlin"))
+                remoteUrl.set(uri("https://github.com/zhibeigg/Orryx/tree/master/src/main/kotlin").toURL())
+                remoteLineSuffix.set("#L")
+            }
+            // 添加外部文档链接（如 JDK）
+            externalDocumentationLink {
+                url.set(uri("https://docs.oracle.com/javase/8/docs/api/").toURL())
+                packageListUrl.set(uri("https://docs.oracle.com/javase/8/docs/api/package-list").toURL())
+            }
+        }
+        configureEach {
+            // 包含/排除包
+            includeNonPublic.set(true)
+            skipDeprecated.set(true)
+            reportUndocumented.set(true)
+
+            platform.set(org.jetbrains.dokka.Platform.jvm)
+            jdkVersion.set(8)
+
+            perPackageOption {
+                matchingRegex.set(".*internal.*")
+                suppress.set(true) // 隐藏 internal API
+            }
+        }
+    }
+}
