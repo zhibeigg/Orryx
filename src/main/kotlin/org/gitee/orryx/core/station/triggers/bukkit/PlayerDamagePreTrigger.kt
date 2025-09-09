@@ -9,6 +9,7 @@ import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.abstract
 import org.gitee.orryx.utils.apEvent
+import org.gitee.orryx.utils.axhEvent
 import org.gitee.orryx.utils.noEvent
 import taboolib.common.OpenResult
 import taboolib.common.platform.ProxyCommandSender
@@ -56,6 +57,7 @@ object PlayerDamagePreTrigger: AbstractPropertyEventTrigger<OrryxDamageEvents.Pr
             "crit" -> OpenResult.successful(instance.crit)
             "no" -> OpenResult.successful(instance.noEvent())
             "ap" -> OpenResult.successful(instance.apEvent())
+            "axh" -> OpenResult.successful(instance.axhEvent())
             else -> OpenResult.failed()
         }
     }

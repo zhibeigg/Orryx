@@ -1,5 +1,7 @@
 package org.gitee.orryx.core.damage
 
+import cn.bukkitmc.hero.AstraXHero
+import cn.bukkitmc.hero.astrax.operation.NumberOperation
 import com.eatthepath.uuid.FastUUID
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
@@ -9,10 +11,8 @@ import org.gitee.nodens.core.attribute.Damage
 import org.gitee.nodens.core.attribute.Defence
 import org.gitee.orryx.api.events.damage.DamageType
 import org.gitee.orryx.api.events.damage.DamageType.*
-import org.gitee.orryx.utils.apEvent
-import org.gitee.orryx.utils.isAttributePlus
-import org.gitee.orryx.utils.isNodens
-import org.gitee.orryx.utils.noEvent
+import org.gitee.orryx.utils.*
+import taboolib.common5.cdouble
 import taboolib.module.kether.ScriptContext
 import taboolib.platform.type.BukkitProxyEvent
 import java.util.*
@@ -43,6 +43,7 @@ abstract class AbstractDamageEvent(
         get() = when {
             isAttributePlus() -> apEvent()!!.damage
             isNodens() -> noEvent()!!.processor.getFinalDamage()
+            isAstraXHero() -> axhEvent()!!.fightData["result"].cdouble
             else -> privateDamage
         }
         set(value) {
@@ -68,6 +69,7 @@ abstract class AbstractDamageEvent(
                     else -> error("unsupported $type")
                 }
             }
+            isAstraXHero() -> axhEvent()!!.fightData.damageSources["Orryx"] = (AstraXHero.operatorManager["plus"] as NumberOperation).element(damage)
             else -> privateDamage += damage
         }
     }
@@ -83,6 +85,7 @@ abstract class AbstractDamageEvent(
                     else -> error("unsupported $type")
                 }
             }
+            isAstraXHero() -> axhEvent()!!.fightData.damageSources.remove("Orryx")
             else -> privateDamage -= damage
         }
     }

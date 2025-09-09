@@ -38,6 +38,8 @@ val NodensPlugin = Plugin("Nodens")
 
 val AttributePlusPlugin = Plugin("AttributePlus")
 
+val AstraXHeroPlugin = Plugin("AstraXHero")
+
 val PacketEventsPlugin = Plugin("packetevents")
 
 val ProtocolLibPlugin = Plugin("ProtocolLib")

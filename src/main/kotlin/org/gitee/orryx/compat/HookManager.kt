@@ -18,6 +18,7 @@ object HookManager {
         RedisChannelPlugin.load()
         NodensPlugin.load()
         AttributePlusPlugin.load()
+        AstraXHeroPlugin.load()
         PacketEventsPlugin.load()
         ProtocolLibPlugin.load()
         GDDTitlePlugin.load()

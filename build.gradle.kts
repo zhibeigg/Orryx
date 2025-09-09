@@ -57,6 +57,7 @@ taboolib {
             name("MythicMobs").optional(true)
             name("RedisChannel").optional(true)
             name("AttributePlus").optional(true)
+            name("AstraXHero").optional(true)
             name("packetevents").optional(true)
             name("ProtocolLib").optional(true)
             name("GDDTitle").optional(true)
