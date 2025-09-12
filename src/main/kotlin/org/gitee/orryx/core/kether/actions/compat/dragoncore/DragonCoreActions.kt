@@ -1159,7 +1159,6 @@ object DragonCoreActions {
                         override fun onResult(item: ItemStack?) {
                             future.complete(item)
                         }
-
                         override fun onFail() {
                             future.completeExceptionally(Throwable("Failed to get slot item $identifier"))
                         }

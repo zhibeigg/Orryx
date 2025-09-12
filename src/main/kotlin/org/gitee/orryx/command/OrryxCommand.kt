@@ -34,7 +34,7 @@ object OrryxCommand {
     @CommandBody
     val reload = subCommandExec<ProxyCommandSender> {
         ReloadAPI.reload()
-        sender.sendMessage("Orryx重载成功")
+        sender.sendMessage("Orryx 重载成功")
     }
 
     @CommandBody

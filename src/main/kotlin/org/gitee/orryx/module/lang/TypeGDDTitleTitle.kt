@@ -18,13 +18,9 @@ class TypeGDDTitleTitle : Type {
     override fun send(sender: ProxyCommandSender, vararg args: Any) {
         val newText = text.translate(sender, *args).replaceWithOrder(*args)
         if (sender is ProxyPlayer) {
-            val player = sender.castSafely<Player>() ?: run {
-                sender.sendMessage(newText)
-                return
-            }
-            GDDTitleAPI.sendTitle(player, newText)
+            GDDTitleAPI.sendTitle(sender.cast(), newText)
         } else {
-            sender.sendMessage(newText)
+            sender.sendMessage(toString())
         }
     }
 

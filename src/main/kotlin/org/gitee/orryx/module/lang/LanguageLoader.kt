@@ -9,10 +9,10 @@ object LanguageLoader {
 
     @Awake(LifeCycle.ENABLE)
     private fun load() {
-        Language.languageType["GDDTitle_action"] = TypeGDDTitleAction::class.java
-        Language.languageType["GDDTitleAction"] = TypeGDDTitleAction::class.java
-        Language.languageType["GDDTitle_Title"] = TypeGDDTitleTitle::class.java
-        Language.languageType["GDDTitleTitle"] = TypeGDDTitleTitle::class.java
+        Language.languageType["gddtitle_action"] = TypeGDDTitleAction::class.java
+        Language.languageType["gddtitleaction"] = TypeGDDTitleAction::class.java
+        Language.languageType["gddtitle_title"] = TypeGDDTitleTitle::class.java
+        Language.languageType["gddtitletitle"] = TypeGDDTitleTitle::class.java
     }
 
     @Reload(weight = 0)
