@@ -1,7 +1,6 @@
 package org.gitee.orryx.module.lang
 
 import me.goudan.gddtitle.api.GDDTitleAPI
-import org.bukkit.entity.Player
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.ProxyPlayer
 import taboolib.common.util.replaceWithOrder

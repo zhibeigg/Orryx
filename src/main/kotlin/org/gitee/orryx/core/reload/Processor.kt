@@ -8,7 +8,6 @@ import javax.lang.model.SourceVersion
 import javax.lang.model.element.TypeElement
 import javax.tools.Diagnostic
 
-
 @SupportedAnnotationTypes("org.gitee.orryx.core.reload.Reload")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 class Processor: AbstractProcessor() {

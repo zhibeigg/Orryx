@@ -16,6 +16,9 @@ class PipeBuilder {
     private var onComplete: (IPipeTask) -> CompletableFuture<Any?> = { CompletableFuture.completedFuture(it) }
     private var periodTask: IPipePeriodTask? = null
 
+    /**
+     * 构建
+     * */
     fun build(): PipeTask {
         return PipeTask(uuid, scriptContext, brokeTriggers, timeout ?: error("创建PipeTask时未设置timeout"), onBrock, onComplete, periodTask)
     }
@@ -28,22 +31,37 @@ class PipeBuilder {
         this.scriptContext = scriptContext
     }
 
+    /**
+     * 打断方式
+     * */
     fun brokeTriggers(vararg triggers: String): PipeBuilder = apply {
         brokeTriggers = triggers.toSet()
     }
 
+    /**
+     * 完成需要的时间 Tick
+     * */
     fun timeout(timeout: Long): PipeBuilder = apply {
         this.timeout = timeout
     }
 
+    /**
+     * 打断触发
+     * */
     fun onBrock(onBrock: Function<IPipeTask, CompletableFuture<Any?>>): PipeBuilder = apply {
         this.onBrock = { onBrock.apply(it) }
     }
 
+    /**
+     * 完成触发
+     * */
     fun onComplete(onComplete: Function<IPipeTask, CompletableFuture<Any?>>): PipeBuilder = apply {
         this.onComplete = { onComplete.apply(it) }
     }
 
+    /**
+     * 周期触发
+     * */
     fun periodTask(period: Long, func: Consumer<IPipeTask>): PipeBuilder = apply {
         periodTask = PipePeriodTask(period) { func.accept(it) }
     }
