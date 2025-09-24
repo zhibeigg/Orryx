@@ -8,6 +8,7 @@ import org.gitee.orryx.compat.mythicmobs.condition.MythicMobsJobCondition
 import org.gitee.orryx.compat.mythicmobs.condition.MythicMobsLevelCondition
 import org.gitee.orryx.compat.mythicmobs.condition.MythicMobsManaCondition
 import org.gitee.orryx.compat.mythicmobs.mechanic.MythicMobsCastMechanic
+import org.gitee.orryx.compat.mythicmobs.targeter.MythicMobsOrryxRangeTargeter
 import org.gitee.orryx.compat.mythicmobs.targeter.MythicMobsSelectorEntityTargeter
 import org.gitee.orryx.compat.mythicmobs.targeter.MythicMobsSelectorLocationTargeter
 import taboolib.common.platform.Ghost
@@ -40,6 +41,7 @@ object MechanicRegister {
         when (event.targeterName.uppercase()) {
             "O-SELECTORL" -> { event.register(MythicMobsSelectorLocationTargeter(event.config)) }
             "O-SELECTORE" -> { event.register(MythicMobsSelectorEntityTargeter(event.config)) }
+            "O-RANGE" -> { event.register(MythicMobsOrryxRangeTargeter(event.config)) }
         }
     }
 }

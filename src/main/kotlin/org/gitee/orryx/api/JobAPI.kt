@@ -11,12 +11,19 @@ import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.PlatformFactory
 import java.util.concurrent.CompletableFuture
+import java.util.function.Function
 
 class JobAPI: IJobAPI {
 
-    override fun <T> modifyJob(player: Player, job: String?, function: (job: IPlayerJob) -> T): CompletableFuture<T?> {
+    override fun <T> modifyJob(player: Player, job: String?, function: Function<IPlayerJob, T>): CompletableFuture<T?> {
         return player.orryxProfile { profile ->
-            job?.let { player.job(profile.id, it, function) } ?: player.job(function)
+            job?.let {
+                player.job(profile.id, it) { job ->
+                    function.apply(job)
+                }
+            } ?: player.job { job ->
+                function.apply(job)
+            }
         }
     }
 

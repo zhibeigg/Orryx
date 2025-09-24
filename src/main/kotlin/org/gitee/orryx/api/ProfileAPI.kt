@@ -24,8 +24,10 @@ import java.util.function.Function
 
 class ProfileAPI: IProfileAPI {
 
-    override fun <T> modifyProfile(player: Player, function: (skill: IPlayerProfile) -> T): CompletableFuture<T?> {
-        return player.orryxProfileTo(function)
+    override fun <T> modifyProfile(player: Player, function: Function<IPlayerProfile, T>): CompletableFuture<T?> {
+        return player.orryxProfileTo {
+            function.apply(it)
+        }
     }
 
     override fun isSuperBody(player: Player): Boolean {

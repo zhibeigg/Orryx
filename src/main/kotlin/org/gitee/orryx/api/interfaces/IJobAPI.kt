@@ -4,6 +4,7 @@ import org.bukkit.entity.Player
 import org.gitee.orryx.core.job.IJob
 import org.gitee.orryx.core.job.IPlayerJob
 import java.util.concurrent.CompletableFuture
+import java.util.function.Function
 
 interface IJobAPI {
 
@@ -15,7 +16,7 @@ interface IJobAPI {
      * @param function 获取到职业后执行
      * @return [function]的返回值
      * */
-    fun <T> modifyJob(player: Player, job: String? = null, function: (job: IPlayerJob) -> T) : CompletableFuture<T?>
+    fun <T> modifyJob(player: Player, job: String? = null, function: Function<IPlayerJob, T>) : CompletableFuture<T?>
 
     fun getJob(job: String): IJob?
 }

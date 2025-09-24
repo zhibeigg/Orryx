@@ -3,6 +3,7 @@ package org.gitee.orryx.api.interfaces
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.events.damage.DamageType
 import org.gitee.orryx.api.events.damage.OrryxDamageEvents
+import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.profile.IPlayerProfile
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
@@ -17,7 +18,7 @@ interface IProfileAPI {
      * @param function 获取到玩家信息后执行
      * @return [function]的返回值
      * */
-    fun <T> modifyProfile(player: Player, function: (skill: IPlayerProfile) -> T) : CompletableFuture<T?>
+    fun <T> modifyProfile(player: Player, function: Function<IPlayerProfile, T>) : CompletableFuture<T?>
 
     /**
      * 是否在霸体状态

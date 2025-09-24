@@ -74,7 +74,7 @@ internal fun ITargetLocation<*>.direction(x: Double, y: Double, z: Double, pitch
  * */
 internal fun ITargetEntity<*>.direction(x: Double, y: Double, z: Double, pitch: Boolean = false) = entity.location.direction.direction(x, y, z, pitch)
 
-private fun Vector.direction(x: Double, y: Double, z: Double, pitch: Boolean): Vector {
+internal fun Vector.direction(x: Double, y: Double, z: Double, pitch: Boolean): Vector {
     return if (pitch) {
         val zV = clone().setY(0).normalize().crossProduct(Vector(0, 1, 0)).normalize()
         val xV = clone().normalize()

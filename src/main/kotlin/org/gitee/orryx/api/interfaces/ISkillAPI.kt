@@ -2,10 +2,12 @@ package org.gitee.orryx.api.interfaces
 
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.job.IPlayerJob
+import org.gitee.orryx.core.profile.IPlayerProfile
 import org.gitee.orryx.core.skill.CastResult
 import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.core.skill.ISkill
 import java.util.concurrent.CompletableFuture
+import java.util.function.Function
 
 interface ISkillAPI {
 
@@ -18,7 +20,7 @@ interface ISkillAPI {
      * @param function 获取到职业后执行
      * @return [function]的返回值
      * */
-    fun <T> modifySkill(player: Player, skill: String, job: IPlayerJob? = null, function: (skill: IPlayerSkill) -> T) : CompletableFuture<T?>
+    fun <T> modifySkill(player: Player, skill: String, job: IPlayerJob? = null, function: Function<IPlayerSkill, T>) : CompletableFuture<T?>
 
     fun castSkill(player: Player, skill: String, level: Int)
 

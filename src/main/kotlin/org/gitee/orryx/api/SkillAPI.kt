@@ -13,6 +13,7 @@ import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.PlatformFactory
 import java.util.concurrent.CompletableFuture
+import java.util.function.Function
 
 class SkillAPI: ISkillAPI {
 
@@ -20,11 +21,15 @@ class SkillAPI: ISkillAPI {
         player: Player,
         skill: String,
         job: IPlayerJob?,
-        function: (skill: IPlayerSkill) -> T
+        function: Function<IPlayerSkill, T>
     ): CompletableFuture<T?> {
         return job?.let {
-            player.skill(it, skill, false, function)
-        } ?: player.skill(skill, false, function)
+            player.skill(it, skill, false) { skill ->
+                function.apply(skill)
+            }
+        } ?: player.skill(skill, false) {
+            function.apply(it)
+        }
     }
 
     override fun castSkill(player: Player, skill: String, level: Int) {
