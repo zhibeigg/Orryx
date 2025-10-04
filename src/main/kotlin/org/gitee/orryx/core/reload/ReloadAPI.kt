@@ -75,7 +75,7 @@ object ReloadAPI: IReloadAPI, ClassVisitor(3) {
     @SubscribeEvent
     private fun reload(e: ServerCommandEvent) {
         if (e.command == "core reload" || e.command == "dragoncore reload") {
-            submit {
+            submit(delay = 1) {
                 reload()
             }
         }
@@ -85,7 +85,7 @@ object ReloadAPI: IReloadAPI, ClassVisitor(3) {
     private fun reload(e: PlayerCommandPreprocessEvent) {
         if (e.message == "/core reload" || e.message == "/dragoncore reload") {
             if (e.player.isOp) {
-                submit {
+                submit(delay = 1) {
                     reload()
                 }
             }

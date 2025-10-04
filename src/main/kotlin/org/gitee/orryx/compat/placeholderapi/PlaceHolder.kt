@@ -6,12 +6,16 @@ import org.bukkit.entity.Player
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.kether.ScriptManager.runKether
 import org.gitee.orryx.core.reload.Reload
-import org.gitee.orryx.utils.*
+import org.gitee.orryx.utils.files
+import org.gitee.orryx.utils.getBytes
+import org.gitee.orryx.utils.orryxEnvironmentNamespaces
+import org.gitee.orryx.utils.printKetherErrorMessage
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.function.adaptCommandSender
-import taboolib.common.platform.function.console
+import taboolib.common.platform.function.info
 import taboolib.common.platform.function.warning
+import taboolib.module.chat.colored
 import taboolib.module.configuration.Configuration
 import taboolib.module.kether.Script
 import taboolib.module.kether.ScriptContext
@@ -32,11 +36,12 @@ object PlaceHolder: PlaceholderExpansion {
         files("placeholders", "example.yml") {
             val config = Configuration.loadFromFile(it)
             config.getKeys(false).forEach { key ->
-                config.getString("key")?.let { action ->
+                config.getString(key)?.let { action ->
                     scriptsMap[key] = loadScript(key, action) ?: return@forEach
                 }
             }
         }
+        info("&e┣&7PlaceHolders loaded &e${scriptsMap.size} &a√".colored())
     }
 
     private fun loadScript(key: String, action: String): Script? {
@@ -53,6 +58,7 @@ object PlaceHolder: PlaceholderExpansion {
         get() = "orryx"
 
     override fun onPlaceholderRequest(player: Player?, args: String): String {
+        info(args)
         return runKether(CompletableFuture.completedFuture(null)) {
             ScriptContext.create(scriptsMap[args]!!).also {
                 it.sender = adaptCommandSender(player ?: Bukkit.getConsoleSender())

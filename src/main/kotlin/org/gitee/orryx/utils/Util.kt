@@ -58,7 +58,7 @@ class ConfigLazy<T>(val config: Configuration, private val initializer: () -> T)
     private var lastHash: Int? = null
 
     override fun getValue(thisRef: Any?, property: KProperty<*>): T {
-        val currentHash = config.toString().hashCode()
+        val currentHash = config.file?.readBytes().hashCode()
         if (!initialized || lastHash != currentHash) {
             cached = initializer()
             initialized = true

@@ -1,6 +1,7 @@
 package org.gitee.orryx.utils
 
 import cn.bukkitmc.hero.api.event.FightEvent
+import org.bukkit.Bukkit
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import org.bukkit.event.entity.EntityDamageByEntityEvent
@@ -81,9 +82,15 @@ fun doDamage(source: LivingEntity?, entity: LivingEntity, damageCause: DamageCau
     }
     entity.noDamageTicks = 0
     if (source != null) {
-        entity.lastDamageCause = EntityDamageByEntityEvent(source, entity, damageCause, damage)
+        val event = EntityDamageByEntityEvent(source, entity, damageCause, damage)
+        Bukkit.getPluginManager().callEvent(event)
+        if (!event.isCancelled) {
+            entity.lastDamageCause = EntityDamageByEntityEvent(source, entity, damageCause, damage)
+            entity.damage(damage)
+        }
+    } else {
+        entity.damage(damage)
     }
-    entity.damage(damage)
 }
 
 fun doDamage(source: LivingEntity?, entity: LivingEntity, event: EntityDamageByEntityEvent, damage: Double) {
