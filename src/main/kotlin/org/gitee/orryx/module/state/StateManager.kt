@@ -15,6 +15,7 @@ import eos.moe.dragoncore.network.PacketSender
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.event.entity.EntityDamageByEntityEvent
+import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.player.PlayerItemHeldEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.event.player.PlayerRespawnEvent
@@ -247,7 +248,7 @@ object StateManager {
     private fun damage(e: EntityDamageByEntityEvent) {
         val player = e.damager as? Player ?: return
         val status = player.statusData().status as? Status ?: return
-        if (status.options.cancelBukkitAttack) {
+        if (status.options.cancelBukkitAttack && (e.cause == EntityDamageEvent.DamageCause.ENTITY_ATTACK || e.cause == EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK)) {
             e.isCancelled = true
         }
     }

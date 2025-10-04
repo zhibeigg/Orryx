@@ -194,14 +194,14 @@ object DragonCoreActions {
             .addContainerEntry("打开HUD的玩家", true, "@self"),
         Action.new("DragonCore附属语句", "发送同步papi数据", "dragoncore", true)
             .description("发送同步placeholder数据")
-            .addEntry("placeholder标识符", Type.SYMBOL, false, head = "placeholder/papi")
+            .addEntry("placeholder标识符", Type.SYMBOL, false, head = "placeholders/papi")
             .addEntry("发送标识符", Type.SYMBOL, false, head = "send")
             .addEntry("存储了的数据的键，用逗号隔开", Type.STRING, false)
             .addContainerEntry("发送数据的玩家", true, "@self")
             .example("dragon papi send a,b,c they \"@self\""),
         Action.new("DragonCore附属语句", "删除papi数据", "dragoncore", true)
             .description("删除客户端placeholder数据")
-            .addEntry("placeholder标识符", Type.SYMBOL, false, head = "placeholder/papi")
+            .addEntry("placeholder标识符", Type.SYMBOL, false, head = "placeholders/papi")
             .addEntry("删除标识符", Type.SYMBOL, false, head = "delete/remove")
             .addEntry("删除的键", Type.STRING, false)
             .addEntry("是否检测startWith键", Type.BOOLEAN, false)
@@ -319,7 +319,7 @@ object DragonCoreActions {
             }
             case("gui") { openGui(it) }
             case("hud") { openHud(it) }
-            case("papi", "placeholder") {
+            case("papi", "placeholders") {
                 when (it.expects("send", "delete", "remove")) {
                     "send" -> sendSyncPlaceholder(it)
                     "delete", "remove" -> deletePlaceholderCache(it)
