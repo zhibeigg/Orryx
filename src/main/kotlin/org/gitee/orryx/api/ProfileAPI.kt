@@ -12,6 +12,7 @@ import org.gitee.orryx.core.profile.IPlayerProfile
 import org.gitee.orryx.module.state.StateManager.statusData
 import org.gitee.orryx.utils.orryxProfileTo
 import taboolib.common.LifeCycle
+import taboolib.common.event.InternalEventBus
 import taboolib.common.platform.Awake
 import taboolib.common.platform.PlatformFactory
 import taboolib.common.platform.event.SubscribeEvent
@@ -289,9 +290,16 @@ class ProfileAPI: IProfileAPI {
         }
 
         @SubscribeEvent
+        private fun damage(e: OrryxDamageEvents.Pre) {
+            if (Orryx.api().profileAPI.isInvincible(e.defenderPlayer() ?: return)) {
+                e.isCancelled = true
+            }
+        }
+
+        @SubscribeEvent
         private fun damage(e: EntityDamageEvent) {
             val player = e.entity as? Player ?: return
-            if (e.cause != EntityDamageEvent.DamageCause.SUICIDE) {
+            if (e.cause != EntityDamageEvent.DamageCause.SUICIDE && e.cause != EntityDamageEvent.DamageCause.CUSTOM) {
                 if (Orryx.api().profileAPI.isInvincible(player)) {
                     e.isCancelled = true
                     return
