@@ -15,6 +15,7 @@ import taboolib.common.platform.Awake
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.info
+import taboolib.common.platform.function.submit
 import taboolib.common.util.unsafeLazy
 import taboolib.common5.cfloat
 import taboolib.module.chat.colored
@@ -50,12 +51,16 @@ object ExperienceLoaderManager {
 
     @SubscribeEvent(priority = EventPriority.MONITOR)
     private fun orExpUp(e: OrryxPlayerJobExperienceEvents.Up) {
-        sync(e.player, e.job)
+        submit {
+            sync(e.player, e.job)
+        }
     }
 
     @SubscribeEvent(priority = EventPriority.MONITOR)
     private fun orExpDown(e: OrryxPlayerJobExperienceEvents.Down) {
-        sync(e.player, e.job)
+        submit {
+            sync(e.player, e.job)
+        }
     }
 
     @SubscribeEvent(priority = EventPriority.MONITOR)
