@@ -8,6 +8,7 @@ import org.gitee.orryx.utils.scriptParser
 import taboolib.module.kether.KetherParser
 import taboolib.module.kether.actionNow
 import kotlin.math.*
+import kotlin.math.pow
 
 object MathActions {
 
@@ -232,7 +233,7 @@ object MathActions {
             double()
         ).apply(it) { number, power ->
             now {
-                Math.pow(number, power)
+                number.pow(power)
             }
         }
     }
@@ -243,9 +244,7 @@ object MathActions {
             .description("自然对数函数的底数")
             .result("自然对数函数的底数", Type.DOUBLE)
     ) {
-        actionNow {
-            E
-        }
+        actionNow { E }
     }
 
     @KetherParser(["pi"], namespace = ORRYX_NAMESPACE, shared = true)
@@ -254,8 +253,6 @@ object MathActions {
             .description("圆周率")
             .result("圆周率", Type.DOUBLE)
     ) {
-        actionNow {
-            PI
-        }
+        actionNow { PI }
     }
 }
