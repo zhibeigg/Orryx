@@ -4,9 +4,6 @@ import com.github.benmanes.caffeine.cache.AsyncLoadingCache
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.github.benmanes.caffeine.cache.Scheduler
 import com.github.benmanes.caffeine.cache.stats.CacheStats
-import org.bukkit.Bukkit
-import org.bukkit.entity.Player
-import org.bukkit.event.player.PlayerJoinEvent
 import org.gitee.orryx.core.common.keyregister.PlayerKeySetting
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.job.PlayerJob
@@ -18,8 +15,6 @@ import org.gitee.orryx.core.skill.SkillLoaderManager
 import org.gitee.orryx.utils.*
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
-import taboolib.common.platform.event.EventPriority
-import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.info
 import taboolib.common5.format
 import taboolib.module.chat.colored

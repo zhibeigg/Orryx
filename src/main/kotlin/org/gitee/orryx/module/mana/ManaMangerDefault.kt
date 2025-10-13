@@ -175,13 +175,13 @@ class ManaMangerDefault: IManaManager {
     private fun save(player: Player, profile: IPlayerProfile, callback: () -> Unit) {
         if (isPrimaryThread && !GameManager.shutdown) {
             OrryxAPI.saveScope.launch(Dispatchers.async) {
-                ISyncCacheManager.INSTANCE.savePlayerProfile(player.uniqueId, profile.createPO(), false)
+                ISyncCacheManager.INSTANCE.savePlayerProfile(player.uniqueId, profile.createPO())
                 MemoryCache.savePlayerProfile(profile)
             }.invokeOnCompletion {
                 callback()
             }
         } else {
-            ISyncCacheManager.INSTANCE.savePlayerProfile(player.uniqueId, profile.createPO(), false)
+            ISyncCacheManager.INSTANCE.savePlayerProfile(player.uniqueId, profile.createPO())
             MemoryCache.savePlayerProfile(profile)
             callback()
         }

@@ -139,7 +139,7 @@ class PlayerProfile(
         val data = createPO()
         fun remove() {
             if (remove) {
-                ISyncCacheManager.INSTANCE.removePlayerProfile(player.uniqueId, false)
+                ISyncCacheManager.INSTANCE.removePlayerProfile(player.uniqueId)
                 MemoryCache.removePlayerProfile(player.uniqueId)
             }
         }

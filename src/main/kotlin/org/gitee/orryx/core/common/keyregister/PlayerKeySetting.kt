@@ -65,7 +65,7 @@ class PlayerKeySetting(
         val data = createPO()
         fun remove() {
             if (remove) {
-                ISyncCacheManager.INSTANCE.removePlayerKeySetting(player.uniqueId, false)
+                ISyncCacheManager.INSTANCE.removePlayerKeySetting(player.uniqueId)
                 MemoryCache.removePlayerKeySetting(player.uniqueId)
             }
         }

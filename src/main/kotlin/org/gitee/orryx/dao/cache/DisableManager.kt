@@ -26,27 +26,27 @@ class DisableManager: ISyncCacheManager {
         return IStorageManager.INSTANCE.getPlayerKey(id)
     }
 
-    override fun savePlayerProfile(player: UUID, playerProfilePO: PlayerProfilePO, async: Boolean) {
+    override fun savePlayerProfile(player: UUID, playerProfilePO: PlayerProfilePO) {
     }
 
-    override fun savePlayerJob(player: UUID, playerJobPO: PlayerJobPO, async: Boolean) {
+    override fun savePlayerJob(player: UUID, playerJobPO: PlayerJobPO) {
     }
 
-    override fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO, async: Boolean) {
+    override fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO) {
     }
 
-    override fun savePlayerKeySetting(player: UUID, playerKeySettingPO: PlayerKeySettingPO, async: Boolean) {
+    override fun savePlayerKeySetting(player: UUID, playerKeySettingPO: PlayerKeySettingPO) {
     }
 
-    override fun removePlayerProfile(player: UUID, async: Boolean) {
+    override fun removePlayerProfile(player: UUID) {
     }
 
-    override fun removePlayerJob(player: UUID, id: Int, job: String, async: Boolean) {
+    override fun removePlayerJob(player: UUID, id: Int, job: String) {
     }
 
-    override fun removePlayerSkill(player: UUID, id: Int, job: String, skill: String, async: Boolean) {
+    override fun removePlayerSkill(player: UUID, id: Int, job: String, skill: String) {
     }
 
-    override fun removePlayerKeySetting(player: UUID, async: Boolean) {
+    override fun removePlayerKeySetting(player: UUID) {
     }
 }

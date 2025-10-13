@@ -103,6 +103,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
                     }
                 )
             } catch (e: Throwable) {
+                e.printStackTrace()
                 future.completeExceptionally(e)
             }
         }
@@ -133,6 +134,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
                     )
                 })
             } catch (e: Throwable) {
+                e.printStackTrace()
                 future.completeExceptionally(e)
             }
         }
@@ -156,6 +158,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
                     PlayerSkillPO(id, player, job, skill, getBoolean(LOCKED), getInt(LEVEL))
                 })
             } catch (e: Throwable) {
+                e.printStackTrace()
                 future.completeExceptionally(e)
             }
         }
@@ -179,6 +182,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
                     PlayerSkillPO(id, player, job, getString(SKILL), getBoolean(LOCKED), getInt(LEVEL))
                 })
             } catch (e: Throwable) {
+                e.printStackTrace()
                 future.completeExceptionally(e)
             }
         }
@@ -202,6 +206,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
                     Json.decodeFromString<PlayerKeySettingPO>(getString(KEY_SETTING))
                 })
             } catch (e: Throwable) {
+                e.printStackTrace()
                 future.completeExceptionally(e)
             }
         }
@@ -290,6 +295,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
                     Json.decodeFromString<IFlag>(getString(FLAG))
                 })
             } catch (e: Throwable) {
+                e.printStackTrace()
                 future.completeExceptionally(e)
             }
         }

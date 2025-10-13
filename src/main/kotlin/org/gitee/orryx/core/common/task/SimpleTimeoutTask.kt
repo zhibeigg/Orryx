@@ -23,12 +23,21 @@ open class SimpleTimeoutTask(val tick: Long, open val closed: () -> Unit = EMPTY
         fun unregisterAll() {
             val iterator = cache.iterator()
             while (iterator.hasNext()) {
-                cancel(iterator.next())
+                shutdown(iterator.next())
+                iterator.remove()
             }
         }
 
         fun cancel(simpleTask: SimpleTimeoutTask, running: Boolean = true) {
             cache -= simpleTask
+            simpleTask.task.cancel()
+            // 如果已经结束了
+            if (simpleTask.future.isDone) return
+            simpleTask.future.complete(null)
+            if (running) simpleTask.closed()
+        }
+
+        private fun shutdown(simpleTask: SimpleTimeoutTask, running: Boolean = true) {
             simpleTask.task.cancel()
             // 如果已经结束了
             if (simpleTask.future.isDone) return

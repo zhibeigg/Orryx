@@ -276,7 +276,7 @@ class PlayerJob(
         val data = createPO()
         fun remove() {
             if (remove) {
-                ISyncCacheManager.INSTANCE.removePlayerJob(player.uniqueId, id, key, false)
+                ISyncCacheManager.INSTANCE.removePlayerJob(player.uniqueId, id, key)
                 MemoryCache.removePlayerJob(player.uniqueId, id, key)
             }
         }

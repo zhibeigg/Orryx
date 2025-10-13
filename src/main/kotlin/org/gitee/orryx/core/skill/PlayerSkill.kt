@@ -179,7 +179,7 @@ class PlayerSkill(
         val data = createPO()
         fun remove() {
             if (remove) {
-                ISyncCacheManager.INSTANCE.removePlayerSkill(player.uniqueId, id, job, key, false)
+                ISyncCacheManager.INSTANCE.removePlayerSkill(player.uniqueId, id, job, key)
                 MemoryCache.removePlayerSkill(player.uniqueId, id, job, key)
             }
         }

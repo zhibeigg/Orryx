@@ -106,7 +106,7 @@ interface ISyncCacheManager {
      * @param playerProfilePO 玩家数据
      * @param async 是否异步
      * */
-    fun savePlayerProfile(player: UUID, playerProfilePO: PlayerProfilePO, async: Boolean)
+    fun savePlayerProfile(player: UUID, playerProfilePO: PlayerProfilePO)
 
     /**
      * 保存职业数据到缓存
@@ -114,7 +114,7 @@ interface ISyncCacheManager {
      * @param playerJobPO 职业数据
      * @param async 是否异步
      * */
-    fun savePlayerJob(player: UUID, playerJobPO: PlayerJobPO, async: Boolean)
+    fun savePlayerJob(player: UUID, playerJobPO: PlayerJobPO)
 
     /**
      * 保存技能数据到缓存
@@ -122,7 +122,7 @@ interface ISyncCacheManager {
      * @param playerSkillPO 技能数据
      * @param async 是否异步
      * */
-    fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO, async: Boolean)
+    fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO)
 
     /**
      * 保存按键数据到缓存
@@ -130,14 +130,14 @@ interface ISyncCacheManager {
      * @param playerKeySettingPO 按键数据
      * @param async 是否异步
      * */
-    fun savePlayerKeySetting(player: UUID, playerKeySettingPO: PlayerKeySettingPO, async: Boolean)
+    fun savePlayerKeySetting(player: UUID, playerKeySettingPO: PlayerKeySettingPO)
 
     /**
      * 删除缓存中的玩家数据
      * @param player 玩家的UUID
      * @param async 是否异步
      * */
-    fun removePlayerProfile(player: UUID, async: Boolean)
+    fun removePlayerProfile(player: UUID)
 
     /**
      * 删除缓存中的职业数据
@@ -145,7 +145,7 @@ interface ISyncCacheManager {
      * @param job 职业键名
      * @param async 是否异步
      * */
-    fun removePlayerJob(player: UUID, id: Int, job: String, async: Boolean)
+    fun removePlayerJob(player: UUID, id: Int, job: String)
 
     /**
      * 删除缓存中的技能数据
@@ -154,13 +154,13 @@ interface ISyncCacheManager {
      * @param skill 技能键名
      * @param async 是否异步
      * */
-    fun removePlayerSkill(player: UUID, id: Int, job: String, skill: String, async: Boolean)
+    fun removePlayerSkill(player: UUID, id: Int, job: String, skill: String)
 
     /**
      * 删除缓存中的按键数据
      * @param player 玩家的UUID
      * @param async 是否异步
      * */
-    fun removePlayerKeySetting(player: UUID, async: Boolean)
+    fun removePlayerKeySetting(player: UUID)
 
 }
