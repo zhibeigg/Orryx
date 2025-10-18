@@ -77,7 +77,6 @@ taboolib {
 
 repositories {
     mavenCentral()
-    maven("https://repo.tabooproject.org/repository/releases")
     maven("https://www.mcwar.cn/nexus/repository/maven-public/")
     maven("https://repo.codemc.io/repository/maven-releases/")
 }
@@ -90,7 +89,7 @@ dependencies {
 
     compileOnly("org.gitee.nodens:Nodens:latest.release:api")
     compileOnly("com.gitee.redischannel:RedisChannel:latest.release:api")
-    compileOnly("ink.ptms.adyeshach:plugin:2.0.26:api")
+    compileOnly("ink.ptms.adyeshach:api:latest.release")
     compileOnly("com.github.retrooper:packetevents-spigot:2.7.0")
     compileOnly("org.eldergod.ext:DragonCore:2.6.2.9")
     compileOnly("org.eldergod.ext:GermPlugin:4.4.1-5")

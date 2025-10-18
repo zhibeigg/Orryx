@@ -3,7 +3,6 @@ package org.gitee.orryx.core.kether.actions.game.entity
 import ink.ptms.adyeshach.core.Adyeshach
 import ink.ptms.adyeshach.core.entity.EntityTypes
 import ink.ptms.adyeshach.core.entity.manager.ManagerType
-import ink.ptms.adyeshach.core.entity.manager.spawnEntity
 import org.bukkit.Location
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.LivingEntity
