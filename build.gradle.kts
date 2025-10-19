@@ -1,6 +1,4 @@
 import io.izzel.taboolib.gradle.*
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val publishUsername: String by project
 val publishPassword: String by project
@@ -126,24 +124,13 @@ tasks.withType<Jar> {
     destinationDirectory.set(File(build))
 }
 
-tasks.withType<KotlinCompile> {
-    compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_1_8)
-        freeCompilerArgs.set(listOf("-Xjvm-default=all"))
-    }
-}
-
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 kotlin {
-    sourceSets.all {
-        languageSettings {
-            languageVersion = "2.0"
-        }
-    }
+    jvmToolchain(8)
 }
 
 publishing {
