@@ -2,13 +2,16 @@ package org.gitee.orryx.module.state
 
 import com.eatthepath.uuid.FastUUID
 import org.bukkit.entity.Player
+import org.gitee.orryx.utils.eval
 import org.gitee.orryx.utils.parse
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common.platform.function.warning
+import taboolib.common5.cfloat
 import taboolib.library.configuration.ConfigurationSection
 import taboolib.module.configuration.Configuration
 import taboolib.module.kether.Script
 import taboolib.module.kether.ScriptContext
+import taboolib.module.kether.orNull
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
@@ -28,10 +31,19 @@ class Status(override val key: String, configuration: Configuration): IStatus {
         val cancelHeldEventWhenPlaying = configurationSection.getBoolean("CancelHeldEventWhenPlaying", true)
         val cancelBukkitAttack = configurationSection.getBoolean("CancelBukkitAttack", false)
         val controller = configurationSection.getString("Controller")!!
+        val attackSpeedAction = configurationSection.getString("AttackSpeed", "1.0")!!
         private val armourers = configurationSection.getStringList("Armourers")
 
         fun getArmourers(player: Player): List<String> {
             return player.parse(armourers, emptyMap())
+        }
+
+        fun getAttackSpeed(player: Player): Float {
+            return player.eval(attackSpeedAction, emptyMap()).orNull()?.cfloat ?: 1.0f
+        }
+
+        fun getCondition(player: Player): CompletableFuture<Any?> {
+            return player.eval(conditionAction, emptyMap())
         }
     }
 

@@ -13,7 +13,9 @@ import taboolib.common.platform.service.PlatformExecutor
 import taboolib.library.configuration.ConfigurationSection
 import taboolib.module.kether.Script
 import taboolib.module.kether.ScriptContext
+import kotlin.math.ceil
 import kotlin.math.max
+import kotlin.math.roundToLong
 
 class PressGeneralAttackState(override val key: String, configurationSection: ConfigurationSection): IActionState {
 
@@ -32,6 +34,8 @@ class PressGeneralAttackState(override val key: String, configurationSection: Co
 
     class Running(override val data: PlayerData, override val state: PressGeneralAttackState): AbstractRunningState(data) {
 
+        val attackSpeed: Float = data.getAttackSpeed()
+
         var startTimestamp: Long = 0
             private set
 
@@ -46,31 +50,36 @@ class PressGeneralAttackState(override val key: String, configurationSection: Co
         private var context: ScriptContext? = null
 
         override fun start() {
+            val pressDuration = ceil(state.animation.pressDuration / attackSpeed).toLong()
             pressStartTimestamp = System.currentTimeMillis()
             getNearPlayers(data.player) { viewer ->
-                IAnimationBridge.INSTANCE.setPlayerAnimation(viewer, data.player, state.animation.startKey, 1f)
+                IAnimationBridge.INSTANCE.setPlayerAnimation(viewer, data.player, state.animation.startKey, attackSpeed)
             }
-            task = submit(delay = state.animation.pressDuration) {
+            task = submit(delay = pressDuration) {
                 castAttack()
             }
         }
 
         fun castAttack() {
             if (!cast) {
+                val castDuration = ceil(state.animation.castDuration / attackSpeed).toLong()
+                val connectionDuration1 = ceil(state.connection.first / attackSpeed).toLong()
+                val connectionDuration2 = ceil(state.connection.second / attackSpeed).toLong()
                 cast = true
                 state.runScript(data) {
-                    val tick = (System.currentTimeMillis() - pressStartTimestamp) / 50L
+                    val tick = (((System.currentTimeMillis() - pressStartTimestamp)*attackSpeed)/50L).roundToLong()
                     set("pressTick", tick)
+                    set("attackSpeed", attackSpeed)
                     context = this
                 }
                 getNearPlayers(data.player) { viewer ->
-                    IAnimationBridge.INSTANCE.setPlayerAnimation(viewer, data.player, state.animation.castKey, 1f)
+                    IAnimationBridge.INSTANCE.setPlayerAnimation(viewer, data.player, state.animation.castKey, attackSpeed)
                 }
-                task = submit(delay = state.connection.first + 1) {
+                task = submit(delay = connectionDuration1 + 1) {
                     sendPacket()
                     startTimestamp = System.currentTimeMillis()
                     StateManager.callNext(data.player)
-                    task = submit(delay = max(state.animation.castDuration, state.connection.second) - state.connection.first) {
+                    task = submit(delay = max(castDuration, connectionDuration2) - connectionDuration1) {
                         stop = true
                         if (data.nowRunningState == this@Running) {
                             data.clearRunningState()

@@ -9,6 +9,7 @@ import org.gitee.orryx.module.state.IActionState
 import org.gitee.orryx.module.state.IRunningState
 import org.gitee.orryx.module.state.PlayerData
 import org.gitee.orryx.module.state.StateManager
+import org.gitee.orryx.module.state.Status
 import org.gitee.orryx.utils.DragonCorePlugin
 import org.gitee.orryx.utils.getNearPlayers
 import org.gitee.orryx.utils.toLongPair
@@ -18,7 +19,9 @@ import taboolib.common.platform.service.PlatformExecutor
 import taboolib.library.configuration.ConfigurationSection
 import taboolib.module.kether.Script
 import taboolib.module.kether.ScriptContext
+import kotlin.math.ceil
 import kotlin.math.max
+import kotlin.math.roundToLong
 
 class GeneralAttackState(override val key: String, configurationSection: ConfigurationSection): IActionState {
 
@@ -35,6 +38,8 @@ class GeneralAttackState(override val key: String, configurationSection: Configu
 
     class Running(override val data: PlayerData, override val state: GeneralAttackState): AbstractRunningState(data) {
 
+        val attackSpeed: Float = data.getAttackSpeed()
+
         var startTimestamp: Long = 0
             private set
 
@@ -44,16 +49,25 @@ class GeneralAttackState(override val key: String, configurationSection: Configu
         private var task: PlatformExecutor.PlatformTask? = null
         private var context: ScriptContext? = null
 
+        // |     衔接开始   ->   衔接结束 |
+        // | 普攻动作时长 |
+        // 攻速应仅改变动作时长
         override fun start() {
-            state.runScript(data) { context = this }
-            getNearPlayers(data.player) { viewer ->
-                IAnimationBridge.INSTANCE.setPlayerAnimation(viewer, data.player, state.animation.startKey, 1f)
+            val animationDuration = ceil(state.animation.duration / attackSpeed).toLong()
+            val connectionDuration1 = ceil(state.connection.first / attackSpeed).toLong()
+            val connectionDuration2 = ceil(state.connection.second / attackSpeed).toLong()
+            state.runScript(data) {
+                context = this
+                set("attackSpeed", attackSpeed)
             }
-            task = submit(delay = state.connection.first + 1) {
+            getNearPlayers(data.player) { viewer ->
+                IAnimationBridge.INSTANCE.setPlayerAnimation(viewer, data.player, state.animation.startKey, attackSpeed)
+            }
+            task = submit(delay = connectionDuration1 + 1) {
                 sendPacket()
                 startTimestamp = System.currentTimeMillis()
                 StateManager.callNext(data.player)
-                task = submit(delay = max(state.animation.duration, state.connection.second) - state.connection.first) {
+                task = submit(delay = max(animationDuration, connectionDuration2) - connectionDuration1) {
                     stop = true
                     if (data.nowRunningState == this@Running) {
                         data.clearRunningState()

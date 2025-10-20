@@ -8,6 +8,8 @@ Options:
   CancelBukkitAttack: false
   # 时装
   Armourers: []
+  # 攻速 可用 kether
+  AttackSpeed: 1.0
 States:
   长剑普攻0:
     # 状态类型

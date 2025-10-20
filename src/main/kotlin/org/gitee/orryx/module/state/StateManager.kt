@@ -282,7 +282,7 @@ object StateManager {
         val future = CompletableFuture<Status?>()
         CompletableFuture.allOf(
             *statusMap.values.map { status ->
-                player.eval(status.options.conditionAction, emptyMap()).thenAccept { bool ->
+                status.options.getCondition(player).thenAccept { bool ->
                     val bool = bool.cbool
                     if (bool) {
                         data.setStatus(status)

@@ -116,4 +116,8 @@ class PlayerData(val player: Player) {
             MoveState.RIGHT.key -> changeMoveState = MoveState.RIGHT
         }
     }
+
+    fun getAttackSpeed(): Float {
+        return (status as? Status)?.options?.getAttackSpeed(player) ?: 1.0f
+    }
 }
