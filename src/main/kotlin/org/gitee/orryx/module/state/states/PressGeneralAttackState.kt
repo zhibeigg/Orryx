@@ -2,6 +2,8 @@ package org.gitee.orryx.module.state.states
 
 import eos.moe.dragoncore.network.PacketSender
 import org.gitee.orryx.api.Orryx
+import org.gitee.orryx.api.events.player.press.OrryxPlayerPressStartEvent
+import org.gitee.orryx.api.events.player.press.OrryxPlayerPressStopEvent
 import org.gitee.orryx.compat.IAnimationBridge
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.module.state.*
@@ -43,6 +45,9 @@ class PressGeneralAttackState(override val key: String, configurationSection: Co
             private set
 
         var cast: Boolean = false
+        var pressDuration: Long = 0L
+            private set
+
         override var stop: Boolean = false
             private set
 
@@ -50,7 +55,7 @@ class PressGeneralAttackState(override val key: String, configurationSection: Co
         private var context: ScriptContext? = null
 
         override fun start() {
-            val pressDuration = ceil(state.animation.pressDuration / attackSpeed).toLong()
+            pressDuration = ceil(state.animation.pressDuration / attackSpeed).toLong()
             pressStartTimestamp = System.currentTimeMillis()
             getNearPlayers(data.player) { viewer ->
                 IAnimationBridge.INSTANCE.setPlayerAnimation(viewer, data.player, state.animation.startKey, attackSpeed)
@@ -58,6 +63,7 @@ class PressGeneralAttackState(override val key: String, configurationSection: Co
             task = submit(delay = pressDuration) {
                 castAttack()
             }
+            OrryxPlayerPressStartEvent(data.player, null, pressDuration).call()
         }
 
         fun castAttack() {
@@ -66,8 +72,8 @@ class PressGeneralAttackState(override val key: String, configurationSection: Co
                 val connectionDuration1 = ceil(state.connection.first / attackSpeed).toLong()
                 val connectionDuration2 = ceil(state.connection.second / attackSpeed).toLong()
                 cast = true
+                val tick = (((System.currentTimeMillis() - pressStartTimestamp)*attackSpeed)/50L).roundToLong()
                 state.runScript(data) {
-                    val tick = (((System.currentTimeMillis() - pressStartTimestamp)*attackSpeed)/50L).roundToLong()
                     set("pressTick", tick)
                     set("attackSpeed", attackSpeed)
                     context = this
@@ -75,6 +81,7 @@ class PressGeneralAttackState(override val key: String, configurationSection: Co
                 getNearPlayers(data.player) { viewer ->
                     IAnimationBridge.INSTANCE.setPlayerAnimation(viewer, data.player, state.animation.castKey, attackSpeed)
                 }
+                OrryxPlayerPressStopEvent(data.player, null, tick, pressDuration).call()
                 task = submit(delay = connectionDuration1 + 1) {
                     sendPacket()
                     startTimestamp = System.currentTimeMillis()

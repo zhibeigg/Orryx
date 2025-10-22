@@ -206,7 +206,7 @@ object DragonCoreActions {
             .addEntry("删除的键", Type.STRING, false)
             .addEntry("是否检测startWith键", Type.BOOLEAN, false)
             .addContainerEntry("删除数据的玩家", true, "@self")
-            .example("dragon papi delete a,b,c they \"@self\""),
+            .example("dragon papi delete a,b,c false they \"@self\""),
         Action.new("DragonCore附属语句", "设置headTag", "dragoncore", true)
             .description("设置实体的headTag")
             .addEntry("headTag标识符", Type.SYMBOL, false, head = "headtag/tag")

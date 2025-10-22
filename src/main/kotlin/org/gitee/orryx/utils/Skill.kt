@@ -2,6 +2,9 @@ package org.gitee.orryx.utils
 
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.Orryx
+import org.gitee.orryx.api.events.player.press.OrryxPlayerPressStartEvent
+import org.gitee.orryx.api.events.player.press.OrryxPlayerPressStopEvent
+import org.gitee.orryx.api.events.player.press.OrryxPlayerPressTickEvent
 import org.gitee.orryx.api.events.player.skill.OrryxClearSkillLevelAndBackPointEvent
 import org.gitee.orryx.api.events.player.state.OrryxPlayerStateSkillEvents
 import org.gitee.orryx.core.common.timer.SkillTimer
@@ -190,16 +193,21 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean
                 .brokeTriggers(*skill.pressBrockTriggers)
                 .periodTask(period) {
                     parameter.runCustomAction(skill.pressPeriodAction, mapOf("pressTick" to (System.currentTimeMillis() - time) / 50))
+                    OrryxPlayerPressTickEvent(player, skill, period, (System.currentTimeMillis() - time) / 50, maxPressTick).call()
                 }.onComplete {
                     if (consume) skill.consume(player, parameter)
-                    parameter.runSkillAction(mapOf("pressTick" to (System.currentTimeMillis() - time) / 50))
+                    val tick = (System.currentTimeMillis() - time) / 50
+                    parameter.runSkillAction(mapOf("pressTick" to tick))
                     PressSkillManager.pressTaskMap.remove(player.uniqueId)
+                    OrryxPlayerPressStopEvent(player, skill, tick, maxPressTick).call()
                     CompletableFuture.completedFuture(null)
                 }.onBrock {
                     player.sendLang("pressing-broke", name)
                     PressSkillManager.pressTaskMap.remove(player.uniqueId)
+                    OrryxPlayerPressStopEvent(player, skill, (System.currentTimeMillis() - time) / 50, maxPressTick).call()
                     CompletableFuture.completedFuture(null)
                 }.build()
+            OrryxPlayerPressStartEvent(player, skill, maxPressTick).call()
         }
         is PressingAimSkill -> {
             val aimRadius = parameter.runCustomAction(skill.aimRadiusAction).orNull().cdouble
