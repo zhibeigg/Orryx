@@ -92,3 +92,6 @@ info-skill:
         hover: '点击强制释放 1 级'
       - command: '/orryx skill tryCast {0} {1}'
         hover: '点击尝试释放'
+
+in-unlimit-mode: "&a| &6[test] &f进入&a无限模式"
+out-unlimit-mode: "&a| &6[test] &f退出&4无限模式"

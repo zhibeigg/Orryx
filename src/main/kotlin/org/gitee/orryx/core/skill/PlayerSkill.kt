@@ -9,6 +9,7 @@ import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillCastEvents
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillClearEvents
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillLevelEvents
+import org.gitee.orryx.command.OrryxTestCommand
 import org.gitee.orryx.core.GameManager
 import org.gitee.orryx.core.common.timer.SkillTimer
 import org.gitee.orryx.core.kether.parameter.IParameter
@@ -58,6 +59,11 @@ class PlayerSkill(
     override fun cast(parameter: IParameter, consume: Boolean): CastResult {
         if (parameter !is SkillParameter) return CastResult.PARAMETER
         return if (OrryxPlayerSkillCastEvents.Cast(player, this, parameter).call()) {
+            val consume = if (OrryxTestCommand.isUnlimited(player)) {
+                false
+            } else {
+                consume
+            }
             skill.castSkill(player, parameter, consume)
             CastResult.SUCCESS
         } else {

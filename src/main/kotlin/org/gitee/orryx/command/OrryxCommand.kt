@@ -25,6 +25,9 @@ object OrryxCommand {
     }
 
     @CommandBody
+    val test = OrryxTestCommand
+
+    @CommandBody
     val reload = subCommandExec<ProxyCommandSender> {
         ReloadAPI.reload()
         sender.sendMessage("Orryx 重载成功")
@@ -157,13 +160,5 @@ object OrryxCommand {
     @CommandBody
     val printStats = subCommandExec<ProxyCommandSender> {
         MemoryCache.printStats()
-    }
-
-    @CommandBody
-    val test = subCommandExec<Player> {
-        sender.world.getNearbyEntities(sender.location, 10.0, 10.0, 10.0).forEach {
-            AttributeAPI.runAttributeAttackEntity(sender, it as? LivingEntity ?: return@forEach, 10.0, true, true)
-            AttributeAPI.runAttributeAttackEntity(sender, it, 10.0, false, true)
-        }
     }
 }
