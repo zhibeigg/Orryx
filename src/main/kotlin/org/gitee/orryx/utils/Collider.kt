@@ -17,7 +17,6 @@ import org.joml.Vector3d
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.pow
 
 /** 判断两个碰撞箱是否相交
  *
@@ -120,7 +119,7 @@ fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(capsule: ICapsu
     // 求两条线段的最短距离
     val distance = getClosestDistanceBetweenSegmentsSqr(pointA1, pointA2, pointB1, pointB2)
     // 求两个球半径和
-    val totalRadius = (capsule.radius + other.radius).pow(2.0)
+    val totalRadius = square(capsule.radius + other.radius)
     // 距离小于等于半径和则碰撞
     return distance <= totalRadius
 }
@@ -139,7 +138,7 @@ fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(capsule: ICapsu
     val point2 = capsule.direction.mul(-height, Vector3d()).add(capsule.center)
     val closest = getClosestPointOnSegment(point1, point2, sphere.center)
     // 求两个球半径和
-    val totalRadius = (capsule.radius + sphere.radius).pow(2.0)
+    val totalRadius = square(capsule.radius + sphere.radius)
     // 球两个球心之间的距离
     val distance = closest.sub(sphere.center).lengthSquared()
     // 距离小于等于半径和则碰撞
@@ -161,7 +160,7 @@ fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(capsule: ICapsu
     val closest1 = getClosestPointOnSegment(point1, point2, obb.center)
     val closest2 = getClosestPointOBB(closest1, obb)
     // 求胶囊体半径平方
-    val totalRadius = capsule.radius.pow(2.0)
+    val totalRadius = square(capsule.radius)
     // 求两个点之间的距离
     val distance = (closest1.sub(closest2)).lengthSquared()
     // 距离小于等于半径平方则碰撞
@@ -204,7 +203,7 @@ fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(sphere: ISphere
     val nearP = getClosestPointOBB(sphere.center, obb)
     // 与 AABB 检测原理相同
     val distance = nearP.sub(sphere.center).lengthSquared()
-    val radius = sphere.radius.pow(2.0)
+    val radius = square(sphere.radius)
     return distance <= radius
 }
 
@@ -216,7 +215,7 @@ fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(sphere: ISphere
  * @return 有碰撞返回true
  */
 fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(sphere: ISphere<T1>, other: ISphere<T2>): Boolean {
-    return Intersectiond.testSphereSphere(sphere.center, sphere.radius, other.center, other.radius)
+    return Intersectiond.testSphereSphere(sphere.center, square(sphere.radius), other.center, square(other.radius))
 }
 
 /**
@@ -227,7 +226,7 @@ fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(sphere: ISphere
  * @return 有碰撞返回true
  */
 fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(sphere: ISphere<T1>, aabb: IAABB<T2>): Boolean {
-    return Intersectiond.testAabSphere(aabb.min, aabb.max, sphere.center, sphere.radius)
+    return Intersectiond.testAabSphere(aabb.min, aabb.max, sphere.center, square(sphere.radius))
 }
 
 /**
@@ -245,7 +244,7 @@ fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(capsule: ICapsu
     val closest1 = getClosestPointOnSegment(pointA1, pointA2, aabb.center)
     val closest2 = getClosestPointAABB(closest1, aabb)
     // 求胶囊体半径平方
-    val totalRadius = capsule.radius.pow(2.0)
+    val totalRadius = square(capsule.radius)
     // 求两个点之间的距离
     val distance = closest1.sub(closest2).lengthSquared()
     // 距离小于等于半径平方则碰撞
@@ -274,12 +273,11 @@ fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(ray: IRay<T1>, 
     val origin = ray.origin
     val end = ray.end
     val center = sphere.center
-    val radius = sphere.radius
     return Intersectiond.testLineSegmentSphere(
         origin.x, origin.y, origin.z,
         end.x, end.y, end.z,
         center.x, center.y, center.z,
-        radius * radius
+        square(sphere.radius)
     )
 }
 
@@ -360,7 +358,7 @@ fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(ray: IRay<T1>, 
     val startPoint = capsule.direction.mul(-halfHeight, Vector3d()).add(capsule.center)
     val endPoint = capsule.direction.mul(halfHeight, Vector3d()).add(capsule.center)
     val sqr = getClosestDistanceBetweenSegmentsSqr(ray.origin, ray.end, startPoint, endPoint)
-    return sqr <= capsule.radius.pow(2.0)
+    return sqr <= square(capsule.radius)
 }
 
 /**

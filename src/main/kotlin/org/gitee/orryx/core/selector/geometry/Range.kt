@@ -1,20 +1,19 @@
 package org.gitee.orryx.core.selector.geometry
 
 import org.bukkit.entity.LivingEntity
+import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
+import org.gitee.orryx.core.kether.actions.math.hitbox.collider.local.LocalAABB
+import org.gitee.orryx.core.kether.actions.math.hitbox.collider.local.LocalSphere
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.ISelectorGeometry
 import org.gitee.orryx.core.targets.ITarget
+import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.module.wiki.Selector
 import org.gitee.orryx.module.wiki.SelectorType
 import org.gitee.orryx.module.wiki.Type
-import org.gitee.orryx.utils.ensureSync
-import org.gitee.orryx.utils.getEntityAABB
-import org.gitee.orryx.utils.getParameter
-import org.gitee.orryx.utils.read
-import org.gitee.orryx.utils.toTarget
-import org.joml.RayAabIntersection
+import org.gitee.orryx.utils.*
+import org.joml.Vector3d
 import taboolib.common.platform.function.adaptLocation
-import taboolib.common5.cfloat
 import taboolib.module.effect.createSphere
 import taboolib.module.kether.ScriptContext
 
@@ -32,18 +31,18 @@ object Range: ISelectorGeometry {
         val origin = context.getParameter().origin ?: return emptyList()
 
         val r = parameter.read<Double>(0, 10.0)
-        val ray = RayAabIntersection()
 
         val entities = ensureSync { origin.world.getNearbyEntities(origin.location, r, r, r) }.join()
+        val hitbox = LocalSphere<ITargetLocation<*>>(Vector3d(), r, origin.coordinateConverter())
         return entities.mapNotNull {
             if (it == origin.getSource()) return@mapNotNull it.toTarget()
             if (it is LivingEntity) {
-                val dir = it.eyeLocation.toVector().subtract(origin.eyeLocation.toVector()).normalize().multiply(r)
-                ray.set(origin.eyeLocation.x.cfloat, origin.eyeLocation.y.cfloat, origin.eyeLocation.z.cfloat, dir.x.cfloat, dir.y.cfloat, dir.z.cfloat)
-                val aabb = getEntityAABB(it)
-                if (ray.test(aabb.minX.cfloat, aabb.minY.cfloat, aabb.minZ.cfloat, aabb.maxX.cfloat, aabb.maxY.cfloat, aabb.maxZ.cfloat)) {
-                    it.toTarget()
-                } else null
+                val aabb = LocalAABB<AbstractBukkitEntity>(
+                    Vector3d(0.0, it.height / 2, 0.0),
+                    Vector3d(it.width / 2, it.height / 2, it.width / 2),
+                    it.abstract().coordinateConverter()
+                )
+                it.toTarget().takeIf { isColliding(hitbox, aabb) }
             } else null
         }
     }

@@ -1,7 +1,5 @@
 package org.gitee.orryx.core.kether.actions.math.hitbox.collider.local
 
-import eos.moe.armourers.r
-import ink.ptms.adyeshach.module.editor.page.Vector3
 import org.gitee.orryx.api.collider.IAABB
 import org.gitee.orryx.api.collider.local.ICoordinateConverter
 import org.gitee.orryx.api.collider.local.ILocalSphere
@@ -41,7 +39,7 @@ open class LocalSphere<T : ITargetLocation<*>>(
             dirty = true
             version[0] = parent.positionVersion()
             version[1] = parent.rotationVersion()
-            val position: Vector3d? = parent.position
+            val position: Vector3d = parent.position
             val rotation: Quaterniond? = parent.rotation.conjugate(Quaterniond())
 
             localCenter.set(center).sub(position).rotate(rotation)
