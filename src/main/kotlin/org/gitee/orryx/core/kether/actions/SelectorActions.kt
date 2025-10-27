@@ -48,7 +48,7 @@ object SelectorActions {
                         true
                     )
                 }?.thenAccept {
-                    future.complete(it.readContainer(script()))
+                    it.readContainer(script())
                 } ?: future.complete(null)
             }
         }

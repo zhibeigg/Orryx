@@ -16,7 +16,7 @@ enum class ParameterOperators(
 
     ORIGIN(
         { it.origin },
-        { parm, _, c, any -> any.readContainer(c)?.firstInstanceOrNull<ITargetLocation<*>>()?.let { parm.origin = it } },
+        { parm, _, c, any -> any.readContainer(c)?.thenAccept { it.firstInstanceOrNull<ITargetLocation<*>>()?.let { origin -> parm.origin = origin } } },
         ParameterOperator.Method.MODIFY
     ),
 

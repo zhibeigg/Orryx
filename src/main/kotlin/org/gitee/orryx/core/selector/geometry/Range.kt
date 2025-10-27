@@ -32,7 +32,7 @@ object Range: ISelectorGeometry {
 
         val r = parameter.read<Double>(0, 10.0)
 
-        val entities = ensureSync { origin.world.getNearbyEntities(origin.location, r, r, r) }.join()
+        val entities = origin.world.getNearbyEntities(origin.location, r, r, r)
         val hitbox = LocalSphere<ITargetLocation<*>>(Vector3d(), r, origin.coordinateConverter())
         return entities.mapNotNull {
             if (it == origin.getSource()) return@mapNotNull it.toTarget()

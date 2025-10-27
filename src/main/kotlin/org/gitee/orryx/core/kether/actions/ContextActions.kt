@@ -33,7 +33,7 @@ object ContextActions {
         ).apply(it) { container, action ->
             now {
                 val sender = script().sender
-                container.readContainer(script())?.forEachInstance<ITargetEntity<*>> { target ->
+                container?.forEachInstance<ITargetEntity<*>> { target ->
                     script().sender =
                         target.entity.getBukkitLivingEntity()?.let { entity -> adaptCommandSender(entity) }
                             ?: return@forEachInstance

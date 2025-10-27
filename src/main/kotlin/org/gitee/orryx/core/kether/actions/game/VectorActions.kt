@@ -199,7 +199,7 @@ object VectorActions {
             future {
                 val bukkit = vector?.bukkit() ?: return@future CompletableFuture.completedFuture(null)
                 ensureSync {
-                    container.readContainer(script()).orElse(self()).forEachInstance<ITargetEntity<*>> { target ->
+                    container.orElse(self()).forEachInstance<ITargetEntity<*>> { target ->
                         target.entity.velocity = bukkit
                     }
                 }

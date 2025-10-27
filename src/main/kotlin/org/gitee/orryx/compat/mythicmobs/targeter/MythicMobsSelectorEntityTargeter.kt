@@ -35,7 +35,8 @@ class MythicMobsSelectorEntityTargeter(mlc: MythicLineConfig): IEntitySelector(m
             it.sender = adaptPlayer(data.caster.entity.bukkitEntity)
             it[PARAMETER] = MythicMobsParameter(caster, BukkitAdapter.adapt(data.origin).toTarget())
         }
-        StringParser(parse.get()).container(context).forEachInstance<ITargetEntity<Entity>> {
+
+        StringParser(parse.get()).syncContainer(context).forEachInstance<ITargetEntity<Entity>> {
             targets.add(BukkitAdapter.adapt(it.getSource()))
         }
         return targets

@@ -9,11 +9,13 @@ import org.bukkit.entity.Player
 import org.gitee.orryx.core.container.Container
 import org.gitee.orryx.core.container.IContainer
 import org.gitee.orryx.core.parser.StringParser
+import org.gitee.orryx.core.skill.Icon
 import org.gitee.orryx.core.targets.ITarget
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.module.kether.ScriptContext
 import taboolib.platform.util.onlinePlayers
 import java.util.*
+import java.util.concurrent.CompletableFuture
 
 /**
  * 移除容器中所有指定类型的目标
@@ -95,36 +97,51 @@ fun mergeAll(containers: List<IContainer>): IContainer {
     }
 }
 
+fun mergeAll(containers: List<CompletableFuture<IContainer>>): CompletableFuture<IContainer> {
+    return CompletableFuture.allOf(*containers.toTypedArray()).thenApply {
+        containers.fold(Container()) { acc, container ->
+            acc.apply { merge(container.getNow(Container())) }
+        }
+    }
+}
+
 /**
  * 安全容器解析（性能优化版）
  */
-internal fun Any?.readContainer(context: ScriptContext): IContainer? = when {
-    // Adyeshach 实体处理
-    AdyeshachPlugin.isEnabled && this is EntityInstance -> {
-        debug("readEntityInstance")
-        toTarget().readContainer(context)
+internal fun Any?.readContainer(context: ScriptContext): CompletableFuture<IContainer>? {
+    return when {
+        // Adyeshach 实体处理
+        AdyeshachPlugin.isEnabled && this is EntityInstance -> {
+            debug("readEntityInstance")
+            toTarget().readContainer(context)
+        }
+
+        // 基础类型处理
+        this == null -> null.also { debug("readNull") }
+        this is String -> StringParser(this).container(context).also { debug("readString") }
+        this is IContainer -> CompletableFuture.completedFuture(this).also { debug("readIContainer") }
+        this is ITarget<*> -> {
+            debug("readTarget")
+            CompletableFuture.completedFuture(Container(linkedSetOf(this)))
+        }
+
+        // 实体相关处理
+        this is Player -> toTarget().readContainer(context).also { debug("readPlayer") }
+        this is Entity -> toTarget().readContainer(context).also { debug("readEntity") }
+        this is Location -> toTarget().readContainer(context).also { debug("readLocation") }
+        this is UUID -> {
+            debug("readUUID")
+            (Bukkit.getEntity(this)?.readContainer(context) ?: CompletableFuture.completedFuture(Container()))
+        }
+
+        // 集合处理
+        this is Iterable<*> -> mergeAll(mapNotNull { it?.readContainer(context) }).also { debug("readIterable") }
+
+        // 命令发送者处理
+        this is ProxyCommandSender -> castSafely<Player>()?.toTarget()?.readContainer(context).also { debug("readProxyCommandSender") }
+
+        else -> null
     }
-
-    // 基础类型处理
-    this == null -> null.also { debug("readNull") }
-    this is String -> StringParser(this).container(context).also { debug("readString") }
-    this is IContainer -> this.also { debug("readIContainer") }
-    this is ITarget<*> -> Container(linkedSetOf(this)).also { debug("readTarget") }
-
-    // 实体相关处理
-    this is Player -> toTarget().readContainer(context).also { debug("readPlayer") }
-    this is Entity -> toTarget().readContainer(context).also { debug("readEntity") }
-    this is Location -> toTarget().readContainer(context).also { debug("readLocation") }
-    this is UUID -> Bukkit.getEntity(this)?.readContainer(context) ?: Container().also { debug("readUUID") }
-
-    // 集合处理
-    this is Iterable<*> -> mergeAll(mapNotNull { it?.readContainer(context) }).also { debug("readIterable") }
-
-    // 命令发送者处理
-    this is ProxyCommandSender -> castSafely<Player>()?.toTarget()?.readContainer(context).also { debug("readProxyCommandSender") }
-
-    // 默认处理
-    else -> Container().also { debug("readElse") }
 }
 
 /**

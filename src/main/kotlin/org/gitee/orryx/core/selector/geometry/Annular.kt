@@ -40,7 +40,7 @@ object Annular : ISelectorGeometry {
         val max = parameter.read<Double>(1, 0.0)
         val high = parameter.read<Double>(2, 0.0)
 
-        val livingEntities = ensureSync { origin.world.livingEntities }.join()
+        val livingEntities = origin.world.livingEntities
         val list = mutableListOf<ITarget<*>>()
 
         livingEntities.forEach {

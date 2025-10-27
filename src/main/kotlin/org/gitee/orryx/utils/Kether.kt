@@ -67,7 +67,7 @@ internal fun ScriptContext.bukkitPlayer(): Player {
 }
 
 internal fun ScriptFrame.self(): IContainer {
-    return bukkitPlayer().readContainer(script())!!
+    return Container(linkedSetOf(bukkitPlayer().toTarget()))
 }
 
 internal fun ScriptFrame.world(): IContainer {
@@ -145,15 +145,19 @@ internal fun <T> ScriptFrame.container(container: ParsedAction<*>?, def: IContai
     return if (container == null) {
         CompletableFuture.completedFuture(func(def))
     } else {
-        run(container).thenApply {
-            func(it.readContainer(script()).orElse(def))
+        run(container).thenCompose {
+            it.readContainer(script())?.thenApply { container ->
+                func(container)
+            } ?: CompletableFuture.completedFuture(func(def))
         }
     }
 }
 
 internal fun <T> ScriptFrame.container(container: ParsedAction<*>, func: (ScriptFrame.(container: IContainer) -> T)): CompletableFuture<T> {
-    return run(container).thenApply {
-        func(it.readContainer(script()).orElse(Container()))
+    return run(container).thenCompose {
+        it.readContainer(script())?.thenApply { container ->
+            func(container)
+        } ?: CompletableFuture.completedFuture(func(Container()))
     }
 }
 
@@ -224,7 +228,7 @@ internal fun container(): Parser<IContainer?> {
     return Parser.frame { r ->
         val action = r.nextParsedAction()
         Action {
-            it.run(action).thenApply { container ->
+            it.run(action).thenCompose { container ->
                 container.readContainer(it.script())
             }
         }

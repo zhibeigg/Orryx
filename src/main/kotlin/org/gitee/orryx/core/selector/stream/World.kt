@@ -9,7 +9,6 @@ import org.gitee.orryx.module.wiki.Selector
 import org.gitee.orryx.module.wiki.SelectorType
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.bukkitPlayer
-import org.gitee.orryx.utils.ensureSync
 import org.gitee.orryx.utils.read
 import org.gitee.orryx.utils.toTarget
 import taboolib.module.kether.ScriptContext
@@ -46,14 +45,12 @@ object World: ISelectorStream {
                 }
             }
         } else {
-            ensureSync {
-                if (world == "sender") {
-                    container.addAll(context.bukkitPlayer().world.livingEntities.map { it.toTarget() })
-                } else {
-                    val w = Bukkit.getWorld(world) ?: error("未找到世界 $world")
-                    container.addAll(w.livingEntities.map { it.toTarget() })
-                }
-            }.join()
+            if (world == "sender") {
+                container.addAll(context.bukkitPlayer().world.livingEntities.map { it.toTarget() })
+            } else {
+                val w = Bukkit.getWorld(world) ?: error("未找到世界 $world")
+                container.addAll(w.livingEntities.map { it.toTarget() })
+            }
         }
     }
 }

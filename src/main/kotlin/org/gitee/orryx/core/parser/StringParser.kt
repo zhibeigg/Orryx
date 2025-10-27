@@ -6,12 +6,14 @@ import org.gitee.orryx.core.selector.ISelectorGeometry
 import org.gitee.orryx.core.selector.ISelectorStream
 import org.gitee.orryx.core.selector.SelectorInit
 import org.gitee.orryx.utils.bukkitPlayer
+import org.gitee.orryx.utils.ensureSync
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common.platform.function.info
 import taboolib.common.util.Vector
 import taboolib.common.util.unsafeLazy
 import taboolib.library.xseries.XParticle
 import taboolib.module.kether.ScriptContext
+import java.util.concurrent.CompletableFuture
 
 class StringParser(val value: String) {
 
@@ -40,7 +42,7 @@ class StringParser(val value: String) {
         entry
     }
 
-    fun container(context: ScriptContext): IContainer {
+    fun syncContainer(context: ScriptContext): IContainer {
         val container = Container()
         entries.forEach { entry ->
             when(val selector = SelectorInit.getSelector(entry.head.uppercase())) {
@@ -56,6 +58,26 @@ class StringParser(val value: String) {
             }
         }
         return container
+    }
+
+    fun container(context: ScriptContext): CompletableFuture<IContainer> {
+        return ensureSync {
+            val container = Container()
+            entries.forEach { entry ->
+                when(val selector = SelectorInit.getSelector(entry.head.uppercase())) {
+                    is ISelectorStream -> {
+                        selector.processStream(container, context, entry)
+                    }
+                    is ISelectorGeometry -> {
+                        container.targets.addAll(selector.getTargets(context, entry))
+                    }
+                    null -> {
+                        info("选择器${entry.head}未注册")
+                    }
+                }
+            }
+            container
+        }
     }
 
     fun stream(container: IContainer, context: ScriptContext): IContainer {

@@ -67,7 +67,7 @@ object OrientedBoundingBox: ISelectorGeometry {
             return projection <= rObb + rAabb + 1e-6
         }
 
-        val entities = ensureSync { origin.world.livingEntities }.join()
+        val entities = origin.world.livingEntities
 
         return entities.filter { entity ->
             val entityLoc = entity.location
