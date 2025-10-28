@@ -105,7 +105,7 @@ object MemoryCache {
     @Awake(LifeCycle.DISABLE)
     fun printStats() {
         fun printStats(name: String, stats: CacheStats) {
-            info("&e┣&f缓存：$name &c命中率：${(stats.hitRate()*100).format(2)} % &c加载平均时间：${stats.averageLoadPenalty()/1000000} ms".colored())
+            info("&e┣&f缓存：$name &c命中率：${(stats.hitRate()*100).format(2)} % &c加载平均时间：${(stats.averageLoadPenalty()/1_000_000).format(2)} ms".colored())
         }
         printStats("玩家", playerProfileCache.synchronous().stats())
         printStats("职业", playerJobCache.synchronous().stats())
