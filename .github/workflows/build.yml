@@ -35,9 +35,3 @@ jobs:
         with:
           name: Orryx
           path: build/*.jar
-          
-      - name: Create Release
-        uses: ncipollo/release-action@v1.20.0
-        with:
-          allowUpdates: true
-          artifacts: "build/*.jar"
