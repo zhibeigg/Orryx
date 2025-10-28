@@ -7,6 +7,7 @@ import io.lumine.xikage.mythicmobs.io.MythicLineConfig
 import io.lumine.xikage.mythicmobs.skills.SkillMetadata
 import io.lumine.xikage.mythicmobs.skills.targeters.ILocationSelector
 import org.bukkit.Location
+import org.gitee.orryx.core.kether.ScriptManager.runKether
 import org.gitee.orryx.core.kether.parameter.MythicMobsParameter
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.targets.ITargetLocation
@@ -19,7 +20,6 @@ import taboolib.common.platform.function.adaptPlayer
 import taboolib.library.kether.BlockReader
 import taboolib.module.kether.ScriptContext
 import taboolib.module.kether.ScriptService
-import taboolib.module.kether.runKether
 import java.util.*
 
 @Ghost
@@ -41,6 +41,6 @@ class MythicMobsSelectorLocationTargeter(mlc: MythicLineConfig): ILocationSelect
                 targets.add(BukkitAdapter.adapt(it.getSource()))
             }
             return@runKether targets
-        }!!
+        }
     }
 }

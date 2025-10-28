@@ -157,7 +157,6 @@ object ScriptManager {
         } catch (e: Throwable) {
             if (e is IllegalStateException) warning(e.message)
             e.printKetherErrorMessage(detailError)
-            CompletableFuture.completedFuture(null)
         }
         return el
     }
@@ -168,7 +167,6 @@ object ScriptManager {
         } catch (e: Throwable) {
             if (e is IllegalStateException) warning(e.message)
             e.printKetherErrorMessage(detailError)
-            CompletableFuture.completedFuture(null)
         }
         return null
     }

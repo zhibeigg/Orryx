@@ -2,6 +2,7 @@ package org.gitee.orryx.module.state
 
 import com.eatthepath.uuid.FastUUID
 import org.bukkit.entity.Player
+import org.gitee.orryx.core.kether.ScriptManager.runKether
 import org.gitee.orryx.utils.eval
 import org.gitee.orryx.utils.parse
 import taboolib.common.platform.function.adaptPlayer
@@ -12,7 +13,6 @@ import taboolib.module.configuration.Configuration
 import taboolib.module.kether.Script
 import taboolib.module.kether.ScriptContext
 import taboolib.module.kether.orNull
-import taboolib.module.kether.runKether
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
@@ -63,6 +63,6 @@ class Status(override val key: String, configuration: Configuration): IStatus {
             }.runActions().thenApply {
                 it as IRunningState?
             }
-        }!!
+        }
     }
 }
