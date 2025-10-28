@@ -4,6 +4,7 @@ import com.lark.oapi.service.docx.v1.enums.BlockBlockTypeEnum
 import com.lark.oapi.service.docx.v1.enums.CalloutCalloutBackgroundColorEnum
 import com.lark.oapi.service.docx.v1.enums.CalloutCalloutBorderColorEnum
 import com.lark.oapi.service.docx.v1.enums.TextStyleAlignEnum
+import com.lark.oapi.service.docx.v1.enums.TextStyleCodeLanguageEnum
 import com.lark.oapi.service.docx.v1.model.*
 
 class Action(val group: String, val name: String, val key: String, val sharded: Boolean, val entries: MutableList<Entry> = mutableListOf(), var description: String = "", var example: MutableList<String> = mutableListOf()): WikiBlock {
@@ -335,20 +336,34 @@ class Action(val group: String, val name: String, val key: String, val sharded: 
                 .build()
         }
         if (example.isNotEmpty()) {
-            val texts = example.map { text ->
-                TextElement.newBuilder()
-                    .textRun(
-                        TextRun.newBuilder()
-                            .content(text)
-                            .build()
-                    ).build()
+            val texts = example.mapIndexed { index, text ->
+                if (index == example.lastIndex) {
+                    TextElement.newBuilder()
+                        .textRun(
+                            TextRun.newBuilder()
+                                .content(text)
+                                .build()
+                        ).build()
+                } else {
+                    TextElement.newBuilder()
+                        .textRun(
+                            TextRun.newBuilder()
+                                .content("$text\n")
+                                .build()
+                        ).build()
+                }
             }
             id += "${name}_quote_2"
             list += Block.newBuilder()
                 .blockId("${name}_quote_2")
                 .children(arrayOf())
                 .blockType(BlockBlockTypeEnum.CODE)
-                .code(Text.newBuilder().elements(texts.toTypedArray()).build())
+                .code(
+                    Text.newBuilder()
+                        .style(TextStyle.newBuilder().language(TextStyleCodeLanguageEnum.YAML).build())
+                        .elements(texts.toTypedArray())
+                        .build()
+                )
                 .build()
         }
         return list to id
