@@ -19,6 +19,7 @@ import taboolib.common.platform.function.adaptPlayer
 import taboolib.library.kether.BlockReader
 import taboolib.module.kether.ScriptContext
 import taboolib.module.kether.ScriptService
+import taboolib.module.kether.runKether
 import java.util.*
 
 @Ghost
@@ -27,18 +28,20 @@ class MythicMobsSelectorEntityTargeter(mlc: MythicLineConfig): IEntitySelector(m
     private val parse = mlc.getPlaceholderString(arrayOf("parse", "p"), "@self")
 
     override fun getEntities(data: SkillMetadata): HashSet<AbstractEntity?> {
-        val am = data.caster.entity ?: return hashSetOf()
-        val caster = BukkitAdapter.adapt(am)
-        val targets = hashSetOf<AbstractEntity?>()
+        return runKether(hashSetOf()) {
+            val am = data.caster.entity ?: return@runKether hashSetOf()
+            val caster = BukkitAdapter.adapt(am)
+            val targets = hashSetOf<AbstractEntity?>()
 
-        val context = ScriptContext.create(BlockReader(null, ScriptService, orryxEnvironmentNamespaces).parse(FastUUID.toString(UUID.randomUUID()))).also {
-            it.sender = adaptPlayer(data.caster.entity.bukkitEntity)
-            it[PARAMETER] = MythicMobsParameter(caster, BukkitAdapter.adapt(data.origin).toTarget())
-        }
+            val context = ScriptContext.create(BlockReader(null, ScriptService, orryxEnvironmentNamespaces).parse(FastUUID.toString(UUID.randomUUID()))).also {
+                it.sender = adaptPlayer(data.caster.entity.bukkitEntity)
+                it[PARAMETER] = MythicMobsParameter(caster, BukkitAdapter.adapt(data.origin).toTarget())
+            }
 
-        StringParser(parse.get()).syncContainer(context).forEachInstance<ITargetEntity<Entity>> {
-            targets.add(BukkitAdapter.adapt(it.getSource()))
-        }
-        return targets
+            StringParser(parse.get()).syncContainer(context).forEachInstance<ITargetEntity<Entity>> {
+                targets.add(BukkitAdapter.adapt(it.getSource()))
+            }
+            return@runKether targets
+        }!!
     }
 }

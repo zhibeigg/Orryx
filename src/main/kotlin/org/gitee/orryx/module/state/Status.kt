@@ -12,6 +12,7 @@ import taboolib.module.configuration.Configuration
 import taboolib.module.kether.Script
 import taboolib.module.kether.ScriptContext
 import taboolib.module.kether.orNull
+import taboolib.module.kether.runKether
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
@@ -54,12 +55,14 @@ class Status(override val key: String, configuration: Configuration): IStatus {
             warning("请检查Action status: ${playerData.status?.key} 输入: $input")
             return CompletableFuture.completedFuture(null)
         }
-        return ScriptContext.create(script).also {
-            it.sender = adaptPlayer(playerData.player)
-            it.id = FastUUID.toString(UUID.randomUUID())
-            it["input"] = input
-        }.runActions().thenApply {
-            it as IRunningState?
-        }
+        return runKether(CompletableFuture.completedFuture(null)) {
+            ScriptContext.create(script).also {
+                it.sender = adaptPlayer(playerData.player)
+                it.id = FastUUID.toString(UUID.randomUUID())
+                it["input"] = input
+            }.runActions().thenApply {
+                it as IRunningState?
+            }
+        }!!
     }
 }

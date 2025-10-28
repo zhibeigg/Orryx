@@ -58,7 +58,6 @@ object PlaceHolder: PlaceholderExpansion {
         get() = "orryx"
 
     override fun onPlaceholderRequest(player: Player?, args: String): String {
-        info(args)
         return runKether(CompletableFuture.completedFuture(null)) {
             ScriptContext.create(scriptsMap[args]!!).also {
                 it.sender = adaptCommandSender(player ?: Bukkit.getConsoleSender())
