@@ -6,7 +6,7 @@ import com.lark.oapi.service.docx.v1.enums.CalloutCalloutBorderColorEnum
 import com.lark.oapi.service.docx.v1.enums.TextStyleAlignEnum
 import com.lark.oapi.service.docx.v1.model.*
 
-class Action(val group: String, val name: String, val key: String, val sharded: Boolean, val entries: MutableList<Entry> = mutableListOf(), var description: String = "", var example: String = ""): WikiBlock {
+class Action(val group: String, val name: String, val key: String, val sharded: Boolean, val entries: MutableList<Entry> = mutableListOf(), var description: String = "", var example: MutableList<String> = mutableListOf()): WikiBlock {
 
     class Entry(val description: String, val type: Type, val optional: Boolean, val default: String? = null, val head: String? = null)
 
@@ -54,7 +54,7 @@ class Action(val group: String, val name: String, val key: String, val sharded: 
     }
 
     fun example(example: String): Action {
-        this.example = example
+        this.example += example
         return this
     }
 
@@ -334,14 +334,16 @@ class Action(val group: String, val name: String, val key: String, val sharded: 
                 .quote(Text.newBuilder().elements(text(description)).build())
                 .build()
         }
-        if (example.isNotBlank()) {
-            id += "${name}_quote_2"
-            list += Block.newBuilder()
-                .blockId("${name}_quote_2")
-                .children(arrayOf())
-                .blockType(BlockBlockTypeEnum.CODE)
-                .code(Text.newBuilder().elements(text(example)).build())
-                .build()
+        if (example.isNotEmpty()) {
+            example.forEachIndexed { index, string ->
+                id += "${name}_quote_${index+2}"
+                list += Block.newBuilder()
+                    .blockId("${name}_quote_${index + 2}")
+                    .children(arrayOf())
+                    .blockType(BlockBlockTypeEnum.CODE)
+                    .code(Text.newBuilder().elements(text(string)).build())
+                    .build()
+            }
         }
         return list to id
     }

@@ -3,6 +3,7 @@ package org.gitee.orryx.command
 import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.skill.ICastSkill
+import org.gitee.orryx.core.skill.PressSkillManager
 import org.gitee.orryx.core.skill.SkillLoaderManager
 import org.gitee.orryx.utils.*
 import taboolib.common.platform.ProxyCommandSender
@@ -70,6 +71,22 @@ object OrryxSkillCommand {
                             val consume = ctx["consume"].cbool
                             skill.castSkill(player, SkillParameter(skill.key, player, ctx["level"].cint), consume)
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    @CommandBody
+    val release = subCommand {
+        player {
+            dynamic("skill") {
+                suggest { SkillLoaderManager.getSkills().filter { it.value is ICastSkill }.map { it.key } }
+                exec<ProxyCommandSender> {
+                    val player = ctx.bukkitPlayer() ?: return@exec
+                    val pressing = PressSkillManager.pressTaskMap[player.uniqueId] ?: return@exec
+                    if (pressing.first == ctx["skill"]) {
+                        pressing.second.complete()
                     }
                 }
             }

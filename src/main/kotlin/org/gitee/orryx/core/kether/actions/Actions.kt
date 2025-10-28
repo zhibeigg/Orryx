@@ -5,9 +5,9 @@ import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.kether.ScriptManager.addOrryxCloseable
 import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.profile.IPlayerProfile
-import org.gitee.orryx.core.skill.IPlayerSkill
-import org.gitee.orryx.core.skill.ISkill
+import org.gitee.orryx.core.skill.*
 import org.gitee.orryx.core.targets.ITargetLocation
+import org.gitee.orryx.core.targets.PlayerTarget
 import org.gitee.orryx.module.spirit.ISpiritManager
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
@@ -16,6 +16,7 @@ import taboolib.common.OpenResult
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common.platform.function.submit
 import taboolib.module.kether.*
+import java.util.concurrent.CompletableFuture
 
 object Actions {
 
@@ -104,6 +105,84 @@ object Actions {
                             future.complete(value)
                         }
                     } ?: future.complete(null)
+                }
+            }
+        }
+    }
+
+    @KetherParser(["directCast"], namespace = ORRYX_NAMESPACE)
+    private fun cast() = scriptParser(
+        Action.new("普通语句", "强制释放技能", "directCast")
+            .description("强制释放技能，蓄力类技能进入蓄力")
+            .addEntry("技能名", Type.STRING)
+            .addEntry("等级", Type.INT)
+            .addEntry("是否消耗(蓝,冷却,沉默)", Type.BOOLEAN)
+            .addContainerEntry("释放者", true, "@self")
+    ) {
+        val key = it.nextParsedAction()
+        val level =  it.nextParsedAction()
+        val consume =  it.nextParsedAction()
+        val they = it.nextTheyContainerOrSelf()
+        actionNow {
+            run(key).str { key ->
+                run(level).int { level ->
+                    run(consume).bool { consume ->
+                        containerOrSelf(they) { container ->
+                            val skill = SkillLoaderManager.getSkillLoader(key) as ICastSkill
+                            container.forEachInstance<PlayerTarget> { player ->
+                                skill.castSkill(player.getSource(), SkillParameter(skill.key, player.getSource(), level), consume)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @KetherParser(["directRelease"], namespace = ORRYX_NAMESPACE)
+    private fun release() = scriptParser(
+        Action.new("普通语句", "强制释放蓄力技能", "directRelease")
+            .description("强制释放蓄力技能，使蓄力类技能退出蓄力状态，并释放效果")
+            .addEntry("技能名", Type.STRING)
+            .addContainerEntry("释放者", true, "@self")
+    ) {
+        val key = it.nextParsedAction()
+        val they = it.nextTheyContainerOrSelf()
+        actionNow {
+            run(key).str { key ->
+                containerOrSelf(they) { container ->
+                    container.forEachInstance<PlayerTarget> { player ->
+                        val pressing = PressSkillManager.pressTaskMap[player.uniqueId] ?: return@forEachInstance
+                        if (pressing.first == key) {
+                            pressing.second.complete()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @KetherParser(["tryCast"], namespace = ORRYX_NAMESPACE)
+    private fun tryCast() = scriptParser(
+        Action.new("普通语句", "尝试释放技能", "tryCast")
+            .description("尝试释放技能，通过条件检测才会释放")
+            .addEntry("技能名", Type.STRING)
+            .addContainerEntry("释放者", true, "@self")
+    ) {
+        val key = it.nextParsedAction()
+        val they = it.nextTheyContainerOrSelf()
+        actionFuture { f ->
+            run(key).str { key ->
+                containerOrSelf(they) { container ->
+                    CompletableFuture.allOf(
+                        *container.mapInstance<PlayerTarget, CompletableFuture<Void>> { player ->
+                            player.getSource().getSkill(key).thenAccept { skill ->
+                                skill?.tryCast()
+                            }
+                        }.toTypedArray()
+                    ).thenRun {
+                        f.complete(null)
+                    }
                 }
             }
         }
