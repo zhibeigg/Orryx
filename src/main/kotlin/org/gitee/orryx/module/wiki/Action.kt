@@ -335,15 +335,21 @@ class Action(val group: String, val name: String, val key: String, val sharded: 
                 .build()
         }
         if (example.isNotEmpty()) {
-            example.forEachIndexed { index, string ->
-                id += "${name}_quote_${index+2}"
-                list += Block.newBuilder()
-                    .blockId("${name}_quote_${index + 2}")
-                    .children(arrayOf())
-                    .blockType(BlockBlockTypeEnum.CODE)
-                    .code(Text.newBuilder().elements(text(string)).build())
-                    .build()
+            val texts = example.map { text ->
+                TextElement.newBuilder()
+                    .textRun(
+                        TextRun.newBuilder()
+                            .content(text)
+                            .build()
+                    ).build()
             }
+            id += "${name}_quote_2"
+            list += Block.newBuilder()
+                .blockId("${name}_quote_2")
+                .children(arrayOf())
+                .blockType(BlockBlockTypeEnum.CODE)
+                .code(Text.newBuilder().elements(texts.toTypedArray()).build())
+                .build()
         }
         return list to id
     }

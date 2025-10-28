@@ -3,6 +3,7 @@ import io.izzel.taboolib.gradle.*
 val publishUsername: String by project
 val publishPassword: String by project
 val build: String by project
+val token: String by project
 
 plugins {
     `java-library`
@@ -156,6 +157,33 @@ publishing {
                 classifier = "api"
             }
             groupId = project.group.toString()
+            artifactId = "orryx"
+        }
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/zhibeigg/Orryx")
+            credentials {
+                username = "zhibeigg"
+                password = token
+            }
+        }
+    }
+    publications {
+        register<MavenPublication>("gpr") {
+            from(components["java"])
+            artifact(tasks["kotlinSourcesJar"]) {
+                classifier = "sources"
+            }
+            artifact("${build}/${rootProject.name}-${version}-api.jar") {
+                classifier = "api"
+            }
+            groupId = project.group.toString()
+            artifactId = "orryx"
         }
     }
 }
