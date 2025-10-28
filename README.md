@@ -33,7 +33,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("org.gitee.orryx:Orryx:{VERSION}:api")
+    compileOnly("org.gitee.orryx:orryx:{VERSION}:api")
 }
 ```
 
