@@ -151,7 +151,7 @@ object ScriptManager {
         return actions.map { parseScript(sender, parameter, it, context) }
     }
 
-    fun <T> runKether(el: T, detailError: Boolean = false, function: () -> T): T {
+    inline fun <T> runKether(el: T, detailError: Boolean = false, function: () -> T): T {
         try {
             return function()
         } catch (e: Throwable) {
@@ -161,7 +161,7 @@ object ScriptManager {
         return el
     }
 
-    fun <T> runKether(detailError: Boolean = false, function: () -> T): T? {
+    inline fun <T> runKether(detailError: Boolean = false, function: () -> T): T? {
         try {
             return function()
         } catch (e: Throwable) {
