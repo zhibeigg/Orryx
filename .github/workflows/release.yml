@@ -35,3 +35,4 @@ jobs:
         with:
           allowUpdates: true
           artifacts: "build/*.jar"
+          token: ${{ secrets.TOKEN }}
