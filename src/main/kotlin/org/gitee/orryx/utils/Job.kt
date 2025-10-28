@@ -37,7 +37,7 @@ fun IPlayerJob.getSkills(): List<CompletableFuture<IPlayerSkill?>> {
     }
 }
 
-fun <T> IPlayerJob.skills(func: (skills: List<IPlayerSkill>) -> T): CompletableFuture<T> {
+inline fun <T> IPlayerJob.skills(crossinline func: (skills: List<IPlayerSkill>) -> T): CompletableFuture<T> {
     val skills = mutableListOf<IPlayerSkill>()
     val fSkills = getSkills()
     return CompletableFuture.allOf(
@@ -51,7 +51,7 @@ fun <T> IPlayerJob.skills(func: (skills: List<IPlayerSkill>) -> T): CompletableF
     }
 }
 
-fun <T> IPlayerJob.bindSkills(func: (bindSkills: Map<IBindKey, IPlayerSkill?>) -> T): CompletableFuture<T> {
+inline fun <T> IPlayerJob.bindSkills(crossinline func: (bindSkills: Map<IBindKey, IPlayerSkill?>) -> T): CompletableFuture<T> {
     val bindSkills = hashMapOf<IBindKey, IPlayerSkill?>()
     return CompletableFuture.allOf(*getBindSkills().map { (k, s) ->
         s?.thenAccept {
@@ -62,13 +62,13 @@ fun <T> IPlayerJob.bindSkills(func: (bindSkills: Map<IBindKey, IPlayerSkill?>) -
     }
 }
 
-fun <T> Player.job(function: (IPlayerJob) -> T): CompletableFuture<T?> {
+inline fun <T> Player.job(crossinline function: (IPlayerJob) -> T): CompletableFuture<T?> {
     return job().thenApply {
         it?.let { it1 -> function(it1) }
     }
 }
 
-fun <T> Player.job(id: Int, job: String, function: (IPlayerJob) -> T): CompletableFuture<T?> {
+inline fun <T> Player.job(id: Int, job: String, crossinline function: (IPlayerJob) -> T): CompletableFuture<T?> {
     return job(id, job).thenApply {
         it?.let { it1 -> function(it1) }
     }

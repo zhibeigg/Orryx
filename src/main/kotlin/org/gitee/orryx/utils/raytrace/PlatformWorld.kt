@@ -21,5 +21,4 @@ interface PlatformWorld {
         checkAxisAlignedBB: Boolean,
         returnClosestPos: Boolean
     ): RayTraceResult?
-
 }

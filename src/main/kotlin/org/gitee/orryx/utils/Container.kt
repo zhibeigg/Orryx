@@ -9,7 +9,6 @@ import org.bukkit.entity.Player
 import org.gitee.orryx.core.container.Container
 import org.gitee.orryx.core.container.IContainer
 import org.gitee.orryx.core.parser.StringParser
-import org.gitee.orryx.core.skill.Icon
 import org.gitee.orryx.core.targets.ITarget
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.module.kether.ScriptContext

@@ -30,7 +30,7 @@ internal fun getNearPlayers(entity: Entity): List<Player> {
     return entity.world.players
 }
 
-internal fun getNearPlayers(entity: Entity, func: (Player) -> Unit) {
+internal inline fun getNearPlayers(entity: Entity, func: (Player) -> Unit) {
     entity.world.players.forEach(func)
 }
 

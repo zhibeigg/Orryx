@@ -10,7 +10,7 @@ import taboolib.module.configuration.Type
 import java.io.File
 
 
-internal fun files(path: String, vararg defs: String, callback: (File) -> Unit) {
+internal inline fun files(path: String, vararg defs: String, callback: (File) -> Unit) {
     val file = File(getDataFolder(), path)
     if (!file.exists()) {
         defs.forEach {
@@ -43,7 +43,7 @@ internal fun ConfigurationSection.getMap(path: String): Map<String, String> {
     return map
 }
 
-internal fun <T> ConfigurationSection.getMap(path: String, func: (String) -> T): Map<String, T> {
+internal inline fun <T> ConfigurationSection.getMap(path: String, func: (String) -> T): Map<String, T> {
     val map = HashMap<String, T>()
     getConfigurationSection(path)?.let { section ->
         section.getKeys(false).forEach { key ->

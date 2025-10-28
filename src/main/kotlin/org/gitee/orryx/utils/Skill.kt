@@ -107,29 +107,29 @@ fun IPlayerSkill.up(): CompletableFuture<SkillLevelResult> {
     }
 }
 
-fun <T> Player.skill(skill: String, create: Boolean = false, function: (IPlayerSkill) -> T): CompletableFuture<T?> {
+inline fun <T> Player.skill(skill: String, create: Boolean = false, crossinline function: (IPlayerSkill) -> T): CompletableFuture<T?> {
     return getSkill(skill, create).thenApply {
         it?.let { it1 -> function(it1) }
     }
 }
 
-internal fun Player.getSkill(job: IPlayerJob, skill: String, create: Boolean = false): CompletableFuture<IPlayerSkill?> {
+fun Player.getSkill(job: IPlayerJob, skill: String, create: Boolean = false): CompletableFuture<IPlayerSkill?> {
     return getSkill(job.key, skill, create)
 }
 
-fun <T> Player.skill(job: IPlayerJob, skill: String, create: Boolean = false, function: (IPlayerSkill) -> T): CompletableFuture<T?> {
+inline fun <T> Player.skill(job: IPlayerJob, skill: String, create: Boolean = false, crossinline function: (IPlayerSkill) -> T): CompletableFuture<T?> {
     return getSkill(job, skill, create).thenApply {
         it?.let { it1 -> function(it1) }
     }
 }
 
-fun <T> Player.skill(job: String, skill: String, create: Boolean = false, function: (IPlayerSkill) -> T): CompletableFuture<T?> {
+inline fun <T> Player.skill(job: String, skill: String, create: Boolean = false, crossinline function: (IPlayerSkill) -> T): CompletableFuture<T?> {
     return getSkill(job, skill, create).thenApply {
         it?.let { it1 -> function(it1) }
     }
 }
 
-internal fun Player.getSkill(skill: String, create: Boolean = false): CompletableFuture<IPlayerSkill?> {
+fun Player.getSkill(skill: String, create: Boolean = false): CompletableFuture<IPlayerSkill?> {
     val future = CompletableFuture<IPlayerSkill?>()
     job {
         getSkill(it.key, skill, create).thenApply { skill ->
@@ -139,7 +139,7 @@ internal fun Player.getSkill(skill: String, create: Boolean = false): Completabl
     return future
 }
 
-internal fun Player.getSkill(job: String, skill: String, create: Boolean = false): CompletableFuture<IPlayerSkill?> {
+fun Player.getSkill(job: String, skill: String, create: Boolean = false): CompletableFuture<IPlayerSkill?> {
     val skillLoader = SkillLoaderManager.getSkillLoader(skill) ?: return CompletableFuture.completedFuture(null)
     return orryxProfile { profile ->
         MemoryCache.getPlayerSkill(uniqueId, profile.id, job, skill).thenApply {

@@ -14,5 +14,4 @@ enum class FluidHandling {
      * 与所有流体碰撞（低于1.13无效）
      * */
     ALWAYS;
-
 }

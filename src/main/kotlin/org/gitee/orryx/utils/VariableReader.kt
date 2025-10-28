@@ -14,7 +14,7 @@ class VariableReader(val start: String = "{{", val end: String = "}}") {
     /**
      * 替换嵌套变量
      */
-    fun replaceNested(source: String, transfer: (str: String, startPos: Int) -> String): String {
+    inline fun replaceNested(source: String, transfer: (str: String, startPos: Int) -> String): String {
         var str = source
         while (true) {
             val endPos = indexOf(str, end)
@@ -54,7 +54,7 @@ class VariableReader(val start: String = "{{", val end: String = "}}") {
         return parts
     }
 
-    private fun format(str: String): String {
+    fun format(str: String): String {
         // 不使用 replace 将 "\" + start 和 "\" + end 替换为 start" 和 end
         return buildString {
             var i = 0
@@ -79,7 +79,7 @@ class VariableReader(val start: String = "{{", val end: String = "}}") {
         }
     }
 
-    private fun indexOf(source: String, str: String, start: Int = 0): Int {
+    fun indexOf(source: String, str: String, start: Int = 0): Int {
         var s = start
         while (true) {
             val find = source.indexOf(str, s)
@@ -93,7 +93,7 @@ class VariableReader(val start: String = "{{", val end: String = "}}") {
         }
     }
 
-    private fun lastIndexOf(source: String, str: String, start: Int = source.length): Int {
+    fun lastIndexOf(source: String, str: String, start: Int = source.length): Int {
         var s = start
         while (true) {
             val find = source.lastIndexOf(str, s)

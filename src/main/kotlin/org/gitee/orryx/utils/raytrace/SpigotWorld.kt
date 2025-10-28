@@ -173,6 +173,5 @@ class SpigotWorld(private val world: World) : PlatformWorld {
             }
             throw IllegalStateException("Unexpected value: $enumDirection")
         }
-
     }
 }

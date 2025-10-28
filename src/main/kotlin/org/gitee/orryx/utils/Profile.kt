@@ -10,13 +10,13 @@ fun Player.orryxProfile(): CompletableFuture<IPlayerProfile> {
     return MemoryCache.getPlayerProfile(uniqueId)
 }
 
-fun <T> Player.orryxProfileTo(func: (profile: IPlayerProfile) -> T): CompletableFuture<T> {
+inline fun <T> Player.orryxProfileTo(crossinline func: (profile: IPlayerProfile) -> T): CompletableFuture<T> {
     return orryxProfile().thenApply {
         func(it)
     }
 }
 
-fun <T> Player.orryxProfile(func: (profile: IPlayerProfile) -> CompletionStage<T>?): CompletableFuture<T> {
+inline fun <T> Player.orryxProfile(crossinline func: (profile: IPlayerProfile) -> CompletionStage<T>?): CompletableFuture<T> {
     return orryxProfile().thenCompose {
         func(it)
     }

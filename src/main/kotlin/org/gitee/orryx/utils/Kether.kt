@@ -74,7 +74,7 @@ internal fun ScriptFrame.world(): IContainer {
     return Container(bukkitPlayer().world.livingEntities.mapTo(linkedSetOf()) { it.toTarget() })
 }
 
-internal fun <T> ScriptFrame.keySetting(func: (setting: PlayerKeySetting) -> T): CompletableFuture<T> {
+internal inline fun <T> ScriptFrame.keySetting(crossinline func: (setting: PlayerKeySetting) -> T): CompletableFuture<T> {
     return bukkitPlayer().keySetting {
         func(it)
     }
@@ -111,7 +111,7 @@ internal fun QuestReader.nextDest(): ParsedAction<*>? {
     return this.nextHeadActionOrNull(arrayOf("dest"))
 }
 
-internal fun <T> ScriptFrame.destQuaternion(dest: ParsedAction<*>?, func: (ScriptFrame.(dest: Quaterniond) -> T)): CompletableFuture<T> {
+internal inline fun <T> ScriptFrame.destQuaternion(dest: ParsedAction<*>?, crossinline func: (ScriptFrame.(dest: Quaterniond) -> T)): CompletableFuture<T> {
     return if (dest == null) {
         CompletableFuture.completedFuture(func(Quaterniond()))
     } else {
@@ -121,7 +121,7 @@ internal fun <T> ScriptFrame.destQuaternion(dest: ParsedAction<*>?, func: (Scrip
     }
 }
 
-internal fun <T> ScriptFrame.destMatrix(dest: ParsedAction<*>?, func: (ScriptFrame.(dest: Matrix3d) -> T)): CompletableFuture<T> {
+internal inline fun <T> ScriptFrame.destMatrix(dest: ParsedAction<*>?, crossinline func: (ScriptFrame.(dest: Matrix3d) -> T)): CompletableFuture<T> {
     return if (dest == null) {
         CompletableFuture.completedFuture(func(Matrix3d()))
     } else {
@@ -131,7 +131,7 @@ internal fun <T> ScriptFrame.destMatrix(dest: ParsedAction<*>?, func: (ScriptFra
     }
 }
 
-internal fun <T> ScriptFrame.destVector(dest: ParsedAction<*>?, func: (ScriptFrame.(dest: IVector) -> T)): CompletableFuture<T> {
+internal inline fun <T> ScriptFrame.destVector(dest: ParsedAction<*>?, crossinline func: (ScriptFrame.(dest: IVector) -> T)): CompletableFuture<T> {
     return if (dest == null) {
         CompletableFuture.completedFuture(func(AbstractVector()))
     } else {
@@ -141,7 +141,7 @@ internal fun <T> ScriptFrame.destVector(dest: ParsedAction<*>?, func: (ScriptFra
     }
 }
 
-internal fun <T> ScriptFrame.container(container: ParsedAction<*>?, def: IContainer, func: (ScriptFrame.(container: IContainer) -> T)): CompletableFuture<T> {
+internal inline fun <T> ScriptFrame.container(container: ParsedAction<*>?, def: IContainer, crossinline func: (ScriptFrame.(container: IContainer) -> T)): CompletableFuture<T> {
     return if (container == null) {
         CompletableFuture.completedFuture(func(def))
     } else {
@@ -153,7 +153,7 @@ internal fun <T> ScriptFrame.container(container: ParsedAction<*>?, def: IContai
     }
 }
 
-internal fun <T> ScriptFrame.container(container: ParsedAction<*>, func: (ScriptFrame.(container: IContainer) -> T)): CompletableFuture<T> {
+internal inline fun <T> ScriptFrame.container(container: ParsedAction<*>, crossinline func: (ScriptFrame.(container: IContainer) -> T)): CompletableFuture<T> {
     return run(container).thenCompose {
         it.readContainer(script())?.thenApply { container ->
             func(container)
@@ -161,7 +161,7 @@ internal fun <T> ScriptFrame.container(container: ParsedAction<*>, func: (Script
     }
 }
 
-internal fun <T> ScriptFrame.containerOrSelf(container: ParsedAction<*>?, func: (ScriptFrame.(container: IContainer) -> T)): CompletableFuture<T> {
+internal inline fun <T> ScriptFrame.containerOrSelf(container: ParsedAction<*>?, crossinline func: (ScriptFrame.(container: IContainer) -> T)): CompletableFuture<T> {
     return container(container, self(), func)
 }
 
@@ -183,7 +183,7 @@ internal fun vector(): Parser<AbstractVector> {
     }
 }
 
-fun <T> CompletableFuture<Any?>.vector(then: (IVector) -> T): CompletableFuture<T> {
+inline fun <T> CompletableFuture<Any?>.vector(crossinline then: (IVector) -> T): CompletableFuture<T> {
     return thenApply { vector ->
         then(
             when (vector) {
@@ -198,23 +198,23 @@ fun <T> CompletableFuture<Any?>.vector(then: (IVector) -> T): CompletableFuture<
     }.except { then(AbstractVector()) }
 }
 
-fun <T> CompletableFuture<Any?>.effect(then: (EffectBuilder) -> T): CompletableFuture<T> {
+inline fun <T> CompletableFuture<Any?>.effect(crossinline then: (EffectBuilder) -> T): CompletableFuture<T> {
     return thenApply { effect -> then(effect as? EffectBuilder ?: error("应传入粒子效果构建器但是传入了${effect?.javaClass?.name}")) }.except { then(EffectBuilder()) }
 }
 
-fun <T> CompletableFuture<Any?>.effectSpawner(then: (EffectSpawner) -> T): CompletableFuture<T> {
+inline fun <T> CompletableFuture<Any?>.effectSpawner(crossinline then: (EffectSpawner) -> T): CompletableFuture<T> {
     return thenApply { effect -> then(effect as? EffectSpawner ?: error("应传入粒子生成器但是传入了${effect?.javaClass?.name}")) }
 }
 
-fun <T> CompletableFuture<Any?>.matrix(then: (Matrix3d) -> T): CompletableFuture<T> {
+inline fun <T> CompletableFuture<Any?>.matrix(crossinline then: (Matrix3d) -> T): CompletableFuture<T> {
     return thenApply { matrix -> then(matrix as? Matrix3d ?: error("应传入矩阵但是传入了${matrix?.javaClass?.name}")) }.except { then(Matrix3d()) }
 }
 
-fun <T> CompletableFuture<Any?>.quaternion(then: (Quaterniond) -> T): CompletableFuture<T> {
+inline fun <T> CompletableFuture<Any?>.quaternion(crossinline then: (Quaterniond) -> T): CompletableFuture<T> {
     return thenApply { quaternion -> then(quaternion as? Quaterniond ?: error("应传入四元数但是传入了${quaternion?.javaClass?.name}")) }.except { then(Quaterniond()) }
 }
 
-fun <T> CompletableFuture<Any?>.collider(then: (ILocalCollider<*>) -> T): CompletableFuture<T> {
+inline fun <T> CompletableFuture<Any?>.collider(crossinline then: (ILocalCollider<*>) -> T): CompletableFuture<T> {
     return thenApply { collider -> then(collider as? ILocalCollider<*> ?: error("应传入碰撞箱但是传入了${collider?.javaClass?.name}")) }.except { then(None()) }
 }
 
@@ -299,7 +299,7 @@ fun ScriptFrame.skillCaster(func: Player.(parm: IParameter?) -> CompletableFutur
 /**
  * 确保[func]在主线程运行
  * */
-fun <T> ensureSync(func: () -> T): CompletableFuture<T> {
+inline fun <T> ensureSync(crossinline func: () -> T): CompletableFuture<T> {
     if (isPrimaryThread) {
         return CompletableFuture.completedFuture(func())
     } else {
@@ -319,7 +319,7 @@ fun <T> combinationParser(action: org.gitee.orryx.module.wiki.Action, builder: P
     return combinationParser(builder)
 }
 
-fun <T> combinationParser(builder: ParserHolder.(Instance) -> App<Mu, Action<T>>): ScriptActionParser<T> {
+inline fun <T> combinationParser(builder: ParserHolder.(Instance) -> App<Mu, Action<T>>): ScriptActionParser<T> {
     val parser = Parser.build(builder(ParserHolder, instance()))
     return ScriptActionParser { parser.resolve<T>(this) }
 }
