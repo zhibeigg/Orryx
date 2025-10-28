@@ -21,6 +21,9 @@ jobs:
           distribution: 'zulu'
           cache: 'gradle'
           
+      - name: Grant execute permission to gradlew
+        run: chmod +x gradlew
+        
       - name: Build project with Gradle
         run: ./gradlew taboolibBuildApi -Pbuild=./build -PpublishUsername=${{ secrets.PUBLISH_USERNAME }} -PpublishPassword=${{ secrets.PUBLISH_PASSWORD }} -Ptoken=${{ secrets.TOKEN }}
         
