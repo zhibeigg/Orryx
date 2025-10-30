@@ -1,15 +1,11 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
-import org.bukkit.event.player.PlayerItemDamageEvent
 import org.bukkit.event.player.PlayerItemHeldEvent
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
 import taboolib.common.OpenResult
-import taboolib.common5.cint
-import taboolib.module.kether.ScriptContext
 
 object PlayerItemHeldTrigger: AbstractPropertyPlayerEventTrigger<PlayerItemHeldEvent>("Player Item Held") {
 
@@ -21,7 +17,7 @@ object PlayerItemHeldTrigger: AbstractPropertyPlayerEventTrigger<PlayerItemHeldE
             .addParm(Type.INT, "previousItemStack", "旧格子中物品")
             .description("玩家改变手持某物品时触发")
 
-    override val clazz
+    override val clazz: java
         get() = PlayerItemHeldEvent::class.java
 
     override fun read(instance: PlayerItemHeldEvent, key: String): OpenResult {

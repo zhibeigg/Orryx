@@ -1,15 +1,12 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
-import org.bukkit.event.player.PlayerItemBreakEvent
 import org.bukkit.event.player.PlayerItemConsumeEvent
 import org.bukkit.inventory.ItemStack
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
 import taboolib.common.OpenResult
-import taboolib.module.kether.ScriptContext
 
 object PlayerItemConsumeTrigger: AbstractPropertyPlayerEventTrigger<PlayerItemConsumeEvent>("Player Item Consume") {
 
@@ -19,7 +16,7 @@ object PlayerItemConsumeTrigger: AbstractPropertyPlayerEventTrigger<PlayerItemCo
             .addParm(Type.STRING, "hand", "获取此事件中使用的手：OFF_HAND/HAND")
             .description("某玩家工具耐久消耗完毕时触发(比如铲子，打火石，铁制工具)")
 
-    override val clazz
+    override val clazz: java
         get() = PlayerItemConsumeEvent::class.java
 
     override fun read(instance: PlayerItemConsumeEvent, key: String): OpenResult {

@@ -1,6 +1,5 @@
 package org.gitee.orryx.core.job
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -43,7 +42,7 @@ class PlayerJob(
 
     constructor(id: Int, player: Player, key: String, privateExperience: Int, privateGroup: String = DEFAULT, privateBindKeyOfGroup: MutableMap<IGroup, MutableMap<IBindKey, String?>>): this(id, player.uniqueId, key, privateExperience, privateGroup, privateBindKeyOfGroup)
 
-    override val player
+    override val player: K
         get() = Bukkit.getPlayer(uuid) ?: error("Player Offline")
 
     override val job: IJob

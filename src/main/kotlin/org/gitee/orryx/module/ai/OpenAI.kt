@@ -43,7 +43,7 @@ object OpenAI {
     @Serializable
     data class OpenAIRequest(
         val model: String,
-        @SerialName("max_tokens")
+        @param:SerialName("max_tokens")
         val maxTokens: Int,
         val messages: List<SendMessage>,
         val temperature: Double = 1.0
@@ -59,18 +59,18 @@ object OpenAI {
 
     @Serializable
     data class Usage(
-        @SerialName("completion_tokens")
+        @param:SerialName("completion_tokens")
         val completionTokens: Int,
-        @SerialName("prompt_tokens")
+        @param:SerialName("prompt_tokens")
         val promptTokens: Int,
-        @SerialName("total_tokens")
+        @param:SerialName("total_tokens")
         val totalTokens: Int
     )
 
     @Serializable
     data class Choice(
         val index: Int,
-        @SerialName("finish_reason")
+        @param:SerialName("finish_reason")
         val finishReason: String,
         val message: Message
     )

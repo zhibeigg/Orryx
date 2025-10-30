@@ -6,7 +6,6 @@ import org.gitee.orryx.core.kether.ScriptManager.parseScript
 import org.gitee.orryx.core.kether.ScriptManager.runScript
 import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.utils.ConfigLazy
-import org.gitee.orryx.utils.ReloadableLazy
 import org.gitee.orryx.utils.getFormatAtPosition
 import org.gitee.orryx.utils.reader
 import taboolib.common.platform.ProxyCommandSender

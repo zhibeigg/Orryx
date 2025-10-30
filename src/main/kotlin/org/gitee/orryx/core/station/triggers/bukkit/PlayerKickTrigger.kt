@@ -1,14 +1,11 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
-import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerKickEvent
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
 import taboolib.common.OpenResult
-import taboolib.module.kether.ScriptContext
 
 object PlayerKickTrigger: AbstractPropertyPlayerEventTrigger<PlayerKickEvent>("Player Kick") {
 
@@ -18,7 +15,7 @@ object PlayerKickTrigger: AbstractPropertyPlayerEventTrigger<PlayerKickEvent>("P
             .addParm(Type.STRING, "reason", "原因")
             .description("玩家被踢出服务器时触发")
 
-    override val clazz
+    override val clazz: java
         get() = PlayerKickEvent::class.java
 
     override fun read(instance: PlayerKickEvent, key: String): OpenResult {

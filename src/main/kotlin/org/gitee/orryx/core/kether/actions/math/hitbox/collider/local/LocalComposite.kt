@@ -31,13 +31,13 @@ open class LocalComposite<T : ITargetLocation<*>, C : ILocalCollider<T>>(
         version[1] = (parent.rotationVersion() - 1).toShort()
     }
 
-    override var localPosition = localPosition
+    override var localPosition: Vector3d = localPosition
         set(value) {
             dirty[0] = true
             field = value
         }
 
-    override var localRotation = localRotation
+    override var localRotation: Quaterniond = localRotation
         set(value) {
             dirty[1] = true
             field = value
