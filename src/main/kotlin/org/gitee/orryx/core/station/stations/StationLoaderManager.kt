@@ -10,6 +10,7 @@ import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.kether.parameter.StationParameter
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.core.station.TriggerManager
+import org.gitee.orryx.utils.consoleMessage
 import org.gitee.orryx.utils.files
 import org.gitee.orryx.utils.getBytes
 import org.gitee.orryx.utils.orryxEnvironmentNamespaces
@@ -18,6 +19,7 @@ import taboolib.common.platform.Awake
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.ProxyListener
+import taboolib.common.platform.function.console
 import taboolib.common.platform.function.info
 import taboolib.common.platform.function.registerBukkitListener
 import taboolib.common.platform.function.unregisterListener
@@ -54,8 +56,8 @@ object StationLoaderManager {
             stationMap[station.key] = station
         }
         autoRegister()
-        info("&e┣&7Triggers loaded &e${TriggerManager.stationTriggersMap.size} &a√".colored())
-        info("&e┣&7Stations loaded &e${stationMap.size} &a√".colored())
+        consoleMessage("&e┣&7Triggers loaded &e${TriggerManager.stationTriggersMap.size} &a√")
+        consoleMessage("&e┣&7Stations loaded &e${stationMap.size} &a√")
     }
 
     internal fun loadScript(station: StationLoader): Script? {

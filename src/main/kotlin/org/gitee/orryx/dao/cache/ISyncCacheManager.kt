@@ -8,6 +8,7 @@ import org.gitee.orryx.dao.pojo.PlayerJobPO
 import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
+import org.gitee.orryx.utils.consoleMessage
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.function.info
@@ -31,19 +32,19 @@ interface ISyncCacheManager {
         private fun loadCache() {
             INSTANCE = when(lazy) {
                 "REDIS" -> {
-                    info(("&e┣&7已选择Redis缓存 &a√").colored())
+                    consoleMessage(("&e┣&7已选择Redis缓存 &a√").colored())
                     when (RedisChannelPlugin.type) {
                         CLUSTER -> ClusterRedisManager()
                         SINGLE -> RedisManager()
                     }
                 }
                 "BROKER" -> {
-                    info(("&e┣&7已选择BROKE通道缓存 &a√").colored())
+                    consoleMessage(("&e┣&7已选择BROKE通道缓存 &a√").colored())
                     error("暂不支持")
                     //BrokerManager()
                 }
                 "DISABLE" -> {
-                    info(("&e┣&7已关闭跨服同步缓存 &a√").colored())
+                    consoleMessage(("&e┣&7已关闭跨服同步缓存 &a√").colored())
                     DisableManager()
                 }
                 else -> error("未知的缓存数据库类型: $lazy")
@@ -53,7 +54,7 @@ interface ISyncCacheManager {
         @Reload(1)
         private fun load() {
             if (type != lazy) {
-                info(("&e┣&6请勿在运行时修改缓存选择 &4×").colored())
+                consoleMessage(("&e┣&6请勿在运行时修改缓存选择 &4×").colored())
             }
         }
     }

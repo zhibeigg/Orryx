@@ -15,9 +15,11 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.core.kether.ScriptManager
+import org.gitee.orryx.utils.consoleMessage
 import org.gitee.orryx.utils.debug
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
+import taboolib.common.platform.function.console
 import taboolib.common.platform.function.info
 import taboolib.common.platform.function.pluginId
 import taboolib.common.platform.function.pluginVersion
@@ -53,8 +55,8 @@ object LarkSuite {
 
     fun createDocument() {
         ioScope.launch(Dispatchers.IO) {
-            info("&e┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━".colored())
-            info("&e┣&7新文档$pluginId-$pluginVersion-(自生成) 开始创建".colored())
+            consoleMessage("&e┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+            consoleMessage("&e┣&7新文档$pluginId-$pluginVersion-(自生成) 开始创建")
 
             val token = getToken() ?: return@launch
             val documentId = withContext(Dispatchers.IO) {
@@ -89,7 +91,7 @@ object LarkSuite {
                     )
                     return@withContext null
                 }
-                info("&e┣&7空文档 创建成功 &a√".colored())
+                consoleMessage("&e┣&7空文档 创建成功 &a√")
                 JsonParser().parse(String(resp.rawResponse.body, UTF_8)).asJsonObject["data"].asJsonObject["document"].asJsonObject["document_id"].asString
             }
             documentId?.let {
@@ -97,9 +99,9 @@ object LarkSuite {
                 createDocumentBlocks(token, it)
             }
 
-            info("&e┣&7新文档已创建成功 &a√".colored())
-            info("&e┣&7访问地址 &fhttps://www.feishu.cn/docx/$documentId".colored())
-            info("&e┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━".colored())
+            consoleMessage("&e┣&7新文档已创建成功 &a√")
+            consoleMessage("&e┣&7访问地址 &fhttps://www.feishu.cn/docx/$documentId")
+            consoleMessage("&e┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         }
     }
 
@@ -315,7 +317,7 @@ object LarkSuite {
                 )
                 return@withContext
             }
-            info("&e┣┳&7Group: $group 创建成功 &a√".colored())
+            consoleMessage("&e┣┳&7Group: $group 创建成功 &a√")
             val l = keyGroup.toList()
             l.forEach {
                 if (l.last() == it) {
@@ -387,24 +389,24 @@ object LarkSuite {
                 return@withContext
             }
             if (last) {
-                info("&e┃┗┳&7Key: $key 创建成功 &a√".colored())
+                consoleMessage("&e┃┗┳&7Key: $key 创建成功 &a√")
             } else {
-                info("&e┃┣┳&7Key: $key 创建成功 &a√".colored())
+                consoleMessage("&e┃┣┳&7Key: $key 创建成功 &a√")
             }
         }
         list.forEach {
             coroutineScope { createAction(token, it, documentId) }
             if (change && !last) {
                 if (list.last() == it) {
-                    info("&e┃┃┗&7Action: ${it.name} 创建成功 &a√".colored())
+                    consoleMessage("&e┃┃┗&7Action: ${it.name} 创建成功 &a√")
                 } else {
-                    info("&e┃┃┣&7Action: ${it.name} 创建成功 &a√".colored())
+                    consoleMessage("&e┃┃┣&7Action: ${it.name} 创建成功 &a√")
                 }
             } else {
                 if (list.last() == it) {
-                    info("&e┃ ┗&7Action: ${it.name} 创建成功 &a√".colored())
+                    consoleMessage("&e┃ ┗&7Action: ${it.name} 创建成功 &a√")
                 } else {
-                    info("&e┃ ┣&7Action: ${it.name} 创建成功 &a√".colored())
+                    consoleMessage("&e┃ ┣&7Action: ${it.name} 创建成功 &a√")
                 }
             }
         }
@@ -562,7 +564,7 @@ object LarkSuite {
                 )
                 return@withContext
             }
-            info("&e┣┳&7SelectorType: ${type.name} 创建成功 &a√".colored())
+            consoleMessage("&e┣┳&7SelectorType: ${type.name} 创建成功 &a√")
         }
         list.forEach {
             if (list.last() == it) {
@@ -611,9 +613,9 @@ object LarkSuite {
                 return@withContext
             }
             if (last) {
-                info("&e┃┗&7Selector: ${selector.name} 创建成功 &a√".colored())
+                consoleMessage("&e┃┗&7Selector: ${selector.name} 创建成功 &a√")
             } else {
-                info("&e┃┣&7Selector: ${selector.name} 创建成功 &a√".colored())
+                consoleMessage("&e┃┣&7Selector: ${selector.name} 创建成功 &a√")
             }
         }
     }
@@ -727,7 +729,7 @@ object LarkSuite {
                 )
                 return@withContext
             }
-            info("&e┣┳&7TriggerGroup: ${group.value} 创建成功 &a√".colored())
+            consoleMessage("&e┣┳&7TriggerGroup: ${group.value} 创建成功 &a√")
         }
         list.forEach {
             if (list.last() == it) {
@@ -776,9 +778,9 @@ object LarkSuite {
                 return@withContext
             }
             if (last) {
-                info("&e┃┗&7Trigger: ${trigger.key} 创建成功 &a√".colored())
+                consoleMessage("&e┃┗&7Trigger: ${trigger.key} 创建成功 &a√")
             } else {
-                info("&e┃┣&7Trigger: ${trigger.key} 创建成功 &a√".colored())
+                consoleMessage("&e┃┣&7Trigger: ${trigger.key} 创建成功 &a√")
             }
         }
     }

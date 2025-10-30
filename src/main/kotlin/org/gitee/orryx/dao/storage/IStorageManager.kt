@@ -10,6 +10,7 @@ import org.gitee.orryx.dao.pojo.PlayerJobPO
 import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
+import org.gitee.orryx.utils.consoleMessage
 import taboolib.common.LifeCycle
 import taboolib.common.io.newFile
 import taboolib.common.platform.Awake
@@ -44,15 +45,15 @@ interface IStorageManager {
         private fun enable() {
             INSTANCE = when(lazyType) {
                 "SQLLITE", "SQL_LITE" -> {
-                    info(("&e┣&7已选择SqlLite存储 &a√").colored())
+                    consoleMessage(("&e┣&7已选择SqlLite存储 &a√").colored())
                     SqlLiteManager()
                 }
                 "MYSQL" -> {
-                    info(("&e┣&7已选择MySql存储 &a√").colored())
+                    consoleMessage(("&e┣&7已选择MySql存储 &a√").colored())
                     MySqlManager()
                 }
                 "H2" -> {
-                    info(("&e┣&7已选择H2存储 &a√").colored())
+                    consoleMessage(("&e┣&7已选择H2存储 &a√").colored())
                     H2Manager()
                 }
                 else -> error("未知的持久化数据库类型: $lazyType")
@@ -62,7 +63,7 @@ interface IStorageManager {
         @Reload(1)
         private fun load() {
             if (type != lazyType) {
-                info(("&e┣&6请勿在运行时修改数据库选择 &4×").colored())
+                consoleMessage(("&e┣&6请勿在运行时修改数据库选择 &4×").colored())
             }
         }
 

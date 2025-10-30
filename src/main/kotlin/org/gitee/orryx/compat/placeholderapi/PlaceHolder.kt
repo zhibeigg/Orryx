@@ -6,6 +6,7 @@ import org.bukkit.entity.Player
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.kether.ScriptManager.runKether
 import org.gitee.orryx.core.reload.Reload
+import org.gitee.orryx.utils.consoleMessage
 import org.gitee.orryx.utils.files
 import org.gitee.orryx.utils.getBytes
 import org.gitee.orryx.utils.orryxEnvironmentNamespaces
@@ -13,6 +14,7 @@ import org.gitee.orryx.utils.printKetherErrorMessage
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.function.adaptCommandSender
+import taboolib.common.platform.function.console
 import taboolib.common.platform.function.info
 import taboolib.common.platform.function.warning
 import taboolib.module.chat.colored
@@ -41,7 +43,7 @@ object PlaceHolder: PlaceholderExpansion {
                 }
             }
         }
-        info("&e┣&7PlaceHolders loaded &e${scriptsMap.size} &a√".colored())
+        consoleMessage("&e┣&7PlaceHolders loaded &e${scriptsMap.size} &a√")
     }
 
     private fun loadScript(key: String, action: String): Script? {

@@ -13,6 +13,7 @@ import org.gitee.orryx.utils.*
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.event.SubscribeEvent
+import taboolib.common.platform.function.console
 import taboolib.common.platform.function.info
 import taboolib.common.util.unsafeLazy
 import taboolib.module.chat.colored
@@ -64,7 +65,7 @@ object BuffActions {
                 buffMap[it] = Buff(it, description)
             }
         }
-        info("&e┣&7Buffs loaded &e${buffMap.size} &a√".colored())
+        consoleMessage("&e┣&7Buffs loaded &e${buffMap.size} &a√")
     }
 
     fun sendBuff(player: Player, name: String, timeout: Long) {

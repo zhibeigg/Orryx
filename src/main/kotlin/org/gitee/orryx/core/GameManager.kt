@@ -14,12 +14,14 @@ import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.module.spirit.ISpiritManager
 import org.gitee.orryx.utils.ConfigLazy
+import org.gitee.orryx.utils.consoleMessage
 import org.gitee.orryx.utils.job
 import org.gitee.orryx.utils.orryxProfile
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
+import taboolib.common.platform.function.console
 import taboolib.common.platform.function.info
 import taboolib.module.chat.colored
 import taboolib.module.nms.MinecraftVersion
@@ -105,20 +107,20 @@ object GameManager {
 
     @Awake(LifeCycle.DISABLE)
     private fun disabled() {
-        info("&e┣&7检测到关闭服务器 Orryx开始关闭流程".colored())
+        consoleMessage("&e┣&7检测到关闭服务器 Orryx开始关闭流程")
         IManaManager.closeThread()
-        info("&e┣&7Mana线程已关闭 &a√".colored())
+        consoleMessage("&e┣&7Mana线程已关闭 &a√")
         ISpiritManager.closeThread()
-        info("&e┣&7Spirit线程已关闭 &a√".colored())
+        consoleMessage("&e┣&7Spirit线程已关闭 &a√")
         shutdown = true
-        info("&e┣&7Storage禁止异步 &a√".colored())
+        consoleMessage("&e┣&7Storage禁止异步 &a√")
         ScriptManager.terminateAllSkills()
-        info("&e┣&7终止所有玩家技能 &a√".colored())
-        info("&e┣&7延迟2Tick后关闭服务器 &a√".colored())
+        consoleMessage("&e┣&7终止所有玩家技能 &a√")
+        consoleMessage("&e┣&7延迟2Tick后关闭服务器 &a√")
         Thread.sleep(100)
         OrryxAPI.saveScope.cancel("服务器关闭")
         OrryxAPI.effectScope.cancel("服务器关闭")
         OrryxAPI.pluginScope.cancel("服务器关闭")
-        info("&e┣&7协程域终止 &a√".colored())
+        consoleMessage("&e┣&7协程域终止 &a√")
     }
 }

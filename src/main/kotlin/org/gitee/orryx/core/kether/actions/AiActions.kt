@@ -7,8 +7,10 @@ import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.ORRYX_NAMESPACE
 import org.gitee.orryx.utils.bukkitPlayer
 import org.gitee.orryx.utils.combinationParser
+import org.gitee.orryx.utils.consoleMessage
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
+import taboolib.common.platform.function.console
 import taboolib.common.platform.function.info
 import taboolib.common.util.unsafeLazy
 import taboolib.module.chat.colored
@@ -39,7 +41,7 @@ object AiActions {
             val temperature = config.getDouble("$key.temperature")
             npcMap[key] = Npc(key, name, system, model, maxTokens, temperature)
         }
-        info("&e┣&7Npc loaded &e${npcMap.size} &a√".colored())
+        consoleMessage("&e┣&7Npc loaded &e${npcMap.size} &a√")
     }
 
     @KetherParser(["aiChat"], namespace = ORRYX_NAMESPACE, shared = true)

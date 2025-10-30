@@ -8,6 +8,7 @@ import org.gitee.orryx.module.state.StateManager
 import org.gitee.orryx.utils.*
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
+import taboolib.common.platform.function.console
 import taboolib.common.platform.function.info
 import taboolib.common.platform.function.warning
 import taboolib.common.util.unsafeLazy
@@ -48,7 +49,7 @@ object SkillLoaderManager {
                 skillMap[skill.key] = skill
                 if (skill is ICastSkill) castSkillMap[skill.key] = skill
             }
-            info("&e┣&7Skills loaded &e${skillMap.size} &a√".colored())
+            consoleMessage("&e┣&7Skills loaded &e${skillMap.size} &a√")
             StateManager.reload(castSkillMap)
         }
     }

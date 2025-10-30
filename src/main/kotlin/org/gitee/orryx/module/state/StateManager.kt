@@ -34,6 +34,7 @@ import taboolib.common.platform.Awake
 import taboolib.common.platform.Ghost
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
+import taboolib.common.platform.function.console
 import taboolib.common.platform.function.info
 import taboolib.common.platform.function.warning
 import taboolib.common.util.unsafeLazy
@@ -77,7 +78,7 @@ object StateManager {
         skillMap.forEach { (t, u) ->
             globalState[t] = SkillState(u)
         }
-        info("&e┣&7GlobalState loaded &e${globalState.size} &a√".colored())
+        consoleMessage("&e┣&7GlobalState loaded &e${globalState.size} &a√")
     }
 
     @Awake(LifeCycle.ENABLE)
@@ -87,12 +88,12 @@ object StateManager {
         files("controllers", "example.yml") { file ->
             controllerMap[file.nameWithoutExtension] = Configuration.loadFromFile(file)
         }
-        info("&e┣&7Controllers loaded &e${controllerMap.size} &a√".colored())
+        consoleMessage("&e┣&7Controllers loaded &e${controllerMap.size} &a√")
         statusMap.clear()
         files("status", "example.yml") { file ->
             statusMap[file.nameWithoutExtension] = Status(file.nameWithoutExtension, Configuration.loadFromFile(file))
         }
-        info("&e┣&7Status loaded &e${statusMap.size} &a√".colored())
+        consoleMessage("&e┣&7Status loaded &e${statusMap.size} &a√")
         onlinePlayers.forEach {
             autoCheckStatus(it)
         }

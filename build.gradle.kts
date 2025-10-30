@@ -64,6 +64,7 @@ taboolib {
             name("GlowAPI").optional(true)
             name("DungeonPlus").optional(true)
             name("Nodens").optional(true)
+            name("CloudPick").optional(true)
         }
     }
     relocate("com.github.benmanes.caffeine", "org.gitee.orryx.caffeine")
@@ -101,6 +102,7 @@ dependencies {
     compileOnly("org.eldergod.ext:AttributePlus:api")
     compileOnly("org.eldergod.ext:DungeonPlus:1.4.3")
     compileOnly("org.eldergod.ext:ProtocolLib:5.3.0")
+    compileOnly("org.eldergod.ext:cloudpick:1.2.1:CloudPick")
 
     compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
     compileOnly("com.github.ben-manes.caffeine:caffeine:2.9.3")

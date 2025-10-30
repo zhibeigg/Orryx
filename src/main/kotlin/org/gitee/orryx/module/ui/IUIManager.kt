@@ -18,6 +18,7 @@ import org.gitee.orryx.module.ui.germplugin.GermPluginSkillHud.Companion.germSki
 import org.gitee.orryx.module.ui.germplugin.GermPluginUIManager
 import org.gitee.orryx.utils.DragonCorePlugin
 import org.gitee.orryx.utils.GermPluginPlugin
+import org.gitee.orryx.utils.consoleMessage
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.event.EventPriority
@@ -127,24 +128,24 @@ interface IUIManager {
         private fun awake() {
             INSTANCE = when (type) {
                 "BUKKIT" -> {
-                    info(("&e┣&7已选择原版UI &a√").colored())
+                    consoleMessage(("&e┣&7已选择原版UI &a√").colored())
                     BukkitUIManager()
                 }
                 "DRAGONCORE", "DRAGON" -> {
                     if (DragonCorePlugin.isEnabled) {
-                        info(("&e┣&7已选择龙核UI &a√").colored())
+                        consoleMessage(("&e┣&7已选择龙核UI &a√").colored())
                         DragonCoreUIManager()
                     } else {
-                        info(("&e┣&7因为未检测到DragonCore，已自动选择BUKKIT UI &a√").colored())
+                        consoleMessage(("&e┣&7因为未检测到DragonCore，已自动选择BUKKIT UI &a√").colored())
                         BukkitUIManager()
                     }
                 }
                 "GERMPLUGIN", "GERM" -> {
                     if (GermPluginPlugin.isEnabled) {
-                        info(("&e┣&7已选择萌芽UI &a√").colored())
+                        consoleMessage(("&e┣&7已选择萌芽UI &a√").colored())
                         GermPluginUIManager()
                     } else {
-                        info(("&e┣&7因为未检测到GermPlugin，已自动选择BUKKIT UI &a√").colored())
+                        consoleMessage(("&e┣&7因为未检测到GermPlugin，已自动选择BUKKIT UI &a√").colored())
                         BukkitUIManager()
                     }
                 }

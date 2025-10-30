@@ -15,6 +15,7 @@ import org.gitee.orryx.core.skill.SkillLoaderManager
 import org.gitee.orryx.utils.*
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
+import taboolib.common.platform.function.console
 import taboolib.common.platform.function.info
 import taboolib.common5.format
 import taboolib.module.chat.colored
@@ -105,7 +106,7 @@ object MemoryCache {
     @Awake(LifeCycle.DISABLE)
     fun printStats() {
         fun printStats(name: String, stats: CacheStats) {
-            info("&e┣&f缓存：$name &c命中率：${(stats.hitRate()*100).format(2)} % &c加载平均时间：${(stats.averageLoadPenalty()/1_000_000).format(2)} ms".colored())
+            consoleMessage("&e┣&f缓存：$name &c命中率：${(stats.hitRate()*100).format(2)} % &c加载平均时间：${(stats.averageLoadPenalty()/1_000_000).format(2)} ms")
         }
         printStats("玩家", playerProfileCache.synchronous().stats())
         printStats("职业", playerJobCache.synchronous().stats())

@@ -1,9 +1,11 @@
 package org.gitee.orryx.core.job
 
 import org.gitee.orryx.core.reload.Reload
+import org.gitee.orryx.utils.consoleMessage
 import org.gitee.orryx.utils.files
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
+import taboolib.common.platform.function.console
 import taboolib.common.platform.function.info
 import taboolib.common.util.unsafeLazy
 import taboolib.module.chat.colored
@@ -29,6 +31,6 @@ object JobLoaderManager {
             val configuration = Configuration.loadFromFile(file)
             jobLoaderMap[configuration.name] = JobLoader(configuration.name, configuration)
         }
-        info("&e┣&7Jobs loaded &e${jobLoaderMap.size} &a√".colored())
+        consoleMessage("&e┣&7Jobs loaded &e${jobLoaderMap.size} &a√")
     }
 }

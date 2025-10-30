@@ -1,8 +1,10 @@
 package org.gitee.orryx.core.selector.presets
 
 import org.gitee.orryx.core.reload.Reload
+import org.gitee.orryx.utils.consoleMessage
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
+import taboolib.common.platform.function.console
 import taboolib.common.platform.function.info
 import taboolib.common.util.unsafeLazy
 import taboolib.module.chat.colored
@@ -29,7 +31,6 @@ object SelectorPresetsLoaderManager {
         selectors.getKeys(false).forEach { key ->
             selectorPresets[key] = PresetsLoader(arrayOf(key), selectors.getConfigurationSection(key)!!)
         }
-        info("&e┣&7Selectors loaded &e${selectorPresets.size} &a√".colored())
+        consoleMessage("&e┣&7Selectors loaded &e${selectorPresets.size} &a√")
     }
-
 }

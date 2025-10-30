@@ -6,6 +6,7 @@ import org.bukkit.event.server.ServerCommandEvent
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.api.events.OrryxPluginReloadEvent
 import org.gitee.orryx.api.interfaces.IReloadAPI
+import org.gitee.orryx.utils.consoleMessage
 import org.gitee.orryx.utils.debug
 import taboolib.common.LifeCycle
 import taboolib.common.inject.ClassVisitor
@@ -13,6 +14,7 @@ import taboolib.common.platform.Awake
 import taboolib.common.platform.Ghost
 import taboolib.common.platform.PlatformFactory
 import taboolib.common.platform.event.SubscribeEvent
+import taboolib.common.platform.function.console
 import taboolib.common.platform.function.info
 import taboolib.common.platform.function.submit
 import taboolib.common.util.unsafeLazy
@@ -45,7 +47,7 @@ object ReloadAPI: IReloadAPI, ClassVisitor(3) {
     override fun reload() {
         val event = OrryxPluginReloadEvent()
         if (event.call()) {
-            info("&e┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".colored())
+            consoleMessage("&e┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
             Orryx.config.reload()
             val extensions = event.getFunctions()
             val weights = (methodList.map { it.weight } + extensions.map { it.weight }).distinct()
@@ -57,7 +59,7 @@ object ReloadAPI: IReloadAPI, ClassVisitor(3) {
                     it.run()
                 }
             }
-            info("&e┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".colored())
+            consoleMessage("&e┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         }
     }
 
