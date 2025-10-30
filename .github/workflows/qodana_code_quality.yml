@@ -26,7 +26,3 @@ jobs:
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_1373142430 }}
           QODANA_ENDPOINT: 'https://qodana.cloud'
-          publishUsername: ${{ secrets.PUBLISH_USERNAME }}
-          publishPassword: ${{ secrets.PUBLISH_PASSWORD }}
-          token: ${{ secrets.TOKEN }}
-          build: './build'
