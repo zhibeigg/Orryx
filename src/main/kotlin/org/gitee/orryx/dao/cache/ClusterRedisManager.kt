@@ -1,6 +1,5 @@
 package org.gitee.orryx.dao.cache
 
-import com.gitee.redischannel.RedisChannelPlugin
 import kotlinx.serialization.json.Json
 import org.gitee.orryx.dao.pojo.PlayerJobPO
 import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
@@ -33,7 +32,7 @@ class ClusterRedisManager: ISyncCacheManager {
                             future.complete(it)
                         }
                     } else {
-                        commands.expire(tag, RedisManager.Companion.SECOND_12_HOURS)
+                        commands.expire(tag, RedisManager.SECOND_12_HOURS)
                         future.complete(Json.decodeFromString<PlayerProfilePO>(json))
                     }
                 }
@@ -58,7 +57,7 @@ class ClusterRedisManager: ISyncCacheManager {
                             future.complete(it)
                         }
                     } else {
-                        commands.expire(tag, RedisManager.Companion.SECOND_12_HOURS)
+                        commands.expire(tag, RedisManager.SECOND_12_HOURS)
                         future.complete(Json.decodeFromString<PlayerJobPO>(json))
                     }
                 }
@@ -83,7 +82,7 @@ class ClusterRedisManager: ISyncCacheManager {
                             future.complete(it)
                         }
                     } else {
-                        commands.expire(tag, RedisManager.Companion.SECOND_6_HOURS)
+                        commands.expire(tag, RedisManager.SECOND_6_HOURS)
                         future.complete(Json.decodeFromString<PlayerSkillPO>(json))
                     }
                 }
@@ -108,7 +107,7 @@ class ClusterRedisManager: ISyncCacheManager {
                             future.complete(it)
                         }
                     } else {
-                        commands.expire(tag, RedisManager.Companion.SECOND_6_HOURS)
+                        commands.expire(tag, RedisManager.SECOND_6_HOURS)
                         future.complete(Json.decodeFromString<PlayerKeySettingPO>(json))
                     }
                 }

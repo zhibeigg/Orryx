@@ -17,7 +17,7 @@ object OrryxPlayerLevelUpTrigger: AbstractPropertyEventTrigger<OrryxPlayerJobLev
             .addParm(Type.DOUBLE, "level", "变化等级")
             .description("玩家等级上升事件")
 
-    override val clazz
+    override val clazz: java
         get() = OrryxPlayerJobLevelEvents.Up::class.java
 
     override fun onJoin(event: OrryxPlayerJobLevelEvents.Up, map: Map<String, Any?>): ProxyCommandSender {

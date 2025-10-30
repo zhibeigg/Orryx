@@ -1,15 +1,11 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
-import org.bukkit.event.player.PlayerAnimationEvent
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent
-import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
 import taboolib.common.OpenResult
-import taboolib.module.kether.ScriptContext
 
 object PlayerArmorStandManipulateTrigger: AbstractPropertyPlayerEventTrigger<PlayerArmorStandManipulateEvent>("Player ArmorStand Manipulate") {
 
@@ -22,7 +18,7 @@ object PlayerArmorStandManipulateTrigger: AbstractPropertyPlayerEventTrigger<Pla
             .addParm(Type.STRING, "hand", "玩家使用的手的EquipmentSlot：HAND/OFF_HAND")
             .description("当玩家与装甲架交互并且进行交换, 取回或放置物品时触发")
 
-    override val clazz
+    override val clazz: java
         get() = PlayerArmorStandManipulateEvent::class.java
 
     override fun read(instance: PlayerArmorStandManipulateEvent, key: String): OpenResult {

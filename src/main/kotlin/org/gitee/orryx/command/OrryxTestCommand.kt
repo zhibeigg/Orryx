@@ -15,7 +15,7 @@ object OrryxTestCommand {
     }
 
     @CommandBody
-    val unlimit = subCommand {
+    val unlimit: subCommand = subCommand {
         exec<Player> {
             if (unlimits.contains(sender.uniqueId)) {
                 unlimits.remove(sender.uniqueId)

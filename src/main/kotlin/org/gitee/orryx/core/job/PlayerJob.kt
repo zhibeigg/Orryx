@@ -43,7 +43,7 @@ class PlayerJob(
 
     constructor(id: Int, player: Player, key: String, privateExperience: Int, privateGroup: String = DEFAULT, privateBindKeyOfGroup: MutableMap<IGroup, MutableMap<IBindKey, String?>>): this(id, player.uniqueId, key, privateExperience, privateGroup, privateBindKeyOfGroup)
 
-    override val player
+    override val player: K
         get() = Bukkit.getPlayer(uuid) ?: error("Player Offline")
 
     override val job: IJob

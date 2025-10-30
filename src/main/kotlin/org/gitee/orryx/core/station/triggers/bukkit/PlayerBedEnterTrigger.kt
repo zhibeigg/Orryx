@@ -17,7 +17,7 @@ object PlayerBedEnterTrigger: AbstractPropertyPlayerEventTrigger<PlayerBedEnterE
             .addParm(Type.STRING, "useBed", "玩家使用床的结果：ALLOW/DEFAULT/DENY")
             .description("玩家准备躺到床上时触发")
 
-    override val clazz
+    override val clazz: java
         get() = PlayerBedEnterEvent::class.java
 
     override fun read(instance: PlayerBedEnterEvent, key: String): OpenResult {

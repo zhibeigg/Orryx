@@ -14,11 +14,11 @@ import taboolib.common5.cdouble
 object OrryxPlayerSpiritUpTrigger: AbstractPropertyEventTrigger<OrryxPlayerSpiritEvents.Up>("Orryx Player Spirit Up") {
 
     override val wiki: Trigger
-        get() = Trigger.Companion.new(TriggerGroup.ORRYX, event)
+        get() = Trigger.new(TriggerGroup.ORRYX, event)
             .addParm(Type.DOUBLE, "spirit", "变化精力值")
             .description("玩家精力值上升事件")
 
-    override val clazz
+    override val clazz: java
         get() = OrryxPlayerSpiritEvents.Up::class.java
 
     override fun onJoin(event: OrryxPlayerSpiritEvents.Up, map: Map<String, Any?>): ProxyCommandSender {

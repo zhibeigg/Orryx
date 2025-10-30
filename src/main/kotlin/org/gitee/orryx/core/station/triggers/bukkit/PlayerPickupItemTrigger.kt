@@ -2,13 +2,9 @@ package org.gitee.orryx.core.station.triggers.bukkit
 
 import org.bukkit.entity.Player
 import org.bukkit.event.entity.EntityPickupItemEvent
-import org.bukkit.event.player.PlayerPickupArrowEvent
-import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
 import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.station.stations.IStation
-import org.gitee.orryx.core.station.triggers.AbstractEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyEventTrigger
-import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
@@ -16,7 +12,6 @@ import org.gitee.orryx.utils.abstract
 import taboolib.common.OpenResult
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
-import taboolib.module.kether.ScriptContext
 
 object PlayerPickupItemTrigger: AbstractPropertyEventTrigger<EntityPickupItemEvent>("Player Pickup Item") {
 
@@ -27,7 +22,7 @@ object PlayerPickupItemTrigger: AbstractPropertyEventTrigger<EntityPickupItemEve
             .addParm(Type.INT, "remaining", "获得地面剩余掉落物品数量")
             .description("当玩家从地上捡起掉落物时触发")
 
-    override val clazz
+    override val clazz: java
         get() = EntityPickupItemEvent::class.java
 
     override fun onCheck(station: IStation, event: EntityPickupItemEvent, map: Map<String, Any?>): Boolean {

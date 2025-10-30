@@ -23,7 +23,6 @@ import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.utils.async
 import org.gitee.orryx.utils.castSkill
-import org.gitee.orryx.utils.orryxProfile
 import org.gitee.orryx.utils.orryxProfileTo
 import org.gitee.orryx.utils.runCustomAction
 import taboolib.common.platform.function.isPrimaryThread
@@ -44,7 +43,7 @@ class PlayerSkill(
 
     constructor(id: Int, player: Player, key: String, job: String, privateLevel: Int, privateLocked: Boolean): this(id, player.uniqueId, key, job, privateLevel, privateLocked)
 
-    override val player
+    override val player: K
         get() = Bukkit.getPlayer(uuid) ?: error("Player Offline")
 
     override val level: Int

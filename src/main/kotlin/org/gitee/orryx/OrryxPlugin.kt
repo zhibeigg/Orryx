@@ -5,10 +5,8 @@ import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.utils.consoleMessage
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Plugin
-import taboolib.common.platform.function.console
 import taboolib.common.platform.function.disablePlugin
 import taboolib.common.platform.function.registerLifeCycleTask
-import taboolib.module.chat.colored
 
 object OrryxPlugin : Plugin() {
 

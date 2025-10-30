@@ -4,13 +4,11 @@ import eos.moe.dragoncore.api.gui.event.CustomPacketEvent
 import org.gitee.orryx.core.station.Plugin
 import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.station.stations.IStation
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
 import taboolib.common.OpenResult
-import taboolib.module.kether.ScriptContext
 
 @Plugin("DragonCore")
 object DragonPacketTrigger: AbstractPropertyPlayerEventTrigger<CustomPacketEvent>("Dragon Packet") {
@@ -22,7 +20,7 @@ object DragonPacketTrigger: AbstractPropertyPlayerEventTrigger<CustomPacketEvent
             .addSpecialKey(Type.STRING, "Identifier", "包名")
             .description("玩家龙核发包")
 
-    override val clazz
+    override val clazz: java
         get() = CustomPacketEvent::class.java
 
     override val specialKeys: Array<String> = arrayOf("Identifier")

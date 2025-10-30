@@ -19,11 +19,8 @@ import org.gitee.orryx.utils.consoleMessage
 import org.gitee.orryx.utils.debug
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
-import taboolib.common.platform.function.console
-import taboolib.common.platform.function.info
 import taboolib.common.platform.function.pluginId
 import taboolib.common.platform.function.pluginVersion
-import taboolib.module.chat.colored
 import java.util.concurrent.TimeUnit
 import kotlin.text.Charsets.UTF_8
 

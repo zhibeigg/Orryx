@@ -28,7 +28,7 @@ class PlayerKeySetting(
     val extKeyMap: Map<String, String> = emptyMap()
 ): Saveable {
 
-    val player
+    val player: K
         get() = Bukkit.getPlayer(uuid) ?: error("Player Offline")
 
     constructor(player: UUID, playerKeySettingPO: PlayerKeySettingPO) : this(

@@ -68,7 +68,7 @@ class OrryxAPI: IOrryxAPI {
 
     companion object {
 
-        val ketherScriptLoader by lazy { KetherScriptLoader() }
+        val ketherScriptLoader: getValue by lazy { KetherScriptLoader() }
 
         internal val saveScope = CoroutineScope(Dispatchers.async + SupervisorJob())
         internal val effectScope = CoroutineScope(Dispatchers.async + SupervisorJob())

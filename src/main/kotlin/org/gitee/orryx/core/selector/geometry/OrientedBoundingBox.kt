@@ -7,7 +7,6 @@ import org.gitee.orryx.core.targets.ITarget
 import org.gitee.orryx.module.wiki.Selector
 import org.gitee.orryx.module.wiki.SelectorType
 import org.gitee.orryx.module.wiki.Type
-import org.gitee.orryx.utils.ensureSync
 import org.gitee.orryx.utils.getParameter
 import org.gitee.orryx.utils.read
 import org.gitee.orryx.utils.toTarget
@@ -15,7 +14,6 @@ import taboolib.common.platform.function.adaptLocation
 import taboolib.module.effect.createLine
 import taboolib.module.kether.ScriptContext
 import kotlin.math.abs
-import kotlin.math.sqrt
 
 object OrientedBoundingBox: ISelectorGeometry {
 
