@@ -26,7 +26,7 @@ jobs:
       - name: 'Qodana Scan'
         uses: JetBrains/qodana-action@v2025.2
         env:
-          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
+          QODANA_TOKEN: ${{ secrets.TOKEN }}
         with:
           # When pr-mode is set to true, Qodana analyzes only the files that have been changed
           pr-mode: false
