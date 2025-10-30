@@ -37,7 +37,7 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
         }
 
     fun start() {
-        effectScope.launch(Dispatchers.async) {
+        effectScope.launch {
             effects.map { effect ->
                 async {
                     effect.start()
@@ -90,7 +90,7 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
                 itemMeta.lore = data.lore
                 try {
                     itemMeta.setCustomModelData(data.customModelData)
-                } catch (ignored: NoSuchMethodError) {
+                } catch (_: NoSuchMethodError) {
                 }
                 item.itemMeta = itemMeta
                 if (data.data != 0) {

@@ -14,7 +14,7 @@ import org.gitee.orryx.dao.cache.ISyncCacheManager
 import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.storage.IStorageManager
-import org.gitee.orryx.utils.async
+import org.gitee.orryx.utils.minecraftAsync
 import org.gitee.orryx.utils.toSerializable
 import taboolib.common.platform.function.isPrimaryThread
 import java.util.*
@@ -144,7 +144,7 @@ class PlayerProfile(
             }
         }
         if (async && !GameManager.shutdown) {
-            OrryxAPI.saveScope.launch(Dispatchers.async) {
+            OrryxAPI.ioScope.launch {
                 IStorageManager.INSTANCE.savePlayerData(data) {
                     remove()
                     callback()

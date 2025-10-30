@@ -281,7 +281,7 @@ class PlayerJob(
             }
         }
         if (async && !GameManager.shutdown) {
-            OrryxAPI.saveScope.launch(Dispatchers.async) {
+            OrryxAPI.ioScope.launch {
                 IStorageManager.INSTANCE.savePlayerJob(data) {
                     remove()
                     callback()

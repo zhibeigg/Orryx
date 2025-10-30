@@ -174,7 +174,7 @@ class ManaMangerDefault: IManaManager {
 
     private fun save(player: Player, profile: IPlayerProfile, callback: () -> Unit) {
         if (isPrimaryThread && !GameManager.shutdown) {
-            OrryxAPI.saveScope.launch(Dispatchers.async) {
+            OrryxAPI.ioScope.launch(Dispatchers.minecraftAsync) {
                 ISyncCacheManager.INSTANCE.savePlayerProfile(player.uniqueId, profile.createPO())
                 MemoryCache.savePlayerProfile(profile)
             }.invokeOnCompletion {

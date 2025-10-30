@@ -21,9 +21,8 @@ import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.module.mana.IManaManager
-import org.gitee.orryx.utils.async
+import org.gitee.orryx.utils.minecraftAsync
 import org.gitee.orryx.utils.castSkill
-import org.gitee.orryx.utils.orryxProfile
 import org.gitee.orryx.utils.orryxProfileTo
 import org.gitee.orryx.utils.runCustomAction
 import taboolib.common.platform.function.isPrimaryThread
@@ -190,7 +189,7 @@ class PlayerSkill(
             }
         }
         if (async && !GameManager.shutdown) {
-            OrryxAPI.saveScope.launch(Dispatchers.async) {
+            OrryxAPI.ioScope.launch {
                 IStorageManager.INSTANCE.savePlayerSkill(data) {
                     remove()
                     callback()

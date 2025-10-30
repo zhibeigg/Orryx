@@ -8,11 +8,11 @@ import kotlin.coroutines.CoroutineContext
 /**
  * Minecraft async dispatcher.
  */
-val Dispatchers.async: CoroutineContext
+val Dispatchers.minecraftAsync: CoroutineContext
     get() = AsyncDispatcher
 
 /**
  * Minecraft sync dispatcher.
  */
-val Dispatchers.minecraft: CoroutineContext
+val Dispatchers.minecraftMain: CoroutineContext
     get() = SyncDispatcher

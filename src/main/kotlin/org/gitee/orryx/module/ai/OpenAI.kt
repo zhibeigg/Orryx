@@ -6,17 +6,14 @@ import com.lark.oapi.okhttp.MediaType
 import com.lark.oapi.okhttp.OkHttpClient
 import com.lark.oapi.okhttp.Request
 import com.lark.oapi.okhttp.RequestBody
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.gitee.orryx.api.Orryx
+import org.gitee.orryx.api.OrryxAPI.Companion.ioScope
 import org.gitee.orryx.core.reload.Reload
-import org.gitee.orryx.module.wiki.LarkSuite
 import org.gitee.orryx.utils.ConfigLazy
-import org.gitee.orryx.utils.ReloadableLazy
 import org.gitee.orryx.utils.debug
 import java.time.Duration
 import java.time.temporal.ChronoUnit
@@ -100,7 +97,7 @@ object OpenAI {
         val context = npcChatCache.get("$player@$npc") { mutableListOf(SendMessage(role = "system", content = npcDescription, name = npc)) }!!
         val future = CompletableFuture<String>()
 
-        LarkSuite.ioScope.launch(Dispatchers.IO) {
+        ioScope.launch {
             synchronized(context) {
                 if (context.size > 5) {
                     // 清除除了 system 后面的第一条信息

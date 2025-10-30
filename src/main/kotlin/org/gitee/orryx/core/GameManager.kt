@@ -21,9 +21,6 @@ import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
-import taboolib.common.platform.function.console
-import taboolib.common.platform.function.info
-import taboolib.module.chat.colored
 import taboolib.module.nms.MinecraftVersion
 import taboolib.platform.util.onlinePlayers
 
@@ -118,7 +115,7 @@ object GameManager {
         consoleMessage("&e┣&7终止所有玩家技能 &a√")
         consoleMessage("&e┣&7延迟2Tick后关闭服务器 &a√")
         Thread.sleep(100)
-        OrryxAPI.saveScope.cancel("服务器关闭")
+        OrryxAPI.ioScope.cancel("服务器关闭")
         OrryxAPI.effectScope.cancel("服务器关闭")
         OrryxAPI.pluginScope.cancel("服务器关闭")
         consoleMessage("&e┣&7协程域终止 &a√")

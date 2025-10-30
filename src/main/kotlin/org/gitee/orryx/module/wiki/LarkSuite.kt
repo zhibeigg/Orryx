@@ -19,11 +19,8 @@ import org.gitee.orryx.utils.consoleMessage
 import org.gitee.orryx.utils.debug
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
-import taboolib.common.platform.function.console
-import taboolib.common.platform.function.info
 import taboolib.common.platform.function.pluginId
 import taboolib.common.platform.function.pluginVersion
-import taboolib.module.chat.colored
 import java.util.concurrent.TimeUnit
 import kotlin.text.Charsets.UTF_8
 
@@ -42,24 +39,25 @@ object LarkSuite {
     private val spaceId
         get() = Orryx.config.getString("LarkSuite.SpaceId")
 
-    private val client: Client by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+    private val client: Client by lazy {
         Client.newBuilder(appId, appSecret).requestTimeout(30, TimeUnit.MINUTES).build()
     }
 
-    internal val ioScope by lazy { CoroutineScope(Dispatchers.IO + SupervisorJob()) }
+    internal var ioScope: CoroutineScope? = null
 
     @Awake(LifeCycle.DISABLE)
     private fun disable() {
-        ioScope.cancel("服务器关闭")
+        ioScope?.cancel("服务器关闭")
     }
 
     fun createDocument() {
-        ioScope.launch(Dispatchers.IO) {
+        if (ioScope == null) { ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob()) }
+        ioScope!!.launch {
             consoleMessage("&e┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
             consoleMessage("&e┣&7新文档$pluginId-$pluginVersion-(自生成) 开始创建")
 
             val token = getToken() ?: return@launch
-            val documentId = withContext(Dispatchers.IO) {
+            val documentId = async {
                 // 创建请求对象
                 val req = CreateDocumentReq.newBuilder()
                     .createDocumentReqBody(
@@ -89,11 +87,11 @@ object LarkSuite {
                             )
                         )
                     )
-                    return@withContext null
+                    return@async null
                 }
                 consoleMessage("&e┣&7空文档 创建成功 &a√")
                 JsonParser().parse(String(resp.rawResponse.body, UTF_8)).asJsonObject["data"].asJsonObject["document"].asJsonObject["document_id"].asString
-            }
+            }.await()
             documentId?.let {
                 move(token, it)
                 createDocumentBlocks(token, it)
@@ -104,9 +102,9 @@ object LarkSuite {
             consoleMessage("&e┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         }
     }
-
-    private suspend fun move(token: String, documentId: String) {
-        withContext(Dispatchers.IO) {
+    
+    private suspend fun CoroutineScope.move(token: String, documentId: String) {
+        async {
             val req = MoveDocsToWikiSpaceNodeReq.newBuilder()
                 .spaceId(spaceId)
                 .moveDocsToWikiSpaceNodeReqBody(
@@ -137,11 +135,11 @@ object LarkSuite {
                     )
                 )
             }
-        }
+        }.await()
     }
 
-    private suspend fun getToken(): String? {
-        return withContext(Dispatchers.IO) {
+    private suspend fun CoroutineScope.getToken(): String? {
+        return async {
             // 创建请求对象
             val req = InternalTenantAccessTokenReq.newBuilder()
                 .internalTenantAccessTokenReqBody(
@@ -166,14 +164,14 @@ object LarkSuite {
                         Json.encodeToJsonElement(String(resp.rawResponse.body, UTF_8))
                     )
                 )
-                return@withContext null
+                return@async null
             }
 
             JsonParser().parse(String(resp.rawResponse.body, UTF_8)).asJsonObject.get("tenant_access_token").asString
-        }
+        }.await()
     }
 
-    private suspend fun createDocumentBlocks(token: String, documentId: String) {
+    private suspend fun CoroutineScope.createDocumentBlocks(token: String, documentId: String) {
         val actionGroup = ScriptManager.wikiActions.groupBy { it.group }
         val selectorsGroup = ScriptManager.wikiSelectors.groupBy { it.type }
         val triggersGroup = ScriptManager.wikiTriggers.groupBy { it.group }
@@ -194,8 +192,8 @@ object LarkSuite {
         }
     }
 
-    private suspend fun createPs(token: String, documentId: String) {
-        withContext(Dispatchers.IO) {
+    private suspend fun CoroutineScope.createPs(token: String, documentId: String) {
+        async {
             val req = CreateDocumentBlockChildrenReq.newBuilder()
                 .documentId(documentId)
                 .blockId(documentId)
@@ -259,14 +257,14 @@ object LarkSuite {
                         String(resp.rawResponse.body, UTF_8)
                     )
                 )
-                return@withContext
+                return@async
             }
-        }
+        }.await()
     }
 
-    private suspend fun createGroup(token: String, group: String, list: List<Action>, documentId: String) {
+    private suspend fun CoroutineScope.createGroup(token: String, group: String, list: List<Action>, documentId: String) {
         val keyGroup = list.groupBy { it.key }
-        withContext(Dispatchers.IO) {
+        async {
             val req = CreateDocumentBlockChildrenReq.newBuilder()
                 .documentId(documentId)
                 .blockId(documentId)
@@ -315,7 +313,7 @@ object LarkSuite {
                         String(resp.rawResponse.body, UTF_8)
                     )
                 )
-                return@withContext
+                return@async
             }
             consoleMessage("&e┣┳&7Group: $group 创建成功 &a√")
             val l = keyGroup.toList()
@@ -326,10 +324,10 @@ object LarkSuite {
                     createKey(token, it.first, it.second, documentId, l.size > 1, false)
                 }
             }
-        }
+        }.await()
     }
 
-    private suspend fun createKey(
+    private suspend fun CoroutineScope.createKey(
         token: String,
         key: String,
         list: List<Action>,
@@ -337,7 +335,7 @@ object LarkSuite {
         change: Boolean,
         last: Boolean
     ) {
-        withContext(Dispatchers.IO) {
+        async {
             val req = CreateDocumentBlockChildrenReq.newBuilder()
                 .documentId(documentId)
                 .blockId(documentId)
@@ -386,16 +384,16 @@ object LarkSuite {
                         String(resp.rawResponse.body, UTF_8)
                     )
                 )
-                return@withContext
+                return@async
             }
             if (last) {
                 consoleMessage("&e┃┗┳&7Key: $key 创建成功 &a√")
             } else {
                 consoleMessage("&e┃┣┳&7Key: $key 创建成功 &a√")
             }
-        }
+        }.await()
         list.forEach {
-            coroutineScope { createAction(token, it, documentId) }
+            async { createAction(token, it, documentId) }.await()
             if (change && !last) {
                 if (list.last() == it) {
                     consoleMessage("&e┃┃┗&7Action: ${it.name} 创建成功 &a√")
@@ -412,9 +410,9 @@ object LarkSuite {
         }
     }
 
-    private suspend fun createAction(token: String, action: Action, documentId: String) {
-        withContext(Dispatchers.IO) {
-            delay(300)
+    private suspend fun CoroutineScope.createAction(token: String, action: Action, documentId: String) {
+        delay(300)
+        async {
             val blocks = action.createBlocks()
             val req = CreateDocumentBlockDescendantReq.newBuilder()
                 .documentId(documentId)
@@ -447,13 +445,13 @@ object LarkSuite {
                         String(resp.rawResponse.body, UTF_8)
                     )
                 )
-                return@withContext
+                return@async
             }
-        }
+        }.await()
     }
 
-    private suspend fun createSelectorHanging(token: String, documentId: String) {
-        withContext(Dispatchers.IO) {
+    private suspend fun CoroutineScope.createSelectorHanging(token: String, documentId: String) {
+        async {
             val req = CreateDocumentBlockChildrenReq.newBuilder()
                 .documentId(documentId)
                 .blockId(documentId)
@@ -502,13 +500,13 @@ object LarkSuite {
                         String(resp.rawResponse.body, UTF_8)
                     )
                 )
-                return@withContext
+                return@async
             }
-        }
+        }.await()
     }
 
-    private suspend fun createSelectorType(token: String, type: SelectorType, list: List<Selector>, documentId: String) {
-        withContext(Dispatchers.IO) {
+    private suspend fun CoroutineScope.createSelectorType(token: String, type: SelectorType, list: List<Selector>, documentId: String) {
+        async {
             val req = CreateDocumentBlockChildrenReq.newBuilder()
                 .documentId(documentId)
                 .blockId(documentId)
@@ -562,22 +560,22 @@ object LarkSuite {
                         String(resp.rawResponse.body, UTF_8)
                     )
                 )
-                return@withContext
+                return@async
             }
             consoleMessage("&e┣┳&7SelectorType: ${type.name} 创建成功 &a√")
-        }
+        }.await()
         list.forEach {
             if (list.last() == it) {
-                coroutineScope { createSelector(token, it, documentId, true) }
+                createSelector(token, it, documentId, true)
             } else {
-                coroutineScope { createSelector(token, it, documentId, false) }
+                createSelector(token, it, documentId, false)
             }
         }
     }
 
-    private suspend fun createSelector(token: String, selector: Selector, documentId: String, last: Boolean) {
-        withContext(Dispatchers.IO) {
-            delay(300)
+    private suspend fun CoroutineScope.createSelector(token: String, selector: Selector, documentId: String, last: Boolean) {
+        delay(300)
+        async {
             val blocks = selector.createBlocks()
             val req = CreateDocumentBlockDescendantReq.newBuilder()
                 .documentId(documentId)
@@ -610,18 +608,18 @@ object LarkSuite {
                         String(resp.rawResponse.body, UTF_8)
                     )
                 )
-                return@withContext
+                return@async
             }
             if (last) {
                 consoleMessage("&e┃┗&7Selector: ${selector.name} 创建成功 &a√")
             } else {
                 consoleMessage("&e┃┣&7Selector: ${selector.name} 创建成功 &a√")
             }
-        }
+        }.await()
     }
 
-    private suspend fun createTriggerHanging(token: String, documentId: String) {
-       withContext(Dispatchers.IO) {
+    private suspend fun CoroutineScope.createTriggerHanging(token: String, documentId: String) {
+       async {
             val req = CreateDocumentBlockChildrenReq.newBuilder()
                 .documentId(documentId)
                 .blockId(documentId)
@@ -670,13 +668,13 @@ object LarkSuite {
                         String(resp.rawResponse.body, UTF_8)
                     )
                 )
-                return@withContext
+                return@async
             }
-        }
+        }.await()
     }
 
-    private suspend fun createTriggerType(token: String, group: TriggerGroup, list: List<Trigger>, documentId: String) {
-        withContext(Dispatchers.IO) {
+    private suspend fun CoroutineScope.createTriggerType(token: String, group: TriggerGroup, list: List<Trigger>, documentId: String) {
+        async {
             val req = CreateDocumentBlockChildrenReq.newBuilder()
                 .documentId(documentId)
                 .blockId(documentId)
@@ -727,22 +725,22 @@ object LarkSuite {
                         String(resp.rawResponse.body, UTF_8)
                     )
                 )
-                return@withContext
+                return@async
             }
             consoleMessage("&e┣┳&7TriggerGroup: ${group.value} 创建成功 &a√")
-        }
+        }.await()
         list.forEach {
             if (list.last() == it) {
-                coroutineScope { createTrigger(token, it, documentId, true) }
+                createTrigger(token, it, documentId, true)
             } else {
-                coroutineScope { createTrigger(token, it, documentId, false) }
+                createTrigger(token, it, documentId, false)
             }
         }
     }
 
-    private suspend fun createTrigger(token: String, trigger: Trigger, documentId: String, last: Boolean) {
-        withContext(Dispatchers.IO) {
-            delay(300)
+    private suspend fun CoroutineScope.createTrigger(token: String, trigger: Trigger, documentId: String, last: Boolean) {
+        delay(300)
+        async {
             val blocks = trigger.createBlocks()
             val req = CreateDocumentBlockDescendantReq.newBuilder()
                 .documentId(documentId)
@@ -775,13 +773,13 @@ object LarkSuite {
                         String(resp.rawResponse.body, UTF_8)
                     )
                 )
-                return@withContext
+                return@async
             }
             if (last) {
                 consoleMessage("&e┃┗&7Trigger: ${trigger.key} 创建成功 &a√")
             } else {
                 consoleMessage("&e┃┣&7Trigger: ${trigger.key} 创建成功 &a√")
             }
-        }
+        }.await()
     }
 }
