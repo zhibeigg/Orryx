@@ -16,7 +16,7 @@ object PlayerDropItemTrigger: AbstractPropertyPlayerEventTrigger<PlayerDropItemE
             .addParm(Type.ITEM_STACK, "itemStackDrop", "获得此玩家丢出的物品")
             .description("玩家丢出物品时触发")
 
-    override val clazz
+    override val clazz: java
         get() = PlayerDropItemEvent::class.java
 
     override fun read(instance: PlayerDropItemEvent, key: String): OpenResult {

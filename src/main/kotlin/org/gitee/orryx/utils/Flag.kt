@@ -26,75 +26,75 @@ inline fun <reified T : Any> T.flag(isPersistence: Boolean = false, timeout: Lon
 
 enum class SerializableType(val key: String, val type: KClass<*>) {
     STRING("string", String::class) {
-        override fun encodeToString(value: Any) = Json.encodeToString(value as String)
+        override fun encodeToString(value: Any): encodeToString = Json.encodeToString(value as String)
         override fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long) = Flag(Json.decodeFromString<String>(value), isPersistence, timeout)
     },
     BOOLEAN("boolean", Boolean::class) {
-        override fun encodeToString(value: Any) = Json.encodeToString(value as Boolean)
+        override fun encodeToString(value: Any): encodeToString = Json.encodeToString(value as Boolean)
         override fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long) = Flag(Json.decodeFromString<Boolean>(value), isPersistence, timeout)
     },
     INTEGER("integer", Int::class) {
-        override fun encodeToString(value: Any) = Json.encodeToString(value as Int)
+        override fun encodeToString(value: Any): encodeToString = Json.encodeToString(value as Int)
         override fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long) = Flag(Json.decodeFromString<Int>(value), isPersistence, timeout)
     },
     LONG("long", Long::class) {
-        override fun encodeToString(value: Any) = Json.encodeToString(value as Long)
+        override fun encodeToString(value: Any): encodeToString = Json.encodeToString(value as Long)
         override fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long) = Flag(Json.decodeFromString<Long>(value), isPersistence, timeout)
     },
     FLOAT("float", Float::class) {
-        override fun encodeToString(value: Any) = Json.encodeToString(value as Float)
+        override fun encodeToString(value: Any): encodeToString = Json.encodeToString(value as Float)
         override fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long) = Flag(Json.decodeFromString<Float>(value), isPersistence, timeout)
     },
     DOUBLE("double", Double::class) {
-        override fun encodeToString(value: Any) = Json.encodeToString(value as Double)
+        override fun encodeToString(value: Any): encodeToString = Json.encodeToString(value as Double)
         override fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long) = Flag(Json.decodeFromString<Double>(value), isPersistence, timeout)
     },
     SHORT("short", Short::class) {
-        override fun encodeToString(value: Any) = Json.encodeToString(value as Short)
+        override fun encodeToString(value: Any): encodeToString = Json.encodeToString(value as Short)
         override fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long) = Flag(Json.decodeFromString<Short>(value), isPersistence, timeout)
     },
     BYTE("byte", Byte::class) {
-        override fun encodeToString(value: Any) = Json.encodeToString(value as Byte)
+        override fun encodeToString(value: Any): encodeToString = Json.encodeToString(value as Byte)
         override fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long) = Flag(Json.decodeFromString<Byte>(value), isPersistence, timeout)
     },
     CHAR("char", Char::class) {
-        override fun encodeToString(value: Any) = Json.encodeToString(value as Char)
+        override fun encodeToString(value: Any): encodeToString = Json.encodeToString(value as Char)
         override fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long) = Flag(Json.decodeFromString<Char>(value), isPersistence, timeout)
     },
     DATE("date", Date::class) {
-        override fun encodeToString(value: Any) = Json.encodeToString(value as Date)
+        override fun encodeToString(value: Any): encodeToString = Json.encodeToString(value as Date)
         override fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long) = Flag(Json.decodeFromString(DateSerializer, value), isPersistence, timeout)
     },
     INSTANT("instant", Instant::class) {
-        override fun encodeToString(value: Any) = Json.encodeToString(value as Instant)
+        override fun encodeToString(value: Any): encodeToString = Json.encodeToString(value as Instant)
         override fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long) = Flag(Json.decodeFromString(InstantSerializer, value), isPersistence, timeout)
     },
     VECTOR("vector", Vector3dc::class) {
-        override fun encodeToString(value: Any) = Json.encodeToString(IVector3dcSerializer, value as Vector3dc)
+        override fun encodeToString(value: Any): encodeToString = Json.encodeToString(IVector3dcSerializer, value as Vector3dc)
         override fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long) = Flag(Json.decodeFromString(IVector3dcSerializer, value), isPersistence, timeout)
     },
     MATRIX("matrix", Matrix3dc::class) {
-        override fun encodeToString(value: Any) = Json.encodeToString(IMatrix3dcSerializer, value as Matrix3dc)
+        override fun encodeToString(value: Any): encodeToString = Json.encodeToString(IMatrix3dcSerializer, value as Matrix3dc)
         override fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long) = Flag(Json.decodeFromString(IMatrix3dcSerializer, value), isPersistence, timeout)
     },
-    UUID("uuid", java.util.UUID::class) {
-        override fun encodeToString(value: Any) = Json.encodeToString(UUIDSerializer, value as java.util.UUID)
+    UUID("uuid", UUID::class) {
+        override fun encodeToString(value: Any): encodeToString = Json.encodeToString(UUIDSerializer, value as UUID)
         override fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long) = Flag(Json.decodeFromString(UUIDSerializer, value), isPersistence, timeout)
     },
     ABSTRACT_BUKKIT_ENTITY("abstract_bukkit_entity", AbstractBukkitEntity::class) {
-        override fun encodeToString(value: Any) = Json.encodeToString(UUIDSerializer, (value as AbstractBukkitEntity).uniqueId)
+        override fun encodeToString(value: Any): encodeToString = Json.encodeToString(UUIDSerializer, (value as AbstractBukkitEntity).uniqueId)
         override fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long) = Bukkit.getEntity(Json.decodeFromString(UUIDSerializer, value))?.let { Flag(AbstractBukkitEntity(it), isPersistence, timeout) }
     },
     ABSTRACT_ADYESHACH_ENTITY("abstract_adyeshach_entity", AbstractAdyeshachEntity::class) {
-        override fun encodeToString(value: Any) = Json.encodeToString((value as AbstractAdyeshachEntity).entityId)
+        override fun encodeToString(value: Any): encodeToString = Json.encodeToString((value as AbstractAdyeshachEntity).entityId)
         override fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long) = Adyeshach.api().getEntityFinder().getEntityFromEntityId(Json.decodeFromString(value))?.let { Flag(AbstractAdyeshachEntity(it), isPersistence, timeout) }
     },
-    Array("array", kotlin.Array::class) {
-        override fun encodeToString(value: Any) = Json.encodeToString((value as Array<*>).map {
+    Array("array", Array::class) {
+        override fun encodeToString(value: Any): encodeToString = Json.encodeToString((value as Array<*>).map {
             val type = getType(it!!)
             SerializableFlag(type.key, type.encodeToString(it), true, 0)
         })
-        override fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long) = Flag((Json.decodeFromString(value) as kotlin.Array<SerializableFlag>).map {
+        override fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long) = Flag((Json.decodeFromString(value) as Array<SerializableFlag>).map {
             it.toFlag()?.value
         }, isPersistence, timeout)
     };

@@ -93,11 +93,11 @@ class RangedDouble(value: String, squared: Boolean = false) {
         } else if (value.startsWith(">")) {
             val s = value.substring(1)
             this.min = s.toDouble()
-            this.max = Double.Companion.MAX_VALUE
+            this.max = Double.MAX_VALUE
             this.operation = Operation.GREATER_THAN
         } else if (value.startsWith("<")) {
             val s = value.substring(1)
-            this.min = Double.Companion.MIN_VALUE
+            this.min = Double.MIN_VALUE
             this.max = s.toDouble()
             this.operation = Operation.LESS_THAN
         } else {

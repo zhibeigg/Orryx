@@ -17,7 +17,7 @@ object OrryxPlayerManaHealTrigger: AbstractPropertyEventTrigger<OrryxPlayerManaE
             .addParm(Type.DOUBLE, "mana", "变化蓝量")
             .description("玩家蓝量指令回满事件")
 
-    override val clazz
+    override val clazz: java
         get() = OrryxPlayerManaEvents.Heal.Pre::class.java
 
     override fun onJoin(event: OrryxPlayerManaEvents.Heal.Pre, map: Map<String, Any?>): ProxyCommandSender {
