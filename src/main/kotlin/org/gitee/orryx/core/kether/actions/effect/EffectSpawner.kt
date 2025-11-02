@@ -41,7 +41,9 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
             effects.map { effect ->
                 async {
                     effect.start()
-                    effect.future.join()
+                    requireAsync("effect") {
+                        effect.future.join()
+                    }
                 }
             }.awaitAll()
         }.invokeOnCompletion {
