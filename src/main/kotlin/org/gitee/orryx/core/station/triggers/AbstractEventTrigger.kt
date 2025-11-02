@@ -1,7 +1,6 @@
 package org.gitee.orryx.core.station.triggers
 
 import org.gitee.orryx.core.station.WikiTrigger
-import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.station.pipe.IPipeTrigger
 import org.gitee.orryx.core.station.stations.IStation
 import org.gitee.orryx.core.station.stations.IStationTrigger

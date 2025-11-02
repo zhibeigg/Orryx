@@ -15,10 +15,7 @@ import org.gitee.orryx.core.skill.SkillLoaderManager
 import org.gitee.orryx.utils.*
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
-import taboolib.common.platform.function.console
-import taboolib.common.platform.function.info
 import taboolib.common5.format
-import taboolib.module.chat.colored
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap

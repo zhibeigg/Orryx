@@ -18,16 +18,16 @@ class DodgeState(override val key: String, override val configurationSection: Co
 
     val animation: Animation = Animation(configurationSection.getConfigurationSection("Animation")!!)
 
-    val invincible = configurationSection.getString("Invincible").toLongPair("-")
-    val connection = configurationSection.getString("Connection").toLongPair("-")
-    override val spirit = configurationSection.getDouble("Spirit", 0.0)
+    val invincible: Pair<Long, Long> = configurationSection.getString("Invincible").toLongPair("-")
+    val connection: Pair<Long, Long> = configurationSection.getString("Connection").toLongPair("-")
+    override val spirit: getDouble = configurationSection.getDouble("Spirit", 0.0)
 
     class Animation(configurationSection: ConfigurationSection) {
-        val front = configurationSection.getString("Front")!!
-        val rear = configurationSection.getString("Rear")!!
-        val left = configurationSection.getString("Left")!!
-        val right = configurationSection.getString("Right")!!
-        val duration = configurationSection.getLong("Duration")
+        val front: K = configurationSection.getString("Front")!!
+        val rear: K = configurationSection.getString("Rear")!!
+        val left: K = configurationSection.getString("Left")!!
+        val right: K = configurationSection.getString("Right")!!
+        val duration: getLong = configurationSection.getLong("Duration")
     }
 
     override val script: Script? = configurationSection.getString("Action")?.let { StateManager.loadScript(this, it) }

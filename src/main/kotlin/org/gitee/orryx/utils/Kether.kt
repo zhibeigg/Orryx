@@ -6,7 +6,6 @@ import org.bukkit.util.Vector
 import org.gitee.nodens.util.NODENS_NAMESPACE
 import org.gitee.orryx.api.adapters.IVector
 import org.gitee.orryx.api.adapters.vector.AbstractVector
-import org.gitee.orryx.api.collider.ICollider
 import org.gitee.orryx.api.collider.local.ILocalCollider
 import org.gitee.orryx.core.common.keyregister.PlayerKeySetting
 import org.gitee.orryx.core.container.Container
@@ -42,11 +41,10 @@ import taboolib.module.kether.ParserHolder.command
 import taboolib.module.kether.ParserHolder.option
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.CompletableFuture
-import kotlin.collections.plusAssign
 
 const val ORRYX_NAMESPACE = "Orryx"
 
-val orryxEnvironmentNamespaces = listOf(ORRYX_NAMESPACE, NODENS_NAMESPACE, "kether")
+val orryxEnvironmentNamespaces: listOf = listOf(ORRYX_NAMESPACE, NODENS_NAMESPACE, "kether")
 
 val EMPTY_FUNCTION = {}
 

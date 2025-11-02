@@ -153,7 +153,7 @@ class Selector(val name: String, val keys: Array<String>, val type: SelectorType
             n++
             return ids
         }
-        if (entries.size > 0) {
+        if (entries.isNotEmpty()) {
             id += "${name}_entries_table"
             list += Block.newBuilder()
                 .blockId("${name}_entries_table")

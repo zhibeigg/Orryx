@@ -1,6 +1,5 @@
 package org.gitee.orryx.command
 
-import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.job.JobLoaderManager
@@ -9,7 +8,6 @@ import org.gitee.orryx.core.skill.SkillLoaderManager
 import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.utils.*
-import org.serverct.ersha.api.AttributeAPI
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.command.*
 import taboolib.expansion.createHelper
@@ -20,7 +18,7 @@ import taboolib.platform.util.sendLang
 object OrryxCommand {
 
     @CommandBody
-    val main = mainCommand {
+    val main: mainCommand = mainCommand {
         createHelper()
     }
 
@@ -28,7 +26,7 @@ object OrryxCommand {
     val test = OrryxTestCommand
 
     @CommandBody
-    val reload = subCommandExec<ProxyCommandSender> {
+    val reload: subCommandExec = subCommandExec<ProxyCommandSender> {
         ReloadAPI.reload()
         sender.sendMessage("Orryx 重载成功")
     }
@@ -55,7 +53,7 @@ object OrryxCommand {
     val navigation = OrryxPlayerNavigationCommand
 
     @CommandBody
-    val info = subCommand {
+    val info: subCommand = subCommand {
         player {
             exec<ProxyCommandSender> {
                 val player = ctx.bukkitPlayer() ?: return@exec
@@ -158,7 +156,7 @@ object OrryxCommand {
     }
 
     @CommandBody
-    val printStats = subCommandExec<ProxyCommandSender> {
+    val printStats: subCommandExec = subCommandExec<ProxyCommandSender> {
         MemoryCache.printStats()
     }
 }

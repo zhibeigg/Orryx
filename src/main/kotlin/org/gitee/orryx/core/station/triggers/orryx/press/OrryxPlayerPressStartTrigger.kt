@@ -18,7 +18,7 @@ object OrryxPlayerPressStartTrigger: AbstractPropertyEventTrigger<OrryxPlayerPre
             .addParm(Type.LONG, "tick", "蓄力最长时间")
             .description("玩家开始蓄力事件")
 
-    override val clazz
+    override val clazz: java
         get() = OrryxPlayerPressStartEvent::class.java
 
     override fun onJoin(event: OrryxPlayerPressStartEvent, map: Map<String, Any?>): ProxyCommandSender {
