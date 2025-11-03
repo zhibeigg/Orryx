@@ -29,5 +29,4 @@ class ExperienceLoader(override val key: String, val configuration: Configuratio
             ScriptOptions.builder().sender(sender).set("level", level).namespace(orryxEnvironmentNamespaces).build()
         ).orNull().cint
     }
-
 }

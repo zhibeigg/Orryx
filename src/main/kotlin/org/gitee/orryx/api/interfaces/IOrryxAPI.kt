@@ -17,4 +17,6 @@ interface IOrryxAPI {
     val taskAPI: ITaskAPI
 
     val consumptionValueAPI: IConsumptionValueAPI
+
+    val miscAPI: IMiscAPI
 }

@@ -66,6 +66,8 @@ class OrryxAPI: IOrryxAPI {
 
     override val consumptionValueAPI: IConsumptionValueAPI = PlatformFactory.getAPI<IConsumptionValueAPI>()
 
+    override val miscAPI: IMiscAPI = PlatformFactory.getAPI<IMiscAPI>()
+
     companion object {
 
         val ketherScriptLoader by lazy { KetherScriptLoader() }
