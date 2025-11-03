@@ -21,7 +21,7 @@ class PlayerTarget(private val player: Player) : ITargetEntity<Player>, ITargetL
     override val world: World
         get() = player.world
 
-    override val uniqueId by unsafeLazy {
+    override val uniqueId: getValue by unsafeLazy {
         player.uniqueId
     }
 

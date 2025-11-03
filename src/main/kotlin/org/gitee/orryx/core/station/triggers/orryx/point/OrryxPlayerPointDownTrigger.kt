@@ -14,11 +14,11 @@ import taboolib.common5.cint
 object OrryxPlayerPointDownTrigger: AbstractPropertyEventTrigger<OrryxPlayerPointEvents.Down.Pre>("Orryx Player Point Down") {
 
     override val wiki: Trigger
-        get() = Trigger.Companion.new(TriggerGroup.ORRYX, event)
+        get() = Trigger.new(TriggerGroup.ORRYX, event)
             .addParm(Type.DOUBLE, "point", "变化技能点")
             .description("玩家技能点下降事件")
 
-    override val clazz
+    override val clazz: java
         get() = OrryxPlayerPointEvents.Down.Pre::class.java
 
     override fun onJoin(event: OrryxPlayerPointEvents.Down.Pre, map: Map<String, Any?>): ProxyCommandSender {

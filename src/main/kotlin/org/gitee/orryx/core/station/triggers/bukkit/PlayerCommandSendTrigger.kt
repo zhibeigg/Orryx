@@ -1,14 +1,11 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
-import org.bukkit.event.player.PlayerChatTabCompleteEvent
 import org.bukkit.event.player.PlayerCommandSendEvent
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
 import taboolib.common.OpenResult
-import taboolib.module.kether.ScriptContext
 
 object PlayerCommandSendTrigger: AbstractPropertyPlayerEventTrigger<PlayerCommandSendEvent>("Player Command Send") {
 
@@ -17,7 +14,7 @@ object PlayerCommandSendTrigger: AbstractPropertyPlayerEventTrigger<PlayerComman
             .addParm(Type.ITERABLE, "commands", "返回将发送给客户端的所有顶级命令的可变集合")
             .description("当服务器可用命令列表发送给玩家时触发")
 
-    override val clazz
+    override val clazz: java
         get() = PlayerCommandSendEvent::class.java
 
     override fun read(instance: PlayerCommandSendEvent, key: String): OpenResult {

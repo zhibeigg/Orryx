@@ -1,6 +1,5 @@
 package org.gitee.orryx.dao.cache
 
-import com.gitee.redischannel.RedisChannelPlugin
 import kotlinx.serialization.json.Json
 import org.gitee.orryx.dao.pojo.PlayerJobPO
 import org.gitee.orryx.dao.pojo.PlayerKeySettingPO

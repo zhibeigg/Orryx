@@ -17,7 +17,7 @@ object OrryxPlayerLevelDownTrigger: AbstractPropertyEventTrigger<OrryxPlayerJobL
             .addParm(Type.DOUBLE, "level", "变化等级")
             .description("玩家等级下降事件")
 
-    override val clazz
+    override val clazz: java
         get() = OrryxPlayerJobLevelEvents.Down::class.java
 
     override fun onJoin(event: OrryxPlayerJobLevelEvents.Down, map: Map<String, Any?>): ProxyCommandSender {
