@@ -23,7 +23,7 @@ object OrryxTestCommand {
     }
 
     @CommandBody
-    val unlimit = subCommand {
+    val unlimit: subCommand = subCommand {
         exec<Player> {
             if (unlimits.contains(sender.uniqueId)) {
                 unlimits.remove(sender.uniqueId)
@@ -36,7 +36,7 @@ object OrryxTestCommand {
     }
 
     @CommandBody
-    val test = subCommandExec<ProxyCommandSender> {
+    val test: subCommandExec = subCommandExec<ProxyCommandSender> {
         var time = System.currentTimeMillis()
         ioScope.launch { info("io: $isPrimaryThread") }.invokeOnCompletion {
             info("io: ${System.currentTimeMillis() - time}ms")

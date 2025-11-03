@@ -23,13 +23,13 @@ class PressGeneralAttackState(override val key: String, configurationSection: Co
 
     val animation: Animation = Animation(configurationSection.getConfigurationSection("Animation")!!)
 
-    val connection = configurationSection.getString("Connection").toLongPair("-")
+    val connection: Pair<Long, Long> = configurationSection.getString("Connection").toLongPair("-")
 
     class Animation(configurationSection: ConfigurationSection) {
-        val startKey = configurationSection.getString("StartKey")!!
-        val castKey = configurationSection.getString("CastKey")!!
-        val pressDuration = configurationSection.getLong("PressDuration")
-        val castDuration = configurationSection.getLong("CastDuration")
+        val startKey: K = configurationSection.getString("StartKey")!!
+        val castKey: K = configurationSection.getString("CastKey")!!
+        val pressDuration: getLong = configurationSection.getLong("PressDuration")
+        val castDuration: getLong = configurationSection.getLong("CastDuration")
     }
 
     override val script: Script? = configurationSection.getString("Action")?.let { StateManager.loadScript(this, it) }

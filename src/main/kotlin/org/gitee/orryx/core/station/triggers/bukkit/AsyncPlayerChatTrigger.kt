@@ -1,16 +1,11 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
 import org.bukkit.event.player.AsyncPlayerChatEvent
-import org.bukkit.event.player.AsyncPlayerChatPreviewEvent
-import org.gitee.orryx.core.container.Container
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
-import org.gitee.orryx.utils.toTarget
 import taboolib.common.OpenResult
-import taboolib.module.kether.ScriptContext
 
 object AsyncPlayerChatTrigger: AbstractPropertyPlayerEventTrigger<AsyncPlayerChatEvent>("Async Player Chat") {
 
@@ -23,7 +18,7 @@ object AsyncPlayerChatTrigger: AbstractPropertyPlayerEventTrigger<AsyncPlayerCha
             .addParm(Type.CONTAINER, "recipients", "能看到这条消息的玩家")
             .description("异步玩家聊天事件触发器")
 
-    override val clazz
+    override val clazz: java
         get() = AsyncPlayerChatEvent::class.java
 
     override fun read(instance: AsyncPlayerChatEvent, key: String): OpenResult {

@@ -6,11 +6,9 @@ import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
 import org.joml.Matrix3d
-import org.joml.Quaterniond
 import org.joml.Vector3d
 import org.joml.Vector3dc
 import taboolib.common.OpenResult
-import taboolib.common5.Quat
 import taboolib.common5.cdouble
 import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*
@@ -22,7 +20,7 @@ object VectorMathActions {
         KetherLoader.registerProperty(propertyVector(), IVector::class.java, false)
     }
 
-    fun propertyIVector() = object : ScriptProperty<Vector3dc>("Vector3dc.operator") {
+    fun propertyIVector(): ERROR = object : ScriptProperty<Vector3dc>("Vector3dc.operator") {
 
         override fun read(instance: Vector3dc, key: String): OpenResult {
             return when (key) {
@@ -39,7 +37,7 @@ object VectorMathActions {
         }
     }
 
-    fun propertyVector() = object : ScriptProperty<IVector>("vector.operator") {
+    fun propertyVector(): ERROR = object : ScriptProperty<IVector>("vector.operator") {
 
         override fun read(instance: IVector, key: String): OpenResult {
             return when (key) {

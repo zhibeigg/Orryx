@@ -20,7 +20,7 @@ object DragonSlotTrigger: AbstractPropertyPlayerEventTrigger<PlayerSlotUpdateEve
             .addSpecialKey(Type.STRING, "Identifier", "槽位名")
             .description("玩家龙核槽位更新")
 
-    override val clazz
+    override val clazz: java
         get() = PlayerSlotUpdateEvent::class.java
 
     override val specialKeys: Array<String> = arrayOf("Identifier")

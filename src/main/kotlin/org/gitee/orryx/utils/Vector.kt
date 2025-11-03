@@ -19,9 +19,9 @@ import org.joml.Vector3dc
 import taboolib.common5.cdouble
 import taboolib.module.effect.math.Matrix
 
-val X_AXIS = Vector(1.0, 0.0, 0.0)
-val Y_AXIS = Vector(0.0, 1.0, 0.0)
-val Z_AXIS = Vector(0.0, 0.0, 1.0)
+val X_AXIS: Vector = Vector(1.0, 0.0, 0.0)
+val Y_AXIS: Vector = Vector(0.0, 1.0, 0.0)
+val Z_AXIS: Vector = Vector(0.0, 0.0, 1.0)
 
 /**
  * AbstractLocation是否面相loc2
@@ -87,27 +87,27 @@ internal fun Vector.direction(x: Double, y: Double, z: Double, pitch: Boolean): 
     }
 }
 
-fun Location.joml() = Vector3d(x, y, z)
+fun Location.joml(): Vector3d = Vector3d(x, y, z)
 
-fun taboolib.common.util.Location.joml() = Vector3d(x, y, z)
+fun taboolib.common.util.Location.joml(): Vector3d = Vector3d(x, y, z)
 
-fun Vector.joml() = Vector3d(x, y, z)
+fun Vector.joml(): Vector3d = Vector3d(x, y, z)
 
-fun taboolib.common.util.Vector.joml() = Vector3d(x, y, z)
+fun taboolib.common.util.Vector.joml(): Vector3d = Vector3d(x, y, z)
 
-fun Vector3dc.bukkit() = Vector(x(), y(), z())
+fun Vector3dc.bukkit(): Vector = Vector(x(), y(), z())
 
-fun Vector.abstract() = AbstractVector(joml())
+fun Vector.abstract(): ERROR = AbstractVector(joml())
 
-fun taboolib.common.util.Vector.abstract() = AbstractVector(joml())
+fun taboolib.common.util.Vector.abstract(): ERROR = AbstractVector(joml())
 
-fun Vector3d.abstract() = AbstractVector(this)
+fun Vector3d.abstract(): ERROR = AbstractVector(this)
 
-fun Vector3dc.taboo() = taboolib.common.util.Vector(x(), y(), z())
+fun Vector3dc.taboo(): Vector = taboolib.common.util.Vector(x(), y(), z())
 
-fun IVector.bukkit() = Vector(joml.x, joml.y, joml.z)
+fun IVector.bukkit(): Vector = Vector(joml.x, joml.y, joml.z)
 
-fun IVector.taboo() = taboolib.common.util.Vector(joml.x, joml.y, joml.z)
+fun IVector.taboo(): Vector = taboolib.common.util.Vector(joml.x, joml.y, joml.z)
 
 fun IVector.joml() = joml
 
@@ -120,7 +120,7 @@ fun String.parseVector(): AbstractVector? {
 
 fun IVector.dragonString() = "${x()},${y()},${z()}"
 
-fun Matrix3dc.taboo() = Matrix(
+fun Matrix3dc.taboo(): Matrix = Matrix(
     arrayOf(
         doubleArrayOf(m00(), m01(), m02()),
         doubleArrayOf(m10(), m11(), m12()),
@@ -130,22 +130,22 @@ fun Matrix3dc.taboo() = Matrix(
 
 data class AABB(val minVector3d: Vector3dc, val maxVector3d: Vector3dc) {
 
-    val minX
+    val minX: x
         get() = minVector3d.x()
 
-    val minY
+    val minY: y
         get() = minVector3d.y()
 
-    val minZ
+    val minZ: z
         get() = minVector3d.z()
 
-    val maxX
+    val maxX: x
         get() = maxVector3d.x()
 
-    val maxY
+    val maxY: y
         get() = maxVector3d.y()
 
-    val maxZ
+    val maxZ: z
         get() = maxVector3d.z()
 
     constructor(minX: Double, minY: Double, minZ: Double, maxX: Double, maxY: Double, maxZ: Double) : this(Vector3d(minX, minY, minZ), Vector3d(maxX, maxY, maxZ))

@@ -13,10 +13,7 @@ import org.gitee.orryx.utils.*
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.event.SubscribeEvent
-import taboolib.common.platform.function.console
-import taboolib.common.platform.function.info
 import taboolib.common.util.unsafeLazy
-import taboolib.module.chat.colored
 import taboolib.module.configuration.Config
 import taboolib.module.configuration.ConfigFile
 import taboolib.module.kether.*

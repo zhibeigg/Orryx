@@ -2,12 +2,10 @@ package org.gitee.orryx.core.station.triggers.germplugin
 
 import com.germ.germplugin.api.GermKeyAPI
 import com.germ.germplugin.api.KeyType
-import com.germ.germplugin.api.event.GermKeyDownEvent
 import com.germ.germplugin.api.event.GermKeyUpEvent
 import org.gitee.orryx.core.station.Plugin
 import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.station.stations.IStation
-import org.gitee.orryx.core.station.triggers.AbstractEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
@@ -15,7 +13,6 @@ import org.gitee.orryx.module.wiki.Type
 import taboolib.common.OpenResult
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
-import taboolib.module.kether.ScriptContext
 
 @Plugin("GermPlugin")
 object GermKeyUpTrigger: AbstractPropertyEventTrigger<GermKeyUpEvent>("Germ Key Up") {
@@ -26,7 +23,7 @@ object GermKeyUpTrigger: AbstractPropertyEventTrigger<GermKeyUpEvent>("Germ Key 
             .addSpecialKey(Type.STRING, "Keys", "按键，可写列表/单个")
             .description("玩家释放按键事件")
 
-    override val clazz
+    override val clazz: java
         get() = GermKeyUpEvent::class.java
 
     override val specialKeys = arrayOf("Keys")
