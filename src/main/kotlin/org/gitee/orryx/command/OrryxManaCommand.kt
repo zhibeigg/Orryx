@@ -13,7 +13,7 @@ import taboolib.common5.cdouble
 object OrryxManaCommand {
 
     @CommandBody
-    val give = subCommand {
+    val give: subCommand = subCommand {
         player {
             dynamic("mana") {
                 restrictDouble()
@@ -29,7 +29,7 @@ object OrryxManaCommand {
     }
 
     @CommandBody
-    val take = subCommand {
+    val take: subCommand = subCommand {
         player {
             dynamic("mana") {
                 restrictDouble()
@@ -45,7 +45,7 @@ object OrryxManaCommand {
     }
 
     @CommandBody
-    val set = subCommand {
+    val set: subCommand = subCommand {
         player {
             dynamic("mana") {
                 restrictDouble()
@@ -61,7 +61,7 @@ object OrryxManaCommand {
     }
 
     @CommandBody
-    val regain = subCommand {
+    val regain: subCommand = subCommand {
         player {
             exec<ProxyCommandSender> {
                 val player = ctx.bukkitPlayer() ?: return@exec
@@ -74,7 +74,7 @@ object OrryxManaCommand {
     }
 
     @CommandBody
-    val heal = subCommand {
+    val heal: subCommand = subCommand {
         player {
             exec<ProxyCommandSender> {
                 val player = ctx.bukkitPlayer() ?: return@exec

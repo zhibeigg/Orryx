@@ -3,7 +3,6 @@ package org.gitee.orryx.core.common.keyregister
 import com.germ.germplugin.api.GermPacketAPI
 import com.germ.germplugin.api.KeyType
 import com.germ.germplugin.api.event.GermClientLinkedEvent
-import eos.moe.dragoncore.api.event.EntityJoinWorldEvent
 import eos.moe.dragoncore.api.gui.event.CustomPacketEvent
 import org.bukkit.entity.Player
 import org.bukkit.event.player.PlayerJoinEvent
@@ -15,7 +14,6 @@ import org.gitee.orryx.utils.*
 import taboolib.common.platform.Ghost
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
-import taboolib.common.platform.function.info
 import taboolib.common.platform.function.warning
 import taboolib.common.util.unsafeLazy
 import taboolib.platform.util.onlinePlayers
@@ -97,7 +95,7 @@ object KeyRegisterManager {
         }
     }
 
-    fun getKeyRegister(uuid: UUID): IKeyRegister? {
+    fun getKeyRegister(uuid: UUID): IKeyRegister {
         return keyRegisterMap[uuid]
     }
 }
