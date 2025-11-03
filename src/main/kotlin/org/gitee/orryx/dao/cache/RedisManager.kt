@@ -21,6 +21,7 @@ class RedisManager: ISyncCacheManager {
     private val api by lazy { RedisChannelPlugin.commandAPI() }
 
     override fun getPlayerProfile(player: UUID): CompletableFuture<PlayerProfilePO> {
+        requireAsync("redis")
         debug("Redis 获取玩家 Profile")
         val tag = playerDataTag(player)
         val future = CompletableFuture<PlayerProfilePO>()
@@ -46,6 +47,7 @@ class RedisManager: ISyncCacheManager {
     }
 
     override fun getPlayerJob(player: UUID, id: Int, job: String): CompletableFuture<PlayerJobPO?> {
+        requireAsync("redis")
         debug("Redis 获取玩家 Job")
         val tag = playerJobDataTag(player, id, job)
         val future = CompletableFuture<PlayerJobPO?>()
@@ -71,6 +73,7 @@ class RedisManager: ISyncCacheManager {
     }
 
     override fun getPlayerSkill(player: UUID, id: Int, job: String, skill: String): CompletableFuture<PlayerSkillPO?> {
+        requireAsync("redis")
         debug("Redis 获取玩家 Skill")
         val tag = playerJobSkillDataTag(player, id, job, skill)
         val future = CompletableFuture<PlayerSkillPO?>()
@@ -96,6 +99,7 @@ class RedisManager: ISyncCacheManager {
     }
 
     override fun getPlayerKeySetting(player: UUID, id: Int): CompletableFuture<PlayerKeySettingPO?> {
+        requireAsync("redis")
         debug("Redis 获取玩家 KeySetting")
         val tag = playerKeySettingDataTag(player)
         val future = CompletableFuture<PlayerKeySettingPO?>()
@@ -121,6 +125,7 @@ class RedisManager: ISyncCacheManager {
     }
 
     override fun savePlayerProfile(player: UUID, playerProfilePO: PlayerProfilePO) {
+        requireAsync("redis")
         debug("Redis 获取玩家 Profile")
         api.useAsyncCommands { commands ->
             commands.setex(playerDataTag(player), SECOND_12_HOURS, Json.encodeToString(playerProfilePO))
@@ -128,6 +133,7 @@ class RedisManager: ISyncCacheManager {
     }
 
     override fun savePlayerJob(player: UUID, playerJobPO: PlayerJobPO) {
+        requireAsync("redis")
         debug("Redis 获取玩家 Job")
         api.useAsyncCommands { commands ->
             commands.setex(playerJobDataTag(player, playerJobPO.id, playerJobPO.job), SECOND_12_HOURS, Json.encodeToString(playerJobPO))
@@ -135,6 +141,7 @@ class RedisManager: ISyncCacheManager {
     }
 
     override fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO) {
+        requireAsync("redis")
         debug("Redis 保存玩家 Skill")
         api.useAsyncCommands { commands ->
             commands.setex(playerJobSkillDataTag(player, playerSkillPO.id, playerSkillPO.job, playerSkillPO.skill), SECOND_6_HOURS, Json.encodeToString(playerSkillPO))
@@ -142,6 +149,7 @@ class RedisManager: ISyncCacheManager {
     }
 
     override fun savePlayerKeySetting(player: UUID, playerKeySettingPO: PlayerKeySettingPO) {
+        requireAsync("redis")
         debug("Redis 保存玩家 KeySetting")
         api.useAsyncCommands { commands ->
             commands.setex(playerKeySettingDataTag(player), SECOND_6_HOURS, Json.encodeToString(playerKeySettingPO))
@@ -149,6 +157,7 @@ class RedisManager: ISyncCacheManager {
     }
 
     override fun removePlayerProfile(player: UUID) {
+        requireAsync("redis")
         debug("Redis 移除玩家 Profile")
         api.useAsyncCommands { commands ->
             commands.del(playerDataTag(player))
@@ -156,6 +165,7 @@ class RedisManager: ISyncCacheManager {
     }
 
     override fun removePlayerJob(player: UUID, id: Int, job: String) {
+        requireAsync("redis")
         debug("Redis 移除玩家 Job")
         api.useAsyncCommands { commands ->
             commands.del(playerJobDataTag(player, id, job))
@@ -163,6 +173,7 @@ class RedisManager: ISyncCacheManager {
     }
 
     override fun removePlayerSkill(player: UUID, id: Int, job: String, skill: String) {
+        requireAsync("redis")
         debug("Redis 移除玩家 Skill")
         api.useAsyncCommands { commands ->
             commands.del(playerJobSkillDataTag(player, id, job, skill))
@@ -170,6 +181,7 @@ class RedisManager: ISyncCacheManager {
     }
 
     override fun removePlayerKeySetting(player: UUID) {
+        requireAsync("redis")
         debug("Redis 移除玩家 KeySetting")
         api.useAsyncCommands { commands ->
             commands.del(playerKeySettingDataTag(player))

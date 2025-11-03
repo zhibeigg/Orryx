@@ -4,6 +4,8 @@ import com.github.benmanes.caffeine.cache.AsyncLoadingCache
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.github.benmanes.caffeine.cache.Scheduler
 import com.github.benmanes.caffeine.cache.stats.CacheStats
+import kotlinx.coroutines.launch
+import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.common.keyregister.PlayerKeySetting
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.job.PlayerJob
@@ -15,10 +17,7 @@ import org.gitee.orryx.core.skill.SkillLoaderManager
 import org.gitee.orryx.utils.*
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
-import taboolib.common.platform.function.console
-import taboolib.common.platform.function.info
 import taboolib.common5.format
-import taboolib.module.chat.colored
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
@@ -37,13 +36,17 @@ object MemoryCache {
         .scheduler(Scheduler.systemScheduler())
         .buildAsync { uuid, _ ->
             debug("Cache 加载玩家 Profile")
-            val po = ISyncCacheManager.INSTANCE.getPlayerProfile(uuid)
-            po.thenApply { po ->
-                val list = po.flags.mapNotNull { (key, value) ->
-                    value.toFlag()?.let { flag -> key to flag }
+            val future = CompletableFuture<IPlayerProfile>()
+            OrryxAPI.ioScope.launch {
+                val po = ISyncCacheManager.INSTANCE.getPlayerProfile(uuid)
+                po.thenAccept { po ->
+                    val list = po.flags.mapNotNull { (key, value) ->
+                        value.toFlag()?.let { flag -> key to flag }
+                    }
+                    future.complete(PlayerProfile(po.id, uuid, po.job, po.point, list.toMap(ConcurrentHashMap(list.size))))
                 }
-                PlayerProfile(po.id, uuid, po.job, po.point, list.toMap(ConcurrentHashMap(list.size)))
             }
+            future
         }
 
     private val playerJobCache: AsyncLoadingCache<String, IPlayerJob> = Caffeine.newBuilder()
@@ -54,13 +57,26 @@ object MemoryCache {
         .scheduler(Scheduler.systemScheduler())
         .buildAsync { tag, _ ->
             debug("Cache 加载玩家 Job")
-            val info = reversePlayerJobDataTag(tag)
-            val po = ISyncCacheManager.INSTANCE.getPlayerJob(info.second, info.third, info.first)
-            po.thenApply {
-                it?.let { p ->
-                    PlayerJob(p.id, info.second, p.job, p.experience, p.group, bindKeyOfGroupToMutableMap(p.bindKeyOfGroup))
+            val future = CompletableFuture<IPlayerJob>()
+            OrryxAPI.ioScope.launch {
+                val info = reversePlayerJobDataTag(tag)
+                val po = ISyncCacheManager.INSTANCE.getPlayerJob(info.second, info.third, info.first)
+                po.thenAccept {
+                    future.complete(
+                        it?.let { p ->
+                            PlayerJob(
+                                p.id,
+                                info.second,
+                                p.job,
+                                p.experience,
+                                p.group,
+                                bindKeyOfGroupToMutableMap(p.bindKeyOfGroup)
+                            )
+                        }
+                    )
                 }
             }
+            future
         }
 
     private val playerSkillCache: AsyncLoadingCache<String, IPlayerSkill> = Caffeine.newBuilder()
@@ -71,20 +87,26 @@ object MemoryCache {
         .scheduler(Scheduler.systemScheduler())
         .buildAsync { tag, _ ->
             debug("Cache 加载玩家 Skill")
-            val info = reversePlayerJobSkillDataTag(tag)
-            ISyncCacheManager.INSTANCE.getPlayerSkill(info.player, info.id, info.job, info.skill).thenApply {
-                it?.let { p ->
-                    val skillLoader = SkillLoaderManager.getSkillLoader(p.skill) ?: return@let null
-                    PlayerSkill(
-                        p.id,
-                        p.player,
-                        p.skill,
-                        p.job,
-                        p.level,
-                        if (p.locked && !skillLoader.isLocked) false else p.locked
+            val future = CompletableFuture<IPlayerSkill>()
+            OrryxAPI.ioScope.launch {
+                val info = reversePlayerJobSkillDataTag(tag)
+                ISyncCacheManager.INSTANCE.getPlayerSkill(info.player, info.id, info.job, info.skill).thenAccept {
+                    future.complete(
+                        it?.let { p ->
+                            val skillLoader = SkillLoaderManager.getSkillLoader(p.skill) ?: return@let null
+                            PlayerSkill(
+                                p.id,
+                                p.player,
+                                p.skill,
+                                p.job,
+                                p.level,
+                                if (p.locked && !skillLoader.isLocked) false else p.locked
+                            )
+                        }
                     )
                 }
             }
+            future
         }
 
 
@@ -96,11 +118,17 @@ object MemoryCache {
         .scheduler(Scheduler.systemScheduler())
         .buildAsync { uuid, _ ->
             debug("Cache 加载玩家 KeySetting")
-            playerProfileCache.get(uuid).thenCompose { profile ->
-                ISyncCacheManager.INSTANCE.getPlayerKeySetting(uuid, profile.id).thenApply {
-                    it?.let { p -> PlayerKeySetting(uuid, p) } ?: PlayerKeySetting(profile.id, uuid)
+            val future = CompletableFuture<PlayerKeySetting>()
+            OrryxAPI.ioScope.launch {
+                playerProfileCache.get(uuid).thenAccept { profile ->
+                    ISyncCacheManager.INSTANCE.getPlayerKeySetting(uuid, profile.id).thenAccept {
+                        future.complete(
+                            it?.let { p -> PlayerKeySetting(uuid, p) } ?: PlayerKeySetting(profile.id, uuid)
+                        )
+                    }
                 }
             }
+            future
         }
 
     @Awake(LifeCycle.DISABLE)

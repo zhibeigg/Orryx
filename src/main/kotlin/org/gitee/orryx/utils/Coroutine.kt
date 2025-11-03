@@ -26,3 +26,7 @@ inline fun <T> requireAsync(name: String, function: () -> T): T {
     if (isPrimaryThread) throw IllegalArgumentException("禁止在主线程运行 $name 方法")
     return function()
 }
+
+fun requireAsync(name: String) {
+    if (isPrimaryThread) throw IllegalArgumentException("禁止在主线程运行 $name 方法")
+}

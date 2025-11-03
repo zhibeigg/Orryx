@@ -90,6 +90,7 @@ class SqlLiteManager: IStorageManager {
         debug("SqlLite 获取玩家 Profile")
         val future = CompletableFuture<PlayerProfilePO>()
         fun read() {
+            requireAsync("sqlLite")
             try {
                 val uuid = FastUUID.toString(player)
                 synchronized(getInternerByUUID(player).intern("PlayerData${uuid}")) {
@@ -130,6 +131,7 @@ class SqlLiteManager: IStorageManager {
         debug("SqlLite 获取玩家 Job")
         val future = CompletableFuture<PlayerJobPO?>()
         fun read() {
+            requireAsync("sqlLite")
             try {
                 future.complete(jobsTable.select(dataSource) {
                     where { USER_ID eq id and (JOB eq job) }
@@ -161,6 +163,7 @@ class SqlLiteManager: IStorageManager {
         debug("SqlLite 获取玩家 Skill")
         val future = CompletableFuture<PlayerSkillPO?>()
         fun read() {
+            requireAsync("sqlLite")
             try {
                 future.complete(skillsTable.select(dataSource) {
                     where { USER_ID eq id and (JOB eq job) and (SKILL eq skill) }
@@ -185,6 +188,7 @@ class SqlLiteManager: IStorageManager {
         debug("SqlLite 获取玩家 Skills")
         val future = CompletableFuture<List<PlayerSkillPO>>()
         fun read() {
+            requireAsync("sqlLite")
             try {
                 future.complete(skillsTable.select(dataSource) {
                     where { USER_ID eq id and (JOB eq job) }
@@ -209,6 +213,7 @@ class SqlLiteManager: IStorageManager {
         debug("SqlLite 获取玩家 KeySetting")
         val future = CompletableFuture<PlayerKeySettingPO?>()
         fun read() {
+            requireAsync("sqlLite")
             try {
                 future.complete(keyTable.select(dataSource) {
                     where { USER_ID eq id }
@@ -230,6 +235,7 @@ class SqlLiteManager: IStorageManager {
     }
 
     override fun savePlayerData(playerProfilePO: PlayerProfilePO, onSuccess: () -> Unit) {
+        requireAsync("sqlLite")
         debug("SqlLite 保存玩家 Profile")
         playerTable.update(dataSource) {
             where { USER_ID eq playerProfilePO.id }
@@ -241,6 +247,7 @@ class SqlLiteManager: IStorageManager {
     }
 
     override fun savePlayerJob(playerJobPO: PlayerJobPO, onSuccess: () -> Unit) {
+        requireAsync("sqlLite")
         debug("SqlLite 保存玩家 Job")
         synchronized(getInternerByUUID(playerJobPO.player).intern("PlayerJob${playerJobPO.id}${playerJobPO.job}")) {
             jobsTable.workspace(dataSource) {
@@ -268,6 +275,7 @@ class SqlLiteManager: IStorageManager {
     }
 
     override fun savePlayerSkill(playerSkillPO: PlayerSkillPO, onSuccess: () -> Unit) {
+        requireAsync("sqlLite")
         debug("SqlLite 保存玩家 Skill")
         synchronized(getInternerByUUID(playerSkillPO.player).intern("PlayerSkill${playerSkillPO.id}${playerSkillPO.job}${playerSkillPO.skill}")) {
             skillsTable.workspace(dataSource) {
@@ -294,6 +302,7 @@ class SqlLiteManager: IStorageManager {
     }
 
     override fun savePlayerKey(playerKeySettingPO: PlayerKeySettingPO, onSuccess: () -> Unit) {
+        requireAsync("sqlLite")
         debug("SqlLite 保存玩家 KeySetting")
         synchronized(getInternerByUUID(playerKeySettingPO.player).intern("KeySetting${playerKeySettingPO.id}")) {
             keyTable.workspace(dataSource) {
@@ -323,6 +332,7 @@ class SqlLiteManager: IStorageManager {
         debug("SqlLite 获取全局 Flag")
         val future = CompletableFuture<IFlag?>()
         fun read() {
+            requireAsync("sqlLite")
             try {
                 future.complete(globalFlagTable.select(dataSource) {
                     where { FLAG_KEY eq key }
@@ -344,6 +354,7 @@ class SqlLiteManager: IStorageManager {
     }
 
     override fun saveGlobalFlag(key: String, flag: IFlag?, onSuccess: () -> Unit) {
+        requireAsync("sqlLite")
         debug("SqlLite 保存全局 Flag")
         synchronized(pluginInterner.intern("GlobalFlag${key}")) {
             globalFlagTable.workspace(dataSource) {

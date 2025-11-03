@@ -82,6 +82,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
         debug("${IStorageManager.lazyType} 获取玩家 Profile")
         val future = CompletableFuture<PlayerProfilePO>()
         fun read() {
+            requireAsync("mysql")
             try {
                 val uuid = uuidToBytes(player)
                 if (!playerTable.find(dataSource) { where { PLAYER_UUID eq uuid } }) {
@@ -120,6 +121,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
         debug("${IStorageManager.lazyType} 获取玩家 Job")
         val future = CompletableFuture<PlayerJobPO?>()
         fun read() {
+            requireAsync("mysql")
             try {
                 future.complete(jobsTable.select(dataSource) {
                     where { USER_ID eq id and (JOB eq job) }
@@ -151,6 +153,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
         debug("${IStorageManager.lazyType} 获取玩家 Skill")
         val future = CompletableFuture<PlayerSkillPO?>()
         fun read() {
+            requireAsync("mysql")
             try {
                 future.complete(skillsTable.select(dataSource) {
                     where { USER_ID eq id and (JOB eq job) and (SKILL eq skill) }
@@ -175,6 +178,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
         debug("${IStorageManager.lazyType} 获取玩家 Skills")
         val future = CompletableFuture<List<PlayerSkillPO>>()
         fun read() {
+            requireAsync("mysql")
             try {
                 future.complete(skillsTable.select(dataSource) {
                     where { USER_ID eq id and (JOB eq job) }
@@ -199,6 +203,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
         debug("${IStorageManager.lazyType} 获取玩家 KeySetting")
         val future = CompletableFuture<PlayerKeySettingPO?>()
         fun read() {
+            requireAsync("mysql")
             try {
                 future.complete(keyTable.select(dataSource) {
                     where { USER_ID eq id }
@@ -220,6 +225,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
     }
 
     override fun savePlayerData(playerProfilePO: PlayerProfilePO, onSuccess: () -> Unit) {
+        requireAsync("mysql")
         debug("${IStorageManager.lazyType} 保存玩家 Profile")
         playerTable.update(dataSource) {
             where { USER_ID eq playerProfilePO.id }
@@ -231,6 +237,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
     }
 
     override fun savePlayerJob(playerJobPO: PlayerJobPO, onSuccess: () -> Unit) {
+        requireAsync("mysql")
         debug("${IStorageManager.lazyType} 保存玩家 Job")
         jobsTable.transaction(dataSource) {
             insert(USER_ID, JOB, EXPERIENCE, GROUP, BIND_KEY_OF_GROUP) {
@@ -251,6 +258,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
     }
 
     override fun savePlayerSkill(playerSkillPO: PlayerSkillPO, onSuccess: () -> Unit) {
+        requireAsync("mysql")
         debug("${IStorageManager.lazyType} 保存玩家 Skill")
         skillsTable.transaction(dataSource) {
             insert(USER_ID, JOB, SKILL, LOCKED, LEVEL) {
@@ -270,6 +278,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
     }
 
     override fun savePlayerKey(playerKeySettingPO: PlayerKeySettingPO, onSuccess: () -> Unit) {
+        requireAsync("mysql")
         debug("${IStorageManager.lazyType} 保存玩家 KeySetting")
         keyTable.transaction(dataSource) {
             insert(USER_ID, KEY_SETTING) {
@@ -288,6 +297,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
         debug("${IStorageManager.lazyType} 获取全局 Flag")
         val future = CompletableFuture<IFlag?>()
         fun read() {
+            requireAsync("mysql")
             try {
                 future.complete(globalFlagTable.select(dataSource) {
                     where { FLAG_KEY eq key }
@@ -309,6 +319,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
     }
 
     override fun saveGlobalFlag(key: String, flag: IFlag?, onSuccess: () -> Unit) {
+        requireAsync("mysql")
         debug("${IStorageManager.lazyType} 保存全局 Flag")
         globalFlagTable.transaction(dataSource) {
             if (flag == null) {
