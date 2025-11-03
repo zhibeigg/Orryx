@@ -1,13 +1,16 @@
 package org.gitee.orryx.core.station
 
 import org.bukkit.Bukkit
+import org.gitee.orryx.api.events.register.OrryxTriggerRegisterEvent
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.station.pipe.IPipeTrigger
 import org.gitee.orryx.core.station.stations.IStationTrigger
+import org.gitee.orryx.utils.consoleMessage
 import org.gitee.orryx.utils.debug
 import taboolib.common.LifeCycle
 import taboolib.common.inject.ClassVisitor
 import taboolib.common.platform.Awake
+import taboolib.common.reflect.hasAnnotation
 import taboolib.common.util.unsafeLazy
 import taboolib.library.reflex.ReflexClass
 
@@ -67,6 +70,35 @@ object TriggerManager: ClassVisitor(3) {
                 debug("&e┣&7StationTrigger loaded &e${instance.event} &a√")
             }
             stationTriggers[instance.event.uppercase()] = instance
+        }
+    }
+
+    @Awake(LifeCycle.ENABLE)
+    private fun pluginRegister() {
+        val event = OrryxTriggerRegisterEvent()
+        event.call()
+        event.list().forEach {
+            val clazz = it.javaClass
+            if (it is IPipeTrigger) {
+                if (clazz.hasAnnotation(Plugin::class.java)) {
+                    val annotation = clazz.getAnnotation(Plugin::class.java)
+                    val pluginLoaded = Bukkit.getPluginManager().getPlugin(annotation.plugin) != null
+                    if (pluginLoaded) {
+                        pipeTriggers[it.event.uppercase()] = it
+                    }
+                    consoleMessage("&e┣&c第三方 &7PipeTrigger loaded &e${it.event} ${if (pluginLoaded) "&a√" else "&4×"}")
+                }
+            }
+            if (it is IStationTrigger) {
+                if (clazz.hasAnnotation(Plugin::class.java)) {
+                    val annotation = clazz.getAnnotation(Plugin::class.java)
+                    val pluginLoaded = Bukkit.getPluginManager().getPlugin(annotation.plugin) != null
+                    if (pluginLoaded) {
+                        stationTriggers[it.event.uppercase()] = it
+                    }
+                    consoleMessage("&e┣&c第三方 &7PluginStationTrigger loaded &e${it.event} ${if (pluginLoaded) "&a√" else "&4×"}")
+                }
+            }
         }
     }
 }
