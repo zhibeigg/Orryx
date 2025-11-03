@@ -1,6 +1,5 @@
 package org.gitee.orryx.core.common.keyregister
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -28,7 +27,7 @@ class PlayerKeySetting(
     val extKeyMap: Map<String, String> = emptyMap()
 ): Saveable {
 
-    val player
+    val player: K
         get() = Bukkit.getPlayer(uuid) ?: error("Player Offline")
 
     constructor(player: UUID, playerKeySettingPO: PlayerKeySettingPO) : this(

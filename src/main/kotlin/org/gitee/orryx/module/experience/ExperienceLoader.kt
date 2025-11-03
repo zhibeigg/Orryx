@@ -10,7 +10,7 @@ import taboolib.module.kether.orNull
 
 class ExperienceLoader(override val key: String, val configuration: Configuration): IExperience {
 
-    val options = configuration.getConfigurationSection("Options") ?: error("经验算法${key}位于${configuration.file}未书写Options键")
+    val options: K = configuration.getConfigurationSection("Options") ?: error("经验算法${key}位于${configuration.file}未书写Options键")
 
     override val minLevel: Int = options.getInt("Min")
 

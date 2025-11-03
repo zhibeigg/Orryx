@@ -11,7 +11,7 @@ interface IAnimationBridge {
 
     companion object {
 
-        val INSTANCE by unsafeLazy {
+        val INSTANCE: getValue by unsafeLazy {
             when {
                 DragonCorePlugin.isEnabled -> DragonCoreAnimationBridge()
                 GermPluginPlugin.isEnabled -> GermPluginAnimationBridge()

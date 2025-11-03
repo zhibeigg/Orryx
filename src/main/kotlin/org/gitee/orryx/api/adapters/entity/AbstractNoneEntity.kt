@@ -3,7 +3,6 @@ package org.gitee.orryx.api.adapters.entity
 import org.bukkit.Location
 import org.bukkit.World
 import org.bukkit.entity.EntityType
-import org.bukkit.util.Vector
 import org.gitee.orryx.api.adapters.IEntity
 import org.gitee.orryx.core.targets.ITargetLocation
 import java.util.*

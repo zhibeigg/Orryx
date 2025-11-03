@@ -1,6 +1,5 @@
 package org.gitee.orryx.core.kether.actions.compat.mythicmobs
 
-import eos.moe.armourers.fa
 import io.lumine.xikage.mythicmobs.MythicMobs
 import io.lumine.xikage.mythicmobs.adapters.bukkit.BukkitAdapter
 import org.bukkit.entity.Entity

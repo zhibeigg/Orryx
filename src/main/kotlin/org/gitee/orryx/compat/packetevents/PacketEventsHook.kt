@@ -6,7 +6,6 @@ import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.utils.ConfigLazy
 import org.gitee.orryx.utils.PacketEventsPlugin
-import org.gitee.orryx.utils.ReloadableLazy
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.platform.BukkitPlugin
