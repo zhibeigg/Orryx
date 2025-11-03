@@ -1,7 +1,9 @@
 package org.gitee.orryx.dao.storage
 
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.gitee.orryx.api.Orryx
+import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.profile.IFlag
 import org.gitee.orryx.dao.pojo.PlayerJobPO
 import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
@@ -9,7 +11,6 @@ import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.utils.*
 import taboolib.common.platform.function.isPrimaryThread
-import taboolib.common.platform.function.submitAsync
 import taboolib.module.database.ColumnOptionSQL
 import taboolib.module.database.ColumnTypeSQL
 import taboolib.module.database.Table
@@ -108,7 +109,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
             }
         }
         if (isPrimaryThread) {
-            submitAsync { read() }
+            OrryxAPI.ioScope.launch { read() }
         } else {
             read()
         }
@@ -139,7 +140,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
             }
         }
         if (isPrimaryThread) {
-            submitAsync { read() }
+            OrryxAPI.ioScope.launch { read() }
         } else {
             read()
         }
@@ -163,7 +164,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
             }
         }
         if (isPrimaryThread) {
-            submitAsync { read() }
+            OrryxAPI.ioScope.launch { read() }
         } else {
             read()
         }
@@ -187,7 +188,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
             }
         }
         if (isPrimaryThread) {
-            submitAsync { read() }
+            OrryxAPI.ioScope.launch { read() }
         } else {
             read()
         }
@@ -211,7 +212,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
             }
         }
         if (isPrimaryThread) {
-            submitAsync { read() }
+            OrryxAPI.ioScope.launch { read() }
         } else {
             read()
         }
@@ -300,7 +301,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
             }
         }
         if (isPrimaryThread) {
-            submitAsync { read() }
+            OrryxAPI.ioScope.launch { read() }
         } else {
             read()
         }

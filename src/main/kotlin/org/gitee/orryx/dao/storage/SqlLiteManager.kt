@@ -3,7 +3,9 @@ package org.gitee.orryx.dao.storage
 import com.eatthepath.uuid.FastUUID
 import com.google.common.collect.Interner
 import com.google.common.collect.Interners
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
+import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.profile.IFlag
 import org.gitee.orryx.dao.pojo.PlayerJobPO
 import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
@@ -12,7 +14,6 @@ import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.utils.*
 import taboolib.common.io.newFile
 import taboolib.common.platform.function.isPrimaryThread
-import taboolib.common.platform.function.submitAsync
 import taboolib.module.database.ColumnOptionSQLite
 import taboolib.module.database.ColumnTypeSQLite
 import taboolib.module.database.Table
@@ -118,9 +119,9 @@ class SqlLiteManager: IStorageManager {
             }
         }
         if (isPrimaryThread) {
-            read()
+            OrryxAPI.ioScope.launch { read() }
         } else {
-            submitAsync { read() }
+            read()
         }
         return future
     }
@@ -149,9 +150,9 @@ class SqlLiteManager: IStorageManager {
             }
         }
         if (isPrimaryThread) {
-            read()
+            OrryxAPI.ioScope.launch { read() }
         } else {
-            submitAsync { read() }
+            read()
         }
         return future
     }
@@ -173,9 +174,9 @@ class SqlLiteManager: IStorageManager {
             }
         }
         if (isPrimaryThread) {
-            read()
+            OrryxAPI.ioScope.launch { read() }
         } else {
-            submitAsync { read() }
+            read()
         }
         return future
     }
@@ -197,7 +198,7 @@ class SqlLiteManager: IStorageManager {
             }
         }
         if (isPrimaryThread) {
-            submitAsync { read() }
+            OrryxAPI.ioScope.launch { read() }
         } else {
             read()
         }
@@ -221,7 +222,7 @@ class SqlLiteManager: IStorageManager {
             }
         }
         if (isPrimaryThread) {
-            submitAsync { read() }
+            OrryxAPI.ioScope.launch { read() }
         } else {
             read()
         }
@@ -335,7 +336,7 @@ class SqlLiteManager: IStorageManager {
             }
         }
         if (isPrimaryThread) {
-            submitAsync { read() }
+            OrryxAPI.ioScope.launch { read() }
         } else {
             read()
         }
