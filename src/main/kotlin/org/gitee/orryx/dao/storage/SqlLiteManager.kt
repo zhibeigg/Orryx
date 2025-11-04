@@ -22,6 +22,7 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 
+@Suppress("DuplicatedCode")
 class SqlLiteManager: IStorageManager {
 
     private val host = newFile(IStorageManager.file, "data.db").getHost()
@@ -104,6 +105,7 @@ class SqlLiteManager: IStorageManager {
                     playerTable.select(dataSource) {
                         where { PLAYER_UUID eq FastUUID.toString(player) }
                         rows(USER_ID, JOB, POINT, FLAGS)
+                        limit(1)
                     }.firstOrNull {
                         PlayerProfilePO(
                             getInt(USER_ID),
@@ -136,6 +138,7 @@ class SqlLiteManager: IStorageManager {
                 future.complete(jobsTable.select(dataSource) {
                     where { USER_ID eq id and (JOB eq job) }
                     rows(EXPERIENCE, GROUP, BIND_KEY_OF_GROUP)
+                    limit(1)
                 }.firstOrNull {
                     PlayerJobPO(
                         id,
@@ -168,6 +171,7 @@ class SqlLiteManager: IStorageManager {
                 future.complete(skillsTable.select(dataSource) {
                     where { USER_ID eq id and (JOB eq job) and (SKILL eq skill) }
                     rows(LOCKED, LEVEL)
+                    limit(1)
                 }.firstOrNull {
                     PlayerSkillPO(id, player, job, skill, getBoolean(LOCKED), getInt(LEVEL))
                 })
@@ -218,6 +222,7 @@ class SqlLiteManager: IStorageManager {
                 future.complete(keyTable.select(dataSource) {
                     where { USER_ID eq id }
                     rows(KEY_SETTING)
+                    limit(1)
                 }.firstOrNull {
                     Json.decodeFromString<PlayerKeySettingPO>(getString(KEY_SETTING))
                 })
@@ -337,6 +342,7 @@ class SqlLiteManager: IStorageManager {
                 future.complete(globalFlagTable.select(dataSource) {
                     where { FLAG_KEY eq key }
                     rows(FLAG)
+                    limit(1)
                 }.firstOrNull {
                     Json.decodeFromString<IFlag>(getString(FLAG))
                 })

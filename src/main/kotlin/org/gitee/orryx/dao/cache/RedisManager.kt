@@ -11,6 +11,7 @@ import org.gitee.orryx.utils.*
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
+@Suppress("DuplicatedCode")
 class RedisManager: ISyncCacheManager {
 
     companion object {
