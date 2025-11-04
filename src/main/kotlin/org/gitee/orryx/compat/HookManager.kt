@@ -3,8 +3,6 @@ package org.gitee.orryx.compat
 import org.gitee.orryx.utils.*
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
-import taboolib.common.platform.function.info
-import taboolib.module.chat.colored
 
 object HookManager {
 

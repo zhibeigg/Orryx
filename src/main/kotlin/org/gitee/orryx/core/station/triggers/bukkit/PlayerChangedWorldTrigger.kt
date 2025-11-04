@@ -1,14 +1,11 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
-import org.bukkit.event.player.PlayerChangedMainHandEvent
 import org.bukkit.event.player.PlayerChangedWorldEvent
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
 import taboolib.common.OpenResult
-import taboolib.module.kether.ScriptContext
 
 object PlayerChangedWorldTrigger: AbstractPropertyPlayerEventTrigger<PlayerChangedWorldEvent>("Player Changed World") {
 
@@ -18,7 +15,7 @@ object PlayerChangedWorldTrigger: AbstractPropertyPlayerEventTrigger<PlayerChang
             .addParm(Type.STRING, "to", "到哪个世界去")
             .description("当玩家切换到另一个世界时触发")
 
-    override val clazz
+    override val clazz: java
         get() = PlayerChangedWorldEvent::class.java
 
     override fun read(instance: PlayerChangedWorldEvent, key: String): OpenResult {

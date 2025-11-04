@@ -16,7 +16,7 @@ object PlayerBedLeaveTrigger: AbstractPropertyPlayerEventTrigger<PlayerBedLeaveE
             .addParm(Type.BOOLEAN, "shouldSetSpawn", "是否需要设置出生点")
             .description("玩家离开床时触发")
 
-    override val clazz
+    override val clazz: java
         get() = PlayerBedLeaveEvent::class.java
 
     override fun read(instance: PlayerBedLeaveEvent, key: String): OpenResult {

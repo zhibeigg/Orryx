@@ -7,7 +7,6 @@ import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import org.gitee.orryx.module.state.MoveState
 import taboolib.common.platform.Ghost
-import taboolib.common.platform.function.info
 import java.util.*
 
 @Ghost

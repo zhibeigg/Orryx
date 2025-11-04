@@ -22,7 +22,7 @@ class JobLoader(override val key: String, val configuration: Configuration): IJo
 
     override val experience: String = options.getString("Experience", "default")!!
 
-    override val maxSpiritActions= options.getString("MaxSpiritActions", "100")!!
+    override val maxSpiritActions: K = options.getString("MaxSpiritActions", "100")!!
 
-    override val regainSpiritActions = options.getString("RegainSpiritActions", "1")!!
+    override val regainSpiritActions: K = options.getString("RegainSpiritActions", "1")!!
 }

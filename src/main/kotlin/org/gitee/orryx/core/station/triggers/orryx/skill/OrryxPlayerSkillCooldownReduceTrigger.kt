@@ -10,18 +10,16 @@ import taboolib.common.OpenResult
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common5.clong
-import taboolib.module.kether.KetherLoader
-import taboolib.module.kether.KetherProperty
 
 object OrryxPlayerSkillCooldownReduceTrigger: AbstractPropertyEventTrigger<OrryxPlayerSkillCooldownEvents.Reduce.Pre>("Orryx Player Skill Cooldown Reduce") {
 
     override val wiki: Trigger
-        get() = Trigger.Companion.new(TriggerGroup.ORRYX, event)
+        get() = Trigger.new(TriggerGroup.ORRYX, event)
             .addParm(Type.ANY, "skill", "玩家技能")
             .addParm(Type.LONG, "amount", "缩减的!毫秒!数值")
             .description("玩家技能冷却缩减事件")
 
-    override val clazz
+    override val clazz: java
         get() = OrryxPlayerSkillCooldownEvents.Reduce.Pre::class.java
 
     override fun onJoin(event: OrryxPlayerSkillCooldownEvents.Reduce.Pre, map: Map<String, Any?>): ProxyCommandSender {

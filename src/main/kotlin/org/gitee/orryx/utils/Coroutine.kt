@@ -4,7 +4,6 @@ import kotlinx.coroutines.Dispatchers
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.expansion.AsyncDispatcher
 import taboolib.expansion.SyncDispatcher
-import kotlin.IllegalArgumentException
 import kotlin.coroutines.CoroutineContext
 
 /**

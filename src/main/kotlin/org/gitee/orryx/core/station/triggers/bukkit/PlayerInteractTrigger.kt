@@ -1,17 +1,13 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
-import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
-import org.gitee.orryx.core.targets.LocationTarget
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.abstract
 import org.gitee.orryx.utils.toTarget
 import taboolib.common.OpenResult
-import taboolib.module.kether.ScriptContext
 
 object PlayerInteractTrigger: AbstractPropertyPlayerEventTrigger<PlayerInteractEvent>("Player Interact") {
 
@@ -23,7 +19,7 @@ object PlayerInteractTrigger: AbstractPropertyPlayerEventTrigger<PlayerInteractE
             .addParm(Type.TARGET, "clickedBlock", "被点击的方块位置")
             .description("当玩家对一个对象或空气进行交互时触发")
 
-    override val clazz
+    override val clazz: java
         get() = PlayerInteractEvent::class.java
 
     override fun read(instance: PlayerInteractEvent, key: String): OpenResult {
