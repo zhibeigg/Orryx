@@ -118,7 +118,7 @@ fun String.parseVector(): AbstractVector? {
     }.getOrNull()
 }
 
-fun IVector.dragonString() = "${x()},${y()},${z()}"
+fun IVector.commaJoinString() = "${x()},${y()},${z()}"
 
 fun Matrix3dc.taboo() = Matrix(
     arrayOf(

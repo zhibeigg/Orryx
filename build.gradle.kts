@@ -65,6 +65,7 @@ taboolib {
             name("DungeonPlus").optional(true)
             name("Nodens").optional(true)
             name("CloudPick").optional(true)
+            name("ArcartX").optional(true)
         }
     }
     relocate("com.github.benmanes.caffeine", "org.gitee.orryx.caffeine")
