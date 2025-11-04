@@ -27,7 +27,7 @@ import taboolib.platform.util.onlinePlayers
 
 object GameManager {
 
-    private val disabledHunger by ConfigLazy(Orryx.config) { Orryx.config.getBoolean("DisableHunger") }
+    private val disabledHunger by ConfigLazy { Orryx.config.getBoolean("DisableHunger") }
     var shutdown: Boolean = false
 
     private const val ORRYX_JOB_ATTRIBUTE = "ORRYX@JOB@ATTRIBUTE"

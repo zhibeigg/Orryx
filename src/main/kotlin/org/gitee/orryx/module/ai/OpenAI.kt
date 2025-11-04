@@ -88,8 +88,8 @@ object OpenAI {
         val content: String
     )
 
-    private val API_KEY by ConfigLazy(Orryx.config) { Orryx.config.getString("OpenAI.ApiKey") ?: error("未配置OpenAI ApiKey") }
-    private val BASE_URL by ConfigLazy(Orryx.config) { Orryx.config.getString("OpenAI.BaseUrl") ?: error("未配置OpenAI BaseUrl") }
+    private val API_KEY by ConfigLazy { Orryx.config.getString("OpenAI.ApiKey") ?: error("未配置OpenAI ApiKey") }
+    private val BASE_URL by ConfigLazy { Orryx.config.getString("OpenAI.BaseUrl") ?: error("未配置OpenAI BaseUrl") }
 
     fun npcChat(player: String, npc: String, npcDescription: String, message: String, model: String, maxTokens: Int, temperature: Double): CompletableFuture<String> {
         val mediaType = MediaType.parse("application/json")

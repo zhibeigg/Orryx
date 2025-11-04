@@ -26,7 +26,7 @@ import taboolib.module.configuration.Configuration
 object ExperienceLoaderManager {
 
     private val experienceLoaderMap by unsafeLazy { hashMapOf<String, ExperienceLoader>() }
-    private val syncExperience by ConfigLazy(Orryx.config) { Orryx.config.getBoolean("SyncExperience", true) }
+    private val syncExperience by ConfigLazy { Orryx.config.getBoolean("SyncExperience", true) }
 
     internal fun getExperience(key: String): IExperience? {
         return experienceLoaderMap[key]

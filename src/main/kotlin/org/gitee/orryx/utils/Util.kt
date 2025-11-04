@@ -2,6 +2,7 @@ package org.gitee.orryx.utils
 
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
+import org.gitee.orryx.api.Orryx
 import taboolib.common5.cint
 import taboolib.common5.clong
 import taboolib.module.configuration.Configuration
@@ -34,7 +35,7 @@ internal inline fun getNearPlayers(entity: Entity, func: (Player) -> Unit) {
     entity.world.players.forEach(func)
 }
 
-class ReloadableLazy<T>(private val check: () -> Any?, private val initializer: () -> T) : ReadOnlyProperty<Any?, T> {
+class MonitorLazy<T>(private val check: () -> Any?, private val initializer: () -> T) : ReadOnlyProperty<Any?, T> {
     private var cached: T? = null
     private var initialized: Boolean = false
     private var lastHash: Int? = null
@@ -52,17 +53,17 @@ class ReloadableLazy<T>(private val check: () -> Any?, private val initializer: 
     }
 }
 
-class ConfigLazy<T>(val config: Configuration, private val initializer: () -> T) : ReadOnlyProperty<Any?, T> {
+class ConfigLazy<T>(private val initializer: () -> T) : ReadOnlyProperty<Any?, T> {
     private var cached: T? = null
     private var initialized: Boolean = false
-    private var lastHash: Int? = null
+    private var lastMark: Short? = null
 
     override fun getValue(thisRef: Any?, property: KProperty<*>): T {
-        val currentHash = config.file?.readBytes().hashCode()
-        if (!initialized || lastHash != currentHash) {
+        val currentMark = Orryx.reloadMark
+        if (!initialized || lastMark != currentMark) {
             cached = initializer()
             initialized = true
-            lastHash = currentHash
+            lastMark = currentMark
         }
         @Suppress("UNCHECKED_CAST")
         return cached as T

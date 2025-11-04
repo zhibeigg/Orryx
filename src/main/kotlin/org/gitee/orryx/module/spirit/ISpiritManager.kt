@@ -21,7 +21,7 @@ interface ISpiritManager {
 
         private var runnable: PlatformExecutor.PlatformTask? = null
 
-        private val regainTick: Long by ConfigLazy(Orryx.config) { Orryx.config.getLong("SpiritRegainTick", 20) }
+        private val regainTick: Long by ConfigLazy { Orryx.config.getLong("SpiritRegainTick", 20) }
         
         @Reload(2)
         @Awake(LifeCycle.ENABLE)

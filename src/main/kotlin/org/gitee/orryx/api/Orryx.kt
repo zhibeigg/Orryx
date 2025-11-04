@@ -6,6 +6,8 @@ import taboolib.module.configuration.ConfigFile
 
 object Orryx {
 
+    var reloadMark: Short = 0
+
     @Config("config.yml")
     lateinit var config: ConfigFile
         private set
