@@ -44,7 +44,7 @@ object OrryxJobCommand {
                     player.orryxProfile { profile ->
                         player.job(profile.id, ctx["job"]) { job ->
                             job.clear().whenComplete { _, _ ->
-                                sender.sendMessage("玩家${player.name} 职业${job.key}已清除")
+                                sender.sendMessage("玩家${player.name} 职业${job.key}已清除数据(非清除玩家转职)")
                             }
                         }
                     }
