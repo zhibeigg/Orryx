@@ -18,7 +18,7 @@ object OrryxPlayerManaDownTrigger: AbstractPropertyEventTrigger<OrryxPlayerManaE
             .addParm(Type.DOUBLE, "mana", "变化蓝量")
             .description("玩家蓝量下降事件")
 
-    override val clazz
+    override val clazz: java
         get() = OrryxPlayerManaEvents.Down.Pre::class.java
 
     override fun onJoin(event: OrryxPlayerManaEvents.Down.Pre, map: Map<String, Any?>): ProxyCommandSender {

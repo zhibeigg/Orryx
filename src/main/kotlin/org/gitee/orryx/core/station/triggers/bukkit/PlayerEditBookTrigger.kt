@@ -27,7 +27,7 @@ object PlayerEditBookTrigger: AbstractPropertyPlayerEventTrigger<PlayerEditBookE
             .addParm(Type.BOOLEAN, "isSigning", "检测书本是否正在被签名")
             .description("当玩家编辑或签名书与笔时触发。如果事件中断取消，书与笔的元数据不会改变。")
 
-    override val clazz
+    override val clazz: java
         get() = PlayerEditBookEvent::class.java
 
     override fun read(instance: PlayerEditBookEvent, key: String): OpenResult {

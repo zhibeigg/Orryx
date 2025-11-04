@@ -1,13 +1,5 @@
 package org.gitee.orryx.core.kether.actions.compat.arcartx
 
-import org.gitee.orryx.module.wiki.Action
-import org.gitee.orryx.module.wiki.Type
-import org.gitee.orryx.utils.ORRYX_NAMESPACE
-import org.gitee.orryx.utils.scriptParser
-import taboolib.module.kether.KetherParser
-import taboolib.module.kether.expects
-import taboolib.module.kether.switch
-
 object ArcartXActions {
 
     // @KetherParser(["arcartx", "ax"], namespace = ORRYX_NAMESPACE, shared = true)

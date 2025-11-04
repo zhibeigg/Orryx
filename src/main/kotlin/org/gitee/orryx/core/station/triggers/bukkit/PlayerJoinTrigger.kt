@@ -14,7 +14,7 @@ object PlayerJoinTrigger: AbstractPropertyPlayerEventTrigger<PlayerJoinEvent>("P
             .addParm(Type.STRING, "joinMessage", "进入信息")
             .description("玩家进入服务器时触发")
 
-    override val clazz
+    override val clazz: java
         get() = PlayerJoinEvent::class.java
 
     override fun read(instance: PlayerJoinEvent, key: String): OpenResult {

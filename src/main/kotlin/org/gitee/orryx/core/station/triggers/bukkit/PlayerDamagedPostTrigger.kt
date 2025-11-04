@@ -1,10 +1,8 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
-import org.bukkit.event.player.PlayerCommandSendEvent
 import org.gitee.orryx.api.events.damage.OrryxDamageEvents
 import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.station.stations.IStation
-import org.gitee.orryx.core.station.triggers.AbstractEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
@@ -27,7 +25,7 @@ object PlayerDamagedPostTrigger: AbstractPropertyEventTrigger<OrryxDamageEvents.
             .addParm(Type.STRING, "type", "攻击类型：PHYSICS/MAGIC/FIRE/REAL/SELF/CONSOLE/CUSTOM")
             .description("当玩家受到攻击时发生，如果攻击来自于Or技能，那将会继承技能环境中的参数")
 
-    override val clazz
+    override val clazz: java
         get() = OrryxDamageEvents.Post::class.java
 
     override fun onCheck(station: IStation, event: OrryxDamageEvents.Post, map: Map<String, Any?>): Boolean {
