@@ -1,7 +1,9 @@
 package org.gitee.orryx.module.state
 
 import com.eatthepath.uuid.FastUUID
+import kotlinx.coroutines.future.future
 import org.bukkit.entity.Player
+import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.kether.ScriptManager.runKether
 import org.gitee.orryx.utils.eval
 import org.gitee.orryx.utils.parse
@@ -15,6 +17,7 @@ import taboolib.module.kether.ScriptContext
 import taboolib.module.kether.orNull
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 
 class Status(override val key: String, configuration: Configuration): IStatus {
 
@@ -44,7 +47,9 @@ class Status(override val key: String, configuration: Configuration): IStatus {
         }
 
         fun getCondition(player: Player): CompletableFuture<Any?> {
-            return player.eval(conditionAction, emptyMap())
+            return OrryxAPI.pluginScope.future {
+                player.eval(conditionAction, emptyMap()).get(100, TimeUnit.MILLISECONDS)
+            }
         }
     }
 

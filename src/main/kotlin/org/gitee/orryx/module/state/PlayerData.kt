@@ -88,6 +88,7 @@ class PlayerData(val player: Player) {
     }
 
     fun setStatus(status: Status?) {
+        if (this.status == status) return
         this.status = status
         if (status != null) {
             val controller = getController(status.options.controller) ?: return
