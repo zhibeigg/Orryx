@@ -2,6 +2,7 @@ package org.gitee.orryx.dao.serializer
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.nullable
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -25,3 +26,5 @@ object InstantSerializer : KSerializer<Instant> {
         return Json.decodeFromString(decoder.decodeString())
     }
 }
+
+val nullInstantSerializer get() = InstantSerializer.nullable

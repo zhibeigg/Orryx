@@ -13,6 +13,7 @@ import taboolib.common.platform.function.info
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.platform.util.sendLang
 import java.util.*
+import javax.script.ScriptEngineManager
 
 object OrryxTestCommand {
 
@@ -37,19 +38,5 @@ object OrryxTestCommand {
 
     @CommandBody
     val test = subCommandExec<ProxyCommandSender> {
-        var time = System.currentTimeMillis()
-        ioScope.launch { info("io: $isPrimaryThread") }.invokeOnCompletion {
-            info("io: ${System.currentTimeMillis() - time}ms")
-
-            time = System.currentTimeMillis()
-            effectScope.launch { info("effect: $isPrimaryThread") }.invokeOnCompletion {
-                info("effect: ${System.currentTimeMillis() - time}ms")
-
-                time = System.currentTimeMillis()
-                pluginScope.launch { info("plugin: $isPrimaryThread") }.invokeOnCompletion {
-                    info("plugin: ${System.currentTimeMillis() - time}ms")
-                }
-            }
-        }
     }
 }

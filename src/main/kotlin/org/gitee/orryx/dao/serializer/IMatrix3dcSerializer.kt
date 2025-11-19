@@ -1,6 +1,7 @@
 package org.gitee.orryx.dao.serializer
 
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.builtins.nullable
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -40,3 +41,5 @@ object IMatrix3dcSerializer : KSerializer<Matrix3dc> {
         }
     }
 }
+
+val nullIMatrix3dcSerializer get() = IMatrix3dcSerializer.nullable

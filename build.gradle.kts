@@ -73,6 +73,7 @@ taboolib {
     relocate("com.larksuite.oapi", "org.gitee.orryx.larksuite.oapi")
     relocate("com.eatthepath.uuid", "org.gitee.orryx.eatthepath.uuid")
     relocate("kotlinx.serialization", "org.gitee.orryx.serialization")
+    relocate("kotlin.script.experimental", "kotlin2120.script.experimental")
     version { taboolib = "6.2.4-3b3cd67" }
 }
 
@@ -96,7 +97,7 @@ dependencies {
     compileOnly("org.eldergod.ext:DragonCore:2.6.2.9")
     compileOnly("org.eldergod.ext:GermPlugin:4.4.1-5")
     compileOnly("org.eldergod.ext:DragonArmourers:6.72")
-    implementation("org.eldergod.ext:MythicMobs:4.11.0") {
+    compileOnly("org.eldergod.ext:MythicMobs:4.11.0") {
         exclude("com.google.guava", "guava")
     }
     compileOnly("org.eldergod.ext:GDDTitle:2.1")
@@ -106,18 +107,26 @@ dependencies {
     compileOnly("org.eldergod.ext:ProtocolLib:5.3.0")
     compileOnly("org.eldergod.ext:cloudpick:1.2.1:CloudPick")
 
-    compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
-    compileOnly("com.github.ben-manes.caffeine:caffeine:2.9.3")
-    compileOnly("org.joml:joml:1.10.7")
-    compileOnly("com.larksuite.oapi:oapi-sdk:2.4.22")
-    compileOnly("com.eatthepath:fast-uuid:0.2.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
+    implementation("com.github.ben-manes.caffeine:caffeine:2.9.3")
+    implementation("org.joml:joml:1.10.7")
+    implementation("com.larksuite.oapi:oapi-sdk:2.4.22")
+    implementation("com.eatthepath:fast-uuid:0.2.0")
+
+    implementation("org.jetbrains.kotlin:kotlin-scripting-common:2.1.20")
+    implementation("org.jetbrains.kotlin:kotlin-scripting-jvm:2.1.20")
+    implementation("org.jetbrains.kotlin:kotlin-scripting-jvm-host:2.1.20")
+    implementation("org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:2.1.20")
+    implementation("org.jetbrains.kotlin:kotlin-scripting-dependencies:2.1.20")
+    implementation("org.jetbrains.kotlin:kotlin-scripting-dependencies-maven:2.1.20")
+    implementation("org.jetbrains.kotlin:kotlin-compiler-embeddable:2.1.20")
 
     testCompileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
     testCompileOnly("com.github.ben-manes.caffeine:caffeine:2.9.3")
     testCompileOnly("com.eatthepath:fast-uuid:0.2.0")
 
     compileOnly(kotlin("stdlib"))
-    compileOnly(kotlin("reflect"))
+    implementation(kotlin("reflect"))
     compileOnly(fileTree("libs"))
 }
 

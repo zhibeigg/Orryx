@@ -1,6 +1,7 @@
 package org.gitee.orryx.dao.serializer
 
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.builtins.nullable
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -22,3 +23,5 @@ object UUIDSerializer : KSerializer<UUID> {
         return decoder.decodeString().parseUUID()!!
     }
 }
+
+val nullUUIDSerializer get() = UUIDSerializer.nullable

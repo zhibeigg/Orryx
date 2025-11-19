@@ -1,6 +1,7 @@
 package org.gitee.orryx.dao.serializer
 
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.builtins.nullable
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -21,3 +22,5 @@ object DateSerializer : KSerializer<Date> {
         return Date(decoder.decodeLong())
     }
 }
+
+val nullDateSerializer get() = DateSerializer.nullable
