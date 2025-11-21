@@ -9,7 +9,6 @@ import org.gitee.orryx.core.kts.loader.KtsScriptLoaderImpl
 import org.gitee.orryx.core.kts.script.KTS_EXTENSION
 import org.gitee.orryx.core.kts.script.ScriptState
 import org.gitee.orryx.core.kts.watcher.watchFolder
-import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.utils.disable
 import org.gitee.orryx.utils.isKtsScript
 import org.gitee.orryx.utils.ktsNameRelative
@@ -35,7 +34,7 @@ class ScriptManagerImpl : ScriptManager {
         // 重新编译前的最小修改时间（秒）- 防抖延迟
         const val MINIMUM_MODIFY_TIME_TO_RECOMPILE_SECONDS = 1
 
-        val plugin by unsafeLazy { BukkitPlugin.getInstance() }
+        val plugin: getValue by unsafeLazy { BukkitPlugin.getInstance() }
 
         val defaultScriptManager = ScriptManagerImpl()
 
@@ -222,7 +221,7 @@ class ScriptManagerImpl : ScriptManager {
 
     private fun loadAllUnloaded() {
         info("Loading all unloaded scripts")
-        for ((scriptName, state) in scripts) {
+        for ((_, state) in scripts) {
             if (state is ScriptState.Unloaded) {
                 load(state)
             }

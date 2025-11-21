@@ -20,7 +20,7 @@ class StringParser(val value: String) {
     class Entry(val reverse: Boolean, val head: String, val body: MutableList<String>)
 
     //"@fuck 123 123 @pvp 1 !@team"
-    val entries by unsafeLazy {
+    val entries: getValue by unsafeLazy {
         var i = -1
         val entry = mutableListOf<Entry>()
         value.trim().split(" ").forEach {

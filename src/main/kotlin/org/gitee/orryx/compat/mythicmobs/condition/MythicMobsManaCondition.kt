@@ -13,7 +13,7 @@ import taboolib.module.kether.orNull
 @Ghost
 class MythicMobsManaCondition(line: String, mlc: MythicLineConfig): SkillCondition(line), IEntityCondition {
 
-    val mana = RangedDouble(mlc.getString(arrayOf("mana", "m"), conditionVar, *arrayOfNulls<String>(0)))
+    val mana: RangedDouble = RangedDouble(mlc.getString(arrayOf("mana", "m"), conditionVar, *arrayOfNulls<String>(0)))
 
     override fun check(e: AbstractEntity): Boolean {
         return if (e.isPlayer) {
