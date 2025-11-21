@@ -1,19 +1,17 @@
 package org.gitee.orryx.command
 
-import kotlinx.coroutines.launch
 import org.bukkit.entity.Player
-import org.gitee.orryx.api.OrryxAPI.Companion.effectScope
-import org.gitee.orryx.api.OrryxAPI.Companion.ioScope
-import org.gitee.orryx.api.OrryxAPI.Companion.pluginScope
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.command.CommandBody
 import taboolib.common.platform.command.subCommand
 import taboolib.common.platform.command.subCommandExec
 import taboolib.common.platform.function.info
-import taboolib.common.platform.function.isPrimaryThread
 import taboolib.platform.util.sendLang
 import java.util.*
-import javax.script.ScriptEngineManager
+import kotlin.script.experimental.annotations.KotlinScript
+import kotlin.script.experimental.host.toScriptSource
+import kotlin.script.experimental.jvmhost.BasicJvmScriptingHost
+import kotlin.script.experimental.jvmhost.createJvmCompilationConfigurationFromTemplate
 
 object OrryxTestCommand {
 
@@ -38,5 +36,26 @@ object OrryxTestCommand {
 
     @CommandBody
     val test = subCommandExec<ProxyCommandSender> {
+        val compilationConfiguration = createJvmCompilationConfigurationFromTemplate<SimpleScript>()
+
+        val host = BasicJvmScriptingHost()
+
+        val scriptContent = """
+            println("Hello from Kotlin Script!")
+            val x = 10
+            val y = 20
+            x + y
+        """.trimIndent()
+
+        info(
+            host.eval(
+                scriptContent.toScriptSource(),
+                compilationConfiguration,
+                null
+            )
+        )
     }
+
+    @KotlinScript
+    abstract class SimpleScript
 }

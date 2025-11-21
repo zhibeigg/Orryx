@@ -9,21 +9,13 @@
  */
 
 import org.bukkit.ChatColor
-
-// 获取玩家名称
-val playerName = player?.name ?: "Console"
+import taboolib.platform.util.onlinePlayers
 
 // 发送彩色消息
-player?.sendMessage("${ChatColor.GREEN}Hello, $playerName!")
-player?.sendMessage("${ChatColor.YELLOW}这是一个 KTS 脚本示例")
-
-// 使用上下文变量
-val customMessage = context["message"] as? String ?: "欢迎使用 Orryx 脚本系统!"
-player?.sendMessage(customMessage)
-
-// 设置返回值供外部使用
-context["executed"] = true
-context["timestamp"] = System.currentTimeMillis()
+onlinePlayers.forEach {
+    it.sendMessage("${ChatColor.GREEN}Hello, ${it.name}!")
+    it.sendMessage("${ChatColor.YELLOW}这是一个 KTS 脚本示例")
+}
 
 // 脚本返回值
 "Hello World 脚本执行成功"

@@ -50,3 +50,8 @@ LarkSuite:
 OpenAI:
   ApiKey: ""
   BaseUrl: ""
+# KTS 脚本配置
+Kts:
+  # 自定义 JDK 目录（可选）
+  # 如果不设置或为空，将使用当前 Java 运行时的 JDK
+  Jdk: "/home/zhibei/zulu8.84.0.15-ca-jdk8.0.442-linux_x64"
