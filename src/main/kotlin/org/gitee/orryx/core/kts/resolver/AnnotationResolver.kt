@@ -15,8 +15,6 @@ fun resolveScriptAnnotation(
     val annotations = ctx.collectedData?.get(ScriptCollectedData.foundAnnotations)
         ?.takeIf { it.isNotEmpty() } ?: return ctx.compilationConfiguration.asSuccess()
 
-    val reports = mutableListOf<ScriptDiagnostic>()
-
     val configuration = ctx.compilationConfiguration.with {
         var version = "Unknown"
 

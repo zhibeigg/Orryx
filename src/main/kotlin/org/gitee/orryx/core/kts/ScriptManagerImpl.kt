@@ -9,10 +9,13 @@ import org.gitee.orryx.core.kts.loader.KtsScriptLoaderImpl
 import org.gitee.orryx.core.kts.script.KTS_EXTENSION
 import org.gitee.orryx.core.kts.script.ScriptState
 import org.gitee.orryx.core.kts.watcher.watchFolder
+import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.utils.disable
 import org.gitee.orryx.utils.isKtsScript
 import org.gitee.orryx.utils.ktsNameRelative
 import org.gitee.orryx.utils.minecraftMain
+import taboolib.common.LifeCycle
+import taboolib.common.platform.Awake
 import taboolib.common.platform.function.getDataFolder
 import taboolib.common.platform.function.info
 import taboolib.common.util.unsafeLazy
@@ -33,6 +36,18 @@ class ScriptManagerImpl : ScriptManager {
         const val MINIMUM_MODIFY_TIME_TO_RECOMPILE_SECONDS = 1
 
         val plugin by unsafeLazy { BukkitPlugin.getInstance() }
+
+        val defaultScriptManager = ScriptManagerImpl()
+
+        @Awake(LifeCycle.ENABLE)
+        private fun enable() {
+            defaultScriptManager.onPluginEnable()
+        }
+
+        @Awake(LifeCycle.DISABLE)
+        private fun disable() {
+            defaultScriptManager.onPluginDisable()
+        }
     }
 
     // 所有已发现的脚本及其状态
