@@ -277,7 +277,7 @@ class ProfileAPI: IProfileAPI {
         class SuperFootInfo(var timeout: Long)
         class BlockInfo {
 
-            val map = mutableMapOf<DamageType, Task>()
+            val map: mutableMapOf = mutableMapOf<DamageType, Task>()
             class Task(var timeout: Long, val function: (OrryxDamageEvents.Pre) -> Unit)
         }
         class SilenceInfo(var timeout: Long)

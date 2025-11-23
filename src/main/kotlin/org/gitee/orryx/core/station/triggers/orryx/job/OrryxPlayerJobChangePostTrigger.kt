@@ -20,7 +20,7 @@ object OrryxPlayerJobChangePostTrigger: AbstractPropertyEventTrigger<OrryxPlayer
             .addParm(Type.STRING, "to/new", "新职业")
             .description("玩家职业改变后事件")
 
-    override val clazz
+    override val clazz: java
         get() = OrryxPlayerJobChangeEvents.Post::class.java
 
     override fun onJoin(event: OrryxPlayerJobChangeEvents.Post, map: Map<String, Any?>): ProxyCommandSender {

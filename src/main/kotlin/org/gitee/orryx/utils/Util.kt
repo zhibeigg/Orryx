@@ -5,7 +5,6 @@ import org.bukkit.entity.Player
 import org.gitee.orryx.api.Orryx
 import taboolib.common5.cint
 import taboolib.common5.clong
-import taboolib.module.configuration.Configuration
 import kotlin.math.pow
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
@@ -94,11 +93,11 @@ class RangedDouble(value: String, squared: Boolean = false) {
         } else if (value.startsWith(">")) {
             val s = value.substring(1)
             this.min = s.toDouble()
-            this.max = Double.Companion.MAX_VALUE
+            this.max = Double.MAX_VALUE
             this.operation = Operation.GREATER_THAN
         } else if (value.startsWith("<")) {
             val s = value.substring(1)
-            this.min = Double.Companion.MIN_VALUE
+            this.min = Double.MIN_VALUE
             this.max = s.toDouble()
             this.operation = Operation.LESS_THAN
         } else {

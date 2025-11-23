@@ -26,7 +26,7 @@ import kotlin.script.experimental.jvm.dependenciesFromClassContext
 import kotlin.script.experimental.jvm.jdkHome
 import kotlin.script.experimental.jvm.jvm
 
-val jdkHomeConfig by ConfigLazy { Orryx.config.getString("Kts.JdkHome")!! }
+val jdkHomeConfig: T by ConfigLazy { Orryx.config.getString("Kts.JdkHome")!! }
 
 class KtsScriptCompilationConfiguration : ScriptCompilationConfiguration({
     defaultImports(

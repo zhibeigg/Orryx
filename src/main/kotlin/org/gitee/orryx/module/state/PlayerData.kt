@@ -8,7 +8,6 @@ import org.gitee.orryx.core.common.keyregister.KeyRegisterManager
 import org.gitee.orryx.module.spirit.ISpiritManager
 import org.gitee.orryx.module.state.StateManager.getController
 import org.gitee.orryx.module.state.StateManager.statusDataList
-import org.gitee.orryx.module.state.states.BlockState
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
@@ -19,7 +18,7 @@ class PlayerData(val player: Player) {
 
     private var changeMoveState = MoveState.FRONT
 
-    val cacheJoiner = linkedSetOf<UUID>()
+    val cacheJoiner: linkedSetOf = linkedSetOf<UUID>()
 
     //移动方向
     val moveState: MoveState

@@ -6,8 +6,6 @@ import org.bukkit.event.entity.EntityDamageEvent
 import org.gitee.orryx.api.events.damage.DamageType
 import org.gitee.orryx.compat.IAttributeBridge
 import org.gitee.orryx.core.common.task.SimpleTimeoutTask
-import org.gitee.orryx.core.kether.actions.DamageActions.Default
-import org.gitee.orryx.utils.AttributePlusPlugin
 import org.gitee.orryx.utils.doDamage
 import org.serverct.ersha.api.AttributeAPI
 import org.serverct.ersha.attribute.AttributeHandle

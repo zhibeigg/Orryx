@@ -18,7 +18,7 @@ object OrryxPlayerExpUpTrigger: AbstractPropertyEventTrigger<OrryxPlayerJobExper
             .addParm(Type.DOUBLE, "exp/experience", "变化经验")
             .description("玩家经验上升事件")
 
-    override val clazz
+    override val clazz: java
         get() = OrryxPlayerJobExperienceEvents.Up::class.java
 
     override fun onJoin(event: OrryxPlayerJobExperienceEvents.Up, map: Map<String, Any?>): ProxyCommandSender {

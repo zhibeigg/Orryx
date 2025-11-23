@@ -4,11 +4,8 @@ import org.gitee.orryx.api.collider.IAABB
 import org.gitee.orryx.api.collider.local.ICoordinateConverter
 import org.gitee.orryx.api.collider.local.ILocalOBB
 import org.gitee.orryx.core.targets.ITargetLocation
-import org.gitee.orryx.utils.bukkit
 import org.joml.Quaterniond
 import org.joml.Vector3d
-import taboolib.platform.util.onlinePlayers
-import kotlin.collections.get
 
 open class LocalOBB<T : ITargetLocation<*>>(
     halfExtents: Vector3d,
@@ -59,7 +56,7 @@ open class LocalOBB<T : ITargetLocation<*>>(
             dirty[0] = true
             version[0] = parent.positionVersion()
             version[1] = parent.rotationVersion()
-            val position: Vector3d? = parent.position
+            val position: Vector3d = parent.position
             val rotation: Quaterniond? = parent.rotation.conjugate(Quaterniond())
             localCenter.set(center).sub(position).rotate(rotation)
             globalCenter.set(center)

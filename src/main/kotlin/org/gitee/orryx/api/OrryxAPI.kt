@@ -4,7 +4,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import org.gitee.orryx.api.interfaces.*
-import org.gitee.orryx.utils.minecraftAsync
 import taboolib.common.env.RuntimeDependencies
 import taboolib.common.env.RuntimeDependency
 import taboolib.common.platform.PlatformFactory
@@ -112,7 +111,7 @@ class OrryxAPI: IOrryxAPI {
 
     companion object {
 
-        val ketherScriptLoader by lazy { KetherScriptLoader() }
+        val ketherScriptLoader: getValue by lazy { KetherScriptLoader() }
 
         internal val ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         internal val effectScope = CoroutineScope(Dispatchers.Default + SupervisorJob())

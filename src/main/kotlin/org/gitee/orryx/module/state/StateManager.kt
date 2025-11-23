@@ -3,15 +3,12 @@ package org.gitee.orryx.module.state
 import com.germ.germplugin.api.event.GermClientLinkedEvent
 import com.germ.germplugin.api.event.GermKeyDownEvent
 import com.germ.germplugin.api.event.GermKeyUpEvent
-import com.germ.germplugin.api.event.GermPlayerLoadWorldEvent
 import eos.moe.armourers.api.PlayerSkinUpdateEvent
-import eos.moe.armourers.nu
 import eos.moe.dragoncore.api.event.EntityJoinWorldEvent
 import eos.moe.dragoncore.api.event.EntityLeaveWorldEvent
 import eos.moe.dragoncore.api.event.KeyPressEvent
 import eos.moe.dragoncore.api.event.KeyReleaseEvent
 import eos.moe.dragoncore.api.gui.event.CustomPacketEvent
-import eos.moe.dragoncore.network.PacketSender
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.event.entity.EntityDamageByEntityEvent
@@ -34,15 +31,12 @@ import taboolib.common.platform.Awake
 import taboolib.common.platform.Ghost
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
-import taboolib.common.platform.function.console
-import taboolib.common.platform.function.info
 import taboolib.common.platform.function.warning
 import taboolib.common.util.unsafeLazy
 import taboolib.common5.cbool
 import taboolib.common5.cfloat
 import taboolib.common5.clong
 import taboolib.library.configuration.ConfigurationSection
-import taboolib.module.chat.colored
 import taboolib.module.configuration.Config
 import taboolib.module.configuration.ConfigFile
 import taboolib.module.configuration.Configuration
@@ -347,11 +341,11 @@ object StateManager {
         return playerDataMap.values.toList()
     }
 
-    fun getGlobalState(key: String): IActionState? {
+    fun getGlobalState(key: String): IActionState {
         return globalState[key]
     }
 
-    fun getController(key: String): Configuration? {
+    fun getController(key: String): Configuration {
         return controllerMap[key]
     }
 }
