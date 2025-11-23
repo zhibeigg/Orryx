@@ -41,12 +41,12 @@ class ScriptManagerImpl : ScriptManager {
 
         @Awake(LifeCycle.ENABLE)
         private fun enable() {
-            defaultScriptManager.onPluginEnable()
+            //defaultScriptManager.onPluginEnable()
         }
 
         @Awake(LifeCycle.DISABLE)
         private fun disable() {
-            defaultScriptManager.onPluginDisable()
+            //defaultScriptManager.onPluginDisable()
         }
     }
 
@@ -222,7 +222,7 @@ class ScriptManagerImpl : ScriptManager {
 
     private fun loadAllUnloaded() {
         info("Loading all unloaded scripts")
-        for ((scriptName, state) in scripts) {
+        for ((_, state) in scripts) {
             if (state is ScriptState.Unloaded) {
                 load(state)
             }
