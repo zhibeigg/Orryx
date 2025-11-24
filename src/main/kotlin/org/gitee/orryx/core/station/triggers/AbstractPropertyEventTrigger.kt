@@ -26,7 +26,7 @@ abstract class AbstractPropertyEventTrigger<E>(override val event: String): ISta
     }
 
     override fun onCheck(station: IStation, event: E, map: Map<String, Any?>): Boolean {
-        return station.event.uppercase() == this.event.uppercase()
+        return station.event.equals(this.event, ignoreCase = true)
     }
 
     override fun onEnd(context: ScriptContext, event: E, map: Map<String, Any?>) {
