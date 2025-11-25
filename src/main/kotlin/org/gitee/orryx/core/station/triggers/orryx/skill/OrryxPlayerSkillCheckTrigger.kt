@@ -18,7 +18,7 @@ object OrryxPlayerSkillCheckTrigger: AbstractPropertyEventTrigger<OrryxPlayerSki
             .addParm(Type.LONG, "skillParameter", "技能参数上下文")
             .description("玩家技能释放前检查事件")
 
-    override val clazz
+    override val clazz: java
         get() = OrryxPlayerSkillCastEvents.Check::class.java
 
     override fun onJoin(event: OrryxPlayerSkillCastEvents.Check, map: Map<String, Any?>): ProxyCommandSender {

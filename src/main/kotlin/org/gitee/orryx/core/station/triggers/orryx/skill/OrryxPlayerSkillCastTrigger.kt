@@ -18,7 +18,7 @@ object OrryxPlayerSkillCastTrigger: AbstractPropertyEventTrigger<OrryxPlayerSkil
             .addParm(Type.LONG, "skillParameter", "技能参数上下文")
             .description("玩家技能释放事件")
 
-    override val clazz
+    override val clazz: java
         get() = OrryxPlayerSkillCastEvents.Cast::class.java
 
     override fun onJoin(event: OrryxPlayerSkillCastEvents.Cast, map: Map<String, Any?>): ProxyCommandSender {

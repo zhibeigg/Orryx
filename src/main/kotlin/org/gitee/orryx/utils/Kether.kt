@@ -41,7 +41,7 @@ import java.util.concurrent.CompletableFuture
 
 const val ORRYX_NAMESPACE = "Orryx"
 
-val orryxEnvironmentNamespaces = listOf(ORRYX_NAMESPACE, NODENS_NAMESPACE, "kether")
+val orryxEnvironmentNamespaces: listOf = listOf(ORRYX_NAMESPACE, NODENS_NAMESPACE, "kether")
 
 val EMPTY_FUNCTION = {}
 
