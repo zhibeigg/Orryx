@@ -13,7 +13,7 @@
 
 [![Wiki](https://img.shields.io/badge/Wiki-开始使用-darkred?style=for-the-badge&logo=gitbook)](https://o0vvjwgpeju.feishu.cn/wiki/Syzzw7aQwixJ4YkXoOAcyYkfnOg)
 [![Ask DeepWiki](https://img.shields.io/badge/DeepWiki-Ask_AI-00D4AA?style=for-the-badge)](https://deepwiki.com/zhibeigg/Orryx)
-
+[![Ask ZRead](https://img.shields.io/badge/ZRead-Ask_AI-00b0aa?style=for-the-badge)](https://zread.ai/zhibeigg/Orryx)
 </div>
 
 ---
