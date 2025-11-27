@@ -12,12 +12,12 @@ import taboolib.expansion.createHelper
 object OrryxLarkSuiteCommand {
 
     @CommandBody
-    val main = mainCommand {
+    val main: mainCommand = mainCommand {
         createHelper()
     }
 
     @CommandBody
-    val create = subCommandExec<ProxyCommandSender> {
+    val create: subCommandExec = subCommandExec<ProxyCommandSender> {
         LarkSuite.createDocument()
     }
 }

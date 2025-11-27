@@ -1,6 +1,5 @@
 package org.gitee.orryx.core.kether.actions
 
-import eos.moe.armourers.tr
 import org.gitee.orryx.core.common.timer.SkillTimer
 import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.key.BindKeyLoaderManager
@@ -171,7 +170,7 @@ object OrryxActions {
                         }
                     }
                 } else {
-                    job { future.complete(it) }
+                    job { it -> future.complete(it) }
                 }
             }
         }
@@ -190,7 +189,7 @@ object OrryxActions {
                         }
                     }
                 } else {
-                    job { future.complete(it.level) }
+                    job { it -> future.complete(it.level) }
                 }
             }
         }
@@ -219,7 +218,7 @@ object OrryxActions {
                         }
                     }
                 } else {
-                    job { future.complete(it.experience) }
+                    job { it -> future.complete(it.experience) }
                 }
             }
         }
@@ -238,7 +237,7 @@ object OrryxActions {
                         }
                     }
                 } else {
-                    job { future.complete(it.experienceOfLevel) }
+                    job { it -> future.complete(it.experienceOfLevel) }
                 }
             }
         }
@@ -257,7 +256,7 @@ object OrryxActions {
                         }
                     }
                 } else {
-                    job { future.complete(it.maxExperienceOfLevel) }
+                    job { it -> future.complete(it.maxExperienceOfLevel) }
                 }
             }
         }
@@ -276,7 +275,7 @@ object OrryxActions {
                         }
                     }
                 } else {
-                    job { future.complete(it.group) }
+                    job { it -> future.complete(it.group) }
                 }
             }
         }
@@ -316,7 +315,7 @@ object OrryxActions {
                             }
                         }
                     } else {
-                        getSkill(skill, true).thenApply {
+                        getSkill(skill, true).thenApply { it ->
                             future.complete(it?.level)
                         }
                     }
@@ -339,7 +338,7 @@ object OrryxActions {
                             }
                         }
                     } else {
-                        getSkill(skill, true).thenApply {
+                        getSkill(skill, true).thenApply { it ->
                             future.complete(it?.locked)
                         }
                     }
@@ -383,7 +382,7 @@ object OrryxActions {
                             }
                         }
                     } else {
-                        getSkill(skill, true).thenApply {
+                        getSkill(skill, true).thenApply { it ->
                             val skillParameter = it?.level?.let { level -> SkillParameter(skill, this, level) }
                             future.complete(skillParameter?.getVariable("COOLDOWN", true).clong)
                         }
@@ -431,7 +430,7 @@ object OrryxActions {
                             }
                         }
                     } else {
-                        getSkill(skill, true).thenApply {
+                        getSkill(skill, true).thenApply { it ->
                             val skillParameter = it?.level?.let { level -> SkillParameter(skill, this, level) }
                             future.complete(skillParameter?.manaValue(true) ?: 0)
                         }
@@ -456,7 +455,7 @@ object OrryxActions {
                             }
                         }
                     } else {
-                        getSkill(skill, true).thenApply {
+                        getSkill(skill, true).thenApply { it ->
                             val skillParameter = it?.level?.let { level -> SkillParameter(skill, this, level) }
                             future.complete(skillParameter?.getVariable("SILENCE", true).clong)
                         }
@@ -483,7 +482,7 @@ object OrryxActions {
                                 }
                             }
                         } else {
-                            getSkill(skill, true).thenApply {
+                            getSkill(skill, true).thenApply { it ->
                                 val skillParameter = it?.level?.let { level -> SkillParameter(skill, this, level) }
                                 future.complete(skillParameter?.getVariable(variable, false))
                             }

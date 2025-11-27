@@ -1,6 +1,5 @@
 package org.gitee.orryx.core.kether.actions.game
 
-import org.gitee.orryx.api.adapters.vector.AbstractVector
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type

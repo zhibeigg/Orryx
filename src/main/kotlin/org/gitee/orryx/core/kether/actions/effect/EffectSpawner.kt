@@ -1,6 +1,5 @@
 package org.gitee.orryx.core.kether.actions.effect
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
@@ -27,7 +26,7 @@ import taboolib.module.effect.shape.Ray.RayStopType
 import taboolib.platform.util.toBukkitLocation
 import java.util.concurrent.CompletableFuture
 
-class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick: Long = 1, val mode: SpawnerType = SpawnerType.PLAY, val origins: IContainer, val viewers: IContainer): ParticleSpawner {
+class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick: Long = 1, val mode: SpawnerType = SpawnerType.PLAY, origins: IContainer, val viewers: IContainer): ParticleSpawner {
 
     val future = CompletableFuture<Void>()
 

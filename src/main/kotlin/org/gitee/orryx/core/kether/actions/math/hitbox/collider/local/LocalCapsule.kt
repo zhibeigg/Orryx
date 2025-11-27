@@ -31,13 +31,13 @@ open class LocalCapsule<T : ITargetLocation<*>>(
         version[1] = (parent.rotationVersion() - 1).toShort()
     }
 
-    override var localCenter = localCenter
+    override var localCenter: Vector3d = localCenter
         set(value) {
             dirty[0] = true
             field = value
         }
 
-    override var localRotation = localRotation
+    override var localRotation: Quaterniond = localRotation
         set(value) {
             dirty[1] = true
             field = value

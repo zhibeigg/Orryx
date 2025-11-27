@@ -11,7 +11,7 @@ import taboolib.module.lang.sendLang
 object OrryxUICommand {
 
     @CommandBody
-    val openUI = subCommand {
+    val openUI: subCommand = subCommand {
         player("owner") {
             player("viewer") {
                 exec<ProxyCommandSender> {
@@ -24,7 +24,7 @@ object OrryxUICommand {
     }
 
     @CommandBody
-    val openHud = subCommand {
+    val openHud: subCommand = subCommand {
         player("owner") {
             player("viewer") {
                 exec<ProxyCommandSender> {
@@ -37,7 +37,7 @@ object OrryxUICommand {
     }
 
     @CommandBody
-    val hudOwner = subCommand {
+    val hudOwner: subCommand = subCommand {
         player("viewer") {
             exec<ProxyCommandSender> {
                 val viewer = Bukkit.getPlayerExact(ctx["viewer"]) ?: return@exec
