@@ -28,13 +28,13 @@ open class LocalRay<T : ITargetLocation<*>>(
         version[1] = (parent.rotationVersion() - 1).toShort()
     }
 
-    override var localOrigin = localOrigin
+    override var localOrigin: Vector3d = localOrigin
         set(value) {
             dirty = true
             field = value
         }
 
-    override var localDirection = localDirection
+    override var localDirection: Vector3d = localDirection
         set(value) {
             dirty = true
             field = value

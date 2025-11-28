@@ -17,7 +17,7 @@ object PlayerBucketEntityTrigger: AbstractPropertyPlayerEventTrigger<PlayerBucke
             .addParm(Type.TARGET, "entity", "获取将要放入桶中的实体")
             .description("玩家捕获存储桶中的实体时触发")
 
-    override val clazz
+    override val clazz: java
         get() = PlayerBucketEntityEvent::class.java
 
     override fun read(instance: PlayerBucketEntityEvent, key: String): OpenResult {

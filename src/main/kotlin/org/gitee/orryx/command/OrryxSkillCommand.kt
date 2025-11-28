@@ -16,12 +16,12 @@ import taboolib.expansion.createHelper
 object OrryxSkillCommand {
 
     @CommandBody
-    val main = mainCommand {
+    val main: mainCommand = mainCommand {
         createHelper()
     }
 
     @CommandBody
-    val bindKey = subCommand {
+    val bindKey: subCommand = subCommand {
         player {
             dynamic("skill") {
                 suggest { SkillLoaderManager.getSkills().map { it.key } }
@@ -49,7 +49,7 @@ object OrryxSkillCommand {
     }
 
     @CommandBody
-    val cast = subCommand {
+    val cast: subCommand = subCommand {
         player {
             dynamic("skill") {
                 suggest { SkillLoaderManager.getSkills().filter { it.value is ICastSkill }.map { it.key } }
@@ -78,7 +78,7 @@ object OrryxSkillCommand {
     }
 
     @CommandBody
-    val release = subCommand {
+    val release: subCommand = subCommand {
         player {
             dynamic("skill") {
                 suggest { SkillLoaderManager.getSkills().filter { it.value is ICastSkill }.map { it.key } }
@@ -94,7 +94,7 @@ object OrryxSkillCommand {
     }
 
     @CommandBody
-    val tryCast = subCommand {
+    val tryCast: subCommand = subCommand {
         player {
             dynamic("skill") {
                 suggest { SkillLoaderManager.getSkills().map { it.key } }
@@ -109,7 +109,7 @@ object OrryxSkillCommand {
     }
 
     @CommandBody
-    val clear = subCommand {
+    val clear: subCommand = subCommand {
         player {
             dynamic("skill") {
                 suggest { SkillLoaderManager.getSkills().map { it.key } }

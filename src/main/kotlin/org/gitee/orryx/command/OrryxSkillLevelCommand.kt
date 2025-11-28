@@ -11,7 +11,7 @@ import taboolib.common5.cint
 object OrryxSkillLevelCommand {
 
     @CommandBody
-    val give = subCommand {
+    val give: subCommand = subCommand {
         player {
             dynamic("skill") {
                 suggest { getSkills().map { it.key } }
@@ -31,7 +31,7 @@ object OrryxSkillLevelCommand {
     }
 
     @CommandBody
-    val take = subCommand {
+    val take: subCommand = subCommand {
         player {
             dynamic("skill") {
                 suggest { getSkills().map { it.key } }
@@ -51,7 +51,7 @@ object OrryxSkillLevelCommand {
     }
 
     @CommandBody
-    val set = subCommand {
+    val set: subCommand = subCommand {
         player {
             dynamic("skill") {
                 suggest { getSkills().map { it.key } }

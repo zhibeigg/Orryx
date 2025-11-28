@@ -6,7 +6,7 @@ import kotlin.script.experimental.util.PropertiesCollection
 
 typealias CompilerKeys = ScriptCompilationConfigurationKeys
 
-val CompilerKeys.info by PropertiesCollection.key(
+val CompilerKeys.info: getValue by PropertiesCollection.key(
     ScriptDescription(
         "Unknown",
         emptySet(),

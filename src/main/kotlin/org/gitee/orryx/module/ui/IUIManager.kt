@@ -21,10 +21,8 @@ import org.gitee.orryx.utils.GermPluginPlugin
 import org.gitee.orryx.utils.consoleMessage
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
-import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.adaptPlayer
-import taboolib.common.platform.function.info
 import taboolib.common.util.unsafeLazy
 import taboolib.common5.cdouble
 import taboolib.module.chat.colored
