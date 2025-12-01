@@ -14,7 +14,7 @@ import taboolib.library.configuration.ConfigurationSection
 import taboolib.module.kether.Script
 import taboolib.module.kether.ScriptContext
 
-class DodgeState(override val key: String, override val configurationSection: ConfigurationSection): IActionState, ISpiritCost {
+class DodgeState(override val key: String, configurationSection: ConfigurationSection): IActionState, ISpiritCost {
 
     val animation: Animation = Animation(configurationSection.getConfigurationSection("Animation")!!)
 

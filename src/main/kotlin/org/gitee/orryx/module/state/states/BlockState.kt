@@ -18,7 +18,7 @@ import taboolib.module.kether.Script
 import taboolib.module.kether.ScriptContext
 import kotlin.math.max
 
-class BlockState(override val key: String, override val configurationSection: ConfigurationSection): IActionState, ISpiritCost {
+class BlockState(override val key: String, configurationSection: ConfigurationSection): IActionState, ISpiritCost {
 
     val animation: Animation = Animation(configurationSection.getConfigurationSection("Animation")!!)
 

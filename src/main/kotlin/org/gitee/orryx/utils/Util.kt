@@ -5,7 +5,6 @@ import org.bukkit.entity.Player
 import org.gitee.orryx.api.Orryx
 import taboolib.common5.cint
 import taboolib.common5.clong
-import taboolib.module.configuration.Configuration
 import kotlin.math.pow
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
@@ -16,6 +15,7 @@ internal fun String?.toIntPair(vararg delimiters: String): Pair<Int, Int> {
         it[0].cint to it[1].cint
     }
 }
+
 internal fun String?.toLongPair(vararg delimiters: String): Pair<Long, Long> {
     this ?: return Pair(0L, 0L)
     return split(*delimiters).let {
