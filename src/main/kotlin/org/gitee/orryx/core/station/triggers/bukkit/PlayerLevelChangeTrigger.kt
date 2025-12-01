@@ -1,15 +1,11 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
-import org.bukkit.event.player.PlayerKickEvent
 import org.bukkit.event.player.PlayerLevelChangeEvent
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
 import taboolib.common.OpenResult
-import taboolib.common5.cint
-import taboolib.module.kether.ScriptContext
 
 object PlayerLevelChangeTrigger: AbstractPropertyPlayerEventTrigger<PlayerLevelChangeEvent>("Player Level Change") {
 
@@ -19,7 +15,7 @@ object PlayerLevelChangeTrigger: AbstractPropertyPlayerEventTrigger<PlayerLevelC
             .addParm(Type.INT, "oldLevel", "老等级")
             .description("玩家等级改变时触发")
 
-    override val clazz
+    override val clazz: java
         get() = PlayerLevelChangeEvent::class.java
 
     override fun read(instance: PlayerLevelChangeEvent, key: String): OpenResult {

@@ -23,12 +23,12 @@ import java.util.concurrent.ConcurrentMap
 
 object ScriptManager {
 
-    val runningSkillScriptsMap by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { ConcurrentHashMap<UUID, PlayerRunningSpace>() }
-    val runningStationScriptsMap by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { ConcurrentHashMap<UUID, PlayerRunningSpace>() }
+    val runningSkillScriptsMap: getValue by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { ConcurrentHashMap<UUID, PlayerRunningSpace>() }
+    val runningStationScriptsMap: getValue by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { ConcurrentHashMap<UUID, PlayerRunningSpace>() }
 
-    val wikiActions by unsafeLazy { mutableListOf<org.gitee.orryx.module.wiki.Action>() }
-    val wikiSelectors by unsafeLazy { mutableListOf<org.gitee.orryx.module.wiki.Selector>() }
-    val wikiTriggers by unsafeLazy { mutableListOf<org.gitee.orryx.module.wiki.Trigger>() }
+    val wikiActions: getValue by unsafeLazy { mutableListOf<org.gitee.orryx.module.wiki.Action>() }
+    val wikiSelectors: getValue by unsafeLazy { mutableListOf<org.gitee.orryx.module.wiki.Selector>() }
+    val wikiTriggers: getValue by unsafeLazy { mutableListOf<org.gitee.orryx.module.wiki.Trigger>() }
 
     private val scriptMap by unsafeLazy { ConcurrentHashMap<String, Script>() }
     private val closeableMap by unsafeLazy { hashMapOf<String, ConcurrentMap<UUID, AutoCloseable>>() }

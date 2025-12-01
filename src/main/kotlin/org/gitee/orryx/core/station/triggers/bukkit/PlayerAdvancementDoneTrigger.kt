@@ -23,7 +23,7 @@ object PlayerAdvancementDoneTrigger: AbstractPropertyPlayerEventTrigger<PlayerAd
             .addParm(Type.STRING, "advancement", "成就")
             .description("玩家成就完成")
 
-    override val clazz
+    override val clazz: java
         get() = PlayerAdvancementDoneEvent::class.java
 
     override fun read(instance: PlayerAdvancementDoneEvent, key: String): OpenResult {

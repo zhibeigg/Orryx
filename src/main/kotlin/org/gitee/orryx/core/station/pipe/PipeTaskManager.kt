@@ -4,7 +4,6 @@ import kotlinx.coroutines.launch
 import org.gitee.orryx.api.OrryxAPI.Companion.pluginScope
 import org.gitee.orryx.core.station.TriggerManager
 import taboolib.common.platform.event.ProxyListener
-import taboolib.common.platform.function.registerBukkitListener
 import taboolib.common.platform.function.unregisterListener
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap

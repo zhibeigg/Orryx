@@ -22,7 +22,7 @@ abstract class AbstractSkillUI(override val viewer: Player, override val owner: 
     override fun upgrade(skill: String): CompletableFuture<SkillLevelResult> {
         val future = CompletableFuture<SkillLevelResult>()
         owner.getSkill(skill).thenApply {
-            it?.up()?.thenApply {
+            it?.up()?.thenApply { it ->
                 future.complete(it)
             } ?: future.complete(SkillLevelResult.NONE)
         }

@@ -3,7 +3,6 @@ package org.gitee.orryx.api.interfaces
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.events.damage.DamageType
 import org.gitee.orryx.api.events.damage.OrryxDamageEvents
-import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.profile.IPlayerProfile
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
