@@ -21,6 +21,7 @@ import taboolib.module.database.getHost
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.time.measureTime
 
 @Suppress("DuplicatedCode")
 class SqlLiteManager: IStorageManager {
@@ -87,156 +88,120 @@ class SqlLiteManager: IStorageManager {
         globalFlagTable.createTable(dataSource)
     }
 
-    override fun getPlayerData(player: UUID): CompletableFuture<PlayerProfilePO> {
-        debug("SqlLite 获取玩家 Profile")
-        val future = CompletableFuture<PlayerProfilePO>()
-        fun read() {
+    /**
+     * 耗时统计器
+     */
+    private class TimeStats {
+        private var totalTime: Long = 0
+        private var count: Long = 0
+
+        @Synchronized
+        fun record(millis: Long): Pair<Long, Long> {
+            totalTime += millis
+            count++
+            return millis to (totalTime / count)
+        }
+    }
+
+    private val statsMap = mutableMapOf<String, TimeStats>()
+
+    private fun getStats(key: String): TimeStats = statsMap.getOrPut(key) { TimeStats() }
+
+    /**
+     * 统一的异步读取模板
+     */
+    private inline fun <T> asyncRead(debugMessage: String, crossinline block: () -> T): CompletableFuture<T> {
+        debug("SqlLite $debugMessage")
+        val future = CompletableFuture<T>()
+        val execute = {
             requireAsync("sqlLite")
             try {
-                val uuid = FastUUID.toString(player)
-                synchronized(getInternerByUUID(player).intern("PlayerData${uuid}")) {
-                    if (!playerTable.find(dataSource) { where { PLAYER_UUID eq uuid } }) {
-                        playerTable.insert(dataSource, PLAYER_UUID, JOB, POINT, FLAGS) {
-                            value(uuid, null, 0, null)
-                        }
-                    }
+                val result: T
+                val time = measureTime { result = block() }.inWholeMilliseconds
+                val (current, avg) = getStats(debugMessage).record(time)
+                debug("&f$debugMessage &7| &e${current}ms &7| &f平均 &e${avg}ms")
+                future.complete(result)
+            } catch (e: Throwable) {
+                e.printStackTrace()
+                future.completeExceptionally(e)
+            }
+        }
+        if (isPrimaryThread) {
+            OrryxAPI.ioScope.launch { execute() }
+        } else {
+            execute()
+        }
+        return future
+    }
+
+    override fun getPlayerData(player: UUID): CompletableFuture<PlayerProfilePO> = asyncRead("获取玩家 Profile") {
+        val uuid = FastUUID.toString(player)
+        synchronized(getInternerByUUID(player).intern("PlayerData$uuid")) {
+            if (!playerTable.find(dataSource) { where { PLAYER_UUID eq uuid } }) {
+                playerTable.insert(dataSource, PLAYER_UUID, JOB, POINT, FLAGS) {
+                    value(uuid, null, 0, null)
                 }
-                future.complete(
-                    playerTable.select(dataSource) {
-                        where { PLAYER_UUID eq FastUUID.toString(player) }
-                        rows(USER_ID, JOB, POINT, FLAGS)
-                        limit(1)
-                    }.firstOrNull {
-                        PlayerProfilePO(
-                            getInt(USER_ID),
-                            player,
-                            getString(JOB),
-                            getInt(POINT),
-                            getString(FLAGS)?.let { Json.decodeFromString(it) } ?: emptyMap()
-                        )
-                    }
-                )
-            } catch (e: Throwable) {
-                e.printStackTrace()
-                future.completeExceptionally(e)
             }
         }
-        if (isPrimaryThread) {
-            OrryxAPI.ioScope.launch { read() }
-        } else {
-            read()
+        playerTable.select(dataSource) {
+            where { PLAYER_UUID eq uuid }
+            rows(USER_ID, JOB, POINT, FLAGS)
+            limit(1)
+        }.first {
+            PlayerProfilePO(
+                getInt(USER_ID),
+                player,
+                getString(JOB),
+                getInt(POINT),
+                getString(FLAGS)?.let { Json.decodeFromString(it) } ?: emptyMap()
+            )
         }
-        return future
     }
 
-    override fun getPlayerJob(player: UUID, id: Int, job: String): CompletableFuture<PlayerJobPO?> {
-        debug("SqlLite 获取玩家 Job")
-        val future = CompletableFuture<PlayerJobPO?>()
-        fun read() {
-            requireAsync("sqlLite")
-            try {
-                future.complete(jobsTable.select(dataSource) {
-                    where { USER_ID eq id and (JOB eq job) }
-                    rows(EXPERIENCE, GROUP, BIND_KEY_OF_GROUP)
-                    limit(1)
-                }.firstOrNull {
-                    PlayerJobPO(
-                        id,
-                        player,
-                        job,
-                        getInt(EXPERIENCE),
-                        getString(GROUP),
-                        Json.decodeFromString(getString(BIND_KEY_OF_GROUP))
-                    )
-                })
-            } catch (e: Throwable) {
-                e.printStackTrace()
-                future.completeExceptionally(e)
-            }
+    override fun getPlayerJob(player: UUID, id: Int, job: String): CompletableFuture<PlayerJobPO?> = asyncRead("获取玩家 Job") {
+        jobsTable.select(dataSource) {
+            where { USER_ID eq id and (JOB eq job) }
+            rows(EXPERIENCE, GROUP, BIND_KEY_OF_GROUP)
+            limit(1)
+        }.firstOrNull {
+            PlayerJobPO(
+                id,
+                player,
+                job,
+                getInt(EXPERIENCE),
+                getString(GROUP),
+                Json.decodeFromString(getString(BIND_KEY_OF_GROUP))
+            )
         }
-        if (isPrimaryThread) {
-            OrryxAPI.ioScope.launch { read() }
-        } else {
-            read()
-        }
-        return future
     }
 
-    override fun getPlayerSkill(player: UUID, id: Int, job: String, skill: String): CompletableFuture<PlayerSkillPO?> {
-        debug("SqlLite 获取玩家 Skill")
-        val future = CompletableFuture<PlayerSkillPO?>()
-        fun read() {
-            requireAsync("sqlLite")
-            try {
-                future.complete(skillsTable.select(dataSource) {
-                    where { USER_ID eq id and (JOB eq job) and (SKILL eq skill) }
-                    rows(LOCKED, LEVEL)
-                    limit(1)
-                }.firstOrNull {
-                    PlayerSkillPO(id, player, job, skill, getBoolean(LOCKED), getInt(LEVEL))
-                })
-            } catch (e: Throwable) {
-                e.printStackTrace()
-                future.completeExceptionally(e)
-            }
+    override fun getPlayerSkill(player: UUID, id: Int, job: String, skill: String): CompletableFuture<PlayerSkillPO?> = asyncRead("获取玩家 Skill") {
+        skillsTable.select(dataSource) {
+            where { USER_ID eq id and (JOB eq job) and (SKILL eq skill) }
+            rows(LOCKED, LEVEL)
+            limit(1)
+        }.firstOrNull {
+            PlayerSkillPO(id, player, job, skill, getBoolean(LOCKED), getInt(LEVEL))
         }
-        if (isPrimaryThread) {
-            OrryxAPI.ioScope.launch { read() }
-        } else {
-            read()
-        }
-        return future
     }
 
-    override fun getPlayerSkills(player: UUID, id: Int, job: String): CompletableFuture<List<PlayerSkillPO>> {
-        debug("SqlLite 获取玩家 Skills")
-        val future = CompletableFuture<List<PlayerSkillPO>>()
-        fun read() {
-            requireAsync("sqlLite")
-            try {
-                future.complete(skillsTable.select(dataSource) {
-                    where { USER_ID eq id and (JOB eq job) }
-                    rows(SKILL, LOCKED, LEVEL)
-                }.map {
-                    PlayerSkillPO(id, player, job, getString(SKILL), getBoolean(LOCKED), getInt(LEVEL))
-                })
-            } catch (e: Throwable) {
-                e.printStackTrace()
-                future.completeExceptionally(e)
-            }
+    override fun getPlayerSkills(player: UUID, id: Int, job: String): CompletableFuture<List<PlayerSkillPO>> = asyncRead("获取玩家 Skills") {
+        skillsTable.select(dataSource) {
+            where { USER_ID eq id and (JOB eq job) }
+            rows(SKILL, LOCKED, LEVEL)
+        }.map {
+            PlayerSkillPO(id, player, job, getString(SKILL), getBoolean(LOCKED), getInt(LEVEL))
         }
-        if (isPrimaryThread) {
-            OrryxAPI.ioScope.launch { read() }
-        } else {
-            read()
-        }
-        return future
     }
 
-    override fun getPlayerKey(id: Int): CompletableFuture<PlayerKeySettingPO?> {
-        debug("SqlLite 获取玩家 KeySetting")
-        val future = CompletableFuture<PlayerKeySettingPO?>()
-        fun read() {
-            requireAsync("sqlLite")
-            try {
-                future.complete(keyTable.select(dataSource) {
-                    where { USER_ID eq id }
-                    rows(KEY_SETTING)
-                    limit(1)
-                }.firstOrNull {
-                    Json.decodeFromString<PlayerKeySettingPO>(getString(KEY_SETTING))
-                })
-            } catch (e: Throwable) {
-                e.printStackTrace()
-                future.completeExceptionally(e)
-            }
+    override fun getPlayerKey(id: Int): CompletableFuture<PlayerKeySettingPO?> = asyncRead("获取玩家 KeySetting") {
+        keyTable.select(dataSource) {
+            where { USER_ID eq id }
+            rows(KEY_SETTING)
+            limit(1)
+        }.firstOrNull {
+            Json.decodeFromString<PlayerKeySettingPO>(getString(KEY_SETTING))
         }
-        if (isPrimaryThread) {
-            OrryxAPI.ioScope.launch { read() }
-        } else {
-            read()
-        }
-        return future
     }
 
     override fun savePlayerData(playerProfilePO: PlayerProfilePO, onSuccess: () -> Unit) {
@@ -333,36 +298,20 @@ class SqlLiteManager: IStorageManager {
         internerMap.remove(player)
     }
 
-    override fun getGlobalFlag(key: String): CompletableFuture<IFlag?> {
-        debug("SqlLite 获取全局 Flag")
-        val future = CompletableFuture<IFlag?>()
-        fun read() {
-            requireAsync("sqlLite")
-            try {
-                future.complete(globalFlagTable.select(dataSource) {
-                    where { FLAG_KEY eq key }
-                    rows(FLAG)
-                    limit(1)
-                }.firstOrNull {
-                    Json.decodeFromString<IFlag>(getString(FLAG))
-                })
-            } catch (e: Throwable) {
-                e.printStackTrace()
-                future.completeExceptionally(e)
-            }
+    override fun getGlobalFlag(key: String): CompletableFuture<IFlag?> = asyncRead("获取全局 Flag") {
+        globalFlagTable.select(dataSource) {
+            where { FLAG_KEY eq key }
+            rows(FLAG)
+            limit(1)
+        }.firstOrNull {
+            Json.decodeFromString<IFlag>(getString(FLAG))
         }
-        if (isPrimaryThread) {
-            OrryxAPI.ioScope.launch { read() }
-        } else {
-            read()
-        }
-        return future
     }
 
     override fun saveGlobalFlag(key: String, flag: IFlag?, onSuccess: () -> Unit) {
         requireAsync("sqlLite")
         debug("SqlLite 保存全局 Flag")
-        synchronized(pluginInterner.intern("GlobalFlag${key}")) {
+        synchronized(pluginInterner.intern("GlobalFlag$key")) {
             globalFlagTable.workspace(dataSource) {
                 if (flag == null) {
                     delete { where { FLAG_KEY eq key } }
@@ -374,10 +323,7 @@ class SqlLiteManager: IStorageManager {
                         }
                     } else {
                         insert(FLAG_KEY, FLAG) {
-                            value(
-                                key,
-                                Json.encodeToString(flag)
-                            )
+                            value(key, Json.encodeToString(flag))
                         }
                     }
                 }

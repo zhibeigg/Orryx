@@ -15,6 +15,10 @@ import taboolib.common.platform.Ghost
 @Ghost
 class MythicMobsCastMechanic(line: String, mlc: MythicLineConfig) : SkillMechanic(line, mlc), ITargetedEntitySkill {
 
+    init {
+        isAsyncSafe = true
+    }
+
     private val skill = mlc.getString(arrayOf("s", "skill"))
     private val level = mlc.getPlaceholderInteger(arrayOf("l", "level"), 1)
 
