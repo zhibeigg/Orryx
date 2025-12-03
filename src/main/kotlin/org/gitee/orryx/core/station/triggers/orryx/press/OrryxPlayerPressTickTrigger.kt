@@ -20,7 +20,7 @@ object OrryxPlayerPressTickTrigger: AbstractPropertyEventTrigger<OrryxPlayerPres
             .addParm(Type.LONG, "period", "周期时间")
             .description("玩家开始蓄力后的周期性事件")
 
-    override val clazz
+    override val clazz: java
         get() = OrryxPlayerPressTickEvent::class.java
 
     override fun onJoin(event: OrryxPlayerPressTickEvent, map: Map<String, Any?>): ProxyCommandSender {

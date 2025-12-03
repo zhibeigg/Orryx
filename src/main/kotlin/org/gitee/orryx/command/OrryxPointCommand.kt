@@ -1,7 +1,6 @@
 package org.gitee.orryx.command
 
 import org.gitee.orryx.utils.bukkitPlayer
-import org.gitee.orryx.utils.orryxProfile
 import org.gitee.orryx.utils.orryxProfileTo
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.command.CommandBody
@@ -13,7 +12,7 @@ import taboolib.common5.cint
 object OrryxPointCommand {
 
     @CommandBody
-    val give = subCommand {
+    val give: subCommand = subCommand {
         player {
             int("point") {
                 exec<ProxyCommandSender> {
@@ -28,7 +27,7 @@ object OrryxPointCommand {
     }
 
     @CommandBody
-    val take = subCommand {
+    val take: subCommand = subCommand {
         player {
             int("point") {
                 exec<ProxyCommandSender> {
@@ -43,7 +42,7 @@ object OrryxPointCommand {
     }
 
     @CommandBody
-    val set = subCommand {
+    val set: subCommand = subCommand {
         player {
             int("point") {
                 exec<ProxyCommandSender> {

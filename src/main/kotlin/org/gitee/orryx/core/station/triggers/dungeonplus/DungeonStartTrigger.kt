@@ -23,7 +23,7 @@ object DungeonStartTrigger: AbstractPropertyEventTrigger<PlayerDungeonEvent>("Du
             .addParm(Type.ITERABLE, "params", "副本参数")
             .description("副本启动时触发")
 
-    override val clazz
+    override val clazz: java
         get() = PlayerDungeonEvent::class.java
 
     override fun onCheck(pipeTask: IPipeTask, event: PlayerDungeonEvent, map: Map<String, Any?>): Boolean {

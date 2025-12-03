@@ -17,6 +17,6 @@ val SPIGOT_DEPENDENCY = Dependency(
     ),
 )
 
-val baseDependencies = listOf(
+val baseDependencies: listOf = listOf(
     SPIGOT_DEPENDENCY,
 )

@@ -23,4 +23,4 @@ object DateSerializer : KSerializer<Date> {
     }
 }
 
-val nullDateSerializer get() = DateSerializer.nullable
+val nullDateSerializer: nullable get() = DateSerializer.nullable
