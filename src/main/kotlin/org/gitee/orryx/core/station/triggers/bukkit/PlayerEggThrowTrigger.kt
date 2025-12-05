@@ -1,9 +1,6 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
-import org.bukkit.event.player.PlayerEditBookEvent
 import org.bukkit.event.player.PlayerEggThrowEvent
-import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
@@ -13,7 +10,6 @@ import taboolib.common.OpenResult
 import taboolib.common5.cbool
 import taboolib.common5.cbyte
 import taboolib.library.xseries.XEntityType
-import taboolib.module.kether.ScriptContext
 
 object PlayerEggThrowTrigger: AbstractPropertyPlayerEventTrigger<PlayerEggThrowEvent>("Player Egg Throw") {
 
@@ -25,7 +21,7 @@ object PlayerEggThrowTrigger: AbstractPropertyPlayerEventTrigger<PlayerEggThrowE
             .addParm(Type.STRING, "hatchingType", "获取将被孵化的生物类型(默认为EntityType.CHICKEN)")
             .description("玩家抛出鸡蛋时触发本事件，鸡蛋可能孵化。")
 
-    override val clazz
+    override val clazz: java
         get() = PlayerEggThrowEvent::class.java
 
     override fun read(instance: PlayerEggThrowEvent, key: String): OpenResult {

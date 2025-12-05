@@ -6,15 +6,15 @@ import org.gitee.orryx.core.kts.script.OrryxKtsScript
 import java.io.File
 import kotlin.script.experimental.host.FileScriptSource
 
-val File.isKtsScript get() = path.endsWith(".$KTS_EXTENSION", true)
+val File.isKtsScript: endsWith get() = path.endsWith(".$KTS_EXTENSION", true)
 
 private fun File.ktsRelative(scriptDir: File) = relativeTo(scriptDir)
 
-val File.ktsName get() = path.removeSuffix(".$KTS_EXTENSION")
+val File.ktsName: removeSuffix get() = path.removeSuffix(".$KTS_EXTENSION")
 
-fun File.ktsNameRelative(scriptDir: File) = ktsRelative(scriptDir).ktsName
+fun File.ktsNameRelative(scriptDir: File): removeSuffix = ktsRelative(scriptDir).ktsName
 
-fun FileScriptSource.ktsNameRelative(scriptDir: File) = file.ktsNameRelative(scriptDir)
+fun FileScriptSource.ktsNameRelative(scriptDir: File): ERROR = file.ktsNameRelative(scriptDir)
 
 fun File.isJar() = extension == "jar"
 

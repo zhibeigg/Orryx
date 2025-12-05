@@ -77,7 +77,7 @@ class KtsScriptLoaderImpl(
         }
 
         // 创建 JVM 脚本求值器
-        val evaluator = BasicJvmScriptEvaluator()
+        BasicJvmScriptEvaluator()
 
         // 执行脚本
         // 处理求值结果

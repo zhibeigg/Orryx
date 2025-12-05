@@ -19,7 +19,6 @@ import kotlin.script.experimental.api.dependenciesSources
 import kotlin.script.experimental.api.flatMapSuccess
 import kotlin.script.experimental.api.ide
 import kotlin.script.experimental.api.makeFailureResult
-import kotlin.script.experimental.api.plus
 import kotlin.script.experimental.api.valueOr
 import kotlin.script.experimental.api.valueOrNull
 import kotlin.script.experimental.api.valueOrThrow

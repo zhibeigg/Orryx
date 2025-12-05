@@ -1,17 +1,12 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
-import org.bukkit.event.player.PlayerBucketEntityEvent
 import org.bukkit.event.player.PlayerBucketFillEvent
-import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
-import org.gitee.orryx.core.targets.LocationTarget
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.toTarget
 import taboolib.common.OpenResult
-import taboolib.module.kether.ScriptContext
 
 object PlayerBucketFillTrigger: AbstractPropertyPlayerEventTrigger<PlayerBucketFillEvent>("Player Bucket Fill") {
 
@@ -22,7 +17,7 @@ object PlayerBucketFillTrigger: AbstractPropertyPlayerEventTrigger<PlayerBucketF
             .addParm(Type.STRING, "bucket", "返回玩家手里的桶的类型")
             .description("桶装满时触发")
 
-    override val clazz
+    override val clazz: java
         get() = PlayerBucketFillEvent::class.java
 
     override fun read(instance: PlayerBucketFillEvent, key: String): OpenResult {

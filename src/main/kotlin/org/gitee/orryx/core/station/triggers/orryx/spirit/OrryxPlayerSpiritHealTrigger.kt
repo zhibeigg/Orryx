@@ -9,16 +9,15 @@ import org.gitee.orryx.module.wiki.Type
 import taboolib.common.OpenResult
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
-import taboolib.module.kether.KetherProperty
 
 object OrryxPlayerSpiritHealTrigger: AbstractPropertyEventTrigger<OrryxPlayerSpiritEvents.Heal>("Orryx Player Spirit Heal") {
 
     override val wiki: Trigger
-        get() = Trigger.Companion.new(TriggerGroup.ORRYX, event)
+        get() = Trigger.new(TriggerGroup.ORRYX, event)
             .addParm(Type.DOUBLE, "spirit", "变化精力值")
             .description("玩家精力值上升事件")
 
-    override val clazz
+    override val clazz: java
         get() = OrryxPlayerSpiritEvents.Heal::class.java
 
     override fun onJoin(event: OrryxPlayerSpiritEvents.Heal, map: Map<String, Any?>): ProxyCommandSender {
