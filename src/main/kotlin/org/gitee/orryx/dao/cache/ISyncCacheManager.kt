@@ -32,14 +32,15 @@ interface ISyncCacheManager {
         private fun loadCache() {
             INSTANCE = when(lazy) {
                 "REDIS" -> {
-                    consoleMessage(("&e┣&7已选择Redis缓存 &a√").colored())
+                    consoleMessage(("&e┣&7已选择 Redis 缓存 &a√").colored())
                     when (RedisChannelPlugin.type) {
                         CLUSTER -> ClusterRedisManager()
                         SINGLE -> RedisManager()
+                        null -> error("Redis 暴死了")
                     }
                 }
                 "BROKER" -> {
-                    consoleMessage(("&e┣&7已选择BROKE通道缓存 &a√").colored())
+                    consoleMessage(("&e┣&7已选择 BROKE 通道缓存 &a√").colored())
                     error("暂不支持")
                     //BrokerManager()
                 }
