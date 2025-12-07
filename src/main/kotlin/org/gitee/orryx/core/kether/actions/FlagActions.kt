@@ -1,6 +1,5 @@
 package org.gitee.orryx.core.kether.actions
 
-import org.gitee.orryx.core.profile.IFlag
 import org.gitee.orryx.core.targets.PlayerTarget
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type

@@ -28,7 +28,7 @@ object PlayerDamagePreTrigger: AbstractPropertyEventTrigger<OrryxDamageEvents.Pr
             .addParm(Type.STRING, "type", "攻击类型：PHYSICS/MAGIC/FIRE/REAL/SELF/CONSOLE/CUSTOM")
             .description("当玩家攻击时发生，如果攻击来自于Or技能，那将会继承技能环境中的参数")
 
-    override val clazz
+    override val clazz: java
         get() = OrryxDamageEvents.Pre::class.java
 
     override fun onCheck(station: IStation, event: OrryxDamageEvents.Pre, map: Map<String, Any?>): Boolean {

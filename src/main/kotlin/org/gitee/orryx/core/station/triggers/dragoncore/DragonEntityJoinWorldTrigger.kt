@@ -2,13 +2,10 @@ package org.gitee.orryx.core.station.triggers.dragoncore
 
 import com.eatthepath.uuid.FastUUID
 import eos.moe.dragoncore.api.event.EntityJoinWorldEvent
-import eos.moe.dragoncore.api.event.EntityLeaveWorldEvent
-import eos.moe.dragoncore.api.event.KeyPressEvent
 import ink.ptms.adyeshach.core.Adyeshach
 import org.bukkit.Bukkit
 import org.gitee.orryx.core.station.Plugin
 import org.gitee.orryx.core.station.pipe.IPipeTask
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
@@ -16,7 +13,6 @@ import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.AdyeshachPlugin
 import org.gitee.orryx.utils.abstract
 import taboolib.common.OpenResult
-import taboolib.module.kether.ScriptContext
 
 @Plugin("DragonCore")
 object DragonEntityJoinWorldTrigger: AbstractPropertyPlayerEventTrigger<EntityJoinWorldEvent>("Dragon Entity Join") {
@@ -27,7 +23,7 @@ object DragonEntityJoinWorldTrigger: AbstractPropertyPlayerEventTrigger<EntityJo
             .addParm(Type.TARGET, "entity", "实体，不一定存在")
             .description("玩家客户端中有实体加入")
 
-    override val clazz
+    override val clazz: java
         get() = EntityJoinWorldEvent::class.java
 
     override fun onCheck(pipeTask: IPipeTask, event: EntityJoinWorldEvent, map: Map<String, Any?>): Boolean {
