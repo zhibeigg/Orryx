@@ -37,7 +37,7 @@ taboolib {
         install(Kether)
         install(Jexl)
         install("database-h2")
-        //repoTabooLib = "https://www.mcwar.cn/nexus/repository/test"
+        //repoTabooLib = "https://nexus.mcwar.cn/repository/test"
     }
     description {
         name = "Orryx"
@@ -79,8 +79,8 @@ taboolib {
 
 repositories {
     mavenCentral()
-    maven("https://www.mcwar.cn/nexus/repository/maven-public/")
-    //maven("https://www.mcwar.cn/nexus/repository/test/")
+    maven("https://nexus.mcwar.cn/repository/maven-public/")
+    //maven("https://nexus.mcwar.cn/repository/test/")
     maven("https://repo.codemc.io/repository/maven-releases/")
 }
 
@@ -150,7 +150,7 @@ kotlin {
 publishing {
     repositories {
         maven {
-            url = uri("https://www.mcwar.cn/nexus/repository/maven-releases/")
+            url = uri("https://nexus.mcwar.cn/repository/maven-releases/")
             credentials {
                 username = publishUsername
                 password = publishPassword

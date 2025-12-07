@@ -1,8 +1,8 @@
 package org.gitee.orryx.core.kether.actions.effect
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import org.bukkit.*
 import org.bukkit.entity.Player
@@ -41,9 +41,7 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
             effects.map { effect ->
                 async {
                     effect.start()
-                    requireAsync("effect") {
-                        effect.future.join()
-                    }
+                    effect.future.await()
                 }
             }.awaitAll()
         }.invokeOnCompletion {
@@ -76,7 +74,7 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
             is ParticleData.DustTransitionData -> {
                 Particle.DustTransition(
                     Color.fromRGB(data.color.red, data.color.green, data.color.blue),
-                    Color.fromRGB(data.toColor.red, data.toColor.blue, data.toColor.green),
+                    Color.fromRGB(data.toColor.red, data.toColor.green, data.toColor.blue),
                     data.size
                 )
             }
