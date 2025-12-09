@@ -23,7 +23,7 @@ object DungeonEndTrigger: AbstractPropertyEventTrigger<PlayerDungeonEvent>("Dung
             .addParm(Type.ITERABLE, "params", "副本参数")
             .description("副本结束时触发")
 
-    override val clazz
+    override val clazz: java
         get() = PlayerDungeonEvent::class.java
 
     override fun onCheck(pipeTask: IPipeTask, event: PlayerDungeonEvent, map: Map<String, Any?>): Boolean {

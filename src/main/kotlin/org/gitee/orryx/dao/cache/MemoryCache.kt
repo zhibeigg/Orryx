@@ -6,7 +6,6 @@ import com.github.benmanes.caffeine.cache.Scheduler
 import com.github.benmanes.caffeine.cache.stats.CacheStats
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
-import kotlinx.coroutines.launch
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.common.keyregister.PlayerKeySetting
 import org.gitee.orryx.core.job.IPlayerJob

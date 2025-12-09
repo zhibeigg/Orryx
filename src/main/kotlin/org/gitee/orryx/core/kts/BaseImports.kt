@@ -1,7 +1,7 @@
 package org.gitee.orryx.core.kts
 
 // Bukkit API 的所有核心包
-val bukkitImports = listOf(
+val bukkitImports: listOf = listOf(
     "org.bukkit.*",
     "org.bukkit.block.*",
     "org.bukkit.block.banner.*",
@@ -44,13 +44,13 @@ val bukkitImports = listOf(
 )
 
 // Kotlin 标准库的常用导入
-val kotlinImports = listOf(
+val kotlinImports: listOf = listOf(
     "kotlin.time.*",
     "kotlin.math.*",
 )
 
 // Java 标准库的常用导入
-val javaImports = listOf(
+val javaImports: listOf = listOf(
     "java.util.*",
     "java.util.concurrent.*",
     "java.io.*",
@@ -59,7 +59,7 @@ val javaImports = listOf(
 
 // Kotlin 协程的导入
 // 提供异步编程支持
-val kotlinCoroutinesImports = listOf(
+val kotlinCoroutinesImports: listOf = listOf(
     "kotlinx.coroutines.*",
     "kotlinx.coroutines.flow.*",
     "kotlinx.coroutines.channels.*",
@@ -68,7 +68,7 @@ val kotlinCoroutinesImports = listOf(
 
 // Kotlin 脚本依赖注解的导入
 // 允许脚本使用 @DependsOn 和 @Repository 注解添加外部依赖
-val scriptingImports = listOf(
+val scriptingImports: listOf = listOf(
     "kotlin.script.experimental.dependencies.DependsOn",
     "kotlin.script.experimental.dependencies.Repository",
 )

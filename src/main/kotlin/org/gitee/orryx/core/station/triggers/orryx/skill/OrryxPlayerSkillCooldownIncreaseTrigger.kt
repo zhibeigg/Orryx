@@ -14,12 +14,12 @@ import taboolib.common5.clong
 object OrryxPlayerSkillCooldownIncreaseTrigger: AbstractPropertyEventTrigger<OrryxPlayerSkillCooldownEvents.Increase.Pre>("Orryx Player Skill Cooldown Increase") {
 
     override val wiki: Trigger
-        get() = Trigger.Companion.new(TriggerGroup.ORRYX, event)
+        get() = Trigger.new(TriggerGroup.ORRYX, event)
             .addParm(Type.ANY, "skill", "玩家技能")
             .addParm(Type.LONG, "amount", "增加的!毫秒!数值")
             .description("玩家技能冷却增加事件")
 
-    override val clazz
+    override val clazz: java
         get() = OrryxPlayerSkillCooldownEvents.Increase.Pre::class.java
 
     override fun onJoin(event: OrryxPlayerSkillCooldownEvents.Increase.Pre, map: Map<String, Any?>): ProxyCommandSender {
