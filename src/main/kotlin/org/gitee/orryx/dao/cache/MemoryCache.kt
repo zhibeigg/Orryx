@@ -4,6 +4,7 @@ import com.github.benmanes.caffeine.cache.AsyncLoadingCache
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.github.benmanes.caffeine.cache.Scheduler
 import com.github.benmanes.caffeine.cache.stats.CacheStats
+import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 import kotlinx.coroutines.launch
 import org.gitee.orryx.api.OrryxAPI
@@ -38,7 +39,7 @@ object MemoryCache {
         .buildAsync { uuid, _ ->
             debug("Cache 加载玩家 Profile")
             OrryxAPI.ioScope.future {
-                val po = ISyncCacheManager.INSTANCE.getPlayerProfile(uuid).join()
+                val po = ISyncCacheManager.INSTANCE.getPlayerProfile(uuid).await()
                 val list = po.flags.mapNotNull { (key, value) ->
                     value.toFlag()?.let { flag -> key to flag }
                 }
@@ -57,7 +58,7 @@ object MemoryCache {
             OrryxAPI.ioScope.future {
                 val info = reversePlayerJobDataTag(tag)
                 val po = ISyncCacheManager.INSTANCE.getPlayerJob(info.second, info.third, info.first)
-                po.join()?.let { p ->
+                po.await()?.let { p ->
                     PlayerJob(
                         p.id,
                         info.second,
@@ -80,7 +81,7 @@ object MemoryCache {
             debug("Cache 加载玩家 Skill")
             OrryxAPI.ioScope.future {
                 val info = reversePlayerJobSkillDataTag(tag)
-                val po = ISyncCacheManager.INSTANCE.getPlayerSkill(info.player, info.id, info.job, info.skill).join()
+                val po = ISyncCacheManager.INSTANCE.getPlayerSkill(info.player, info.id, info.job, info.skill).await()
                 po?.let { p ->
                     val skillLoader = SkillLoaderManager.getSkillLoader(p.skill) ?: return@let null
                     PlayerSkill(
@@ -105,8 +106,8 @@ object MemoryCache {
         .buildAsync { uuid, _ ->
             debug("Cache 加载玩家 KeySetting")
             OrryxAPI.ioScope.future {
-                val profile = playerProfileCache.get(uuid).join()
-                val po = ISyncCacheManager.INSTANCE.getPlayerKeySetting(uuid, profile.id).join()
+                val profile = playerProfileCache.get(uuid).await()
+                val po = ISyncCacheManager.INSTANCE.getPlayerKeySetting(uuid, profile.id).await()
                 po?.let { p -> PlayerKeySetting(uuid, p) } ?: PlayerKeySetting(profile.id, uuid)
             }
         }
