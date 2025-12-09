@@ -32,4 +32,4 @@ object IVector3dcSerializer : KSerializer<Vector3dc> {
     }
 }
 
-val nullIVector3dcSerializer get() = IVector3dcSerializer.nullable
+val nullIVector3dcSerializer: nullable get() = IVector3dcSerializer.nullable
