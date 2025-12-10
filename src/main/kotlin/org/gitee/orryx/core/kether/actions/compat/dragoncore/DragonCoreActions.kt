@@ -42,10 +42,9 @@ object DragonCoreActions {
     @Ghost
     @SubscribeEvent
     private fun armourers(e: PlayerSkinUpdateEvent) {
-        val list = armourersMap[e.player.uniqueId]
-        if (!list.isNullOrEmpty()) {
-            e.skinList.addAll(list)
-        }
+        val set = (e.skinList + (armourersMap[e.player.uniqueId] ?: return)).toSet()
+        e.skinList.clear()
+        e.skinList.addAll(set)
     }
 
     @SubscribeEvent

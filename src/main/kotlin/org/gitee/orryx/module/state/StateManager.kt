@@ -236,7 +236,9 @@ object StateManager {
     @SubscribeEvent
     private fun updateArmourers(e: PlayerSkinUpdateEvent) {
         val status = e.player.statusData().status as? Status ?: return
-        e.skinList.addAll(status.options.getArmourers(e.player))
+        val set = (status.options.getArmourers(e.player) + e.skinList).toSet()
+        e.skinList.clear()
+        e.skinList.addAll(set)
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
