@@ -9,6 +9,7 @@ import taboolib.common.OpenResult
 import taboolib.module.kether.*
 import taboolib.module.nms.ItemTag
 import taboolib.module.nms.getItemTag
+import taboolib.platform.util.isAir
 import java.util.concurrent.CompletableFuture
 
 object ItemActions {
@@ -149,8 +150,8 @@ object ItemActions {
         val itemStack = it.nextParsedAction()
         actionFuture { f ->
             run(itemStack).thenAccept { itemStack ->
-                val itemStack = itemStack as ItemStack
-                f.complete(itemStack.getItemTag())
+                val itemStack = itemStack as? ItemStack
+                f.complete(itemStack.takeUnless { item -> item.isAir }?.getItemTag())
             }
         }
     }
@@ -159,7 +160,7 @@ object ItemActions {
     private fun itemTagProperty() = object : ScriptProperty<ItemTag>("orryx.player.itemtag.operator") {
 
         override fun read(instance: ItemTag, key: String): OpenResult {
-            return OpenResult.successful(instance[key])
+            return OpenResult.successful(instance[key]?.unsafeData())
         }
 
         override fun write(instance: ItemTag, key: String, value: Any?): OpenResult {
