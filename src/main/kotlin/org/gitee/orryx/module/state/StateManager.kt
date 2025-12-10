@@ -341,11 +341,11 @@ object StateManager {
         return playerDataMap.values.toList()
     }
 
-    fun getGlobalState(key: String): IActionState? {
+    fun getGlobalState(key: String): IActionState {
         return globalState[key]
     }
 
-    fun getController(key: String): Configuration? {
+    fun getController(key: String): Configuration {
         return controllerMap[key]
     }
 }

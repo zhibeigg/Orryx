@@ -159,7 +159,7 @@ class KtsScriptCompilerImpl(
         hostConfiguration: ScriptingHostConfiguration = defaultJvmScriptingHostConfiguration,
     ): ResultWithDiagnostics<CompiledScript> {
         // 创建 JVM 脚本编译器
-        val compiler = JvmScriptCompiler(hostConfiguration)
+        JvmScriptCompiler(hostConfiguration)
 
         // 执行编译
         return compiler(source, configuration)

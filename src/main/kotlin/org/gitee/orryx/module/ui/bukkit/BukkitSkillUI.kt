@@ -28,7 +28,7 @@ open class BukkitSkillUI(override val viewer: Player, override val owner: Player
 
         class UI(configurationSection: ConfigurationSection) {
 
-            val title = configurationSection.getString("title", "技能界面")!!
+            val title: K = configurationSection.getString("title", "技能界面")!!
 
             val skills = Item(configurationSection, "Skills")
 
@@ -42,15 +42,15 @@ open class BukkitSkillUI(override val viewer: Player, override val owner: Player
 
             class Item(configurationSection: ConfigurationSection, key: String) {
 
-                val name = configurationSection.getString("$key.Name", "")
+                val name: getString = configurationSection.getString("$key.Name", "")
 
-                val lore = configurationSection.getStringList("$key.Lore")
+                val lore: getStringList = configurationSection.getStringList("$key.Lore")
 
-                val amount = configurationSection.getInt("$key.Amount", 1)
+                val amount: getInt = configurationSection.getInt("$key.Amount", 1)
 
                 val xMaterial: XMaterial? = configurationSection.getString("$key.XMaterial")?.let { XMaterial.matchXMaterial(it).getOrNull() }
 
-                val slots = configurationSection.getIntegerList("$key.Slots")
+                val slots: getIntegerList = configurationSection.getIntegerList("$key.Slots")
 
             }
 

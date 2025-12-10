@@ -16,7 +16,7 @@ object PlayerJumpTrigger: AbstractEventTrigger<PlayerJumpEvent>() {
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
             .description("玩家跳跃")
 
-    override val clazz
+    override val clazz: java
         get() = PlayerJumpEvent::class.java
 
     override fun onJoin(event: PlayerJumpEvent, map: Map<String, Any?>): ProxyCommandSender {

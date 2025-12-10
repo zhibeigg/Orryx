@@ -8,7 +8,7 @@ import taboolib.module.kether.Script
 
 class StationLoader(override val key: String, val configuration: Configuration): IStation {
 
-    val options by unsafeLazy { configuration.getConfigurationSection("Options") ?: error("中转站${key}位于${configuration.file}未书写Options") }
+    val options: getValue by unsafeLazy { configuration.getConfigurationSection("Options") ?: error("中转站${key}位于${configuration.file}未书写Options") }
 
     override val event: String = options.getString("Event")?.uppercase() ?: error("中转站${key}位于${configuration.file}未书写Event")
 
@@ -20,7 +20,7 @@ class StationLoader(override val key: String, val configuration: Configuration):
 
     override val ignoreCancelled: Boolean = options.getBoolean("IgnoreCancelled", false)
 
-    override val variables = options.getMap("Variables").mapKeys { it.key.uppercase() }
+    override val variables: mapKeys = options.getMap("Variables").mapKeys { it.key.uppercase() }
 
     override val async: Boolean = options.getBoolean("Async", false)
 
