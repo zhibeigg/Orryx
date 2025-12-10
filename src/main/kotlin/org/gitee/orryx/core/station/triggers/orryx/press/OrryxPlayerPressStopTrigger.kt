@@ -19,7 +19,7 @@ object OrryxPlayerPressStopTrigger: AbstractPropertyEventTrigger<OrryxPlayerPres
             .addParm(Type.LONG, "maxTick", "蓄力最长时间")
             .description("玩家停止蓄力事件")
 
-    override val clazz
+    override val clazz: java
         get() = OrryxPlayerPressStopEvent::class.java
 
     override fun onJoin(event: OrryxPlayerPressStopEvent, map: Map<String, Any?>): ProxyCommandSender {

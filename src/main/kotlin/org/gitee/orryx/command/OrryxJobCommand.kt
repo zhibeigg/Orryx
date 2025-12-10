@@ -12,12 +12,12 @@ import taboolib.expansion.createHelper
 object OrryxJobCommand {
 
     @CommandBody
-    val main = mainCommand {
+    val main: mainCommand = mainCommand {
         createHelper()
     }
 
     @CommandBody
-    val change = subCommand {
+    val change: subCommand = subCommand {
         player {
             dynamic("job") {
                 suggest { JobLoaderManager.getAllJobLoaders().keys.toList() }
@@ -35,7 +35,7 @@ object OrryxJobCommand {
     }
 
     @CommandBody
-    val clear = subCommand {
+    val clear: subCommand = subCommand {
         player {
             dynamic("job") {
                 suggest { JobLoaderManager.getAllJobLoaders().keys.toList() }
