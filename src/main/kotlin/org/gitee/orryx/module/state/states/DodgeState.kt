@@ -76,6 +76,10 @@ class DodgeState(override val key: String, configurationSection: ConfigurationSe
                                 data.clearRunningState()
                             }
                         }
+                    } else {
+                        if (data.nowRunningState == this@Running) {
+                            data.clearRunningState()
+                        }
                     }
                 }
             }

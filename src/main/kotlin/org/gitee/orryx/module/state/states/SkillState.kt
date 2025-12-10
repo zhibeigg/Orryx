@@ -27,6 +27,9 @@ class SkillState(val skill: ICastSkill): IActionState {
         override fun start() {
             task = submit(delay = duration + 1) {
                 stop = true
+                if (data.nowRunningState == this@Running) {
+                    data.clearRunningState()
+                }
                 StateManager.callNext(data.player)
             }
         }

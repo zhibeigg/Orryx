@@ -74,6 +74,9 @@ class BlockState(override val key: String, configurationSection: ConfigurationSe
                 }
                 task = submit(delay = max(state.animation.duration - state.check.first + 1, state.check.second - state.check.first + 1)) {
                     stop = true
+                    if (data.nowRunningState == this@Running) {
+                        data.clearRunningState()
+                    }
                     StateManager.callNext(data.player)
                 }
             }

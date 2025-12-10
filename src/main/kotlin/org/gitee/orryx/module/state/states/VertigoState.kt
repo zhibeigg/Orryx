@@ -53,6 +53,9 @@ class VertigoState(override val key: String, configurationSection: Configuration
                     }
                     task = submit(delay = state.animation.endDuration + 1) {
                         stop = true
+                        if (data.nowRunningState == this@Running) {
+                            data.clearRunningState()
+                        }
                         StateManager.callNext(data.player)
                     }
                 }
