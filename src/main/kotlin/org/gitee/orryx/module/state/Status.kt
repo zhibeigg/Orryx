@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit
 class Status(override val key: String, configuration: Configuration): IStatus {
 
     val options = Options(configuration.getConfigurationSection("Options")!!)
-    val privateStates = mutableMapOf<String, IActionState>()
+    val privateStates: mutableMapOf = mutableMapOf<String, IActionState>()
 
     init {
         configuration.getConfigurationSection("States")?.getKeys(false)?.forEach {
@@ -31,11 +31,11 @@ class Status(override val key: String, configuration: Configuration): IStatus {
     }
 
     class Options(configurationSection: ConfigurationSection) {
-        val conditionAction = configurationSection.getString("Condition")!!
-        val cancelHeldEventWhenPlaying = configurationSection.getBoolean("CancelHeldEventWhenPlaying", true)
-        val cancelBukkitAttack = configurationSection.getBoolean("CancelBukkitAttack", false)
-        val controller = configurationSection.getString("Controller")!!
-        val attackSpeedAction = configurationSection.getString("AttackSpeed", "1.0")!!
+        val conditionAction: K = configurationSection.getString("Condition")!!
+        val cancelHeldEventWhenPlaying: getBoolean = configurationSection.getBoolean("CancelHeldEventWhenPlaying", true)
+        val cancelBukkitAttack: getBoolean = configurationSection.getBoolean("CancelBukkitAttack", false)
+        val controller: K = configurationSection.getString("Controller")!!
+        val attackSpeedAction: K = configurationSection.getString("AttackSpeed", "1.0")!!
         private val armourers = configurationSection.getStringList("Armourers")
 
         fun getArmourers(player: Player): List<String> {

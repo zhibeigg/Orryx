@@ -9,7 +9,7 @@ class Plugin(val name: String, val extensionFunction: () -> Unit = {}) {
     val isLoaded
         get() = Bukkit.getPluginManager().getPlugin(name) != null
 
-    val isEnabled
+    val isEnabled: isPluginEnabled
         get() = Bukkit.getPluginManager().isPluginEnabled(name)
 
     fun load() {

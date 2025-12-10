@@ -1,14 +1,11 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
-import org.bukkit.event.player.PlayerChangedWorldEvent
 import org.bukkit.event.player.PlayerChatTabCompleteEvent
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
 import taboolib.common.OpenResult
-import taboolib.module.kether.ScriptContext
 
 object PlayerChatTabCompleteTrigger: AbstractPropertyPlayerEventTrigger<PlayerChatTabCompleteEvent>("Player Chat Tab Complete") {
 
@@ -19,7 +16,7 @@ object PlayerChatTabCompleteTrigger: AbstractPropertyPlayerEventTrigger<PlayerCh
             .addParm(Type.ITERABLE, "tabCompletions", "获取所有补全项集合")
             .description("当玩家尝试补全聊天消息时触发")
 
-    override val clazz
+    override val clazz: java
         get() = PlayerChatTabCompleteEvent::class.java
 
     override fun read(instance: PlayerChatTabCompleteEvent, key: String): OpenResult {
