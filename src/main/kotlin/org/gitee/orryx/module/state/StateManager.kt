@@ -282,14 +282,14 @@ object StateManager {
                 status.options.getCondition(player).thenAccept { bool ->
                     val bool = bool.cbool
                     if (bool) {
-                        data.setStatus(status)
+                        ensureSync { data.setStatus(status) }
                         future.complete(status)
                     }
                 }
             }.toTypedArray()
         ).whenComplete { _, _ ->
             if (!future.isDone) {
-                data.setStatus(null)
+                ensureSync { data.setStatus(null) }
                 future.complete(null)
             }
         }
