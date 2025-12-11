@@ -1,5 +1,5 @@
 package org.gitee.orryx.core.kts.dependencies
 
-val ignoredPluginDependencies = listOf(
+val ignoredPluginDependencies: listOf = listOf(
     "Orryx",
 )

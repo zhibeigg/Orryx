@@ -1,15 +1,11 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
 import org.bukkit.event.player.PlayerQuitEvent
-import org.gitee.orryx.api.events.damage.OrryxDamageEvents
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
-import org.gitee.orryx.utils.abstract
 import taboolib.common.OpenResult
-import taboolib.module.kether.ScriptContext
 
 object PlayerQuitTrigger: AbstractPropertyPlayerEventTrigger<PlayerQuitEvent>("Player Quit") {
 
@@ -18,7 +14,7 @@ object PlayerQuitTrigger: AbstractPropertyPlayerEventTrigger<PlayerQuitEvent>("P
             .addParm(Type.STRING, "quitMessage", "退出信息")
             .description("玩家退出服务器时触发")
 
-    override val clazz
+    override val clazz: java
         get() = PlayerQuitEvent::class.java
 
     override fun read(instance: PlayerQuitEvent, key: String): OpenResult {

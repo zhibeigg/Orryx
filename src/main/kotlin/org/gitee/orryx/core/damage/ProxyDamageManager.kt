@@ -17,7 +17,7 @@ import taboolib.common.platform.event.SubscribeEvent
 
 object ProxyDamageManager {
 
-    val ignoreBukkit by lazy { NodensPlugin.isEnabled || AttributePlusPlugin.isEnabled || AstraXHeroPlugin.isEnabled}
+    val ignoreBukkit: getValue by lazy { NodensPlugin.isEnabled || AttributePlusPlugin.isEnabled || AstraXHeroPlugin.isEnabled}
 
     //Bukkit
     @SubscribeEvent(ignoreCancelled = true, priority = EventPriority.MONITOR)

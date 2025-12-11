@@ -13,13 +13,13 @@ import taboolib.common.platform.function.console
 object OrryxGlobalFlagChangePreTrigger: AbstractPropertyEventTrigger<OrryxGlobalFlagChangeEvents.Pre>("Orryx Global Flag Change Pre") {
 
     override val wiki: Trigger
-        get() = Trigger.Companion.new(TriggerGroup.ORRYX, event)
+        get() = Trigger.new(TriggerGroup.ORRYX, event)
             .addParm(Type.STRING, "key/flagName", "flag的键")
             .addParm(Type.ANY, "oldFlag", "旧的flag")
             .addParm(Type.ANY, "newFlag", "新的flag")
             .description("全局Flag变化事件")
 
-    override val clazz
+    override val clazz: java
         get() = OrryxGlobalFlagChangeEvents.Pre::class.java
 
     override fun onJoin(event: OrryxGlobalFlagChangeEvents.Pre, map: Map<String, Any?>): ProxyCommandSender {

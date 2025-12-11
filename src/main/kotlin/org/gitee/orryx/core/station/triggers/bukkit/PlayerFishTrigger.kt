@@ -35,7 +35,7 @@ object PlayerFishTrigger: AbstractPropertyPlayerEventTrigger<PlayerFishEvent>("P
             .addParm(Type.DOUBLE, "biteChance", "咬钩几率")
             .description("当玩家经验冷却时间发生变化时触发")
 
-    override val clazz
+    override val clazz: java
         get() = PlayerFishEvent::class.java
 
     override fun read(instance: PlayerFishEvent, key: String): OpenResult {

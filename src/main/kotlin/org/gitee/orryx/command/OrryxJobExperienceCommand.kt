@@ -13,7 +13,7 @@ import taboolib.common5.cint
 object OrryxJobExperienceCommand {
 
     @CommandBody
-    val give = subCommand {
+    val give: subCommand = subCommand {
         player {
             int("experience") {
                 exec<ProxyCommandSender> {
@@ -30,7 +30,7 @@ object OrryxJobExperienceCommand {
     }
 
     @CommandBody
-    val take = subCommand {
+    val take: subCommand = subCommand {
         player {
             int("experience") {
                 exec<ProxyCommandSender> {
@@ -47,7 +47,7 @@ object OrryxJobExperienceCommand {
     }
 
     @CommandBody
-    val set = subCommand {
+    val set: subCommand = subCommand {
         player {
             int("experience") {
                 exec<ProxyCommandSender> {
