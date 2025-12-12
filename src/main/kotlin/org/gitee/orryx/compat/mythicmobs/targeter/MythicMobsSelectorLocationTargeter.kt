@@ -37,7 +37,7 @@ class MythicMobsSelectorLocationTargeter(mlc: MythicLineConfig): ILocationSelect
                 it.sender = adaptPlayer(data.caster.entity.bukkitEntity)
                 it[PARAMETER] = MythicMobsParameter(caster, BukkitAdapter.adapt(data.origin).toTarget())
             }
-            StringParser(parse.get()).syncContainer(context).forEachInstance<ITargetLocation<Location>> {
+            StringParser(parse.get(data)).syncContainer(context).forEachInstance<ITargetLocation<Location>> {
                 targets.add(BukkitAdapter.adapt(it.getSource()))
             }
             return@runKether targets

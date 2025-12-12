@@ -19,15 +19,15 @@ class MythicMobsCastMechanic(line: String, mlc: MythicLineConfig) : SkillMechani
         isAsyncSafe = true
     }
 
-    private val skill = mlc.getString(arrayOf("s", "skill"))
+    private val skill = mlc.getPlaceholderString(arrayOf("s", "skill"), null)
     private val level = mlc.getPlaceholderInteger(arrayOf("l", "level"), 1)
 
     override fun castAtEntity(data: SkillMetadata, target: AbstractEntity): Boolean {
         return if (target.isPlayer) {
             val player = BukkitAdapter.adapt(target.asPlayer()) ?: return false
-            val skill = SkillLoaderManager.getSkillLoader(skill) as ICastSkill
+            val skill = SkillLoaderManager.getSkillLoader(skill.get(data)) as ICastSkill
             skill.castSkill(player, SkillParameter(skill.key, player, level.get()), false)
-            return true
+            true
         } else {
             false
         }
