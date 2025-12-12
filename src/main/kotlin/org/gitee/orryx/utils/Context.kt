@@ -12,6 +12,6 @@ internal fun ScriptContext.getParameter() : IParameter {
     return this.get<IParameter>(PARAMETER) ?: error("Parameter not found")
 }
 
-internal fun ScriptContext.getParameterOrNull() : IParameter? {
+internal fun ScriptContext.getParameterOrNull() : IParameter {
     return this.get<IParameter>(PARAMETER)
 }

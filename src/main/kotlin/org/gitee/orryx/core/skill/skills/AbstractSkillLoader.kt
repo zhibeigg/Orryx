@@ -11,7 +11,7 @@ import taboolib.module.configuration.Configuration
 
 abstract class AbstractSkillLoader(key: String, open val configuration: Configuration): ISkill {
 
-    protected val options by unsafeLazy { configuration.getConfigurationSection("Options") ?: error("技能${key}位于${configuration.file}未书写Options键") }
+    protected val options: getValue by unsafeLazy { configuration.getConfigurationSection("Options") ?: error("技能${key}位于${configuration.file}未书写Options键") }
 
     override val name: String = (options.getString("Name") ?: key).colored()
 
@@ -37,5 +37,5 @@ abstract class AbstractSkillLoader(key: String, open val configuration: Configur
 
     override val ignoreSilence: Boolean = options.getBoolean("IgnoreSilence", false)
 
-    override val variables = options.getMap("Variables").mapKeys { it.key.uppercase() }
+    override val variables: mapKeys = options.getMap("Variables").mapKeys { it.key.uppercase() }
 }

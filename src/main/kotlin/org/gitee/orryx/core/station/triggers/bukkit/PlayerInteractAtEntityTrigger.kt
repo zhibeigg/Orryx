@@ -1,16 +1,12 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
-import org.bukkit.event.player.PlayerHideEntityEvent
 import org.bukkit.event.player.PlayerInteractAtEntityEvent
-import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.abstract
 import taboolib.common.OpenResult
-import taboolib.module.kether.ScriptContext
 
 object PlayerInteractAtEntityTrigger: AbstractPropertyPlayerEventTrigger<PlayerInteractAtEntityEvent>("Player Interact At Entity") {
 
@@ -20,7 +16,7 @@ object PlayerInteractAtEntityTrigger: AbstractPropertyPlayerEventTrigger<PlayerI
             .addParm(Type.TARGET, "rightClicked", "被点击的实体")
             .description("当玩家在实体上点击某实体上的某位置时触发")
 
-    override val clazz
+    override val clazz: java
         get() = PlayerInteractAtEntityEvent::class.java
 
     override fun read(instance: PlayerInteractAtEntityEvent, key: String): OpenResult {

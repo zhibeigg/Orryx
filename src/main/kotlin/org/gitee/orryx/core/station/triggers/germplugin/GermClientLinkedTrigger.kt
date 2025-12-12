@@ -1,10 +1,8 @@
 package org.gitee.orryx.core.station.triggers.germplugin
 
 import com.germ.germplugin.api.event.GermClientLinkedEvent
-import eos.moe.dragoncore.api.gui.event.CustomPacketEvent
 import org.gitee.orryx.core.station.Plugin
 import org.gitee.orryx.core.station.pipe.IPipeTask
-import org.gitee.orryx.core.station.triggers.AbstractEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
@@ -12,7 +10,6 @@ import org.gitee.orryx.module.wiki.Type
 import taboolib.common.OpenResult
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
-import taboolib.module.kether.ScriptContext
 
 @Plugin("GermPlugin")
 object GermClientLinkedTrigger: AbstractPropertyEventTrigger<GermClientLinkedEvent>("Germ Client Linked") {
@@ -24,7 +21,7 @@ object GermClientLinkedTrigger: AbstractPropertyEventTrigger<GermClientLinkedEve
             .addParm(Type.STRING, "modVersion", "萌芽mod版本")
             .description("玩家进服后萌芽加载完毕")
 
-    override val clazz
+    override val clazz: java
         get() = GermClientLinkedEvent::class.java
 
     override fun onJoin(event: GermClientLinkedEvent, map: Map<String, Any?>): ProxyCommandSender {
