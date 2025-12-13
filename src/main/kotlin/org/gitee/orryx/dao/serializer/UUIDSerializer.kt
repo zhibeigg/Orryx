@@ -24,4 +24,4 @@ object UUIDSerializer : KSerializer<UUID> {
     }
 }
 
-val nullUUIDSerializer get() = UUIDSerializer.nullable
+val nullUUIDSerializer: nullable get() = UUIDSerializer.nullable

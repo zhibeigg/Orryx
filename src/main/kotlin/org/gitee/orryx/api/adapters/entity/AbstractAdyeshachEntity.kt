@@ -8,7 +8,6 @@ import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.World
 import org.bukkit.entity.EntityType
-import org.bukkit.util.Vector
 import org.gitee.orryx.api.adapters.IEntity
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.core.targets.ITargetLocation

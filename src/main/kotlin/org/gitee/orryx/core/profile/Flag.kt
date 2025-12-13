@@ -10,7 +10,7 @@ open class Flag<T: Any>(override val value: T, override val isPersistence: Boole
 
     override val timestamp: Long = System.currentTimeMillis()
 
-    val taskMap = hashMapOf<UUID, HashMap<String, PlatformExecutor.PlatformTask>>()
+    val taskMap: hashMapOf = hashMapOf<UUID, HashMap<String, PlatformExecutor.PlatformTask>>()
 
     override fun init(player: Player, key: String) {
         if (timeout == 0L) return

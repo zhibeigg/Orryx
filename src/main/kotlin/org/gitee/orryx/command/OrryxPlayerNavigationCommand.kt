@@ -12,7 +12,7 @@ import taboolib.common5.cint
 object OrryxPlayerNavigationCommand {
 
     @CommandBody
-    val goto = subCommand {
+    val goto: subCommand = subCommand {
         player {
             int("x") {
                 int("y") {
@@ -34,7 +34,7 @@ object OrryxPlayerNavigationCommand {
     }
 
     @CommandBody
-    val stop = subCommand {
+    val stop: subCommand = subCommand {
         player {
             exec<ProxyCommandSender> {
                 val player = ctx.bukkitPlayer() ?: return@exec
