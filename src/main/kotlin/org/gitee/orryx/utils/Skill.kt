@@ -188,7 +188,7 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean
             if (PressSkillManager.pressTaskMap.containsKey(player.uniqueId)) return
             val maxPressTick = parameter.runCustomAction(skill.maxPressTickAction).orNull().clong
             val time = System.currentTimeMillis()
-            PressSkillManager.pressTaskMap[player.uniqueId] = key to PipeBuilder()
+            PressSkillManager.pressTaskMap[player.uniqueId] = key paired PipeBuilder()
                 .uuid(UUID.randomUUID())
                 .timeout(maxPressTick)
                 .brokeTriggers(*skill.pressBrockTriggers)

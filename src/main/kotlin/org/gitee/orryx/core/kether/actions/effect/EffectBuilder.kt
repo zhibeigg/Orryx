@@ -3,7 +3,7 @@ package org.gitee.orryx.core.kether.actions.effect
 import org.gitee.orryx.api.adapters.IVector
 import org.gitee.orryx.api.adapters.vector.AbstractVector
 import org.gitee.orryx.core.kether.actions.effect.EffectType.ARC
-import org.gitee.orryx.utils.Pair
+import org.gitee.orryx.utils.Tuple2
 import org.joml.Matrix3d
 import taboolib.common.util.unsafeLazy
 import taboolib.library.xseries.XParticle
@@ -54,5 +54,5 @@ class EffectBuilder {
     val data: ParticleData?
         get() = dustData ?: dustTransitionData ?: itemData ?: blockData ?: vibrationData
 
-    val locations by unsafeLazy { mutableListOf<Pair<Int, EffectOrigin>>() }
+    val locations by unsafeLazy { mutableListOf<Tuple2<Int, EffectOrigin>>() }
 }

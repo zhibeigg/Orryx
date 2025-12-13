@@ -9,7 +9,7 @@ import org.gitee.orryx.core.skill.ICastSkill
 import org.gitee.orryx.core.skill.SkillLevelResult
 import org.gitee.orryx.module.ui.AbstractSkillUI
 import org.gitee.orryx.module.ui.IUIManager
-import org.gitee.orryx.utils.Pair
+import org.gitee.orryx.utils.Tuple2
 import org.gitee.orryx.utils.bindKeys
 import org.gitee.orryx.utils.bindSkills
 import org.gitee.orryx.utils.getDescriptionComparison
@@ -43,7 +43,7 @@ class DragonCoreSkillUI(override val viewer: Player, override val owner: Player)
                 owner.job { job ->
                     job.bindSkills { bindSkills ->
                         job.skills { skills ->
-                            val list = mutableListOf<Pair<Int, Boolean>>()
+                            val list = mutableListOf<Tuple2<Int, Boolean>>()
                             CompletableFuture.allOf(
                                 *skills.map { skill ->
                                     skill.upgradePointCheck(skill.level, skill.level+1).thenAccept { pair ->

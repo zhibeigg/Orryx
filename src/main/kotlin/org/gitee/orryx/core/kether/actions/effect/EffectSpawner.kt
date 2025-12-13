@@ -232,8 +232,8 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
     }
 
     private fun buildNRankBezierCurve(origin: EffectOrigin): OrryxParticleObj {
-        val locs = mutableListOf<Pair<Int, EffectOrigin>>()
-        locs += 0 to origin
+        val locs = mutableListOf<Tuple2<Int, EffectOrigin>>()
+        locs += 0 paired origin
         locs.addAll(builder.locations)
         locs.sortBy { it.first }
         return OrryxParticleObj(origin, createNRankBezierCurve(

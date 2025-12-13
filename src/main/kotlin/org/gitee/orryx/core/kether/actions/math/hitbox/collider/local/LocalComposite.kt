@@ -4,8 +4,8 @@ import org.gitee.orryx.api.collider.local.ICoordinateConverter
 import org.gitee.orryx.api.collider.local.ILocalCollider
 import org.gitee.orryx.api.collider.local.ILocalComposite
 import org.gitee.orryx.core.targets.ITargetLocation
-import org.gitee.orryx.utils.Pair
-import org.gitee.orryx.utils.to
+import org.gitee.orryx.utils.Tuple2
+import org.gitee.orryx.utils.paired
 import org.joml.Quaterniond
 import org.joml.Vector3d
 
@@ -15,7 +15,7 @@ open class LocalComposite<T : ITargetLocation<*>, C : ILocalCollider<T>>(
     private val parent: ICoordinateConverter
 ) : ILocalComposite<T, C> {
 
-    private val colliderMap = hashMapOf<String, Pair<Int, C>>()
+    private val colliderMap = hashMapOf<String, Tuple2<Int, C>>()
     private val colliders = ArrayList<C>()
     private val colliderNames = ArrayList<String>()
     private val globalPosition = Vector3d()
@@ -81,13 +81,13 @@ open class LocalComposite<T : ITargetLocation<*>, C : ILocalCollider<T>>(
      */
     override fun setCollider(index: Int, collider: C) {
         colliders[index] = collider
-        colliderMap.replace(colliderNames[index], index to collider)
+        colliderMap.replace(colliderNames[index], index paired collider)
     }
 
     fun setCollider(name: String, collider: C) {
         val old = colliderMap[name]
         val index: Int = old!!.first
-        colliderMap.replace(name, index to collider)
+        colliderMap.replace(name, index paired collider)
         colliders[index] = collider
         colliderNames[index] = name
     }
@@ -98,7 +98,7 @@ open class LocalComposite<T : ITargetLocation<*>, C : ILocalCollider<T>>(
     fun setCollider(index: Int, name: String, collider: C) {
         colliders[index] = collider
         colliderMap.remove(colliderNames[index])
-        colliderMap.put(name, index to collider)
+        colliderMap.put(name, index paired collider)
         colliderNames[index] = name
     }
 
@@ -112,7 +112,7 @@ open class LocalComposite<T : ITargetLocation<*>, C : ILocalCollider<T>>(
         colliders.add(collider)
         val name = colliders.size.toString()
         colliderNames.add(name)
-        colliderMap.put(name, colliders.size - 1 to collider)
+        colliderMap.put(name, colliders.size - 1 paired collider)
     }
 
     /** 添加碰撞箱 */
@@ -122,7 +122,7 @@ open class LocalComposite<T : ITargetLocation<*>, C : ILocalCollider<T>>(
             return
         }
 
-        colliderMap.put(name, colliders.size - 1 to collider)
+        colliderMap.put(name, colliders.size - 1 paired collider)
         colliders.add(collider)
         colliderNames.add(name)
     }
@@ -139,7 +139,7 @@ open class LocalComposite<T : ITargetLocation<*>, C : ILocalCollider<T>>(
         for (i in index..<colliderNames.size) {
             val key = colliderNames[i]
             val pair = colliderMap[key]!!
-            colliderMap.replace(key, pair.first + 1 to pair.second)
+            colliderMap.replace(key, pair.first + 1 paired pair.second)
         }
     }
 
@@ -155,7 +155,7 @@ open class LocalComposite<T : ITargetLocation<*>, C : ILocalCollider<T>>(
         for (i in index..<colliderNames.size) {
             val key = colliderNames[i]
             val pair = colliderMap[key]!!
-            colliderMap.replace(key, pair.first - 1 to pair.second)
+            colliderMap.replace(key, pair.first - 1 paired pair.second)
         }
     }
 
@@ -170,7 +170,7 @@ open class LocalComposite<T : ITargetLocation<*>, C : ILocalCollider<T>>(
         for (i in pair.first..<colliderNames.size) {
             val key = colliderNames[i]
             val p = colliderMap[key]!!
-            colliderMap.replace(key, p.first - 1 to p.second)
+            colliderMap.replace(key, p.first - 1 paired p.second)
         }
     }
 

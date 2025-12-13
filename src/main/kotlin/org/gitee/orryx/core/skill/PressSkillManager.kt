@@ -7,7 +7,7 @@ import org.bukkit.event.entity.PlayerDeathEvent
 import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.core.station.pipe.PipeTask
-import org.gitee.orryx.utils.Pair
+import org.gitee.orryx.utils.Tuple2
 import org.gitee.orryx.utils.job
 import org.gitee.orryx.utils.keySetting
 import taboolib.common.platform.Ghost
@@ -17,7 +17,7 @@ import java.util.concurrent.CompletableFuture
 
 object PressSkillManager {
 
-    internal val pressTaskMap by lazy { hashMapOf<UUID, Pair<String, PipeTask>>() }
+    internal val pressTaskMap by lazy { hashMapOf<UUID, Tuple2<String, PipeTask>>() }
 
     @Ghost
     @SubscribeEvent

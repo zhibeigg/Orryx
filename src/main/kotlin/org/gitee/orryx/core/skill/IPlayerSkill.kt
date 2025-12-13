@@ -4,7 +4,7 @@ import org.bukkit.entity.Player
 import org.gitee.orryx.core.kether.parameter.IParameter
 import org.gitee.orryx.dao.cache.Saveable
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
-import org.gitee.orryx.utils.Pair
+import org.gitee.orryx.utils.Tuple2
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 
@@ -74,7 +74,7 @@ interface IPlayerSkill: Saveable {
      * @param to 到等级
      * @return 需要消耗数量，是否足够
      * */
-    fun upgradePointCheck(from: Int, to: Int): CompletableFuture<Pair<Int,Boolean>>
+    fun upgradePointCheck(from: Int, to: Int): CompletableFuture<Tuple2<Int,Boolean>>
 
     /**
      * 升级检测

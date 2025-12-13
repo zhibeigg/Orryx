@@ -322,7 +322,7 @@ object EffectActions {
                 val effectBuilder = effectBuilder() ?: return@container
                 var index = 0
                 it.forEachInstance<ITargetLocation<*>> { target ->
-                    effectBuilder.locations.add(index to EffectOrigin(target))
+                    effectBuilder.locations.add(index paired EffectOrigin(target))
                     index++
                 }
             }
