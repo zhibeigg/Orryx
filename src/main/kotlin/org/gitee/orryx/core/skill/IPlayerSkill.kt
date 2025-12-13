@@ -4,6 +4,7 @@ import org.bukkit.entity.Player
 import org.gitee.orryx.core.kether.parameter.IParameter
 import org.gitee.orryx.dao.cache.Saveable
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
+import org.gitee.orryx.utils.Pair
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 

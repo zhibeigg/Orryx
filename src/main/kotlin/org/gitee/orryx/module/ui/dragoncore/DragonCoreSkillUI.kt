@@ -9,7 +9,15 @@ import org.gitee.orryx.core.skill.ICastSkill
 import org.gitee.orryx.core.skill.SkillLevelResult
 import org.gitee.orryx.module.ui.AbstractSkillUI
 import org.gitee.orryx.module.ui.IUIManager
-import org.gitee.orryx.utils.*
+import org.gitee.orryx.utils.Pair
+import org.gitee.orryx.utils.bindKeys
+import org.gitee.orryx.utils.bindSkills
+import org.gitee.orryx.utils.getDescriptionComparison
+import org.gitee.orryx.utils.job
+import org.gitee.orryx.utils.orryxProfile
+import org.gitee.orryx.utils.skill
+import org.gitee.orryx.utils.skills
+import org.gitee.orryx.utils.up
 import taboolib.common.platform.function.getDataFolder
 import taboolib.platform.util.onlinePlayers
 import java.io.File

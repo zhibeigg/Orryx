@@ -9,19 +9,24 @@ import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.core.targets.PlayerTarget
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
-import org.gitee.orryx.utils.*
+import org.gitee.orryx.utils.DragonCorePlugin
+import org.gitee.orryx.utils.ORRYX_NAMESPACE
+import org.gitee.orryx.utils.all
+import org.gitee.orryx.utils.consoleMessage
+import org.gitee.orryx.utils.containerOrSelf
+import org.gitee.orryx.utils.ensureSync
+import org.gitee.orryx.utils.forEachInstance
+import org.gitee.orryx.utils.nextTheyContainerOrNull
+import org.gitee.orryx.utils.parse
+import org.gitee.orryx.utils.scriptParser
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.event.SubscribeEvent
-import taboolib.common.platform.function.console
-import taboolib.common.platform.function.info
 import taboolib.common.util.unsafeLazy
-import taboolib.module.chat.colored
 import taboolib.module.configuration.Config
 import taboolib.module.configuration.ConfigFile
 import taboolib.module.kether.*
 import java.util.*
-import kotlin.collections.set
 
 object BuffActions {
 

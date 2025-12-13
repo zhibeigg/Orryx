@@ -36,7 +36,7 @@ class ManaMangerDefault: IManaManager {
     }
 
     override fun getMaxMana(player: Player, job: IJob, level: Int): Double {
-        val mana = player.eval(job.maxManaActions, mapOf("level" to level)).orNull().cdouble
+        val mana = player.eval(job.maxManaActions, mapOf(kotlin.Pair("level", level))).orNull().cdouble
         var extend = 0.0
         if (NodensPlugin.isEnabled) {
             val valueMap = player.attributeMemory()?.mergedAttribute(Mana.Max)

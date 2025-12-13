@@ -4,6 +4,8 @@ import org.gitee.orryx.api.collider.local.ICoordinateConverter
 import org.gitee.orryx.api.collider.local.ILocalCollider
 import org.gitee.orryx.api.collider.local.ILocalComposite
 import org.gitee.orryx.core.targets.ITargetLocation
+import org.gitee.orryx.utils.Pair
+import org.gitee.orryx.utils.to
 import org.joml.Quaterniond
 import org.joml.Vector3d
 

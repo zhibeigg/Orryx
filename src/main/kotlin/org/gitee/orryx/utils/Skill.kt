@@ -34,6 +34,7 @@ import taboolib.module.kether.orNull
 import taboolib.platform.util.sendLang
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import kotlin.Pair
 
 const val DIRECT = "Direct"
 const val DIRECT_AIM = "Direct Aim"
@@ -192,12 +193,12 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean
                 .timeout(maxPressTick)
                 .brokeTriggers(*skill.pressBrockTriggers)
                 .periodTask(period) {
-                    parameter.runCustomAction(skill.pressPeriodAction, mapOf("pressTick" to (System.currentTimeMillis() - time) / 50))
+                    parameter.runCustomAction(skill.pressPeriodAction, mapOf(Pair("pressTick", (System.currentTimeMillis() - time) / 50)))
                     OrryxPlayerPressTickEvent(player, skill, period, (System.currentTimeMillis() - time) / 50, maxPressTick).call()
                 }.onComplete {
                     if (consume) skill.consume(player, parameter)
                     val tick = (System.currentTimeMillis() - time) / 50
-                    parameter.runSkillAction(mapOf("pressTick" to tick))
+                    parameter.runSkillAction(mapOf(Pair("pressTick", tick)))
                     PressSkillManager.pressTaskMap.remove(player.uniqueId)
                     OrryxPlayerPressStopEvent(player, skill, tick, maxPressTick).call()
                     CompletableFuture.completedFuture(null)
@@ -222,10 +223,10 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean
                         parameter.origin = it.location.toTarget()
                         parameter.runSkillAction(
                             mapOf(
-                                "aimRadius" to aimRadius,
-                                "aimMin" to aimMin,
-                                "aimMax" to aimMax,
-                                "pressTick" to (it.timestamp - timestamp)/50
+                                Pair("aimRadius", aimRadius),
+                                Pair("aimMin", aimMin),
+                                Pair("aimMax", aimMax),
+                                Pair("pressTick", (it.timestamp - timestamp)/50)
                             )
                         )
                     }
@@ -246,8 +247,8 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean
                         if (consume) skill.consume(player, parameter)
                         parameter.runSkillAction(
                             mapOf(
-                                "aimRadius" to aimRadius,
-                                "aimSize" to aimSize
+                                Pair("aimRadius", aimRadius),
+                                Pair("aimSize", aimSize)
                             )
                         )
                     }

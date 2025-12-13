@@ -1,6 +1,5 @@
 package org.gitee.orryx.core.kether.actions.game
 
-import org.gitee.orryx.api.adapters.vector.AbstractVector
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
@@ -55,7 +54,7 @@ object VectorActions {
             double(),
             double(),
             vector(),
-            command("offset", "os", then = double().and(double())).option().defaultsTo(Pair(0.0, 0.0)),
+            command("offset", "os", then = double().and(double())).option().defaultsTo(kotlin.Pair(0.0, 0.0)),
             theyContainer(true)
         ).apply(it) { x, y, z, direction, offset, container ->
             future {

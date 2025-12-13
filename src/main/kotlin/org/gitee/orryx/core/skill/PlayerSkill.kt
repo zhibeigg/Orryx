@@ -1,6 +1,5 @@
 package org.gitee.orryx.core.skill
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -21,7 +20,7 @@ import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.module.mana.IManaManager
-import org.gitee.orryx.utils.minecraftAsync
+import org.gitee.orryx.utils.Pair
 import org.gitee.orryx.utils.castSkill
 import org.gitee.orryx.utils.orryxProfileTo
 import org.gitee.orryx.utils.runCustomAction
@@ -110,7 +109,7 @@ class PlayerSkill(
     override fun upgradePointCheck(from: Int, to: Int): CompletableFuture<Pair<Int,Boolean>> {
         val point = skill.upgradePointAction?.let { runCustomAction(it, mapOf("from" to from, "to" to to)).orNull() }.cint
         return player.orryxProfileTo {
-            point to (it.point >= point)
+            Pair(point, (it.point >= point))
         }
     }
 
