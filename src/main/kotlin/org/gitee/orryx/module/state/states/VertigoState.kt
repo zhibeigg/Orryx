@@ -20,12 +20,12 @@ class VertigoState(override val key: String, configurationSection: Configuration
     val animation: Animation = Animation(configurationSection.getConfigurationSection("Animation")!!)
 
     class Animation(configurationSection: ConfigurationSection) {
-        val startKey = configurationSection.getString("Start-Key")!!
-        val loopKey = configurationSection.getString("Loop-Key")!!
-        val endKey = configurationSection.getString("End-Key")!!
-        val startDuration = configurationSection.getLong("Start-Duration")
-        val loopDuration = configurationSection.getLong("Loop-Duration")
-        val endDuration = configurationSection.getLong("End-Duration")
+        val startKey: K = configurationSection.getString("Start-Key")!!
+        val loopKey: K = configurationSection.getString("Loop-Key")!!
+        val endKey: K = configurationSection.getString("End-Key")!!
+        val startDuration: getLong = configurationSection.getLong("Start-Duration")
+        val loopDuration: getLong = configurationSection.getLong("Loop-Duration")
+        val endDuration: getLong = configurationSection.getLong("End-Duration")
     }
 
     override val script: Script? = configurationSection.getString("Action")?.let { StateManager.loadScript(this, it) }

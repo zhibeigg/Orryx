@@ -9,11 +9,9 @@ import org.gitee.orryx.module.state.IActionState
 import org.gitee.orryx.module.state.IRunningState
 import org.gitee.orryx.module.state.PlayerData
 import org.gitee.orryx.module.state.StateManager
-import org.gitee.orryx.module.state.Status
 import org.gitee.orryx.utils.DragonCorePlugin
 import org.gitee.orryx.utils.getNearPlayers
 import org.gitee.orryx.utils.toLongPair
-import taboolib.common.platform.function.info
 import taboolib.common.platform.function.submit
 import taboolib.common.platform.service.PlatformExecutor
 import taboolib.library.configuration.ConfigurationSection
@@ -21,17 +19,16 @@ import taboolib.module.kether.Script
 import taboolib.module.kether.ScriptContext
 import kotlin.math.ceil
 import kotlin.math.max
-import kotlin.math.roundToLong
 
 class GeneralAttackState(override val key: String, configurationSection: ConfigurationSection): IActionState {
 
     val animation: Animation = Animation(configurationSection.getConfigurationSection("Animation")!!)
 
-    val connection = configurationSection.getString("Connection").toLongPair("-")
+    val connection: Pair<Long, Long> = configurationSection.getString("Connection").toLongPair("-")
 
     class Animation(configurationSection: ConfigurationSection) {
-        val startKey = configurationSection.getString("Key")!!
-        val duration = configurationSection.getLong("Duration")
+        val startKey: K = configurationSection.getString("Key")!!
+        val duration: getLong = configurationSection.getLong("Duration")
     }
 
     override val script: Script? = configurationSection.getString("Action")?.let { StateManager.loadScript(this, it) }

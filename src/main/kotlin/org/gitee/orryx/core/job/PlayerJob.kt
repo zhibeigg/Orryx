@@ -27,7 +27,6 @@ import org.gitee.orryx.utils.DEFAULT
 import org.gitee.orryx.utils.bindKeyOfGroupToMap
 import org.gitee.orryx.utils.eval
 import org.gitee.orryx.utils.getExperienceFromTo
-import org.gitee.orryx.utils.getExperienceOfLevel
 import org.gitee.orryx.utils.getLessExp
 import org.gitee.orryx.utils.getLevel
 import org.gitee.orryx.utils.getSkill
@@ -51,7 +50,7 @@ class PlayerJob(
 
     constructor(id: Int, player: Player, key: String, privateExperience: Int, privateGroup: String = DEFAULT, privateBindKeyOfGroup: MutableMap<IGroup, MutableMap<IBindKey, String?>>): this(id, player.uniqueId, key, privateExperience, privateGroup, privateBindKeyOfGroup)
 
-    override val player
+    override val player: K
         get() = Bukkit.getPlayer(uuid) ?: error("Player Offline")
 
     override val job: IJob

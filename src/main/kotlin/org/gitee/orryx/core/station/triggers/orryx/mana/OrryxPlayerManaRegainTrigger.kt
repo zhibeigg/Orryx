@@ -10,7 +10,6 @@ import taboolib.common.OpenResult
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common5.cdouble
-import taboolib.module.kether.KetherProperty
 
 object OrryxPlayerManaRegainTrigger: AbstractPropertyEventTrigger<OrryxPlayerManaEvents.Regain.Pre>("Orryx Player Mana Regain") {
 
@@ -19,7 +18,7 @@ object OrryxPlayerManaRegainTrigger: AbstractPropertyEventTrigger<OrryxPlayerMan
             .addParm(Type.DOUBLE, "mana", "变化蓝量")
             .description("玩家蓝量自然恢复事件")
 
-    override val clazz
+    override val clazz: java
         get() = OrryxPlayerManaEvents.Regain.Pre::class.java
 
     override fun onJoin(event: OrryxPlayerManaEvents.Regain.Pre, map: Map<String, Any?>): ProxyCommandSender {

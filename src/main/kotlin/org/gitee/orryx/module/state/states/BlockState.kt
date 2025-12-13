@@ -22,15 +22,15 @@ class BlockState(override val key: String, configurationSection: ConfigurationSe
 
     val animation: Animation = Animation(configurationSection.getConfigurationSection("Animation")!!)
 
-    val check = configurationSection.getString("Check").toLongPair("-")
-    val invincible = configurationSection.getLong("Invincible")
+    val check: Pair<Long, Long> = configurationSection.getString("Check").toLongPair("-")
+    val invincible: getLong = configurationSection.getLong("Invincible")
     val blockType = configurationSection.getEnum("DamageType", DamageType::class.java) ?: DamageType.PHYSICS
-    override val spirit = configurationSection.getDouble("Spirit", 0.0)
+    override val spirit: getDouble = configurationSection.getDouble("Spirit", 0.0)
 
     class Animation(configurationSection: ConfigurationSection) {
-        val key = configurationSection.getString("Key")!!
-        val duration = configurationSection.getLong("Duration")
-        val success = configurationSection.getString("SuccessKey")!!
+        val key: K = configurationSection.getString("Key")!!
+        val duration: getLong = configurationSection.getLong("Duration")
+        val success: K = configurationSection.getString("SuccessKey")!!
     }
 
     override val script: Script? = configurationSection.getString("Action")?.let { StateManager.loadScript(this, it) }
