@@ -194,7 +194,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
         }
     }
 
-    override fun savePlayerData(playerProfilePO: PlayerProfilePO, onSuccess: () -> Unit) {
+    override fun savePlayerData(playerProfilePO: PlayerProfilePO, onSuccess: Runnable) {
         requireAsync("mysql")
         debug("${IStorageManager.lazyType} 保存玩家 Profile")
         playerTable.update(dataSource) {
@@ -203,10 +203,10 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
             set(POINT, playerProfilePO.point)
             set(FLAGS, Json.encodeToString(playerProfilePO.flags))
         }
-        onSuccess()
+        onSuccess.run()
     }
 
-    override fun savePlayerJob(playerJobPO: PlayerJobPO, onSuccess: () -> Unit) {
+    override fun savePlayerJob(playerJobPO: PlayerJobPO, onSuccess: Runnable) {
         requireAsync("mysql")
         debug("${IStorageManager.lazyType} 保存玩家 Job")
         jobsTable.transaction(dataSource) {
@@ -224,10 +224,10 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
                     Json.encodeToString(playerJobPO.bindKeyOfGroup)
                 )
             }
-        }.onSuccess { onSuccess() }
+        }.onSuccess { onSuccess.run() }
     }
 
-    override fun savePlayerSkill(playerSkillPO: PlayerSkillPO, onSuccess: () -> Unit) {
+    override fun savePlayerSkill(playerSkillPO: PlayerSkillPO, onSuccess: Runnable) {
         requireAsync("mysql")
         debug("${IStorageManager.lazyType} 保存玩家 Skill")
         skillsTable.transaction(dataSource) {
@@ -244,10 +244,10 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
                     playerSkillPO.level
                 )
             }
-        }.onSuccess { onSuccess() }
+        }.onSuccess { onSuccess.run() }
     }
 
-    override fun savePlayerKey(playerKeySettingPO: PlayerKeySettingPO, onSuccess: () -> Unit) {
+    override fun savePlayerKey(playerKeySettingPO: PlayerKeySettingPO, onSuccess: Runnable) {
         requireAsync("mysql")
         debug("${IStorageManager.lazyType} 保存玩家 KeySetting")
         keyTable.transaction(dataSource) {
@@ -260,7 +260,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
                     Json.encodeToString(playerKeySettingPO)
                 )
             }
-        }.onSuccess { onSuccess() }
+        }.onSuccess { onSuccess.run() }
     }
 
     override fun getGlobalFlag(key: String): CompletableFuture<IFlag?> = asyncRead("获取全局 Flag") {
@@ -273,7 +273,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
         }
     }
 
-    override fun saveGlobalFlag(key: String, flag: IFlag?, onSuccess: () -> Unit) {
+    override fun saveGlobalFlag(key: String, flag: IFlag?, onSuccess: Runnable) {
         requireAsync("mysql")
         debug("${IStorageManager.lazyType} 保存全局 Flag")
         globalFlagTable.transaction(dataSource) {
@@ -287,6 +287,6 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
                     value(key, Json.encodeToString(flag))
                 }
             }
-        }.onSuccess { onSuccess() }
+        }.onSuccess { onSuccess.run() }
     }
 }

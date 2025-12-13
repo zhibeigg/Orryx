@@ -120,28 +120,28 @@ interface IStorageManager {
      * @param playerProfilePO 玩家数据
      * @param onSuccess 成功时执行
      * */
-    fun savePlayerData(playerProfilePO: PlayerProfilePO, onSuccess: () -> Unit)
+    fun savePlayerData(playerProfilePO: PlayerProfilePO, onSuccess: Runnable)
 
     /**
      * 保存职业数据到数据库
      * @param playerJobPO 职业数据
      * @param onSuccess 成功时执行
      * */
-    fun savePlayerJob(playerJobPO: PlayerJobPO, onSuccess: () -> Unit)
+    fun savePlayerJob(playerJobPO: PlayerJobPO, onSuccess: Runnable)
 
     /**
      * 保存技能数据到数据库
      * @param playerSkillPO 技能数据
      * @param onSuccess 成功时执行
      * */
-    fun savePlayerSkill(playerSkillPO: PlayerSkillPO, onSuccess: () -> Unit)
+    fun savePlayerSkill(playerSkillPO: PlayerSkillPO, onSuccess: Runnable)
 
     /**
      * 保存按键数据到数据库
      * @param playerKeySettingPO 按键数据
      * @param onSuccess 成功时执行
      * */
-    fun savePlayerKey(playerKeySettingPO: PlayerKeySettingPO, onSuccess: () -> Unit)
+    fun savePlayerKey(playerKeySettingPO: PlayerKeySettingPO, onSuccess: Runnable)
 
     /**
      * 获取全局 Flag
@@ -156,5 +156,5 @@ interface IStorageManager {
      * @param flag flag 为空时删除
      * @param onSuccess 成功时执行
      * */
-    fun saveGlobalFlag(key: String, flag: IFlag?, onSuccess: () -> Unit)
+    fun saveGlobalFlag(key: String, flag: IFlag?, onSuccess: Runnable)
 }

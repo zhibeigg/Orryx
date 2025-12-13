@@ -204,7 +204,7 @@ class SqlLiteManager: IStorageManager {
         }
     }
 
-    override fun savePlayerData(playerProfilePO: PlayerProfilePO, onSuccess: () -> Unit) {
+    override fun savePlayerData(playerProfilePO: PlayerProfilePO, onSuccess: Runnable) {
         requireAsync("sqlLite")
         debug("SqlLite 保存玩家 Profile")
         playerTable.update(dataSource) {
@@ -213,10 +213,10 @@ class SqlLiteManager: IStorageManager {
             set(POINT, playerProfilePO.point)
             set(FLAGS, Json.encodeToString(playerProfilePO.flags))
         }
-        onSuccess()
+        onSuccess.run()
     }
 
-    override fun savePlayerJob(playerJobPO: PlayerJobPO, onSuccess: () -> Unit) {
+    override fun savePlayerJob(playerJobPO: PlayerJobPO, onSuccess: Runnable) {
         requireAsync("sqlLite")
         debug("SqlLite 保存玩家 Job")
         synchronized(getInternerByUUID(playerJobPO.player).intern("PlayerJob${playerJobPO.id}${playerJobPO.job}")) {
@@ -240,11 +240,11 @@ class SqlLiteManager: IStorageManager {
                     }
                 }
             }.run()
-            onSuccess()
+            onSuccess.run()
         }
     }
 
-    override fun savePlayerSkill(playerSkillPO: PlayerSkillPO, onSuccess: () -> Unit) {
+    override fun savePlayerSkill(playerSkillPO: PlayerSkillPO, onSuccess: Runnable) {
         requireAsync("sqlLite")
         debug("SqlLite 保存玩家 Skill")
         synchronized(getInternerByUUID(playerSkillPO.player).intern("PlayerSkill${playerSkillPO.id}${playerSkillPO.job}${playerSkillPO.skill}")) {
@@ -267,11 +267,11 @@ class SqlLiteManager: IStorageManager {
                     }
                 }
             }.run()
-            onSuccess()
+            onSuccess.run()
         }
     }
 
-    override fun savePlayerKey(playerKeySettingPO: PlayerKeySettingPO, onSuccess: () -> Unit) {
+    override fun savePlayerKey(playerKeySettingPO: PlayerKeySettingPO, onSuccess: Runnable) {
         requireAsync("sqlLite")
         debug("SqlLite 保存玩家 KeySetting")
         synchronized(getInternerByUUID(playerKeySettingPO.player).intern("KeySetting${playerKeySettingPO.id}")) {
@@ -290,7 +290,7 @@ class SqlLiteManager: IStorageManager {
                     }
                 }
             }.run()
-            onSuccess()
+            onSuccess.run()
         }
     }
 
@@ -308,7 +308,7 @@ class SqlLiteManager: IStorageManager {
         }
     }
 
-    override fun saveGlobalFlag(key: String, flag: IFlag?, onSuccess: () -> Unit) {
+    override fun saveGlobalFlag(key: String, flag: IFlag?, onSuccess: Runnable) {
         requireAsync("sqlLite")
         debug("SqlLite 保存全局 Flag")
         synchronized(pluginInterner.intern("GlobalFlag$key")) {
@@ -328,7 +328,7 @@ class SqlLiteManager: IStorageManager {
                     }
                 }
             }.run()
-            onSuccess()
+            onSuccess.run()
         }
     }
 }
