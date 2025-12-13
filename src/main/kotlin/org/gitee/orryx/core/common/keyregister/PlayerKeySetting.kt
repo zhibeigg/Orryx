@@ -61,7 +61,7 @@ class PlayerKeySetting(
         )
     }
 
-    override fun save(async: Boolean, remove: Boolean, callback: () -> Unit) {
+    override fun save(async: Boolean, remove: Boolean, callback: Runnable) {
         val data = createPO()
         fun remove() {
             if (remove) {
@@ -73,13 +73,13 @@ class PlayerKeySetting(
             OrryxAPI.ioScope.launch {
                 IStorageManager.INSTANCE.savePlayerKey(data) {
                     remove()
-                    callback()
+                    callback.run()
                 }
             }
         } else {
             IStorageManager.INSTANCE.savePlayerKey(data) {
                 remove()
-                callback()
+                callback.run()
             }
         }
     }

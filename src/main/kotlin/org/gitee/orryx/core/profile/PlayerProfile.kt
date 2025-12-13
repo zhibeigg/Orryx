@@ -135,7 +135,7 @@ class PlayerProfile(
         return PlayerProfilePO(id, player.uniqueId, job, point, privateFlags.filter { it.value.isPersistence }.mapValues { it.value.toSerializable() })
     }
 
-    override fun save(async: Boolean, remove: Boolean, callback: () -> Unit) {
+    override fun save(async: Boolean, remove: Boolean, callback: Runnable) {
         val data = createPO()
         fun remove() {
             if (remove) {
@@ -147,13 +147,13 @@ class PlayerProfile(
             OrryxAPI.ioScope.launch {
                 IStorageManager.INSTANCE.savePlayerData(data) {
                     remove()
-                    callback()
+                    callback.run()
                 }
             }
         } else {
             IStorageManager.INSTANCE.savePlayerData(data) {
                 remove()
-                callback()
+                callback.run()
             }
         }
     }

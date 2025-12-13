@@ -179,7 +179,7 @@ class PlayerSkill(
         return future
     }
 
-    override fun save(async: Boolean, remove: Boolean, callback: () -> Unit) {
+    override fun save(async: Boolean, remove: Boolean, callback: Runnable) {
         val data = createPO()
         fun remove() {
             if (remove) {
@@ -191,13 +191,13 @@ class PlayerSkill(
             OrryxAPI.ioScope.launch {
                 IStorageManager.INSTANCE.savePlayerSkill(data) {
                     remove()
-                    callback()
+                    callback.run()
                 }
             }
         } else {
             IStorageManager.INSTANCE.savePlayerSkill(data) {
                 remove()
-                callback()
+                callback.run()
             }
         }
     }

@@ -280,7 +280,7 @@ class PlayerJob(
         return future
     }
 
-    override fun save(async: Boolean, remove: Boolean, callback: () -> Unit) {
+    override fun save(async: Boolean, remove: Boolean, callback: Runnable) {
         val data = createPO()
         fun remove() {
             if (remove) {
@@ -292,13 +292,13 @@ class PlayerJob(
             OrryxAPI.ioScope.launch {
                 IStorageManager.INSTANCE.savePlayerJob(data) {
                     remove()
-                    callback()
+                    callback.run()
                 }
             }
         } else {
             IStorageManager.INSTANCE.savePlayerJob(data) {
                 remove()
-                callback()
+                callback.run()
             }
         }
     }

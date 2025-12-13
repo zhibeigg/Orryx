@@ -44,6 +44,7 @@ const val ORRYX_NAMESPACE = "Orryx"
 val orryxEnvironmentNamespaces = listOf(ORRYX_NAMESPACE, NODENS_NAMESPACE, "kether")
 
 val EMPTY_FUNCTION = {}
+val EMPTY_RUNNABLE = Runnable {}
 
 internal fun getBytes(actions: String): ByteArray {
     val s = if (actions.startsWith("def ")) actions else "def main = { $actions }"

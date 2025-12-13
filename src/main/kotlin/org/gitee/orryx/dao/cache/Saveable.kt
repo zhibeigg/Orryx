@@ -1,6 +1,6 @@
 package org.gitee.orryx.dao.cache
 
-import org.gitee.orryx.utils.EMPTY_FUNCTION
+import org.gitee.orryx.utils.EMPTY_RUNNABLE
 import taboolib.common.platform.function.isPrimaryThread
 
 interface Saveable {
@@ -11,5 +11,5 @@ interface Saveable {
      * @param remove 是否删除缓存
      * @param callback 完成回调
      * */
-    fun save(async: Boolean = isPrimaryThread, remove: Boolean = true, callback: () -> Unit = EMPTY_FUNCTION)
+    fun save(async: Boolean = isPrimaryThread, remove: Boolean = true, callback: Runnable = EMPTY_RUNNABLE)
 }
