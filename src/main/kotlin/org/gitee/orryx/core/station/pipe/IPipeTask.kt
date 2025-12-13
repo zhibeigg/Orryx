@@ -39,12 +39,12 @@ interface IPipeTask {
     /**
      * 当被Trigger终止时执行
      * */
-    val onBrock: (IPipeTask) -> CompletableFuture<Any?>
+    val onBrock: PipeTaskCallback
 
     /**
      * 当Timeout耗尽结束时执行
      * */
-    val onComplete: (IPipeTask) -> CompletableFuture<Any?>
+    val onComplete: PipeTaskCallback
 
     /**
      * 拥有的周期任务

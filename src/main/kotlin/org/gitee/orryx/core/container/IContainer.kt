@@ -48,7 +48,7 @@ interface IContainer {
      * @param predicate 对目标执行的匿名方法
      * @return 原容器
      * */
-    fun removeIf(predicate: (target: ITarget<*>) -> Boolean): IContainer
+    fun removeIf(predicate: TargetPredicate): IContainer
 
     /**
      * 循环容器[other]中的每个目标
@@ -58,13 +58,13 @@ interface IContainer {
      * @param predicate 对目标执行的匿名方法
      * @return 原容器
      * */
-    fun mergeIf(other: IContainer, predicate: (target: ITarget<*>) -> Boolean): IContainer
+    fun mergeIf(other: IContainer, predicate: TargetPredicate): IContainer
 
     /**
      * 循环执行容器中每个目标的匿名方法
      * @param action 对目标执行的匿名方法
      * */
-    fun foreach(action: (target: ITarget<*>) -> Unit)
+    fun foreach(action: TargetConsumer)
 
     /**
      * 获取第一个

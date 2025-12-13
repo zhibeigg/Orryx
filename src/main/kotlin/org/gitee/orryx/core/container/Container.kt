@@ -27,16 +27,16 @@ class Container(override val targets: LinkedHashSet<ITarget<*>> = linkedSetOf())
         this.targets.addAll(targets)
     }
 
-    override fun removeIf(predicate: (ITarget<*>) -> Boolean): IContainer = apply {
-        targets.removeIf(predicate)
+    override fun removeIf(predicate: TargetPredicate): IContainer = apply {
+        targets.removeIf { predicate.test(it) }
     }
 
-    override fun mergeIf(other: IContainer, predicate: (ITarget<*>) -> Boolean): IContainer = apply {
-        targets.addAll(other.targets.filter(predicate))
+    override fun mergeIf(other: IContainer, predicate: TargetPredicate): IContainer = apply {
+        targets.addAll(other.targets.filter { predicate.test(it) })
     }
 
-    override fun foreach(action: (ITarget<*>) -> Unit) {
-        targets.forEach(action)
+    override fun foreach(action: TargetConsumer) {
+        targets.forEach { action.accept(it) }
     }
 
     override fun clone(): IContainer = Container(LinkedHashSet(targets))

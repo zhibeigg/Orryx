@@ -12,8 +12,8 @@ class PipeBuilder {
     private var scriptContext: ScriptContext? = null
     private var brokeTriggers: Set<String> = emptySet()
     private var timeout: Long? = null
-    private var onBrock: (IPipeTask) -> CompletableFuture<Any?> = { CompletableFuture.completedFuture(it) }
-    private var onComplete: (IPipeTask) -> CompletableFuture<Any?> = { CompletableFuture.completedFuture(it) }
+    private var onBrock: PipeTaskCallback = PipeTaskCallback { CompletableFuture.completedFuture(it) }
+    private var onComplete: PipeTaskCallback = PipeTaskCallback { CompletableFuture.completedFuture(it) }
     private var periodTask: IPipePeriodTask? = null
 
     /**
@@ -49,14 +49,14 @@ class PipeBuilder {
      * 打断触发
      * */
     fun onBrock(onBrock: Function<IPipeTask, CompletableFuture<Any?>>): PipeBuilder = apply {
-        this.onBrock = { onBrock.apply(it) }
+        this.onBrock = PipeTaskCallback { onBrock.apply(it) }
     }
 
     /**
      * 完成触发
      * */
     fun onComplete(onComplete: Function<IPipeTask, CompletableFuture<Any?>>): PipeBuilder = apply {
-        this.onComplete = { onComplete.apply(it) }
+        this.onComplete = PipeTaskCallback { onComplete.apply(it) }
     }
 
     /**

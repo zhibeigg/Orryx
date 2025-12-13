@@ -13,8 +13,8 @@ class PipeTask(
     override val scriptContext: ScriptContext?,
     override val brokeTriggers: Set<String>,
     override val timeout: Long,
-    override val onBrock: (IPipeTask) -> CompletableFuture<Any?>,
-    override val onComplete: (IPipeTask) -> CompletableFuture<Any?>,
+    override val onBrock: PipeTaskCallback,
+    override val onComplete: PipeTaskCallback,
     override val periodTask: IPipePeriodTask?
 ) : IPipeTask {
 
@@ -53,7 +53,7 @@ class PipeTask(
         return close(onComplete)
     }
 
-    internal fun close(func: (IPipeTask) -> CompletableFuture<Any?>): CompletableFuture<Any?> {
+    internal fun close(func: PipeTaskCallback): CompletableFuture<Any?> {
         if (!closed.compareAndSet(false, true)) return result
 
         taskLock.lock()
@@ -61,7 +61,7 @@ class PipeTask(
             completedTask.cancel()
             periodTask?.cancel(this)
             PipeTaskManager.removePipeTask(this)
-            return func(this).whenComplete { _, _ ->
+            return func.invoke(this).whenComplete { _, _ ->
                 result.complete(null)
             }
         } finally {

@@ -3,7 +3,7 @@ package org.gitee.orryx.core.station.pipe
 import taboolib.common.platform.function.submit
 import taboolib.common.platform.service.PlatformExecutor
 
-class PipePeriodTask(override val period: Long, override val onPeriod: (IPipeTask) -> Unit): IPipePeriodTask {
+class PipePeriodTask(override val period: Long, override val onPeriod: PipeTaskConsumer): IPipePeriodTask {
 
     private lateinit var bukkitRunningTask: PlatformExecutor.PlatformTask
 
@@ -13,7 +13,7 @@ class PipePeriodTask(override val period: Long, override val onPeriod: (IPipeTas
                 pipeTask.broke()
                 pipeTask.scriptContext?.breakLoop = false
             } else {
-                onPeriod(pipeTask)
+                onPeriod.accept(pipeTask)
             }
         }
     }

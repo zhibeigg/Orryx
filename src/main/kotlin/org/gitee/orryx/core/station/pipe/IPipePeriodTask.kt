@@ -5,7 +5,7 @@ interface IPipePeriodTask {
     /**
      * 每周期执行一次
      * */
-    val onPeriod: (IPipeTask) -> Unit
+    val onPeriod: PipeTaskConsumer
 
     /**
      * 多少Tick为一周期
