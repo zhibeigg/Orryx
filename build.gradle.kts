@@ -10,7 +10,7 @@ plugins {
     `maven-publish`
     kotlin("jvm") version "2.1.20"
     kotlin("plugin.serialization") version "2.1.20"
-    id("io.izzel.taboolib") version "2.0.23"
+    id("io.izzel.taboolib") version "2.0.27"
     id("org.jetbrains.dokka") version "2.0.0"
 }
 
@@ -37,7 +37,7 @@ taboolib {
         install(Kether)
         install(Jexl)
         install("database-h2")
-        //repoTabooLib = "https://nexus.mcwar.cn/repository/test"
+        //repoTabooLib = "https://jfrog.mcwar.cn/artifactory/maven-releases"
     }
     description {
         name = "Orryx"
@@ -79,8 +79,8 @@ taboolib {
 
 repositories {
     mavenCentral()
-    maven("https://nexus.mcwar.cn/repository/maven-public/")
-    //maven("https://nexus.mcwar.cn/repository/test/")
+    maven("https://jfrog.mcwar.cn/artifactory/maven-releases")
+    //maven("https://jfrog.mcwar.cn/artifactory/maven-releases")
     maven("https://repo.codemc.io/repository/maven-releases/")
 }
 
@@ -150,7 +150,7 @@ kotlin {
 publishing {
     repositories {
         maven {
-            url = uri("https://nexus.mcwar.cn/repository/maven-releases/")
+            url = uri("https://jfrog.mcwar.cn/artifactory/maven-releases")
             credentials {
                 username = publishUsername
                 password = publishPassword

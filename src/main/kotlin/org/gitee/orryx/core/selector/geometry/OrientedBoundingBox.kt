@@ -80,8 +80,8 @@ object OrientedBoundingBox: ISelectorGeometry {
                 vectorX1, vectorY1, vectorZ1,
                 Vector(1.0, 0.0, 0.0), Vector(0.0, 1.0, 0.0), Vector(0.0, 0.0, 1.0)
             ).apply {
-                listOf(vectorX1, vectorY1, vectorZ1).forEach { a ->
-                    listOf(Vector(1.0, 0.0, 0.0), Vector(0.0, 1.0, 0.0), Vector(0.0, 0.0, 1.0)).forEach { b ->
+                arrayOf(vectorX1, vectorY1, vectorZ1).forEach { a ->
+                    arrayOf(Vector(1.0, 0.0, 0.0), Vector(0.0, 1.0, 0.0), Vector(0.0, 0.0, 1.0)).forEach { b ->
                         val cross = a.clone().crossProduct(b)
                         if (cross.lengthSquared() > 1e-6) add(cross.normalize())
                     }

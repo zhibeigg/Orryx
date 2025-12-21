@@ -267,7 +267,7 @@ plugins/Orryx/
 ### Gradle (Kotlin DSL)
 ```kotlin
 repositories {
-    maven("https://nexus.mcwar.cn/repository/maven-public/")
+    maven("https://jfrog.mcwar.cn/artifactory/maven-releases")
 }
 
 dependencies {
@@ -278,7 +278,7 @@ dependencies {
 ### Gradle (Groovy)
 ```groovy
 repositories {
-    maven { url 'https://nexus.mcwar.cn/repository/maven-public/' }
+    maven { url 'https://jfrog.mcwar.cn/artifactory/maven-releases' }
 }
 
 dependencies {
