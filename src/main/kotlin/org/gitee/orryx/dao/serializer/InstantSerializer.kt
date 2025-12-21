@@ -27,4 +27,4 @@ object InstantSerializer : KSerializer<Instant> {
     }
 }
 
-val nullInstantSerializer get() = InstantSerializer.nullable
+val nullInstantSerializer: nullable get() = InstantSerializer.nullable

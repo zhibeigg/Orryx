@@ -13,7 +13,7 @@ import taboolib.common.platform.command.suggest
 object OrryxScriptCommand {
 
     @CommandBody
-    val terminateAllSkill = subCommand {
+    val terminateAllSkill: subCommand = subCommand {
         exec<ProxyCommandSender> {
             ScriptManager.terminateAllSkills()
             sender.sendMessage("已终止全部技能")
@@ -21,7 +21,7 @@ object OrryxScriptCommand {
     }
 
     @CommandBody
-    val terminateAllStation = subCommand {
+    val terminateAllStation: subCommand = subCommand {
         exec<ProxyCommandSender> {
             ScriptManager.terminateAllStation()
             sender.sendMessage("已终止全部中转站")
@@ -29,7 +29,7 @@ object OrryxScriptCommand {
     }
 
     @CommandBody
-    val terminatePlayerAllSkill = subCommand {
+    val terminatePlayerAllSkill: subCommand = subCommand {
         player {
             exec<ProxyCommandSender> {
                 val player = ctx.bukkitPlayer() ?: return@exec
@@ -40,7 +40,7 @@ object OrryxScriptCommand {
     }
 
     @CommandBody
-    val terminatePlayerAllStation = subCommand {
+    val terminatePlayerAllStation: subCommand = subCommand {
         player {
             exec<ProxyCommandSender> {
                 val player = ctx.bukkitPlayer() ?: return@exec
@@ -51,7 +51,7 @@ object OrryxScriptCommand {
     }
 
     @CommandBody
-    val terminateSkill = subCommand {
+    val terminateSkill: subCommand = subCommand {
         player {
             dynamic("skill") {
                 suggest { SkillLoaderManager.getSkills().keys.toList() }
@@ -66,7 +66,7 @@ object OrryxScriptCommand {
     }
 
     @CommandBody
-    val terminateStation = subCommand {
+    val terminateStation: subCommand = subCommand {
         player {
             dynamic("station") {
                 suggest { StationLoaderManager.getStationLoaders().keys.toList() }
