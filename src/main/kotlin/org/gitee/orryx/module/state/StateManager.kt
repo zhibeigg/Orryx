@@ -148,8 +148,13 @@ object StateManager {
     private fun press(e: GermKeyDownEvent) {
         if (e.isCancelled) return
         val data = playerDataMap.getOrPut(e.player.uniqueId) { PlayerData(e.player) }
-        data.updateMoveState(e.keyType.simpleKey)
-        data.tryNext(e.keyType.simpleKey)
+        val key = when (val simpleKey = e.keyType.simpleKey) {
+            "MLEFT" -> MOUSE_LEFT
+            "MRIGHT" -> MOUSE_RIGHT
+            else -> simpleKey
+        }
+        data.updateMoveState(key)
+        data.tryNext(key)
     }
 
     @Ghost
@@ -174,7 +179,12 @@ object StateManager {
         val running = data.nowRunningState as? PressGeneralAttackState.Running ?: return
 
         e.player.keySetting {
-            if (it.generalAttackKey == e.keyType.simpleKey) {
+            val key = when (val simpleKey = e.keyType.simpleKey) {
+                "MLEFT" -> MOUSE_LEFT
+                "MRIGHT" -> MOUSE_RIGHT
+                else -> simpleKey
+            }
+            if (it.generalAttackKey == key) {
                 running.castAttack()
             }
         }

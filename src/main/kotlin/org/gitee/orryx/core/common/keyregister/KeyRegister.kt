@@ -94,5 +94,4 @@ class KeyRegister(override val player: Player): IKeyRegister {
             }
         }
     }
-
 }
