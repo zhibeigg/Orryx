@@ -23,7 +23,7 @@ class PlayerData(val player: Player) {
 
     private var changeMoveState = MoveState.FRONT
 
-    val cacheJoiner = linkedSetOf<UUID>()
+    val cacheJoiner: linkedSetOf = linkedSetOf<UUID>()
 
     //移动方向
     val moveState: MoveState
@@ -133,9 +133,6 @@ class PlayerData(val player: Player) {
     fun updateAnimationState(status: Status) {
         if (!germEnabled) return
         val animationState = status.options.animationState ?: return
-        onlinePlayers.forEach { viewer ->
-            GermPacketAPI.changeEntityModelAnimationState(viewer, player.entityId, animationState)
-        }
     }
 
     fun updateGermSkin(status: Status) {

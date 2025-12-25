@@ -6,7 +6,6 @@ import org.gitee.orryx.core.targets.ITarget
 import org.gitee.orryx.module.wiki.Selector
 import org.gitee.orryx.module.wiki.SelectorType
 import org.gitee.orryx.module.wiki.Type
-import taboolib.common.util.Location
 import taboolib.module.kether.ScriptContext
 
 object Frustum: ISelectorGeometry {
