@@ -5,6 +5,8 @@ import kotlinx.coroutines.future.future
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.kether.ScriptManager.runKether
+import org.gitee.orryx.utils.DragonCorePlugin
+import org.gitee.orryx.utils.GermPluginPlugin
 import org.gitee.orryx.utils.eval
 import org.gitee.orryx.utils.parse
 import taboolib.common.platform.function.adaptPlayer
@@ -21,7 +23,7 @@ import java.util.concurrent.TimeUnit
 
 class Status(override val key: String, configuration: Configuration): IStatus {
 
-    val options = Options(configuration.getConfigurationSection("Options")!!)
+    val options = Options(key, configuration.getConfigurationSection("Options")!!)
     val privateStates = mutableMapOf<String, IActionState>()
 
     init {
@@ -30,12 +32,27 @@ class Status(override val key: String, configuration: Configuration): IStatus {
         }
     }
 
-    class Options(configurationSection: ConfigurationSection) {
+    class Options(val key: String, configurationSection: ConfigurationSection) {
         val conditionAction = configurationSection.getString("Condition")!!
         val cancelHeldEventWhenPlaying = configurationSection.getBoolean("CancelHeldEventWhenPlaying", true)
         val cancelBukkitAttack = configurationSection.getBoolean("CancelBukkitAttack", false)
-        val controller = configurationSection.getString("Controller")!!
         val attackSpeedAction = configurationSection.getString("AttackSpeed", "1.0")!!
+
+        // 龙核附属
+        val controller = if (DragonCorePlugin.isEnabled) {
+            configurationSection.getString("Controller") ?: error("请配置龙核控制器 Status: $key")
+        } else {
+            null
+        }
+
+        // 萌芽附属
+        val animationState = if (GermPluginPlugin.isEnabled) {
+            configurationSection.getString("AnimationState") ?: error("请配置萌芽动作状态 Status: $key")
+        } else {
+            null
+        }
+
+        // 时装
         private val armourers = configurationSection.getStringList("Armourers")
 
         fun getArmourers(player: Player): List<String> {

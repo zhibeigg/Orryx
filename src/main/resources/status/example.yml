@@ -3,13 +3,16 @@ Options:
     true
   # 当动作未播放结束之前,是否不允许滚轮切换手持物品
   CancelHeldEventWhenPlaying: true
-  # 龙核动作控制器
+  # 龙核 动作控制器
   Controller: "长剑"
   CancelBukkitAttack: false
   # 时装
   Armourers: []
   # 攻速 可用 kether
   AttackSpeed: 1.0
+  # 萌芽 动作状态
+  # 将动作改为 "长剑@idle" 等类似命名
+  AnimationState: "长剑"
 States:
   长剑普攻0:
     # 状态类型

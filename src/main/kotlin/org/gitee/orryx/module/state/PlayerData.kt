@@ -1,5 +1,6 @@
 package org.gitee.orryx.module.state
 
+import com.germ.germplugin.api.GermPacketAPI
 import eos.moe.armourers.api.DragonAPI
 import org.bukkit.GameMode
 import org.bukkit.entity.Player
@@ -8,6 +9,10 @@ import org.gitee.orryx.core.common.keyregister.KeyRegisterManager
 import org.gitee.orryx.module.spirit.ISpiritManager
 import org.gitee.orryx.module.state.StateManager.getController
 import org.gitee.orryx.module.state.StateManager.statusDataList
+import org.gitee.orryx.utils.DragonArmourersPlugin
+import org.gitee.orryx.utils.GermPluginPlugin
+import taboolib.common.platform.function.warning
+import taboolib.platform.util.onlinePlayers
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
@@ -90,22 +95,53 @@ class PlayerData(val player: Player) {
         if (this.status == status) return
         this.status = status
         if (status != null) {
-            val controller = getController(status.options.controller) ?: return
-            DragonCoreCustomPacketSender.setPlayerAnimationController(player, player.uniqueId, controller.saveToString())
-            statusDataList().forEach {
-                if (player.uniqueId in it.cacheJoiner) {
-                    DragonCoreCustomPacketSender.setPlayerAnimationController(it.player, player.uniqueId, controller.saveToString())
-                }
-            }
+            updateController(status)
         } else {
-            DragonCoreCustomPacketSender.removePlayerAnimationController(player, player.uniqueId)
-            statusDataList().forEach {
-                if (player.uniqueId in it.cacheJoiner) {
-                    DragonCoreCustomPacketSender.removePlayerAnimationController(it.player, player.uniqueId)
-                }
+            removeController()
+        }
+        if (dragonArmourersEnabled) {
+            DragonAPI.updatePlayerSkin(player)
+        }
+        if (germEnabled) {
+            updateAnimationState(status ?: return)
+            updateGermSkin(status)
+        }
+    }
+
+    // 龙核的控制器更新
+    fun updateController(status: Status) {
+        val controller = status.options.controller?.let { getController(it) } ?: return
+        DragonCoreCustomPacketSender.setPlayerAnimationController(player, player.uniqueId, controller.saveToString())
+        statusDataList().forEach {
+            if (player.uniqueId in it.cacheJoiner) {
+                DragonCoreCustomPacketSender.setPlayerAnimationController(it.player, player.uniqueId, controller.saveToString())
             }
         }
-        DragonAPI.updatePlayerSkin(player)
+    }
+
+    // 龙核的控制器删除
+    fun removeController() {
+        DragonCoreCustomPacketSender.removePlayerAnimationController(player, player.uniqueId)
+        statusDataList().forEach {
+            if (player.uniqueId in it.cacheJoiner) {
+                DragonCoreCustomPacketSender.removePlayerAnimationController(it.player, player.uniqueId)
+            }
+        }
+    }
+
+    // 萌芽的动作状态更新
+    fun updateAnimationState(status: Status) {
+        if (!germEnabled) return
+        val animationState = status.options.animationState ?: return
+        onlinePlayers.forEach { viewer ->
+            GermPacketAPI.changeEntityModelAnimationState(viewer, player.entityId, animationState)
+        }
+    }
+
+    fun updateGermSkin(status: Status) {
+        if (status.options.getArmourers(player).isNotEmpty()) {
+            warning("Orryx 暂时未能支持 GermPlugin 的 Status 时装")
+        }
     }
 
     fun updateMoveState(input: String) {
@@ -119,5 +155,11 @@ class PlayerData(val player: Player) {
 
     fun getAttackSpeed(): Float {
         return (status as? Status)?.options?.getAttackSpeed(player) ?: 1.0f
+    }
+
+    companion object {
+
+        val germEnabled: Boolean by lazy { GermPluginPlugin.isEnabled }
+        val dragonArmourersEnabled: Boolean by lazy { DragonArmourersPlugin.isEnabled }
     }
 }

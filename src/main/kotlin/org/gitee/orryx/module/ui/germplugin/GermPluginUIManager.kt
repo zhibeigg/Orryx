@@ -38,7 +38,7 @@ class GermPluginUIManager: IUIManager {
         releaseResourceFile("ui/germplugin/OrryxSkillUI.yml")
         releaseResourceFile("ui/germplugin/OrryxSkillHUD.yml")
         GermPluginSkillHud.skillHUDConfiguration = YamlConfiguration.loadConfiguration(File(getDataFolder(), "ui/germplugin/OrryxSkillHUD.yml"))
-        GermPluginSkillUI.skillUIConfiguration = YamlConfiguration.loadConfiguration(File(getDataFolder(), "ui/germplugin/OrryxSkillHUD.yml"))
+        GermPluginSkillUI.skillUIConfiguration = YamlConfiguration.loadConfiguration(File(getDataFolder(), "ui/germplugin/OrryxSkillUI.yml"))
 
         registerBukkitListener(GermKeyDownEvent::class.java) { e ->
             if (e.isCancelled) return@registerBukkitListener
@@ -51,7 +51,7 @@ class GermPluginUIManager: IUIManager {
 
         registerBukkitListener(GermReloadEvent::class.java) { e ->
             GermPluginSkillHud.skillHUDConfiguration = YamlConfiguration.loadConfiguration(File(getDataFolder(), "ui/germplugin/OrryxSkillHUD.yml"))
-            GermPluginSkillUI.skillUIConfiguration = YamlConfiguration.loadConfiguration(File(getDataFolder(), "ui/germplugin/OrryxSkillHUD.yml"))
+            GermPluginSkillUI.skillUIConfiguration = YamlConfiguration.loadConfiguration(File(getDataFolder(), "ui/germplugin/OrryxSkillUI.yml"))
             if (setting.joinOpenHud) {
                 onlinePlayers.forEach { player ->
                     player.orryxProfileTo {

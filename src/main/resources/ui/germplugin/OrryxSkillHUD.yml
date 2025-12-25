@@ -24,7 +24,7 @@ OrryxSkillHUD:
     relativeParts:
       background-left:
         type: texture
-        path: "textures/orryx/url<->https://img.picgo.net/2025/03/01/hud6d926a8d7ba976e0.png"
+        path: "textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e345603a.png"
         tooltip:
           - "&c左键&f点击拖动"
           - "&c右键&f旋转"
@@ -32,7 +32,7 @@ OrryxSkillHUD:
         height: th1
       background-center:
         type: texture
-        path: "textures/orryx/url<->https://img.picgo.net/2025/03/01/hud52216d64b922a5b3.png"
+        path: "textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e34308c5.png"
         tooltip:
           - "&c左键&f点击拖动"
           - "&c右键&f旋转"
@@ -40,7 +40,7 @@ OrryxSkillHUD:
         height: th1
       background-right:
         type: texture
-        path: "textures/orryx/url<->https://img.picgo.net/2025/03/01/hud49c7f0823d7d08b6.png"
+        path: "textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d448b513a5.png"
         tooltip:
           - "&c左键&f点击拖动"
           - "&c右键&f旋转"
@@ -50,7 +50,7 @@ OrryxSkillHUD:
   # 此处为技能绑定背景组件的基础模板，实际上在滚动组件的子画布中
   skillBindKeyBackgroundH:
     type: texture
-    path: "textures/orryx/url<->https://img.picgo.net/2025/02/28/2f6899ecb93b6ed58ea69e1a0eb9e4df0ecf6ba62cbffdf6.png"
+    path: "textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e34dd879.png"
     width: tw1
     height: th1
     enable: false
@@ -112,7 +112,7 @@ OrryxSkillHUD:
     relativeParts:
       background-up:
         type: texture
-        path: "textures/orryx/url<->https://img.picgo.net/2025/03/04/hudd6a841ea5e239055.png"
+        path: "textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e3406793.png"
         tooltip:
           - "&c左键&f点击拖动"
           - "&c右键&f旋转"
@@ -120,7 +120,7 @@ OrryxSkillHUD:
         height: th1
       background-center:
         type: texture
-        path: "textures/orryx/url<->https://img.picgo.net/2025/03/04/hud61275e9c19fac7d9.png"
+        path: "textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e34384b3.png"
         tooltip:
           - "&c左键&f点击拖动"
           - "&c右键&f旋转"
@@ -128,7 +128,7 @@ OrryxSkillHUD:
         height: th1
       background-down:
         type: texture
-        path: "textures/orryx/url<->https://img.picgo.net/2025/03/04/huddad5a413a08ca1b3.png"
+        path: "textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e341614d.png"
         tooltip:
           - "&c左键&f点击拖动"
           - "&c右键&f旋转"
@@ -138,7 +138,7 @@ OrryxSkillHUD:
   # 此处为技能绑定背景组件的基础模板，实际上在滚动组件的子画布中
   skillBindKeyBackgroundV:
     type: texture
-    path: "textures/orryx/url<->https://img.picgo.net/2025/03/04/7767aeb643e89629a426b9abf61feb83dbdebf6a9a1deb95.png"
+    path: "textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e34416d8.png"
     locationX: "4"
     locationY: "-4"
     width: tw1

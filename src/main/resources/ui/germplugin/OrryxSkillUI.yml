@@ -13,7 +13,7 @@ OrryxSkillUI:
         - "open<->null"
   background:
     type: texture
-    path: "textures/orryx/url<->https://img.picgo.net/2025/02/28/947fe7c089bd15a65eba1e4be4221ee2db9ed94cfcd24b2c.png"
+    path: "textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e345fe3b.png"
     width: tw1
     height: th1
   cursor:
@@ -43,8 +43,8 @@ OrryxSkillUI:
   # 此处为技能绑定背景组件的基础模板，实际上在滚动组件的子画布中
   skillBindKeyBackground:
     type: button
-    defaultPath: "textures/orryx/url<->https://img.picgo.net/2025/02/28/2f6899ecb93b6ed58ea69e1a0eb9e4df0ecf6ba62cbffdf6.png"
-    hoverPath: 'textures/orryx/url<->https://img.picgo.net/2025/02/28/2f6899ecb93b6ed58ea69e1a0eb9e4df0ecf6ba62cbffdf6.png'
+    defaultPath: "textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e34dd879.png"
+    hoverPath: 'textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e34dd879.png'
     width: tw1
     height: th1
     swallow: false
@@ -70,8 +70,8 @@ OrryxSkillUI:
   # 此处为技能背景组件的基础模板，实际上在滚动组件的子画布中
   skillBackground:
     type: button
-    defaultPath: "textures/orryx/url<->https://img.picgo.net/2025/02/28/c8c8dfdc6a5d8cc69349bd72bfd14e0ef5773f84ca53ac80.png"
-    hoverpath: "textures/orryx/url<->https://img.picgo.net/2025/02/28/hoverf103c56cb5c27439.png"
+    defaultPath: "textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e34aca6d.png"
+    hoverpath: "textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e34bac56.png"
     width: tw1
     height: th1
     swallow: false
@@ -100,8 +100,8 @@ OrryxSkillUI:
     type: button
     locationX: "90"
     locationY: "10"
-    defaultPath: "textures/orryx/url<->https://img.picgo.net/2025/03/03/9d455ba98712b7c53c56cfd1dfe8f4113058d2a02bf0c6f4.png"
-    hoverpath: "textures/orryx/url<->https://img.picgo.net/2025/03/03/hover2af8da071795053f.png"
+    defaultPath: "textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e34c3357.png"
+    hoverpath: "textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e34d6066.png"
     width: tw1
     height: th1
     swallow: true
@@ -116,8 +116,8 @@ OrryxSkillUI:
     relative: true
     sliderV:
       type: button
-      defaultPath: 'textures/orryx/url<->https://img.picgo.net/2025/02/28/ff496e6b578d2841426de01f8937a3ea3b96ccbf54068985.png'
-      hoverPath: 'textures/orryx/url<->https://img.picgo.net/2025/02/28/hover6b0669dff55e108b.png'
+      defaultPath: 'textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e3468567.png'
+      hoverPath: 'textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e3484c5e.png'
       width: "tw1"
       height: "th1"
     locationVX: '106.5'
@@ -143,8 +143,8 @@ OrryxSkillUI:
     invalidV: true
     sliderH:
       type: button
-      defaultPath: 'textures/orryx/url<->https://img.picgo.net/2025/03/04/0166229c58fdcfd832375f11858f7cafe1e82abce33db343.png'
-      hoverPath: 'textures/orryx/url<->https://img.picgo.net/2025/03/04/hover73ec7523913e1689.png'
+      defaultPath: 'textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e348e1de.png'
+      hoverPath: 'textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e348e3a4.png'
       width: "tw1"
       height: "th1"
     locationHX: '5'
