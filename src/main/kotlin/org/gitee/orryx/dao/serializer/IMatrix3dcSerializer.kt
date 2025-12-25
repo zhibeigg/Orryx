@@ -42,4 +42,4 @@ object IMatrix3dcSerializer : KSerializer<Matrix3dc> {
     }
 }
 
-val nullIMatrix3dcSerializer get() = IMatrix3dcSerializer.nullable
+val nullIMatrix3dcSerializer: nullable get() = IMatrix3dcSerializer.nullable

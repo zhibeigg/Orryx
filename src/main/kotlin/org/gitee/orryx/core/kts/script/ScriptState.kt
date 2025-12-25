@@ -32,7 +32,7 @@ sealed class ScriptState(
     class Discovered(
         scriptName: String,
     ) : ScriptState(scriptName) {
-        override fun stateDisplayName() = "&7Discovered".colored()
+        override fun stateDisplayName(): colored = "&7Discovered".colored()
     }
 
     /**
@@ -42,7 +42,7 @@ sealed class ScriptState(
     class CheckingCache(
         scriptName: String,
     ) : ScriptState(scriptName) {
-        override fun stateDisplayName() = "&bChecking Cache".colored()
+        override fun stateDisplayName(): colored = "&bChecking Cache".colored()
     }
 
     /**
@@ -57,7 +57,7 @@ sealed class ScriptState(
         val scriptFile: File,
         val description: ScriptDescription,
     ) : ScriptState(scriptName) {
-        override fun stateDisplayName() = "&bCompiling".colored()
+        override fun stateDisplayName(): colored = "&bCompiling".colored()
     }
 
     /**
@@ -70,7 +70,7 @@ sealed class ScriptState(
         scriptName: String,
         val compiledScript: KtsCompiledScript,
     ) : ScriptState(scriptName) {
-        override fun stateDisplayName() = "&bLoading".colored()
+        override fun stateDisplayName(): colored = "&bLoading".colored()
     }
 
     /**
@@ -83,7 +83,7 @@ sealed class ScriptState(
         scriptName: String,
         val loadedScript: KtsLoadedScript,
     ) : ScriptState(scriptName) {
-        override fun stateDisplayName() = "&aLoaded".colored()
+        override fun stateDisplayName(): colored = "&aLoaded".colored()
     }
 
     /**
@@ -96,7 +96,7 @@ sealed class ScriptState(
         scriptName: String,
         val compiledScript: KtsCompiledScript,
     ) : ScriptState(scriptName) {
-        override fun stateDisplayName() = "&eUnloaded".colored()
+        override fun stateDisplayName(): colored = "&eUnloaded".colored()
     }
 
     /**
@@ -109,7 +109,7 @@ sealed class ScriptState(
         scriptName: String,
         val compiledScript: KtsCompiledScript,
     ) : ScriptState(scriptName) {
-        override fun stateDisplayName() = "&bUnloading".colored()
+        override fun stateDisplayName(): colored = "&bUnloading".colored()
     }
 
     /**
@@ -122,7 +122,7 @@ sealed class ScriptState(
         scriptName: String,
         val error: String,
     ) : ScriptState(scriptName) {
-        override fun stateDisplayName() = "&4Compile File".colored()
+        override fun stateDisplayName(): colored = "&4Compile File".colored()
     }
 
     /**
@@ -135,6 +135,6 @@ sealed class ScriptState(
         scriptName: String,
         val error: String,
     ) : ScriptState(scriptName) {
-        override fun stateDisplayName() = "&4Load Fail".colored()
+        override fun stateDisplayName(): colored = "&4Load Fail".colored()
     }
 }

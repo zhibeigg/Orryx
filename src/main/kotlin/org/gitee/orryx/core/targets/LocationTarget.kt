@@ -9,7 +9,7 @@ class LocationTarget(override val location: Location): ITargetLocation<Location>
     override val world: World
         get() = location.world!!
 
-    override val eyeLocation = location
+    override val eyeLocation: Location = location
 
     override fun getSource(): Location {
         return location

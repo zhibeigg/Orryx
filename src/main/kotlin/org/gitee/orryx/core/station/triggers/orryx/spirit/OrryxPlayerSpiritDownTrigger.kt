@@ -10,16 +10,15 @@ import taboolib.common.OpenResult
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common5.cdouble
-import taboolib.module.kether.KetherProperty
 
 object OrryxPlayerSpiritDownTrigger: AbstractPropertyEventTrigger<OrryxPlayerSpiritEvents.Down>("Orryx Player Spirit Down") {
 
     override val wiki: Trigger
-        get() = Trigger.Companion.new(TriggerGroup.ORRYX, event)
+        get() = Trigger.new(TriggerGroup.ORRYX, event)
             .addParm(Type.DOUBLE, "spirit", "变化精力值")
             .description("玩家精力值下降事件")
 
-    override val clazz
+    override val clazz: java
         get() = OrryxPlayerSpiritEvents.Down::class.java
 
     override fun onJoin(event: OrryxPlayerSpiritEvents.Down, map: Map<String, Any?>): ProxyCommandSender {

@@ -3,7 +3,6 @@ package org.gitee.orryx.core.kether.actions.compat
 import org.bukkit.entity.LivingEntity
 import org.gitee.nodens.common.DamageProcessor
 import org.gitee.nodens.common.RegainProcessor
-import org.gitee.nodens.core.attribute.Damage
 import org.gitee.nodens.util.NODENS_NAMESPACE
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.module.wiki.Action

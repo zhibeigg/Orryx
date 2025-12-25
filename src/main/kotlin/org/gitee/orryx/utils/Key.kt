@@ -6,7 +6,6 @@ import org.gitee.orryx.core.common.keyregister.KeyRegisterManager
 import org.gitee.orryx.core.common.keyregister.PlayerKeySetting
 import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.module.ui.IUIManager
-import taboolib.common.platform.function.info
 import java.util.concurrent.CompletableFuture
 
 const val MOUSE_LEFT = "MOUSE_LEFT"

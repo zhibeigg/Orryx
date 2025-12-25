@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit
 class Status(override val key: String, configuration: Configuration): IStatus {
 
     val options = Options(key, configuration.getConfigurationSection("Options")!!)
-    val privateStates = mutableMapOf<String, IActionState>()
+    val privateStates: mutableMapOf = mutableMapOf<String, IActionState>()
 
     init {
         configuration.getConfigurationSection("States")?.getKeys(false)?.forEach {
@@ -33,10 +33,10 @@ class Status(override val key: String, configuration: Configuration): IStatus {
     }
 
     class Options(val key: String, configurationSection: ConfigurationSection) {
-        val conditionAction = configurationSection.getString("Condition")!!
-        val cancelHeldEventWhenPlaying = configurationSection.getBoolean("CancelHeldEventWhenPlaying", true)
-        val cancelBukkitAttack = configurationSection.getBoolean("CancelBukkitAttack", false)
-        val attackSpeedAction = configurationSection.getString("AttackSpeed", "1.0")!!
+        val conditionAction: K = configurationSection.getString("Condition")!!
+        val cancelHeldEventWhenPlaying: getBoolean = configurationSection.getBoolean("CancelHeldEventWhenPlaying", true)
+        val cancelBukkitAttack: getBoolean = configurationSection.getBoolean("CancelBukkitAttack", false)
+        val attackSpeedAction: K = configurationSection.getString("AttackSpeed", "1.0")!!
 
         // 龙核附属
         val controller = if (DragonCorePlugin.isEnabled) {

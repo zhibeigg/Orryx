@@ -22,7 +22,7 @@ object OrryxTestCommand {
     }
 
     @CommandBody
-    val unlimit = subCommand {
+    val unlimit: subCommand = subCommand {
         exec<Player> {
             if (unlimits.contains(sender.uniqueId)) {
                 unlimits.remove(sender.uniqueId)
@@ -35,7 +35,7 @@ object OrryxTestCommand {
     }
 
     @CommandBody
-    val test = subCommandExec<ProxyCommandSender> {
+    val test: subCommandExec = subCommandExec<ProxyCommandSender> {
         val compilationConfiguration = createJvmCompilationConfigurationFromTemplate<SimpleScript>()
 
         val host = BasicJvmScriptingHost()

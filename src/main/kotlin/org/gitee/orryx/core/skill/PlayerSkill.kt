@@ -42,7 +42,7 @@ class PlayerSkill(
 
     constructor(id: Int, player: Player, key: String, job: String, privateLevel: Int, privateLocked: Boolean): this(id, player.uniqueId, key, job, privateLevel, privateLocked)
 
-    override val player
+    override val player: K
         get() = Bukkit.getPlayer(uuid) ?: error("Player Offline")
 
     override val level: Int

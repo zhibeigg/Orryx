@@ -20,7 +20,7 @@ object DragonKeyPressTrigger: AbstractPropertyPlayerEventTrigger<KeyPressEvent>(
             .addSpecialKey(Type.STRING, "Keys", "按键，可写列表/单个")
             .description("玩家按下按键事件")
 
-    override val clazz
+    override val clazz: java
         get() = KeyPressEvent::class.java
 
     override val specialKeys = arrayOf("Keys")
