@@ -1,8 +1,7 @@
 package org.gitee.orryx.api
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.*
+import kotlin.time.Duration.Companion.seconds
 import org.gitee.orryx.api.interfaces.*
 import org.gitee.orryx.utils.minecraftAsync
 import taboolib.common.env.RuntimeDependencies
@@ -114,8 +113,41 @@ class OrryxAPI: IOrryxAPI {
 
         val ketherScriptLoader by lazy { KetherScriptLoader() }
 
-        internal val ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-        internal val effectScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-        internal val pluginScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+        private val ioJob = SupervisorJob()
+        private val effectJob = SupervisorJob()
+        private val pluginJob = SupervisorJob()
+
+        internal val ioScope = CoroutineScope(Dispatchers.IO + ioJob)
+        internal val effectScope = CoroutineScope(Dispatchers.Default + effectJob)
+        internal val pluginScope = CoroutineScope(Dispatchers.Default + pluginJob)
+
+        /**
+         * 优雅关闭所有协程作用域
+         * @param timeout 等待协程完成的超时时间（秒）
+         */
+        internal fun shutdownScopes(timeout: Long = 5) {
+            runBlocking {
+                // 先取消所有子协程，给它们发送取消信号
+                ioJob.cancelChildren()
+                effectJob.cancelChildren()
+                pluginJob.cancelChildren()
+
+                // 等待子协程完成，带超时保护
+                try {
+                    withTimeout(timeout.seconds) {
+                        ioJob.children.forEach { it.join() }
+                        effectJob.children.forEach { it.join() }
+                        pluginJob.children.forEach { it.join() }
+                    }
+                } catch (_: TimeoutCancellationException) {
+                    // 超时后强制取消
+                }
+
+                // 最终取消整个作用域
+                ioJob.cancel()
+                effectJob.cancel()
+                pluginJob.cancel()
+            }
+        }
     }
 }

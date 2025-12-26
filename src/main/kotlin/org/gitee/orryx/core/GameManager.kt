@@ -1,6 +1,5 @@
 package org.gitee.orryx.core
 
-import kotlinx.coroutines.cancel
 import org.bukkit.entity.Player
 import org.bukkit.event.entity.FoodLevelChangeEvent
 import org.bukkit.event.player.PlayerJoinEvent
@@ -105,19 +104,16 @@ object GameManager {
     @Awake(LifeCycle.DISABLE)
     private fun disabled() {
         consoleMessage("&e┣&7检测到关闭服务器 Orryx 开始关闭流程")
+        ScriptManager.terminateAllSkills()
+        consoleMessage("&e┣&7终止所有玩家技能 &a√")
         IManaManager.closeThread()
         consoleMessage("&e┣&7 Mana 线程已关闭 &a√")
         ISpiritManager.closeThread()
         consoleMessage("&e┣&7 Spirit 线程已关闭 &a√")
+        consoleMessage("&e┣&7等待协程完成...")
+        OrryxAPI.shutdownScopes(timeout = 5)
+        consoleMessage("&e┣&7协程域终止 &a√")
         shutdown = true
         consoleMessage("&e┣&7 Storage 禁止异步 &a√")
-        ScriptManager.terminateAllSkills()
-        consoleMessage("&e┣&7终止所有玩家技能 &a√")
-        consoleMessage("&e┣&7延迟 2 Tick 后关闭服务器 &a√")
-        Thread.sleep(100)
-        OrryxAPI.ioScope.cancel("服务器关闭")
-        OrryxAPI.effectScope.cancel("服务器关闭")
-        OrryxAPI.pluginScope.cancel("服务器关闭")
-        consoleMessage("&e┣&7协程域终止 &a√")
     }
 }

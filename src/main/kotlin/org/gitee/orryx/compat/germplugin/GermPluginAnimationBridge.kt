@@ -19,5 +19,4 @@ class GermPluginAnimationBridge: IAnimationBridge {
     override fun clearPlayerAnimation(viewer: Player, player: Player) {
         GermPacketAPI.sendBendClear(viewer, player.entityId)
     }
-
 }

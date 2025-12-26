@@ -80,7 +80,6 @@ taboolib {
 repositories {
     mavenCentral()
     maven("https://jfrog.mcwar.cn/artifactory/maven-releases")
-    //maven("https://jfrog.mcwar.cn/artifactory/maven-releases")
     maven("https://repo.codemc.io/repository/maven-releases/")
 }
 
