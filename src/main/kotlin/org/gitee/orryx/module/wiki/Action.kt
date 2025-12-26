@@ -237,7 +237,7 @@ class Action(val group: String, val name: String, val key: String, val sharded: 
             n++
             return ids
         }
-        if (entries.size > 0) {
+        if (entries.isNotEmpty()) {
             id += "${name}_entries_table"
             list += Block.newBuilder()
                 .blockId("${name}_entries_table")

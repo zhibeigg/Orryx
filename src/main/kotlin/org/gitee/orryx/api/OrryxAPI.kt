@@ -3,7 +3,6 @@ package org.gitee.orryx.api
 import kotlinx.coroutines.*
 import kotlin.time.Duration.Companion.seconds
 import org.gitee.orryx.api.interfaces.*
-import org.gitee.orryx.utils.minecraftAsync
 import taboolib.common.env.RuntimeDependencies
 import taboolib.common.env.RuntimeDependency
 import taboolib.common.platform.PlatformFactory
@@ -111,7 +110,7 @@ class OrryxAPI: IOrryxAPI {
 
     companion object {
 
-        val ketherScriptLoader by lazy { KetherScriptLoader() }
+        val ketherScriptLoader: getValue by lazy { KetherScriptLoader() }
 
         private val ioJob = SupervisorJob()
         private val effectJob = SupervisorJob()

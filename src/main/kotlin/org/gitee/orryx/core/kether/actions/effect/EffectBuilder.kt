@@ -54,5 +54,5 @@ class EffectBuilder {
     val data: ParticleData?
         get() = dustData ?: dustTransitionData ?: itemData ?: blockData ?: vibrationData
 
-    val locations by unsafeLazy { mutableListOf<Tuple2<Int, EffectOrigin>>() }
+    val locations: getValue by unsafeLazy { mutableListOf<Tuple2<Int, EffectOrigin>>() }
 }

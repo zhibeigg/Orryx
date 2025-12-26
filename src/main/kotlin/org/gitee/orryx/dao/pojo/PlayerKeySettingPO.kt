@@ -7,7 +7,7 @@ import java.util.UUID
 @Serializable
 data class PlayerKeySettingPO(
     val id: Int,
-    @Serializable(with = UUIDSerializer::class)
+    @param:Serializable(with = UUIDSerializer::class)
     val player: UUID,
     val bindKeyMap: Map<String, String>,
     val aimConfirmKey: String,

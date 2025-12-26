@@ -2,7 +2,6 @@ package org.gitee.orryx.core.kether.actions.compat.dragoncore
 
 import eos.moe.armourers.api.DragonAPI
 import eos.moe.armourers.api.PlayerSkinUpdateEvent
-import eos.moe.dragoncore.api.FutureSlotAPI
 import eos.moe.dragoncore.api.SlotAPI
 import eos.moe.dragoncore.database.IDataBase
 import eos.moe.dragoncore.network.PacketSender

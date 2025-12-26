@@ -3,7 +3,6 @@ package org.gitee.orryx.core.selector.stream
 import org.gitee.orryx.core.container.IContainer
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.ISelectorStream
-import org.gitee.orryx.core.targets.ITarget
 import org.gitee.orryx.module.wiki.Selector
 import org.gitee.orryx.module.wiki.SelectorType
 import org.gitee.orryx.module.wiki.Type
@@ -11,7 +10,6 @@ import org.gitee.orryx.utils.getParameter
 import org.gitee.orryx.utils.read
 import taboolib.common.platform.function.warning
 import taboolib.module.kether.ScriptContext
-import java.util.stream.Stream
 
 object Amount: ISelectorStream {
 

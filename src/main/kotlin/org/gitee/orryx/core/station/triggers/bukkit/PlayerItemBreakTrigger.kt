@@ -1,16 +1,11 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
-import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerItemBreakEvent
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
-import org.gitee.orryx.utils.abstract
-import org.gitee.orryx.utils.toTarget
 import taboolib.common.OpenResult
-import taboolib.module.kether.ScriptContext
 
 object PlayerItemBreakTrigger: AbstractPropertyPlayerEventTrigger<PlayerItemBreakEvent>("Player Item Break") {
 
@@ -19,7 +14,7 @@ object PlayerItemBreakTrigger: AbstractPropertyPlayerEventTrigger<PlayerItemBrea
             .addParm(Type.ITEM_STACK, "brokenItem", "损坏的物品")
             .description("某玩家工具耐久消耗完毕时触发(比如铲子，打火石，铁制工具)")
 
-    override val clazz
+    override val clazz: java
         get() = PlayerItemBreakEvent::class.java
 
     override fun read(instance: PlayerItemBreakEvent, key: String): OpenResult {
