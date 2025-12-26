@@ -17,6 +17,7 @@ import taboolib.module.database.Table
 import taboolib.module.database.getHost
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentHashMap
 import javax.sql.DataSource
 import kotlin.time.measureTime
 
@@ -95,7 +96,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
         }
     }
 
-    private val statsMap = mutableMapOf<String, TimeStats>()
+    private val statsMap = ConcurrentHashMap<String, TimeStats>()
 
     private fun getStats(key: String): TimeStats = statsMap.getOrPut(key) { TimeStats() }
 

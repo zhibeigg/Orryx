@@ -38,14 +38,17 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
 
     fun start() {
         effectScope.launch {
-            effects.map { effect ->
-                async {
-                    effect.start()
-                    effect.future.await()
-                }
-            }.awaitAll()
-        }.invokeOnCompletion {
-            future.complete(null)
+            try {
+                effects.map { effect ->
+                    async {
+                        effect.start()
+                        effect.future.await()
+                    }
+                }.awaitAll()
+                future.complete(null)
+            } catch (e: Exception) {
+                future.completeExceptionally(e)
+            }
         }
     }
 

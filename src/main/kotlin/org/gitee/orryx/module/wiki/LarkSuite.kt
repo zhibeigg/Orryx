@@ -43,15 +43,20 @@ object LarkSuite {
         Client.newBuilder(appId, appSecret).requestTimeout(30, TimeUnit.MINUTES).build()
     }
 
+    private var ioJob: CompletableJob? = null
     internal var ioScope: CoroutineScope? = null
 
     @Awake(LifeCycle.DISABLE)
     private fun disable() {
-        ioScope?.cancel("服务器关闭")
+        ioJob?.cancelChildren()
+        ioScope?.cancel()
     }
 
     fun createDocument() {
-        if (ioScope == null) { ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob()) }
+        if (ioScope == null) {
+            ioJob = SupervisorJob()
+            ioScope = CoroutineScope(Dispatchers.IO + ioJob!!)
+        }
         ioScope!!.launch {
             consoleMessage("&e┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
             consoleMessage("&e┣&7新文档$pluginId-$pluginVersion-(自生成) 开始创建")

@@ -1,6 +1,7 @@
 package org.gitee.orryx.core.kether
 
 import com.eatthepath.uuid.FastUUID
+import com.github.benmanes.caffeine.cache.Caffeine
 import org.bukkit.event.player.PlayerQuitEvent
 import org.gitee.orryx.api.OrryxAPI.Companion.ketherScriptLoader
 import org.gitee.orryx.core.kether.parameter.IParameter
@@ -20,6 +21,7 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
+import java.util.concurrent.TimeUnit
 
 object ScriptManager {
 
@@ -30,7 +32,12 @@ object ScriptManager {
     val wikiSelectors by unsafeLazy { mutableListOf<org.gitee.orryx.module.wiki.Selector>() }
     val wikiTriggers by unsafeLazy { mutableListOf<org.gitee.orryx.module.wiki.Trigger>() }
 
-    private val scriptMap by unsafeLazy { ConcurrentHashMap<String, Script>() }
+    private val scriptCache by unsafeLazy {
+        Caffeine.newBuilder()
+            .maximumSize(1000)
+            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .build<String, Script>()
+    }
     private val closeableMap by unsafeLazy { hashMapOf<String, ConcurrentMap<UUID, AutoCloseable>>() }
 
     fun terminateAllSkills() {
@@ -85,7 +92,7 @@ object ScriptManager {
 
     @Reload(weight = 2)
     fun reload() {
-        scriptMap.clear()
+        scriptCache.invalidateAll()
     }
 
     fun runScript(sender: ProxyCommandSender, parameter: IParameter, script: Script, context: (ScriptContext.() -> Unit)? = null): CompletableFuture<Any?> {
@@ -101,7 +108,7 @@ object ScriptManager {
 
     fun runScript(sender: ProxyCommandSender, parameter: IParameter, action: String, context: (ScriptContext.() -> Unit)? = null): CompletableFuture<Any?> {
         val uuid = FastUUID.toString(UUID.randomUUID())
-        val script = scriptMap.getOrPut(action) {
+        val script = scriptCache.get(action) {
             runKether {
                 ketherScriptLoader.load(
                     ScriptService,
@@ -110,7 +117,7 @@ object ScriptManager {
                     orryxEnvironmentNamespaces
                 )
             }
-        }
+        } ?: return CompletableFuture.completedFuture(null)
 
         return runKether(CompletableFuture.completedFuture(null)) {
             ScriptContext.create(script).also {
@@ -125,7 +132,7 @@ object ScriptManager {
     fun parseScript(sender: ProxyCommandSender, parameter: IParameter, actions: String, context: (ScriptContext.() -> Unit)? = null): String {
         val uuid = FastUUID.toString(UUID.randomUUID())
         return reader.replaceNested(actions) {
-            val script = scriptMap.getOrPut(this) {
+            val script = scriptCache.get(this) {
                 runKether {
                     ketherScriptLoader.load(
                         ScriptService,
@@ -134,7 +141,7 @@ object ScriptManager {
                         orryxEnvironmentNamespaces
                     )
                 }
-            }
+            } ?: return@replaceNested "none-error"
 
             runKether("none-error") {
                 ScriptContext.create(script).also {
@@ -154,7 +161,7 @@ object ScriptManager {
     inline fun <T> runKether(el: T, detailError: Boolean = false, function: () -> T): T {
         try {
             return function()
-        } catch (e: Throwable) {
+        } catch (e: Exception) {
             if (e is IllegalStateException) warning(e.message)
             e.printKetherErrorMessage(detailError)
         }
@@ -164,7 +171,7 @@ object ScriptManager {
     inline fun <T> runKether(detailError: Boolean = false, function: () -> T): T? {
         try {
             return function()
-        } catch (e: Throwable) {
+        } catch (e: Exception) {
             if (e is IllegalStateException) warning(e.message)
             e.printKetherErrorMessage(detailError)
         }
