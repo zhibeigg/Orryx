@@ -11,7 +11,7 @@ import taboolib.common.platform.function.adaptPlayer
 import taboolib.common.platform.function.info
 import taboolib.common.util.Vector
 import taboolib.common.util.unsafeLazy
-import taboolib.library.xseries.XParticle
+import taboolib.library.xseries.particles.XParticle
 import taboolib.module.kether.ScriptContext
 import java.util.concurrent.CompletableFuture
 

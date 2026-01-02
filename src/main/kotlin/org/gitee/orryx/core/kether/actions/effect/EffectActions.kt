@@ -11,7 +11,7 @@ import org.gitee.orryx.utils.*
 import taboolib.common.platform.function.adaptLocation
 import taboolib.common5.cint
 import taboolib.library.kether.QuestReader
-import taboolib.library.xseries.XParticle
+import taboolib.library.xseries.particles.XParticle
 import taboolib.module.kether.*
 import java.awt.Color
 

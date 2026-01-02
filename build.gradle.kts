@@ -46,7 +46,7 @@ taboolib {
             name("zhibei")
         }
         links {
-            name("homepage").url("https://www.mcwar.cn/orryx")
+            name("homepage").url("https://orryx.mcwar.cn/")
         }
         dependencies {
             name("Adyeshach").optional(true)
@@ -74,7 +74,7 @@ taboolib {
     relocate("com.eatthepath.uuid", "org.gitee.orryx.eatthepath.uuid")
     relocate("kotlinx.serialization", "org.gitee.orryx.serialization")
     relocate("kotlin.script.experimental", "kotlin2120.script.experimental")
-    version { taboolib = "6.2.4-3b3cd67" }
+    version { taboolib = "6.2.4-5902762" }
 }
 
 repositories {

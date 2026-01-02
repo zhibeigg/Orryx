@@ -1,13 +1,12 @@
 package org.gitee.orryx.api
 
 import kotlinx.coroutines.*
-import kotlin.time.Duration.Companion.seconds
 import org.gitee.orryx.api.interfaces.*
-import org.gitee.orryx.utils.minecraftAsync
 import taboolib.common.env.RuntimeDependencies
 import taboolib.common.env.RuntimeDependency
 import taboolib.common.platform.PlatformFactory
 import taboolib.module.kether.KetherScriptLoader
+import kotlin.time.Duration.Companion.seconds
 
 @RuntimeDependencies(
     RuntimeDependency(

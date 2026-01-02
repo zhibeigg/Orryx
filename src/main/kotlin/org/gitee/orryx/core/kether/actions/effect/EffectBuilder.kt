@@ -6,7 +6,7 @@ import org.gitee.orryx.core.kether.actions.effect.EffectType.ARC
 import org.gitee.orryx.utils.Tuple2
 import org.joml.Matrix3d
 import taboolib.common.util.unsafeLazy
-import taboolib.library.xseries.XParticle
+import taboolib.library.xseries.particles.XParticle
 
 class EffectBuilder {
 

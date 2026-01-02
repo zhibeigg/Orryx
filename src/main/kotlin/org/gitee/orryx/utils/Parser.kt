@@ -5,7 +5,7 @@ import org.gitee.orryx.core.parser.StringParser
 import taboolib.common.platform.function.warning
 import taboolib.common5.*
 import taboolib.library.xseries.XMaterial
-import taboolib.library.xseries.XParticle
+import taboolib.library.xseries.particles.XParticle
 
 internal inline fun <reified T> StringParser.Entry.read(index: Int, def: T): T {
     val value = body.getOrNull(index) ?: return def
