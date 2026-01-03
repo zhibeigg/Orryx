@@ -105,7 +105,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
      * 统一的异步读取模板
      */
     private inline fun <T> asyncRead(debugMessage: String, crossinline block: () -> T): CompletableFuture<T> {
-        debug("${IStorageManager.lazyType} $debugMessage")
+        debug { "${IStorageManager.lazyType} $debugMessage" }
         val future = CompletableFuture<T>()
         val execute = {
             requireAsync("mysql")
@@ -113,7 +113,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
                 val result: T
                 val time = measureTime { result = block() }.inWholeMilliseconds
                 val (current, avg) = getStats(debugMessage).record(time)
-                debug("&f$debugMessage &7| &e${current}ms &7| &f平均 &e${avg}ms")
+                debug { "&f$debugMessage &7| &e${current}ms &7| &f平均 &e${avg}ms" }
                 future.complete(result)
             } catch (e: Throwable) {
                 e.printStackTrace()
@@ -198,7 +198,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
 
     override fun savePlayerData(playerProfilePO: PlayerProfilePO, onSuccess: Runnable) {
         requireAsync("mysql")
-        debug("${IStorageManager.lazyType} 保存玩家 Profile")
+        debug { "${IStorageManager.lazyType} 保存玩家 Profile" }
         playerTable.update(dataSource) {
             where { USER_ID eq playerProfilePO.id }
             set(JOB, playerProfilePO.job)
@@ -210,7 +210,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
 
     override fun savePlayerJob(playerJobPO: PlayerJobPO, onSuccess: Runnable) {
         requireAsync("mysql")
-        debug("${IStorageManager.lazyType} 保存玩家 Job")
+        debug { "${IStorageManager.lazyType} 保存玩家 Job" }
         jobsTable.transaction(dataSource) {
             insert(USER_ID, JOB, EXPERIENCE, GROUP, BIND_KEY_OF_GROUP) {
                 onDuplicateKeyUpdate {
@@ -231,7 +231,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
 
     override fun savePlayerSkill(playerSkillPO: PlayerSkillPO, onSuccess: Runnable) {
         requireAsync("mysql")
-        debug("${IStorageManager.lazyType} 保存玩家 Skill")
+        debug { "${IStorageManager.lazyType} 保存玩家 Skill" }
         skillsTable.transaction(dataSource) {
             insert(USER_ID, JOB, SKILL, LOCKED, LEVEL) {
                 onDuplicateKeyUpdate {
@@ -251,7 +251,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
 
     override fun savePlayerKey(playerKeySettingPO: PlayerKeySettingPO, onSuccess: Runnable) {
         requireAsync("mysql")
-        debug("${IStorageManager.lazyType} 保存玩家 KeySetting")
+        debug { "${IStorageManager.lazyType} 保存玩家 KeySetting" }
         keyTable.transaction(dataSource) {
             insert(USER_ID, KEY_SETTING) {
                 onDuplicateKeyUpdate {
@@ -277,7 +277,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
 
     override fun saveGlobalFlag(key: String, flag: IFlag?, onSuccess: Runnable) {
         requireAsync("mysql")
-        debug("${IStorageManager.lazyType} 保存全局 Flag")
+        debug { "${IStorageManager.lazyType} 保存全局 Flag" }
         globalFlagTable.transaction(dataSource) {
             if (flag == null) {
                 update {

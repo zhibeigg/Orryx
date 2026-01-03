@@ -36,7 +36,7 @@ object MemoryCache {
         .recordStats()
         .scheduler(Scheduler.systemScheduler())
         .buildAsync { uuid, _ ->
-            debug("Cache 加载玩家 Profile")
+            debug { "Cache 加载玩家 Profile" }
             OrryxAPI.ioScope.future {
                 val po = ISyncCacheManager.INSTANCE.getPlayerProfile(uuid).await()
                 val list = po.flags.mapNotNull { (key, value) ->
@@ -53,7 +53,7 @@ object MemoryCache {
         .recordStats()
         .scheduler(Scheduler.systemScheduler())
         .buildAsync { tag, _ ->
-            debug("Cache 加载玩家 Job")
+            debug { "Cache 加载玩家 Job" }
             OrryxAPI.ioScope.future {
                 val info = reversePlayerJobDataTag(tag)
                 val po = ISyncCacheManager.INSTANCE.getPlayerJob(info.second, info.third, info.first)
@@ -77,7 +77,7 @@ object MemoryCache {
         .recordStats()
         .scheduler(Scheduler.systemScheduler())
         .buildAsync { tag, _ ->
-            debug("Cache 加载玩家 Skill")
+            debug { "Cache 加载玩家 Skill" }
             OrryxAPI.ioScope.future {
                 val info = reversePlayerJobSkillDataTag(tag)
                 val po = ISyncCacheManager.INSTANCE.getPlayerSkill(info.player, info.id, info.job, info.skill).await()
@@ -103,7 +103,7 @@ object MemoryCache {
         .recordStats()
         .scheduler(Scheduler.systemScheduler())
         .buildAsync { uuid, _ ->
-            debug("Cache 加载玩家 KeySetting")
+            debug { "Cache 加载玩家 KeySetting" }
             OrryxAPI.ioScope.future {
                 val profile = playerProfileCache.get(uuid).await()
                 val po = ISyncCacheManager.INSTANCE.getPlayerKeySetting(uuid, profile.id).await()
@@ -139,42 +139,42 @@ object MemoryCache {
     }
 
     fun savePlayerProfile(playerProfile: IPlayerProfile) {
-        debug("Cache 保存玩家 Profile")
+        debug { "Cache 保存玩家 Profile" }
         playerProfileCache.put(playerProfile.uuid, CompletableFuture.completedFuture(playerProfile))
     }
 
     fun savePlayerJob(playerJob: IPlayerJob) {
-        debug("Cache 保存玩家 Job")
+        debug { "Cache 保存玩家 Job" }
         playerJobCache.put(playerJobDataTag(playerJob.uuid, playerJob.id, playerJob.key), CompletableFuture.completedFuture(playerJob))
     }
 
     fun savePlayerSkill(playerSkill: IPlayerSkill) {
-        debug("Cache 保存玩家 Skill")
+        debug { "Cache 保存玩家 Skill" }
         playerSkillCache.put(playerJobSkillDataTag(playerSkill.uuid, playerSkill.id, playerSkill.job, playerSkill.key), CompletableFuture.completedFuture(playerSkill))
     }
 
     fun savePlayerKeySetting(player: UUID, setting: PlayerKeySetting) {
-        debug("Cache 保存玩家 KeySetting")
+        debug { "Cache 保存玩家 KeySetting" }
         playerKeyCache.put(player, CompletableFuture.completedFuture(setting))
     }
 
     fun removePlayerProfile(player: UUID) {
-        debug("Cache 移除玩家 Profile")
+        debug { "Cache 移除玩家 Profile" }
         playerProfileCache.synchronous().invalidate(player)
     }
 
     fun removePlayerJob(player: UUID, id: Int, job: String) {
-        debug("Cache 移除玩家 Job")
+        debug { "Cache 移除玩家 Job" }
         playerJobCache.synchronous().invalidate(playerJobDataTag(player, id, job))
     }
 
     fun removePlayerSkill(player: UUID, id: Int, job: String, skill: String) {
-        debug("Cache 移除玩家 Skill")
+        debug { "Cache 移除玩家 Skill" }
         playerSkillCache.synchronous().invalidate(playerJobSkillDataTag(player, id, job, skill))
     }
 
     fun removePlayerKeySetting(player: UUID) {
-        debug("Cache 移除玩家 KeySetting")
+        debug { "Cache 移除玩家 KeySetting" }
         playerKeyCache.synchronous().invalidate(player)
     }
 }

@@ -48,10 +48,10 @@ object TriggerManager: ClassVisitor(3) {
             if (clazz.hasAnnotation(Plugin::class.java)) {
                 val annotation = clazz.getAnnotation(Plugin::class.java)
                 val pluginLoaded = Bukkit.getPluginManager().getPlugin(annotation.property<String>("plugin")!!) != null
-                debug("&e┣&7PipeTrigger loaded &e${instance.event} ${if (pluginLoaded) "&a√" else "&4×"}")
+                debug { "&e┣&7PipeTrigger loaded &e${instance.event} ${if (pluginLoaded) "&a√" else "&4×"}" }
                 if (!pluginLoaded) return
             } else {
-                debug("&e┣&7PipeTrigger loaded &e${instance.event} &a√")
+                debug { "&e┣&7PipeTrigger loaded &e${instance.event} &a√" }
             }
             pipeTriggers[instance.event.uppercase()] = instance
         }
@@ -64,10 +64,10 @@ object TriggerManager: ClassVisitor(3) {
             if (clazz.hasAnnotation(Plugin::class.java)) {
                 val annotation = clazz.getAnnotation(Plugin::class.java)
                 val pluginLoaded = Bukkit.getPluginManager().getPlugin(annotation.property<String>("plugin")!!) != null
-                debug("&e┣&7StationTrigger loaded &e${instance.event} ${if (pluginLoaded) "&a√" else "&4×"}")
+                debug { "&e┣&7StationTrigger loaded &e${instance.event} ${if (pluginLoaded) "&a√" else "&4×"}" }
                 if (!pluginLoaded) return
             } else {
-                debug("&e┣&7StationTrigger loaded &e${instance.event} &a√")
+                debug { "&e┣&7StationTrigger loaded &e${instance.event} &a√" }
             }
             stationTriggers[instance.event.uppercase()] = instance
         }

@@ -21,7 +21,7 @@ object OrryxSkillLevelCommand {
                         player.skill(ctx["skill"]) {
                             it.upLevel(ctx["level"].cint).whenComplete { t, _ ->
                                 sender.sendMessage("玩家${player.name} result: $t")
-                                debug("${player.name}指令skill level give结果${t}")
+                                debug { "${player.name}指令skill level give结果${t}" }
                             }
                         }
                     }
@@ -41,7 +41,7 @@ object OrryxSkillLevelCommand {
                         player.skill(ctx["skill"]) {
                             it.downLevel(ctx["level"].cint).whenComplete { t, _ ->
                                 sender.sendMessage("玩家${player.name} result: $t")
-                                debug("${player.name}指令skill level take结果${t}")
+                                debug { "${player.name}指令skill level take结果${t}" }
                             }
                         }
                     }
@@ -61,7 +61,7 @@ object OrryxSkillLevelCommand {
                         player.skill(ctx["skill"]) {
                             it.setLevel(ctx["level"].cint).whenComplete { t, _ ->
                                 sender.sendMessage("玩家${player.name} result: $t")
-                                debug("${player.name}指令skill level set结果${t}")
+                                debug { "${player.name}指令skill level set结果${t}" }
                             }
                         }
                     }

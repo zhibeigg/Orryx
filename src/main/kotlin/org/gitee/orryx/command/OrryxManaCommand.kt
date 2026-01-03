@@ -21,7 +21,7 @@ object OrryxManaCommand {
                     val player = ctx.bukkitPlayer() ?: return@exec
                     IManaManager.INSTANCE.giveMana(player, ctx["mana"].cdouble).thenApply {
                         sender.sendMessage("result: $it")
-                        debug("${player.name}指令mana give结果${it}")
+                        debug { "${player.name}指令mana give结果${it}" }
                     }
                 }
             }
@@ -37,7 +37,7 @@ object OrryxManaCommand {
                     val player = ctx.bukkitPlayer() ?: return@exec
                     IManaManager.INSTANCE.takeMana(player, ctx["mana"].cdouble).thenApply {
                         sender.sendMessage("result: $it")
-                        debug("${player.name}指令mana take结果${it}")
+                        debug { "${player.name}指令mana take结果${it}" }
                     }
                 }
             }
@@ -53,7 +53,7 @@ object OrryxManaCommand {
                     val player = ctx.bukkitPlayer() ?: return@exec
                     IManaManager.INSTANCE.setMana(player, ctx["mana"].cdouble).thenApply {
                         sender.sendMessage("result: $it")
-                        debug("${player.name}指令mana set结果${it}")
+                        debug { "${player.name}指令mana set结果${it}" }
                     }
                 }
             }
@@ -67,7 +67,7 @@ object OrryxManaCommand {
                 val player = ctx.bukkitPlayer() ?: return@exec
                 IManaManager.INSTANCE.regainMana(player).thenApply {
                     sender.sendMessage("玩家${player.name} 恢复了 $it 点法力")
-                    debug("${player.name}指令regain恢复法力${it}")
+                    debug { "${player.name}指令regain恢复法力${it}" }
                 }
             }
         }
@@ -80,7 +80,7 @@ object OrryxManaCommand {
                 val player = ctx.bukkitPlayer() ?: return@exec
                 IManaManager.INSTANCE.healMana(player).thenApply {
                     sender.sendMessage("玩家${player.name} 恢复了 $it 点法力")
-                    debug("${player.name}指令heal恢复法力${it}")
+                    debug { "${player.name}指令heal恢复法力${it}" }
                 }
             }
         }

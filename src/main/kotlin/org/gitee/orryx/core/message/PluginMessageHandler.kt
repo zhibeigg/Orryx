@@ -418,7 +418,7 @@ object PluginMessageHandler {
         type: PacketType,
         block: ByteArrayDataOutput.() -> Unit = {},
     ) {
-        debug("SendPacket Send: $type")
+        debug { "SendPacket Send: $type" }
         try {
             val output = ByteStreams.newDataOutput().apply {
                 writeInt(type.header)
@@ -442,7 +442,7 @@ object PluginMessageHandler {
             val input = ByteStreams.newDataInput(message)
             try {
                 val header = input.readInt()
-                debug("SendPacket Receive: $header")
+                debug { "SendPacket Receive: $header" }
                 when (header) {
                     PacketType.AimResponse.header -> handleAimResponse(player, input)
                     else -> warning("收到未知数据包类型: $header")

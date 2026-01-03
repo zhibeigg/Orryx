@@ -180,9 +180,9 @@ object LarkSuite {
         val actionGroup = ScriptManager.wikiActions.groupBy { it.group }
         val selectorsGroup = ScriptManager.wikiSelectors.groupBy { it.type }
         val triggersGroup = ScriptManager.wikiTriggers.groupBy { it.group }
-        debug(actionGroup.mapValues { it.value.map { action -> action.name } })
-        debug(selectorsGroup.mapValues { it.value.map { selector -> selector.name } })
-        debug(triggersGroup.mapValues { it.value.map { trigger -> trigger.key } })
+        debug { actionGroup.mapValues { it.value.map { action -> action.name } }.toString() }
+        debug { selectorsGroup.mapValues { it.value.map { selector -> selector.name } }.toString() }
+        debug { triggersGroup.mapValues { it.value.map { trigger -> trigger.key } }.toString() }
         createPs(token, documentId)
         actionGroup.forEach { (g, u) ->
             createGroup(token, g, u, documentId)

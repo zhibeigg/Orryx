@@ -28,10 +28,10 @@ object SelectorInit: ClassVisitor(3) {
                     }
                     clazz.getAnnotationIfPresent(Plugin::class.java)?.let { annotation ->
                         val pluginLoaded = Bukkit.getPluginManager().getPlugin(annotation.property<String>("plugin")!!) != null
-                        debug("&e┣&7Selector loaded &e${instance.keys.map { it }} ${if (pluginLoaded) "&a√" else "&4×"}")
+                        debug { "&e┣&7Selector loaded &e${instance.keys.map { it }} ${if (pluginLoaded) "&a√" else "&4×"}" }
                         if (!pluginLoaded) return
                     } ?: run {
-                        debug("&e┣&7Selector loaded &e${instance.keys.map { it }} &a√")
+                        debug { "&e┣&7Selector loaded &e${instance.keys.map { it }} &a√" }
                     }
                     selectors.add(instance)
                 }

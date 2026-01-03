@@ -40,7 +40,7 @@ object ReloadAPI: IReloadAPI, ClassVisitor(3) {
                 owner.getInstance() ?: return,
                 method.getAnnotation(Reload::class.java).enum("weight")
             )
-            debug("&e┣&7Reload loaded &e${method.owner.name}/${method.name} &a√")
+            debug { "&e┣&7Reload loaded &e${method.owner.name}/${method.name} &a√" }
         }
     }
 

@@ -6,12 +6,28 @@ import taboolib.module.chat.colored
 
 val debug: Boolean by ConfigLazy { Orryx.config.getBoolean("Debug") }
 
-fun debug(vararg message: Any?) {
-    if (debug) consoleMessage(*message.map { it.toString() }.toTypedArray())
+/**
+ * 高性能调试日志
+ * 使用 inline + lambda 实现零开销：当 debug 关闭时，lambda 不会被执行
+ *
+ * @param message 延迟计算的消息 lambda
+ */
+inline fun debug(message: () -> String) {
+    if (debug) consoleMessage(message())
 }
 
-fun consoleMessage(vararg message: String) {
-    message.forEach {
-        console().sendMessage("[Orryx] $it".colored())
+/**
+ * 高性能调试日志（多条消息）
+ * 使用 inline + lambda 实现零开销：当 debug 关闭时，lambda 不会被执行
+ *
+ * @param messages 延迟计算的消息列表 lambda
+ */
+inline fun debugMultiple(messages: () -> List<String>) {
+    if (debug) messages().forEach { consoleMessage(it) }
+}
+
+fun consoleMessage(vararg messages: String) {
+    for (message in messages) {
+        console().sendMessage("[Orryx] $message".colored())
     }
 }

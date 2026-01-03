@@ -113,7 +113,7 @@ class SqlLiteManager: IStorageManager {
      * 统一的异步读取模板
      */
     private inline fun <T> asyncRead(debugMessage: String, crossinline block: () -> T): CompletableFuture<T> {
-        debug("SqlLite $debugMessage")
+        debug { "SqlLite $debugMessage" }
         val future = CompletableFuture<T>()
         val execute = {
             requireAsync("sqlLite")
@@ -121,7 +121,7 @@ class SqlLiteManager: IStorageManager {
                 val result: T
                 val time = measureTime { result = block() }.inWholeMilliseconds
                 val (current, avg) = getStats(debugMessage).record(time)
-                debug("&f$debugMessage &7| &e${current}ms &7| &f平均 &e${avg}ms")
+                debug { "&f$debugMessage &7| &e${current}ms &7| &f平均 &e${avg}ms" }
                 future.complete(result)
             } catch (e: Throwable) {
                 e.printStackTrace()
@@ -208,7 +208,7 @@ class SqlLiteManager: IStorageManager {
 
     override fun savePlayerData(playerProfilePO: PlayerProfilePO, onSuccess: Runnable) {
         requireAsync("sqlLite")
-        debug("SqlLite 保存玩家 Profile")
+        debug { "SqlLite 保存玩家 Profile" }
         playerTable.update(dataSource) {
             where { USER_ID eq playerProfilePO.id }
             set(JOB, playerProfilePO.job)
@@ -220,7 +220,7 @@ class SqlLiteManager: IStorageManager {
 
     override fun savePlayerJob(playerJobPO: PlayerJobPO, onSuccess: Runnable) {
         requireAsync("sqlLite")
-        debug("SqlLite 保存玩家 Job")
+        debug { "SqlLite 保存玩家 Job" }
         synchronized(getInternerByUUID(playerJobPO.player).intern("PlayerJob${playerJobPO.id}${playerJobPO.job}")) {
             jobsTable.workspace(dataSource) {
                 if (select { where { USER_ID eq playerJobPO.id and (JOB eq playerJobPO.job) } }.find()) {
@@ -248,7 +248,7 @@ class SqlLiteManager: IStorageManager {
 
     override fun savePlayerSkill(playerSkillPO: PlayerSkillPO, onSuccess: Runnable) {
         requireAsync("sqlLite")
-        debug("SqlLite 保存玩家 Skill")
+        debug { "SqlLite 保存玩家 Skill" }
         synchronized(getInternerByUUID(playerSkillPO.player).intern("PlayerSkill${playerSkillPO.id}${playerSkillPO.job}${playerSkillPO.skill}")) {
             skillsTable.workspace(dataSource) {
                 if (select { where { USER_ID eq playerSkillPO.id and (JOB eq playerSkillPO.job) and (SKILL eq playerSkillPO.skill) } }.find()) {
@@ -275,7 +275,7 @@ class SqlLiteManager: IStorageManager {
 
     override fun savePlayerKey(playerKeySettingPO: PlayerKeySettingPO, onSuccess: Runnable) {
         requireAsync("sqlLite")
-        debug("SqlLite 保存玩家 KeySetting")
+        debug { "SqlLite 保存玩家 KeySetting" }
         synchronized(getInternerByUUID(playerKeySettingPO.player).intern("KeySetting${playerKeySettingPO.id}")) {
             keyTable.workspace(dataSource) {
                 if (select { where { USER_ID eq playerKeySettingPO.id } }.find()) {
@@ -312,7 +312,7 @@ class SqlLiteManager: IStorageManager {
 
     override fun saveGlobalFlag(key: String, flag: IFlag?, onSuccess: Runnable) {
         requireAsync("sqlLite")
-        debug("SqlLite 保存全局 Flag")
+        debug { "SqlLite 保存全局 Flag" }
         synchronized(pluginInterner.intern("GlobalFlag$key")) {
             globalFlagTable.workspace(dataSource) {
                 if (flag == null) {

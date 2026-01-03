@@ -111,33 +111,33 @@ internal fun Any?.readContainer(context: ScriptContext): CompletableFuture<ICont
     return when {
         // Adyeshach 实体处理
         AdyeshachPlugin.isEnabled && this is EntityInstance -> {
-            debug("readEntityInstance")
+            debug { "readEntityInstance" }
             toTarget().readContainer(context)
         }
 
         // 基础类型处理
-        this == null -> null.also { debug("readNull") }
-        this is String -> StringParser(this).container(context).also { debug("readString") }
-        this is IContainer -> CompletableFuture.completedFuture(this).also { debug("readIContainer") }
+        this == null -> null.also { debug { "readNull" } }
+        this is String -> StringParser(this).container(context).also { debug { "readString" } }
+        this is IContainer -> CompletableFuture.completedFuture(this).also { debug { "readIContainer" } }
         this is ITarget<*> -> {
-            debug("readTarget")
+            debug { "readTarget" }
             CompletableFuture.completedFuture(Container(linkedSetOf(this)))
         }
 
         // 实体相关处理
-        this is Player -> toTarget().readContainer(context).also { debug("readPlayer") }
-        this is Entity -> toTarget().readContainer(context).also { debug("readEntity") }
-        this is Location -> toTarget().readContainer(context).also { debug("readLocation") }
+        this is Player -> toTarget().readContainer(context).also { debug { "readPlayer" } }
+        this is Entity -> toTarget().readContainer(context).also { debug { "readEntity" } }
+        this is Location -> toTarget().readContainer(context).also { debug { "readLocation" } }
         this is UUID -> {
-            debug("readUUID")
+            debug { "readUUID" }
             (Bukkit.getEntity(this)?.readContainer(context) ?: CompletableFuture.completedFuture(Container()))
         }
 
         // 集合处理
-        this is Iterable<*> -> mergeAll(mapNotNull { it?.readContainer(context) }).also { debug("readIterable") }
+        this is Iterable<*> -> mergeAll(mapNotNull { it?.readContainer(context) }).also { debug { "readIterable" } }
 
         // 命令发送者处理
-        this is ProxyCommandSender -> castSafely<Player>()?.toTarget()?.readContainer(context).also { debug("readProxyCommandSender") }
+        this is ProxyCommandSender -> castSafely<Player>()?.toTarget()?.readContainer(context).also { debug { "readProxyCommandSender" } }
 
         else -> null
     }

@@ -37,7 +37,7 @@ object OrryxSkillCommand {
                                     val bindKey = BindKeyLoaderManager.getBindKey(ctx["key"]) ?: return@thenApply
                                     job.setBindKey(it ?: return@thenApply, group, bindKey).whenComplete { t, _ ->
                                         sender.sendMessage("玩家${player.name} 绑定按键 result: $t")
-                                        debug("${player.name}指令skill bindKey结果${t}")
+                                        debug { "${player.name}指令skill bindKey结果${t}" }
                                     }
                                 }
                             }

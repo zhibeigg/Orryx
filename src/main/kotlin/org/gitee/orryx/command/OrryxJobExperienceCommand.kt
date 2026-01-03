@@ -21,7 +21,7 @@ object OrryxJobExperienceCommand {
                     player.job {
                         it.giveExperience(ctx["experience"].cint).whenComplete { t, _ ->
                             sender.sendMessage("玩家${player.name} 职业${it.key}获取经验成功")
-                            debug("${player.name}指令job experience give结果${t}")
+                            debug { "${player.name}指令job experience give结果${t}" }
                         }
                     }
                 }
@@ -38,7 +38,7 @@ object OrryxJobExperienceCommand {
                     player.job {
                         it.takeExperience(ctx["experience"].cint).whenComplete { t, _ ->
                             sender.sendMessage("玩家${player.name} 职业${it.key}减少经验成功")
-                            debug("${player.name}指令job experience take结果${t}")
+                            debug { "${player.name}指令job experience take结果${t}" }
                         }
                     }
                 }
@@ -55,7 +55,7 @@ object OrryxJobExperienceCommand {
                     player.job {
                         it.setExperience(ctx["experience"].cint).whenComplete { t, _ ->
                             sender.sendMessage("玩家${player.name} 职业${it.key}设置经验成功")
-                            debug("${player.name}指令job experience set结果${t}")
+                            debug { "${player.name}指令job experience set结果${t}" }
                         }
                     }
                 }

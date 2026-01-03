@@ -26,7 +26,7 @@ class KetherScript(val skill: String, override val script: Script): IKetherScrip
     override fun runActions(skillParameter: SkillParameter, map: Map<String, Any>?): CompletableFuture<Any?> {
         val future = CompletableFuture<Any?>()
         pluginScope.launch {
-            debug("run skill: $skill action map: $map")
+            debug { "run skill: $skill action map: $map" }
             val playerRunningSpace = ScriptManager.runningSkillScriptsMap.getOrPut(skillParameter.player.uniqueId) { PlayerRunningSpace(skillParameter.player) }
 
             var context: ScriptContext? = null
@@ -49,7 +49,7 @@ class KetherScript(val skill: String, override val script: Script): IKetherScrip
     override fun runExtendActions(skillParameter: SkillParameter, extend: String, map: Map<String, Any>?): CompletableFuture<Any?> {
         val future = CompletableFuture<Any?>()
         pluginScope.launch {
-            debug("run skill: $skill extend: $extend action")
+            debug { "run skill: $skill extend: $extend action" }
             val playerRunningSpace = ScriptManager.runningSkillScriptsMap.getOrPut(skillParameter.player.uniqueId) { PlayerRunningSpace(skillParameter.player) }
 
             var context: ScriptContext? = null

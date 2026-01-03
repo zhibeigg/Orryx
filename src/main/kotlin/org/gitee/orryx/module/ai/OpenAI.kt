@@ -131,7 +131,7 @@ object OpenAI {
                     val reply = openAIResponse.choices.first().message
                     npcChatCache.put("$player@$npc", (context + SendMessage(reply.role, reply.content, npc)).toMutableList())
                     future.complete(reply.content)
-                    debug("完成了一次 AI 调用，本次消耗 ${openAIResponse.usage.totalTokens} Token （ 用户侧: ${openAIResponse.usage.promptTokens}， AI侧: ${openAIResponse.usage.completionTokens} ）")
+                    debug { "完成了一次 AI 调用，本次消耗 ${openAIResponse.usage.totalTokens} Token （ 用户侧: ${openAIResponse.usage.promptTokens}， AI侧: ${openAIResponse.usage.completionTokens} ）" }
                 } else {
                     future.complete("请求失败，请重试")
                 }

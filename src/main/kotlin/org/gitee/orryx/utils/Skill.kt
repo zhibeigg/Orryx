@@ -182,7 +182,7 @@ fun ICastSkill.consume(player: Player, parameter: SkillParameter) {
 }
 
 fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean = true) {
-    debug("玩家 ${player.name} cast skill $key")
+    debug { "玩家 ${player.name} cast skill $key" }
     when(val skill = this) {
         is PressingSkill -> {
             if (PressSkillManager.pressTaskMap.containsKey(player.uniqueId)) return
@@ -259,11 +259,11 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean
 }
 
 fun IPlayerSkill.tryCast(): CompletableFuture<CastResult> {
-    debug("玩家 ${player.name} try cast skill $key")
+    debug { "玩家 ${player.name} try cast skill $key" }
     val parameter = parameter()
     val result = castCheck(parameter)
     result.thenAccept {
-        debug("玩家 ${player.name} try cast skill result ${it.name}")
+        debug { "玩家 ${player.name} try cast skill result ${it.name}" }
         if (!silence) it.sendLang(player)
         if (it.isSuccess()) {
             cast(parameter, true)
