@@ -3,6 +3,7 @@ package org.gitee.orryx.dao.storage
 import com.eatthepath.uuid.FastUUID
 import com.google.common.collect.Interner
 import com.google.common.collect.Interners
+import eos.moe.armourers.tr
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.gitee.orryx.api.OrryxAPI
@@ -78,6 +79,7 @@ class SqlLiteManager: IStorageManager {
             { options(ColumnOptionSQLite.NOTNULL, ColumnOptionSQLite.UNIQUE) }
         }
         add(FLAG) { type(ColumnTypeSQLite.TEXT) }
+        add(DELETED) { type(ColumnTypeSQLite.BLOB) { def(false) } }
     }
 
     init {
@@ -300,7 +302,7 @@ class SqlLiteManager: IStorageManager {
 
     override fun getGlobalFlag(key: String): CompletableFuture<IFlag?> = asyncRead("获取全局 Flag") {
         globalFlagTable.select(dataSource) {
-            where { FLAG_KEY eq key }
+            where { FLAG_KEY eq key and (DELETED eq false) }
             rows(FLAG)
             limit(1)
         }.firstOrNull {
@@ -314,16 +316,20 @@ class SqlLiteManager: IStorageManager {
         synchronized(pluginInterner.intern("GlobalFlag$key")) {
             globalFlagTable.workspace(dataSource) {
                 if (flag == null) {
-                    delete { where { FLAG_KEY eq key } }
+                    update {
+                        where { FLAG_KEY eq key and (DELETED eq false) }
+                        set(DELETED, true)
+                    }
                 } else {
                     if (select { where { FLAG_KEY eq key } }.find()) {
                         update {
                             where { FLAG_KEY eq key }
                             set(FLAG, Json.encodeToString(flag))
+                            set(DELETED, false)
                         }
                     } else {
-                        insert(FLAG_KEY, FLAG) {
-                            value(key, Json.encodeToString(flag))
+                        insert(FLAG_KEY, FLAG, DELETED) {
+                            value(key, Json.encodeToString(flag), 0)
                         }
                     }
                 }

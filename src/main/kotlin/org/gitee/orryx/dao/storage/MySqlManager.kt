@@ -71,6 +71,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
         add { id() }
         add(FLAG_KEY) { type(ColumnTypeSQL.VARCHAR, 255) { options(ColumnOptionSQL.UNIQUE_KEY, ColumnOptionSQL.NOTNULL) } }
         add(FLAG) { type(ColumnTypeSQL.TEXT) }
+        add(DELETED) { type(ColumnTypeSQL.BOOLEAN) { def(false) } }
     }
 
     init {
@@ -266,7 +267,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
 
     override fun getGlobalFlag(key: String): CompletableFuture<IFlag?> = asyncRead("获取全局 Flag") {
         globalFlagTable.select(dataSource) {
-            where { FLAG_KEY eq key }
+            where { FLAG_KEY eq key and (DELETED eq false) }
             rows(FLAG)
             limit(1)
         }.firstOrNull {
@@ -279,13 +280,17 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
         debug("${IStorageManager.lazyType} 保存全局 Flag")
         globalFlagTable.transaction(dataSource) {
             if (flag == null) {
-                delete { where { FLAG_KEY eq key } }
+                update {
+                    where { FLAG_KEY eq key and (DELETED eq false) }
+                    set(DELETED, true)
+                }
             } else {
-                insert(FLAG_KEY, FLAG) {
+                insert(FLAG_KEY, FLAG, DELETED) {
                     onDuplicateKeyUpdate {
                         update(FLAG, Json.encodeToString(flag))
+                        update(DELETED, false)
                     }
-                    value(key, Json.encodeToString(flag))
+                    value(key, Json.encodeToString(flag), false)
                 }
             }
         }.onSuccess { onSuccess.run() }

@@ -15,3 +15,4 @@ const val KEY_SETTING = "key_setting"
 
 const val FLAG_KEY = "key"
 const val FLAG = "flag"
+const val DELETED = "deleted"
