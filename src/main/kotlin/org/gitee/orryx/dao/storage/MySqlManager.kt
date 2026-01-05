@@ -1,6 +1,9 @@
 package org.gitee.orryx.dao.storage
 
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.api.OrryxAPI
@@ -15,6 +18,7 @@ import taboolib.module.database.ColumnOptionSQL
 import taboolib.module.database.ColumnTypeSQL
 import taboolib.module.database.Table
 import taboolib.module.database.getHost
+import taboolib.platform.bukkit.Parallel
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
@@ -75,11 +79,15 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
     }
 
     init {
-        playerTable.createTable(dataSource)
-        jobsTable.createTable(dataSource)
-        skillsTable.createTable(dataSource)
-        keyTable.createTable(dataSource)
-        globalFlagTable.createTable(dataSource)
+        runBlocking {
+            listOf(
+                async { playerTable.createTable(dataSource) },
+                async { jobsTable.createTable(dataSource) },
+                async { skillsTable.createTable(dataSource) },
+                async { keyTable.createTable(dataSource) },
+                async { globalFlagTable.createTable(dataSource) }
+            ).awaitAll()
+        }
     }
 
     /**

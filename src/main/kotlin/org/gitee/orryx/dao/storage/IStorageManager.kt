@@ -1,9 +1,7 @@
 package org.gitee.orryx.dao.storage
 
-import eos.moe.armourers.tr
 import org.bukkit.event.player.PlayerQuitEvent
 import org.gitee.orryx.api.Orryx
-import org.gitee.orryx.core.profile.Flag
 import org.gitee.orryx.core.profile.IFlag
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.dao.pojo.PlayerJobPO
@@ -16,9 +14,9 @@ import taboolib.common.io.newFile
 import taboolib.common.platform.Awake
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.getDataFolder
-import taboolib.common.platform.function.info
 import taboolib.common.util.unsafeLazy
 import taboolib.module.chat.colored
+import taboolib.platform.bukkit.Parallel
 import java.io.File
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -41,7 +39,7 @@ interface IStorageManager {
 
         internal lateinit var INSTANCE: IStorageManager
 
-        @Awake(LifeCycle.ENABLE)
+        @Parallel("orryx_sql", runOn = LifeCycle.ENABLE)
         private fun enable() {
             INSTANCE = when(lazyType) {
                 "SQLLITE", "SQL_LITE" -> {
