@@ -6,7 +6,6 @@ import org.gitee.orryx.api.adapters.entity.AbstractAdyeshachEntity
 import org.gitee.orryx.core.targets.LocationTarget
 import org.gitee.orryx.utils.abstract
 import org.gitee.orryx.utils.getBukkitLivingEntity
-import java.util.*
 
 enum class EntityField(val get: IEntity.() -> Any?) {
 
@@ -67,5 +66,4 @@ enum class EntityField(val get: IEntity.() -> Any?) {
     DEATH({ isDead }),
 
     VALID({ isValid });
-
 }

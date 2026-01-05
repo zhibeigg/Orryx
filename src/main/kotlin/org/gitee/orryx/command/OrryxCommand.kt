@@ -1,6 +1,5 @@
 package org.gitee.orryx.command
 
-import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.job.JobLoaderManager
@@ -9,7 +8,6 @@ import org.gitee.orryx.core.skill.SkillLoaderManager
 import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.utils.*
-import org.serverct.ersha.api.AttributeAPI
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.command.*
 import taboolib.expansion.createHelper

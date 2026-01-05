@@ -71,7 +71,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
         add { id() }
         add(FLAG_KEY) { type(ColumnTypeSQL.VARCHAR, 255) { options(ColumnOptionSQL.UNIQUE_KEY, ColumnOptionSQL.NOTNULL) } }
         add(FLAG) { type(ColumnTypeSQL.TEXT) }
-        add(DELETED) { type(ColumnTypeSQL.BOOLEAN) { def(false) } }
+        add(DELETED) { type(ColumnTypeSQL.BOOLEAN) { def("\$FALSE") } }
     }
 
     init {
