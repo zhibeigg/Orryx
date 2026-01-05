@@ -79,7 +79,7 @@ class SqlLiteManager: IStorageManager {
             { options(ColumnOptionSQLite.NOTNULL, ColumnOptionSQLite.UNIQUE) }
         }
         add(FLAG) { type(ColumnTypeSQLite.TEXT) }
-        add(DELETED) { type(ColumnTypeSQLite.BLOB) { def(false) } }
+        add(DELETED) { type(ColumnTypeSQLite.BLOB) { def("\$false") } }
     }
 
     init {

@@ -14,11 +14,6 @@ import java.util.concurrent.CompletableFuture
 @Suppress("DuplicatedCode")
 class ClusterRedisManager: ISyncCacheManager {
 
-    companion object {
-        const val SECOND_6_HOURS = 6 * 60 * 60L
-        const val SECOND_12_HOURS = 12 * 60 * 60L
-    }
-
     private val api by lazy { RedisChannelPlugin.clusterCommandAPI() }
 
     override fun getPlayerProfile(player: UUID): CompletableFuture<PlayerProfilePO> {
@@ -35,7 +30,7 @@ class ClusterRedisManager: ISyncCacheManager {
                             future.complete(it)
                         }
                     } else {
-                        commands.expire(tag, RedisManager.Companion.SECOND_12_HOURS)
+                        commands.expire(tag, RedisManager.SECOND_12_HOURS)
                         future.complete(Json.decodeFromString<PlayerProfilePO>(json))
                     }
                 }
@@ -61,7 +56,7 @@ class ClusterRedisManager: ISyncCacheManager {
                             future.complete(it)
                         }
                     } else {
-                        commands.expire(tag, RedisManager.Companion.SECOND_12_HOURS)
+                        commands.expire(tag, RedisManager.SECOND_12_HOURS)
                         future.complete(Json.decodeFromString<PlayerJobPO>(json))
                     }
                 }
@@ -87,7 +82,7 @@ class ClusterRedisManager: ISyncCacheManager {
                             future.complete(it)
                         }
                     } else {
-                        commands.expire(tag, RedisManager.Companion.SECOND_6_HOURS)
+                        commands.expire(tag, RedisManager.SECOND_6_HOURS)
                         future.complete(Json.decodeFromString<PlayerSkillPO>(json))
                     }
                 }
@@ -113,7 +108,7 @@ class ClusterRedisManager: ISyncCacheManager {
                             future.complete(it)
                         }
                     } else {
-                        commands.expire(tag, RedisManager.Companion.SECOND_6_HOURS)
+                        commands.expire(tag, RedisManager.SECOND_6_HOURS)
                         future.complete(Json.decodeFromString<PlayerKeySettingPO>(json))
                     }
                 }
@@ -129,7 +124,7 @@ class ClusterRedisManager: ISyncCacheManager {
         requireAsync("redis")
         debug { "Redis 获取玩家 Profile" }
         api.useAsyncCommands { commands ->
-            commands.setex(playerDataTag(player), RedisManager.Companion.SECOND_12_HOURS, Json.encodeToString(playerProfilePO))
+            commands.setex(playerDataTag(player), RedisManager.SECOND_12_HOURS, Json.encodeToString(playerProfilePO))
         }
     }
 
@@ -138,7 +133,7 @@ class ClusterRedisManager: ISyncCacheManager {
         debug { "Redis 获取玩家 Job" }
         api.useAsyncCommands { commands ->
             commands.setex(playerJobDataTag(player, playerJobPO.id, playerJobPO.job),
-                RedisManager.Companion.SECOND_12_HOURS, Json.encodeToString(playerJobPO))
+                RedisManager.SECOND_12_HOURS, Json.encodeToString(playerJobPO))
         }
     }
 
@@ -147,7 +142,7 @@ class ClusterRedisManager: ISyncCacheManager {
         debug { "Redis 保存玩家 Skill" }
         api.useAsyncCommands { commands ->
             commands.setex(playerJobSkillDataTag(player, playerSkillPO.id, playerSkillPO.job, playerSkillPO.skill),
-                RedisManager.Companion.SECOND_6_HOURS, Json.encodeToString(playerSkillPO))
+                RedisManager.SECOND_6_HOURS, Json.encodeToString(playerSkillPO))
         }
     }
 
@@ -155,7 +150,7 @@ class ClusterRedisManager: ISyncCacheManager {
         requireAsync("redis")
         debug { "Redis 保存玩家 KeySetting" }
         api.useAsyncCommands { commands ->
-            commands.setex(playerKeySettingDataTag(player), RedisManager.Companion.SECOND_6_HOURS, Json.encodeToString(playerKeySettingPO))
+            commands.setex(playerKeySettingDataTag(player), RedisManager.SECOND_6_HOURS, Json.encodeToString(playerKeySettingPO))
         }
     }
 
