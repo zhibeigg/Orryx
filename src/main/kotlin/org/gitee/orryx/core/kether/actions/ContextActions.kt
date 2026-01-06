@@ -6,9 +6,11 @@ import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
 import taboolib.common.platform.function.adaptCommandSender
 import taboolib.module.kether.KetherParser
+import taboolib.module.kether.actionFuture
 import taboolib.module.kether.actionNow
 import taboolib.module.kether.run
 import taboolib.module.kether.script
+import kotlin.run
 
 object ContextActions {
 
@@ -87,9 +89,9 @@ object ContextActions {
         } else {
             if (operator.usable.contains(method)) {
                 val value = it.nextParsedAction()
-                actionNow {
+                actionFuture { f ->
                     run(value).thenApply { value ->
-                        operator.writer!!.func(script().getParameter(), method, script(), value)
+                        operator.writer!!.func(script().getParameter(), method, script(), value, f)
                     }
                 }
             } else {

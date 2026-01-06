@@ -2,6 +2,7 @@ package org.gitee.orryx.core.kether.actions
 
 import org.gitee.orryx.core.kether.parameter.IParameter
 import taboolib.module.kether.ScriptContext
+import java.util.concurrent.CompletableFuture
 
 class ParameterOperator(
     var reader: Reader? = null,
@@ -11,7 +12,7 @@ class ParameterOperator(
 
     class Reader(val func: (IParameter) -> Any?)
 
-    class Writer(val func: (IParameter, Method, ScriptContext, Any?) -> Unit)
+    class Writer(val func: (IParameter, Method, ScriptContext, Any?, CompletableFuture<Any?>) -> Unit)
 
     enum class Method {
         INCREASE, DECREASE, MODIFY, NONE

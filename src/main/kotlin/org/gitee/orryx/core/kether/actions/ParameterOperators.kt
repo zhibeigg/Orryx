@@ -7,16 +7,24 @@ import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.utils.firstInstanceOrNull
 import org.gitee.orryx.utils.readContainer
 import taboolib.module.kether.ScriptContext
+import java.util.concurrent.CompletableFuture
 
 enum class ParameterOperators(
     val reader: ((IParameter) -> Any?)? = null,
-    val writer: ((IParameter, ParameterOperator.Method, ScriptContext, Any?) -> Unit)? = null,
+    val writer: ((IParameter, ParameterOperator.Method, ScriptContext, Any?, CompletableFuture<Any?>) -> Unit)? = null,
     vararg val usable: ParameterOperator.Method,
 ) {
 
     ORIGIN(
         { it.origin },
-        { parm, _, c, any -> any.readContainer(c)?.thenAccept { it.firstInstanceOrNull<ITargetLocation<*>>()?.let { origin -> parm.origin = origin } } },
+        { parm, _, c, any, f ->
+            any.readContainer(c)?.thenAccept {
+                it.firstInstanceOrNull<ITargetLocation<*>>()?.let { origin ->
+                    parm.origin = origin
+                    f.complete(parm.origin)
+                }
+            }
+        },
         ParameterOperator.Method.MODIFY
     ),
 

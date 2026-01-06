@@ -53,7 +53,11 @@ object Actions {
     ) {
         val action = it.nextParsedAction()
         actionFuture { future ->
-            ensureSync { run(action).thenAccept { value -> future.complete(value) } }
+            ensureSync {
+                run(action).thenAccept { value ->
+                    future.complete(value)
+                }
+            }
         }
     }
 
