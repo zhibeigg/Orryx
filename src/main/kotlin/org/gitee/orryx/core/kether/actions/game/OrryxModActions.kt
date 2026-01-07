@@ -45,19 +45,23 @@ object OrryxModActions {
             .description("滞留一道闪影")
             .addEntry("时长", Type.LONG, false)
             .addEntry("透明度", Type.FLOAT, true, default = "1")
+            .addEntry("透明度淡化时间(-1为不淡化)", Type.LONG, true, default = "-1")
+            .addEntry("缩放", Type.FLOAT, true, default = "1.0")
             .addContainerEntry(optional = true, default = "@self")
             .addContainerEntry(optional = true, default = "@self", head = "viewers", description = "可视玩家")
     ) {
         it.group(
             long(),
             float().option().defaultsTo(1f),
+            long().option().defaultsTo(-1),
+            float().option().defaultsTo(1f),
             theyContainer(true),
             command("viewers", then = container()).option()
-        ).apply(it) { timeout, alpha, container, viewers ->
+        ).apply(it) { timeout, alpha, duration, scale, container, viewers ->
             now {
                 container.orElse(self()).forEachInstance<PlayerTarget> { player ->
                     viewers.orElse(self()).forEachInstance<PlayerTarget> { viewer ->
-                        PluginMessageHandler.applyFlickerEffect(viewer.getSource(), player.getSource(), timeout*50, alpha, -1L, 1.0f)
+                        PluginMessageHandler.applyFlickerEffect(viewer.getSource(), player.getSource(), timeout*50, alpha, duration, scale)
                     }
                 }
             }
