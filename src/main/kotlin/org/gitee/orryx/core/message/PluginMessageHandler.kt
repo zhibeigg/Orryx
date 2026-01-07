@@ -288,8 +288,10 @@ object PluginMessageHandler {
      * @param rotateY Y轴旋转
      * @param rotateZ Z轴旋转
      * @param scale 缩放
+     * @param alpha 透明度 (0.0-1.0)
+     * @param fadeOut 是否启用渐隐效果
      */
-    fun applyEntityShowEffect(viewer: Player, entity: UUID, group: String, location: Location, timeout: Long, rotateX: Float, rotateY: Float, rotateZ: Float, scale: Float) {
+    fun applyEntityShowEffect(viewer: Player, entity: UUID, group: String, location: Location, timeout: Long, rotateX: Float, rotateY: Float, rotateZ: Float, scale: Float, alpha: Float, fadeOut: Boolean) {
         if (viewer.world != location.world) return
         sendDataPacket(viewer, PacketType.EntityShow) {
             writeUTF(FastUUID.toString(entity))
@@ -302,6 +304,8 @@ object PluginMessageHandler {
             writeFloat(rotateY)
             writeFloat(rotateZ)
             writeFloat(scale)
+            writeFloat(alpha)
+            writeBoolean(fadeOut)
         }
     }
 
@@ -396,8 +400,8 @@ object PluginMessageHandler {
             writeDouble(y)
             writeDouble(z)
             writeDouble(r)
-            writeDouble(yaw)
             writeDouble(angle)
+            writeDouble(yaw)
         }
     }
 
