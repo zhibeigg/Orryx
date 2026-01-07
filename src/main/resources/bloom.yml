@@ -1,0 +1,24 @@
+# Bloom 配置系统
+# 用于控制客户端 OrryxMod 的泛光效果
+
+# 延迟同步时间（tick，20tick = 1秒）
+# 玩家登录后等待此时间再发送配置，确保客户端 mod 已加载
+sync-delay: 40
+
+# Bloom 配置列表
+# 每个配置项的 key 作为唯一标识符
+configs:
+  # 示例配置（取消注释启用）
+  # bloom_fire:
+  #   name: "fire"              # 匹配关键词（实体名称包含即匹配，忽略大小写）
+  #   color: [255, 100, 0, 255] # RGBA 颜色值 (0-255)
+  #   strength: 1.5             # 泛光强度 (0-10)
+  #   radius: 30.0              # 渲染距离 (1-128 方块)
+  #   priority: 10              # 优先级（数值越大越优先）
+  #
+  # bloom_ice:
+  #   name: "ice"
+  #   color: [100, 200, 255, 255]
+  #   strength: 1.2
+  #   radius: 25.0
+  #   priority: 5
