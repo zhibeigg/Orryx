@@ -53,6 +53,9 @@ object PluginMessageHandler {
         data object SquareShockwave : PacketType(12)
         data object CircleShockwave : PacketType(13)
         data object SectorShockwave : PacketType(14)
+        data object BloomConfigSync : PacketType(15)
+        data object BloomConfigUpdate : PacketType(16)
+        data object BloomConfigRemove : PacketType(17)
     }
 
     @Awake(LifeCycle.ENABLE)
