@@ -93,8 +93,10 @@ object OrryxModActions {
             .description("投影一个实体模型到指定位置")
             .addEntry("组名", Type.STRING, false)
             .addEntry("持续时间", Type.LONG, false)
-            .addEntry("旋转", Type.STRING, true, "0,0,0")
-            .addEntry("缩放", Type.FLOAT, true, "1.0")
+            .addEntry("旋转", Type.STRING, true, "0,0,0", "rotate")
+            .addEntry("缩放", Type.FLOAT, true, "1.0", "scale")
+            .addEntry("透明度", Type.FLOAT, true, "1.0", "alpha")
+            .addEntry("是否渐隐", Type.BOOLEAN, true, "false", "fadeout")
             .addEntry("被投影的实体", Type.CONTAINER, false)
             .addContainerEntry(optional = true, default = "@world", head = "viewer")
             .addContainerEntry(optional = true, default = "@self")
@@ -104,10 +106,12 @@ object OrryxModActions {
             long(),
             command("rotate", then = text()).option().defaultsTo("0,0,0"),
             command("scale", then = float()).option().defaultsTo(1f),
+            command("alpha", then = float()).option().defaultsTo(1f),
+            command("fadeout", then = bool()).option().defaultsTo(false),
             container(),
             command("viewer", then = container()).option(),
             theyContainer(true)
-        ).apply(it) { group, timeout, rotate, scale, entity, viewer, container ->
+        ).apply(it) { group, timeout, rotate, scale, alpha, fadeout, entity, viewer, container ->
             now {
                 val (x, y, z) = rotate.split(",")
                 val entities = entity.orElse(self()).get<ITargetEntity<*>>()
@@ -115,7 +119,7 @@ object OrryxModActions {
                 viewer.orElse(world()).forEachInstance<PlayerTarget> { player ->
                     entities.forEach { entity ->
                         locations.forEach { loc ->
-                            PluginMessageHandler.applyEntityShowEffect(player.getSource(), entity.entity.uniqueId, group, loc.location, timeout, x.cfloat, y.cfloat, z.cfloat, scale)
+                            PluginMessageHandler.applyEntityShowEffect(player.getSource(), entity.entity.uniqueId, group, loc.location, timeout, x.cfloat, y.cfloat, z.cfloat, scale, alpha, fadeout)
                         }
                     }
                 }
