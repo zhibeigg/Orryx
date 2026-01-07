@@ -14,6 +14,7 @@ import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.plugin.messaging.PluginMessageListener
+import org.gitee.orryx.core.message.bloom.BloomConfig
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.utils.*
 import taboolib.common.LifeCycle
@@ -397,6 +398,58 @@ object PluginMessageHandler {
             writeDouble(r)
             writeDouble(yaw)
             writeDouble(angle)
+        }
+    }
+
+    /**
+     * 同步所有 Bloom 配置到玩家
+     * @param player 目标玩家
+     * @param configs 配置映射
+     */
+    fun sendBloomConfigSync(player: Player, configs: Map<String, BloomConfig>) {
+        sendDataPacket(player, PacketType.BloomConfigSync) {
+            writeInt(configs.size)
+            configs.forEach { (id, config) ->
+                writeUTF(id)
+                writeUTF(config.name)
+                writeInt(config.r)
+                writeInt(config.g)
+                writeInt(config.b)
+                writeInt(config.a)
+                writeFloat(config.strength)
+                writeFloat(config.radius)
+                writeInt(config.priority)
+            }
+        }
+    }
+
+    /**
+     * 更新单个 Bloom 配置
+     * @param player 目标玩家
+     * @param config 配置
+     */
+    fun sendBloomConfigUpdate(player: Player, config: BloomConfig) {
+        sendDataPacket(player, PacketType.BloomConfigUpdate) {
+            writeUTF(config.id)
+            writeUTF(config.name)
+            writeInt(config.r)
+            writeInt(config.g)
+            writeInt(config.b)
+            writeInt(config.a)
+            writeFloat(config.strength)
+            writeFloat(config.radius)
+            writeInt(config.priority)
+        }
+    }
+
+    /**
+     * 删除 Bloom 配置
+     * @param player 目标玩家
+     * @param id 配置ID
+     */
+    fun sendBloomConfigRemove(player: Player, id: String) {
+        sendDataPacket(player, PacketType.BloomConfigRemove) {
+            writeUTF(id)
         }
     }
 
