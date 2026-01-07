@@ -1,9 +1,15 @@
 package org.gitee.orryx.core.message.bloom
 
+import org.bukkit.Bukkit
+import org.bukkit.entity.Player
+import org.bukkit.event.player.PlayerJoinEvent
+import org.gitee.orryx.core.message.PluginMessageHandler
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.utils.consoleMessage
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
+import taboolib.common.platform.event.SubscribeEvent
+import taboolib.common.platform.function.submit
 import taboolib.module.configuration.Config
 import taboolib.module.configuration.ConfigFile
 import java.util.concurrent.ConcurrentHashMap
@@ -40,9 +46,25 @@ object BloomConfigManager {
             )
         }
         consoleMessage("&e┣&7Bloom configs loaded &e${configs.size} &a√")
+        // 热重载时向所有在线玩家推送
+        Bukkit.getOnlinePlayers().forEach { syncToPlayer(it) }
     }
 
     fun getConfigs(): Map<String, BloomConfig> = configs
 
     fun getSyncDelay(): Long = syncDelay
+
+    fun syncToPlayer(player: Player) {
+        PluginMessageHandler.sendBloomConfigSync(player, configs)
+    }
+
+    @SubscribeEvent
+    private fun onPlayerJoin(e: PlayerJoinEvent) {
+        if (configs.isEmpty()) return
+        submit(delay = syncDelay) {
+            if (e.player.isOnline) {
+                syncToPlayer(e.player)
+            }
+        }
+    }
 }
