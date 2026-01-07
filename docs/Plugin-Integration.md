@@ -226,7 +226,7 @@ sendPluginMessage(player, "orryxmod:main", out.toByteArray());
 
 **格式：**
 ```
-[5: Int] [uuid: String] [timeout: Long] [alpha: Float]
+[5: Int] [uuid: String] [timeout: Long] [alpha: Float] [duration: Long] [scale: Float]
 ```
 
 | 字段 | 范围 | 说明 |
@@ -234,6 +234,8 @@ sendPluginMessage(player, "orryxmod:main", out.toByteArray());
 | uuid | - | 实体 UUID |
 | timeout | 0-60000 | 持续时间（毫秒） |
 | alpha | 0-1 | 透明度 |
+| duration | -1 或 0-60000 | 透明度淡化时间（-1为不淡化） |
+| scale | 0.1-10 | 缩放比例 |
 
 #### EntityShowAdd (ID: 8)
 
