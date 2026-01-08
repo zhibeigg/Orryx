@@ -3,6 +3,7 @@ package org.gitee.orryx.dao.cache
 import com.gitee.redischannel.RedisChannelPlugin
 import com.gitee.redischannel.RedisChannelPlugin.Type.CLUSTER
 import com.gitee.redischannel.RedisChannelPlugin.Type.SINGLE
+import com.gitee.redischannel.api.events.ClientStartEvent
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.dao.pojo.PlayerJobPO
@@ -12,9 +13,10 @@ import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.utils.consoleMessage
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
+import taboolib.common.platform.Ghost
+import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.util.unsafeLazy
 import taboolib.module.chat.colored
-import taboolib.platform.bukkit.Parallel
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
@@ -29,17 +31,28 @@ interface ISyncCacheManager {
 
         internal lateinit var INSTANCE: ISyncCacheManager
 
-        @Parallel(dependOn = ["redis_channel"], runOn = LifeCycle.ENABLE)
-        private fun loadCache() {
-            INSTANCE = when(lazy) {
+        @Ghost
+        @SubscribeEvent
+        private fun loadCache(e: ClientStartEvent) {
+            when(lazy) {
                 "REDIS" -> {
                     consoleMessage(("&e┣&7已选择 Redis 缓存 &a√").colored())
-                    when (RedisChannelPlugin.type) {
+                    INSTANCE = when (RedisChannelPlugin.type) {
                         CLUSTER -> ClusterRedisManager()
                         SINGLE -> RedisManager()
                         null -> error("Redis 暴死了")
                     }
                 }
+                "BROKER" -> {}
+                "DISABLE" -> {}
+                else -> error("未知的缓存数据库类型: $lazy")
+            }
+        }
+
+        @Awake(LifeCycle.ENABLE)
+        private fun enable() {
+            when(lazy) {
+                "REDIS" -> {}
                 "BROKER" -> {
                     consoleMessage(("&e┣&7已选择 BROKE 通道缓存 &a√").colored())
                     error("暂不支持")
@@ -47,7 +60,7 @@ interface ISyncCacheManager {
                 }
                 "DISABLE" -> {
                     consoleMessage(("&e┣&7已关闭跨服同步缓存 &a√").colored())
-                    DisableManager()
+                    INSTANCE = DisableManager()
                 }
                 else -> error("未知的缓存数据库类型: $lazy")
             }

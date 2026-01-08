@@ -14,6 +14,7 @@ import org.serverct.ersha.api.event.AttrEntityDamageBeforeEvent
 import taboolib.common.platform.function.warning
 import taboolib.library.reflex.Reflex.Companion.getProperty
 import taboolib.library.reflex.Reflex.Companion.setProperty
+import taboolib.module.nms.MinecraftVersion
 
 fun AbstractDamageEvent.isAstraXHero(): Boolean {
     if (!AstraXHeroPlugin.isEnabled) return false
@@ -75,10 +76,36 @@ fun AbstractDamageEvent.noEvent(): NodensEntityDamageEvents.Pre? {
     }
 }
 
+/**
+ * 设置实体的击杀者，兼容 MC 全版本
+ * - 1.12 - 1.16: 字段名为 killer
+ * - 1.17+: 字段名为 lastHurtByPlayer (Mojang mappings)
+ */
+private fun setKiller(entity: LivingEntity, killer: Player) {
+    val nmsEntity = entity.getProperty<Any>("entity") ?: return
+    val nmsKiller = killer.getProperty<Any>("entity") ?: return
+    val fieldName = if (MinecraftVersion.isHigherOrEqual(MinecraftVersion.V1_17)) {
+        "lastHurtByPlayer"
+    } else {
+        "killer"
+    }
+    try {
+        nmsEntity.setProperty(fieldName, nmsKiller)
+    } catch (_: Throwable) {
+        // 如果字段名不匹配，尝试另一个名称
+        val fallbackName = if (fieldName == "killer") "lastHurtByPlayer" else "killer"
+        try {
+            nmsEntity.setProperty(fallbackName, nmsKiller)
+        } catch (e: Throwable) {
+            warning("Failed to set killer field: ${e.message}")
+        }
+    }
+}
+
 fun doDamage(source: LivingEntity?, entity: LivingEntity, damageCause: DamageCause, damage: Double) {
     // 如果实体血量 - 预计伤害值 < 0 提前设置击杀者
     if (entity.health - damage <= 0 && source is Player) {
-        entity.setProperty("entity/killer", source.getProperty("entity"))
+        setKiller(entity, source)
     }
     entity.noDamageTicks = 0
     if (source != null) {
@@ -96,7 +123,7 @@ fun doDamage(source: LivingEntity?, entity: LivingEntity, damageCause: DamageCau
 fun doDamage(source: LivingEntity?, entity: LivingEntity, event: EntityDamageByEntityEvent, damage: Double) {
     // 如果实体血量 - 预计伤害值 < 0 提前设置击杀者
     if (entity.health - damage <= 0 && source is Player) {
-        entity.setProperty("entity/killer", source.getProperty("entity"))
+        setKiller(entity, source)
     }
     entity.noDamageTicks = 0
     if (source != null) {
