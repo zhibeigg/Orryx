@@ -61,31 +61,6 @@ object Actions {
         }
     }
 
-    @KetherParser(["contains"], namespace = ORRYX_NAMESPACE)
-    private fun actionContains() = scriptParser(
-        Action.new("普通语句", "是否包含", "contains")
-            .description("Iterable或者String是否包含value")
-            .addEntry("Iterable或者String", Type.ANY)
-            .addEntry("value", Type.ANY)
-            .result("是否包含", Type.BOOLEAN)
-    ) {
-        val check = it.nextParsedAction()
-        val value = it.nextParsedAction()
-        actionFuture { future ->
-            run(check).thenAccept { check ->
-                run(value).thenAccept { value ->
-                    future.complete(
-                        when (check) {
-                            is Iterable<*> -> check.contains(value)
-                            is String -> check.contains(value.toString())
-                            else -> false
-                        }
-                    )
-                }
-            }
-        }
-    }
-
     @KetherParser(["runExtend"], namespace = ORRYX_NAMESPACE)
     private fun callExtend() = scriptParser(
         Action.new("普通语句", "运行拓展子Action", "runExtend")
