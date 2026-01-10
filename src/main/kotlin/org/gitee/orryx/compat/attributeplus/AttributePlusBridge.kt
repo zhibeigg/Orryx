@@ -65,7 +65,7 @@ class AttributePlusBridge: IAttributeBridge {
             EntityDamageByEntityEvent(attacker, target, EntityDamageEvent.DamageCause.CUSTOM, 0.0)
 
         val handle = AttributeHandle(data, AttributeAPI.getAttrData(target))
-            .init(event, false, true)
+            .init(event, isProjectile = false, isSkillDamage = true)
             .handleAttackOrDefenseAttribute()
 
         if (!event.isCancelled && !handle.isCancelled) {

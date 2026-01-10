@@ -22,7 +22,7 @@ object AttributePlus3Actions {
     ) {
         it.group(
             bool(),
-            text(),
+            command("attributes", then = text()).option(),
             theyContainer(false),
             command("source", then = container()).option(),
         ).apply(it) { reset, attributes, they, source ->
@@ -30,7 +30,7 @@ object AttributePlus3Actions {
                 val sources = source.orElse(self())
                 val attacker = sources.firstInstance<ITargetEntity<LivingEntity>>().getSource()
                 val instance = IAttributeBridge.INSTANCE as? AttributePlusBridge ?: return@now
-                val attributes = attributes.split(",")
+                val attributes = attributes?.split(",") ?: emptyList()
 
                 ensureSync {
                     they!!.forEachInstance<ITargetEntity<*>> { target ->
