@@ -115,9 +115,9 @@ object UtilActions {
         }
     }
 
-    @KetherParser(["ifNull", "default"], namespace = ORRYX_NAMESPACE, shared = true)
+    @KetherParser(["ifNull"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun actionIfNull() = scriptParser(
-        Action.new("Util工具类", "空值默认", "ifNull/default", true)
+        Action.new("Util工具类", "空值默认", "ifNull", true)
             .addEntry("要检测的对象", Type.ANY)
             .addEntry("如果为 null 则返回", Type.ANY)
             .description("如果 参数1 为 null，则返回 参数2，否则返回 参数1（参数2 为惰性求值）")
