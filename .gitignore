@@ -1,3 +1,5 @@
 .gradle
-.idea
 build
+/.gradle-user-home/
+/.kotlin/
+/.idea/
