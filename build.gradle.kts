@@ -74,13 +74,13 @@ taboolib {
     relocate("com.eatthepath.uuid", "org.gitee.orryx.eatthepath.uuid")
     relocate("kotlinx.serialization", "org.gitee.orryx.serialization")
     relocate("kotlin.script.experimental", "kotlin2120.script.experimental")
-    version { taboolib = "6.2.4-5902762" }
+    version { taboolib = "6.2.4-1645904" }
 }
 
 repositories {
     mavenCentral()
     maven("https://jfrog.mcwar.cn/artifactory/maven-releases")
-    maven("https://repo.codemc.io/repository/maven-releases/")
+    maven("https://repo.codemc.io/repository/maven-releases")
 }
 
 dependencies {
