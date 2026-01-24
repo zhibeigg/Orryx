@@ -117,7 +117,7 @@ Functions:
   y: "(h-背景_texture.height)/2"
   width: "方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 0)*界面变量.界面大小"
   height: "方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 1)*界面变量.界面大小"
-  texture: "https://img.picgo.net/2025/02/28/947fe7c089bd15a65eba1e4be4221ee2db9ed94cfcd24b2c.png"
+  texture: "https://image.mcwar.cn/i/2025/12/25/694d3e345fe3b.png"
   alpha: "1"
   visible: true
 cursor_texture:
@@ -164,8 +164,8 @@ cursor_texture:
   limitY: "背景_texture.y+10*界面变量.界面大小"
   limitWidth: "局部变量.当前组件.width+1"
   limitHeight: "220*界面变量.界面大小"
-  texture: "https://img.picgo.net/2025/02/28/c8c8dfdc6a5d8cc69349bd72bfd14e0ef5773f84ca53ac80.png"
-  textureHovered: "https://img.picgo.net/2025/02/28/hoverf103c56cb5c27439.png"
+  texture: "https://image.mcwar.cn/i/2025/12/25/694d3e34aca6d.png"
+  textureHovered: "https://image.mcwar.cn/i/2025/12/25/694d3e34bac56.png"
   alpha: "背景_texture.alpha"
   visible: "背景_texture.visible"
   actions:
@@ -231,8 +231,8 @@ cursor_texture:
   limitHeight: "方法.取组件值(方法.合并文本('技能背景_' & 局部变量.当前组件.index & '_texture'),'limitHeight')"
   width: "方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 0)*界面变量.界面大小"
   height: "方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 1)*界面变量.界面大小"
-  texture: "https://img.picgo.net/2025/03/03/9d455ba98712b7c53c56cfd1dfe8f4113058d2a02bf0c6f4.png"
-  textureHovered: "https://img.picgo.net/2025/03/03/hover2af8da071795053f.png"
+  texture: "https://image.mcwar.cn/i/2025/12/25/694d3e34c3357.png"
+  textureHovered: "https://image.mcwar.cn/i/2025/12/25/694d3e34d6066.png"
   tip:
     - "方法.合并文本('&a右键!升级 &f消耗技能点 &e', 方法.取成员(界面变量.技能点列表, 局部变量.当前组件.index))"
     - "方法.合并文本('&f总技能点 &e', 界面变量.技能点)"
@@ -250,8 +250,8 @@ cursor_texture:
   width: "方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 0)*界面变量.界面大小"
   height: "方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 1)*界面变量.界面大小"
   maxDistanceY: "192*界面变量.界面大小"
-  texture: "https://img.picgo.net/2025/02/28/ff496e6b578d2841426de01f8937a3ea3b96ccbf54068985.png"
-  textureHovered: "https://img.picgo.net/2025/02/28/hover6b0669dff55e108b.png"
+  texture: "https://image.mcwar.cn/i/2025/12/25/694d3e3468567.png"
+  textureHovered: "https://image.mcwar.cn/i/2025/12/25/694d3e3484c5e.png"
   alpha: "背景_texture.alpha"
 #######################
 绑定技能背景:
@@ -264,8 +264,8 @@ cursor_texture:
   limitY: "局部变量.当前组件.y"
   limitWidth: "240*界面变量.界面大小"
   limitHeight: "局部变量.当前组件.height+1"
-  texture: "https://img.picgo.net/2025/02/28/2f6899ecb93b6ed58ea69e1a0eb9e4df0ecf6ba62cbffdf6.png"
-  textureHovered: "https://img.picgo.net/2025/02/28/2f6899ecb93b6ed58ea69e1a0eb9e4df0ecf6ba62cbffdf6.png"
+  texture: "https://image.mcwar.cn/i/2025/12/25/694d3e34dd879.png"
+  textureHovered: "https://image.mcwar.cn/i/2025/12/25/694d3e34dd879.png"
   alpha: "背景_texture.alpha"
   visible: "背景_texture.visible"
   actions:
@@ -314,6 +314,6 @@ cursor_texture:
   width: "方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 0)*界面变量.界面大小"
   height: "方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 1)*界面变量.界面大小"
   maxDistanceX: "211*界面变量.界面大小"
-  texture: "https://img.picgo.net/2025/03/04/0166229c58fdcfd832375f11858f7cafe1e82abce33db343.png"
-  textureHovered: "https://img.picgo.net/2025/03/04/hover73ec7523913e1689.png"
+  texture: "https://image.mcwar.cn/i/2025/12/25/694d3e348e1de.png"
+  textureHovered: "https://image.mcwar.cn/i/2025/12/25/694d3e348e3a4.png"
   alpha: "背景_texture.alpha"
