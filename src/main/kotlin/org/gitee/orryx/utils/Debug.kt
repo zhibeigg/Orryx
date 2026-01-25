@@ -3,8 +3,9 @@ package org.gitee.orryx.utils
 import org.gitee.orryx.api.Orryx
 import taboolib.common.platform.function.console
 import taboolib.module.chat.colored
+import taboolib.module.configuration.util.ReloadAwareLazy
 
-val debug: Boolean by ConfigLazy { Orryx.config.getBoolean("Debug") }
+val debug: Boolean by ReloadAwareLazy(Orryx.config) { Orryx.config.getBoolean("Debug") }
 
 /**
  * 高性能调试日志

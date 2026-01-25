@@ -12,7 +12,6 @@ import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.module.spirit.ISpiritManager
-import org.gitee.orryx.utils.ConfigLazy
 import org.gitee.orryx.utils.consoleMessage
 import org.gitee.orryx.utils.job
 import org.gitee.orryx.utils.orryxProfile
@@ -20,13 +19,14 @@ import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
+import taboolib.module.configuration.util.ReloadAwareLazy
 import taboolib.module.nms.MinecraftVersion
 import taboolib.platform.util.onlinePlayers
 
 
 object GameManager {
 
-    private val disabledHunger by ConfigLazy { Orryx.config.getBoolean("DisableHunger") }
+    private val disabledHunger by ReloadAwareLazy(Orryx.config) { Orryx.config.getBoolean("DisableHunger") }
     var shutdown: Boolean = false
 
     private const val ORRYX_JOB_ATTRIBUTE = "ORRYX@JOB@ATTRIBUTE"

@@ -4,15 +4,15 @@ import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.event.PacketListenerPriority
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
 import org.gitee.orryx.api.Orryx
-import org.gitee.orryx.utils.ConfigLazy
 import org.gitee.orryx.utils.PacketEventsPlugin
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
+import taboolib.module.configuration.util.ReloadAwareLazy
 import taboolib.platform.BukkitPlugin
 
 object PacketEventsHook {
 
-    val offSpeedFovChange: Boolean by ConfigLazy { Orryx.config.getBoolean("OffSpeedFovChange", true) }
+    val offSpeedFovChange: Boolean by ReloadAwareLazy(Orryx.config) { Orryx.config.getBoolean("OffSpeedFovChange", true) }
 
     @Awake(LifeCycle.LOAD)
     private fun onLoad() {

@@ -7,7 +7,6 @@ import org.gitee.orryx.api.events.player.job.OrryxPlayerJobChangeEvents
 import org.gitee.orryx.api.events.player.job.OrryxPlayerJobExperienceEvents
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.reload.Reload
-import org.gitee.orryx.utils.ConfigLazy
 import org.gitee.orryx.utils.consoleMessage
 import org.gitee.orryx.utils.files
 import org.gitee.orryx.utils.job
@@ -15,18 +14,16 @@ import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
-import taboolib.common.platform.function.console
-import taboolib.common.platform.function.info
 import taboolib.common.platform.function.submit
 import taboolib.common.util.unsafeLazy
 import taboolib.common5.cfloat
-import taboolib.module.chat.colored
 import taboolib.module.configuration.Configuration
+import taboolib.module.configuration.util.ReloadAwareLazy
 
 object ExperienceLoaderManager {
 
     private val experienceLoaderMap by unsafeLazy { hashMapOf<String, ExperienceLoader>() }
-    private val syncExperience by ConfigLazy { Orryx.config.getBoolean("SyncExperience", true) }
+    private val syncExperience by ReloadAwareLazy(Orryx.config) { Orryx.config.getBoolean("SyncExperience", true) }
 
     internal fun getExperience(key: String): IExperience? {
         return experienceLoaderMap[key]

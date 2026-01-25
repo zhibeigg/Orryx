@@ -38,6 +38,9 @@ object OrryxCommand {
     val mana = OrryxManaCommand
 
     @CommandBody
+    val silence = OrryxSilenceCommand
+
+    @CommandBody
     val point = OrryxPointCommand
 
     @CommandBody

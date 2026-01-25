@@ -4,11 +4,11 @@ import org.bukkit.entity.Player
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.core.job.IJob
 import org.gitee.orryx.core.reload.Reload
-import org.gitee.orryx.utils.ConfigLazy
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.function.submitAsync
 import taboolib.common.platform.service.PlatformExecutor
+import taboolib.module.configuration.util.ReloadAwareLazy
 import taboolib.platform.util.onlinePlayers
 import java.util.concurrent.CompletableFuture
 
@@ -20,7 +20,7 @@ interface IManaManager {
 
         private var thread: PlatformExecutor.PlatformTask? = null
 
-        private val regainTick: Long by ConfigLazy { Orryx.config.getLong("ManaRegainTick", 20) }
+        private val regainTick: Long by ReloadAwareLazy(Orryx.config) { Orryx.config.getLong("ManaRegainTick", 20) }
 
         @Reload(2)
         @Awake(LifeCycle.ENABLE)

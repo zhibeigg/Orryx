@@ -35,41 +35,6 @@ internal inline fun getNearPlayers(entity: Entity, func: (Player) -> Unit) {
     entity.world.players.forEach(func)
 }
 
-class MonitorLazy<T>(private val check: () -> Any?, private val initializer: () -> T) : ReadOnlyProperty<Any?, T> {
-    private var cached: T? = null
-    private var initialized: Boolean = false
-    private var lastHash: Int? = null
-
-    override fun getValue(thisRef: Any?, property: KProperty<*>): T {
-        val current = check()
-        val currentHash = current.hashCode()
-        if (!initialized || lastHash != currentHash) {
-            cached = initializer()
-            initialized = true
-            lastHash = currentHash
-        }
-        @Suppress("UNCHECKED_CAST")
-        return cached as T
-    }
-}
-
-class ConfigLazy<T>(private val initializer: () -> T) : ReadOnlyProperty<Any?, T> {
-    private var cached: T? = null
-    private var initialized: Boolean = false
-    private var lastMark: Short? = null
-
-    override fun getValue(thisRef: Any?, property: KProperty<*>): T {
-        val currentMark = Orryx.reloadMark
-        if (!initialized || lastMark != currentMark) {
-            cached = initializer()
-            initialized = true
-            lastMark = currentMark
-        }
-        @Suppress("UNCHECKED_CAST")
-        return cached as T
-    }
-}
-
 class RangedDouble(value: String, squared: Boolean = false) {
 
     val operation: Operation

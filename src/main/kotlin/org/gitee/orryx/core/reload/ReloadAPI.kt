@@ -59,7 +59,6 @@ object ReloadAPI: IReloadAPI, ClassVisitor(3) {
                     it.run()
                 }
             }
-            Orryx.reloadMark ++
             consoleMessage("&e┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         }
     }
