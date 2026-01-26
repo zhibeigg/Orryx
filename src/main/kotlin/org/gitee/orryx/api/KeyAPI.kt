@@ -2,16 +2,19 @@ package org.gitee.orryx.api
 
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.interfaces.IKeyAPI
+import org.gitee.orryx.core.common.keyregister.PlayerKeySetting
 import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.key.IGroup
 import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.utils.getSkill
 import org.gitee.orryx.utils.job
+import org.gitee.orryx.utils.keySetting
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.PlatformFactory
 import java.util.concurrent.CompletableFuture
+import java.util.function.Function
 
 class KeyAPI: IKeyAPI {
 
@@ -30,6 +33,12 @@ class KeyAPI: IKeyAPI {
             }
         }
         return future
+    }
+
+    override fun <T> modifyKeySetting(player: Player, function: Function<PlayerKeySetting, T>): CompletableFuture<T> {
+        return player.keySetting { keySetting ->
+            function.apply(keySetting)
+        }
     }
 
     override fun getGroup(key: String): IGroup = BindKeyLoaderManager.getGroup(key) ?: error("未找到组 $key 请在 config.yml 中配置")
