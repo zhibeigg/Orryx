@@ -12,6 +12,11 @@ import taboolib.module.configuration.util.ReloadAwareLazy
 import taboolib.platform.util.onlinePlayers
 import java.util.concurrent.CompletableFuture
 
+/**
+ * 法力值管理接口。
+ *
+ * 提供法力值的增减、设置、查询与自然恢复能力。
+ */
 interface IManaManager {
 
     companion object {
@@ -71,15 +76,19 @@ interface IManaManager {
     fun haveMana(player: Player, mana: Double): CompletableFuture<Boolean>
 
     /**
-     * 获得玩家的法力值
+     * 获取玩家的法力值。
+     *
      * @param player 玩家
-     * */
+     * @return 当前法力值
+     */
     fun getMana(player: Player): CompletableFuture<Double>
 
     /**
-     * 获得玩家的最大法力值
+     * 获取玩家的最大法力值。
+     *
      * @param player 玩家
-     * */
+     * @return 最大法力值
+     */
     fun getMaxMana(player: Player): CompletableFuture<Double>
 
     /**

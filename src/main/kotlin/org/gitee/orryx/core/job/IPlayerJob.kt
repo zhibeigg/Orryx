@@ -10,68 +10,46 @@ import org.gitee.orryx.dao.pojo.PlayerJobPO
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 
+/**
+ * 玩家职业数据接口。
+ *
+ * @property id 玩家 ID
+ * @property uuid 玩家 UUID
+ * @property player 玩家实体
+ * @property key 职业键名
+ * @property job 职业配置
+ * @property bindKeyOfGroup 绑定的组与按键
+ * @property group 当前选择的技能组，默认 default
+ * @property level 当前等级
+ * @property maxLevel 最大等级
+ * @property experience 累计经验值
+ * @property experienceOfLevel 当前等级经验值
+ * @property maxExperienceOfLevel 当前等级最大经验值
+ */
 interface IPlayerJob: Saveable {
 
-    /**
-     * 玩家ID
-     * */
     val id: Int
 
-    /**
-     * 拥有玩家
-     * */
     val uuid: UUID
 
-    /**
-     * 拥有玩家
-     * */
     val player: Player
 
-    /**
-     * 职业键名
-     * */
     val key: String
 
-    /**
-     * 职业配置文件
-     * */
     val job: IJob
 
-    /**
-     * 绑定的组和按键
-     * */
     val bindKeyOfGroup: Map<IGroup, Map<IBindKey, String?>>
 
-    /**
-     * 职业当前选择的技能组
-     *
-     * 默认default
-     * */
     val group: String
 
-    /**
-     * 等级(30/100 Lv.6/10)中的6
-     * */
     val level: Int
 
-    /**
-     * 等级(30/100 Lv.6/10)中的10
-     * */
     val maxLevel: Int
 
-    /**
-     * 经验值(30/100 Lv.6/10)中的30加前六级经验
-     * */
     val experience: Int
 
-    /**
-     * 当前等级下的经验值(30/100 Lv.6/10)中的30
-     * */
     val experienceOfLevel: Int
 
-    /**
-     * 当前等级下的最大经验值(30/100 Lv.6/10)中的100
-     * */
     val maxExperienceOfLevel: Int
 
     /**
@@ -118,12 +96,18 @@ interface IPlayerJob: Saveable {
 
     /**
      * 获取升级会带来的技能点点数
-     * */
+     *
+     * @param from 起始等级
+     * @param to 目标等级
+     * @return 获取的技能点数
+     */
     fun getUpgradePoint(from: Int, to: Int): Int
 
     /**
      * 获取属性数据
-     * */
+     *
+     * @return 属性数据列表
+     */
     fun getAttributes(): List<String>
 
     /**
@@ -189,6 +173,8 @@ interface IPlayerJob: Saveable {
 
     /**
      * 创建序列化存储数据
-     * */
+     *
+     * @return 序列化数据
+     */
     fun createPO(): PlayerJobPO
 }

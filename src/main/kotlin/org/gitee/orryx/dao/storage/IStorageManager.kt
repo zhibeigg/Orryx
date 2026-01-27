@@ -20,6 +20,11 @@ import java.io.File
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
+/**
+ * 存储管理接口。
+ *
+ * 用于从数据库读取并保存玩家、职业、技能、按键与全局 Flag 数据。
+ */
 interface IStorageManager {
 
     companion object {

@@ -3,65 +3,42 @@ package org.gitee.orryx.core.station.stations
 import taboolib.common.platform.event.EventPriority
 import taboolib.module.kether.Script
 
+/**
+ * 中转站配置接口。
+ *
+ * @property key 中转站键名
+ * @property event 监听的事件代名
+ * @property baffleAction 运行间隔表达式
+ * @property ignoreCancelled 是否跳过被取消事件，默认 false
+ * @property priority 事件优先级
+ * @property weight 处理权重，数值越大越先执行
+ * @property async 是否异步执行
+ * @property actions 执行语句
+ * @property variables 延迟生成变量
+ * @property script 运行脚本
+ * @property map 特殊配置读取结果
+ */
 interface IStation {
 
-    /**
-     * 中转站键名
-     * */
     val key: String
 
-    /**
-     * 中转站监听的事件
-     * */
     val event: String
 
-    /**
-     * 中转站运行间隔
-     * */
     val baffleAction: String?
 
-    /**
-     * 中转站监听事件是否跳过被取消事件
-     * 默认false
-     * */
     val ignoreCancelled: Boolean
 
-    /**
-     * 中转站监听事件优先级
-     * LOWEST,LOW,NORMAL,HIGH,HIGHEST,MONITOR
-     * 默认NORMAL
-     * */
     val priority: EventPriority
 
-    /**
-     * 中转站处理相同事件的权重
-     * 从数字大的开始运行
-     * 默认0
-     * */
     val weight: Int
 
-    /**
-     * 是否异步执行
-     * */
     val async: Boolean
 
-    /**
-     * 中转站执行语句
-     * */
     val actions: String
 
-    /**
-     * 中转站的延迟生成变量
-     * */
     val variables: Map<String, String>
 
-    /**
-     * 技能运行脚本
-     * */
     val script: Script?
 
-    /**
-     * 特殊配置读取
-     * */
     var map: Map<String, Any?>
 }

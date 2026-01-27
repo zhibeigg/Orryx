@@ -11,6 +11,9 @@ import org.gitee.orryx.utils.NodensPlugin
 import taboolib.common.util.unsafeLazy
 import taboolib.module.kether.ScriptContext
 
+/**
+ * 属性系统兼容桥接接口。
+ */
 interface IAttributeBridge {
 
     companion object {
@@ -55,7 +58,9 @@ interface IAttributeBridge {
     fun damage(attacker: LivingEntity, target: LivingEntity, damage: Double, type: DamageType, context: ScriptContext? = null)
 
     /**
-     * 更新实体属性
-     * */
+     * 更新实体属性。
+     *
+     * @param entity 需要更新的实体
+     */
     fun update(entity: LivingEntity)
 }

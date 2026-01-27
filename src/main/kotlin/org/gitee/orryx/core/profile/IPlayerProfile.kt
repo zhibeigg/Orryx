@@ -6,36 +6,28 @@ import org.gitee.orryx.dao.cache.Saveable
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import java.util.UUID
 
+/**
+ * 玩家档案接口。
+ *
+ * @property id 玩家 ID
+ * @property uuid 玩家 UUID
+ * @property player 玩家实体
+ * @property job 玩家当前职业
+ * @property point 玩家技能点
+ * @property flags 玩家 Flag 存储器
+ */
 interface IPlayerProfile: Saveable {
 
-    /**
-     * 玩家ID
-     * */
     val id: Int
 
-    /**
-     * 玩家
-     * */
     val uuid: UUID
 
-    /**
-     * 玩家
-     * */
     val player: Player
 
-    /**
-     * 玩家当前职业
-     * */
     val job: String?
 
-    /**
-     * 玩家技能点
-     * */
     val point: Int
 
-    /**
-     * 玩家的FLAG存储器
-     * */
     val flags: Map<String, IFlag>
 
     /**
@@ -92,6 +84,8 @@ interface IPlayerProfile: Saveable {
 
     /**
      * 创建序列化存储数据
-     * */
+     *
+     * @return 序列化数据
+     */
     fun createPO(): PlayerProfilePO
 }

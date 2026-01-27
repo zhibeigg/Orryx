@@ -1,79 +1,53 @@
 package org.gitee.orryx.core.skill
 
+/**
+ * 技能配置接口。
+ *
+ * @property key 技能键名
+ * @property name 技能显示名
+ * @property sort UI 显示顺序
+ * @property icon 技能显示图标名
+ * @property xMaterial 技能显示材质
+ * @property type 技能类型
+ * @property isLocked 技能是否需要解锁
+ * @property minLevel 解锁后的最低等级
+ * @property maxLevel 最高等级
+ * @property description 技能介绍
+ * @property upgradePointAction 技能升级消耗的技能点
+ * @property upLevelCheckAction 技能升级前检测
+ * @property upLevelSuccessAction 技能升级成功执行
+ * @property ignoreSilence 是否无视沉默
+ * @property variables 技能的延迟生成变量
+ */
 interface ISkill {
 
-    /**
-     * 技能键名
-     * */
     val key: String
 
-    /**
-     * 技能显示名
-     * */
     val name: String
 
-    /**
-     * UI显示顺序
-     * */
     val sort: Int
 
-    /**
-     * 技能显示图标名
-     * */
     val icon: Icon
 
-    /**
-     * 技能显示材质
-     * */
     val xMaterial: String
 
-    /**
-     * 技能类型
-     * */
     val type: String
 
-    /**
-     * 技能是否需要解锁
-     * */
     val isLocked: Boolean
 
-    /**
-     * 技能解锁后的最低等级
-     * */
     val minLevel: Int
 
-    /**
-     * 技能最高等级
-     * */
     val maxLevel: Int
 
-    /**
-     * 技能介绍
-     * */
     val description: Description
 
-    /**
-     * 技能升级消耗的技能点
-     * */
     val upgradePointAction: String?
 
-    /**
-     * 技能升级前检测
-     * */
     val upLevelCheckAction: String?
 
-    /**
-     * 技能升级成功执行
-     * */
     val upLevelSuccessAction: String?
 
-    /**
-     * 是否无视沉默
-     * */
     val ignoreSilence: Boolean
 
-    /**
-     * 技能的延迟生成变量
-     * */
     val variables: Map<String, String>
 }

@@ -13,6 +13,11 @@ import taboolib.module.configuration.util.ReloadAwareLazy
 import taboolib.platform.util.onlinePlayers
 import java.util.concurrent.CompletableFuture
 
+/**
+ * 精力值管理接口。
+ *
+ * 提供精力值的增减、设置、查询与自然恢复能力。
+ */
 interface ISpiritManager {
     
     companion object {
@@ -72,15 +77,19 @@ interface ISpiritManager {
     fun haveSpirit(player: Player, spirit: Double): Boolean
 
     /**
-     * 获得玩家的精力值
+     * 获取玩家的精力值。
+     *
      * @param player 玩家
-     * */
+     * @return 当前精力值
+     */
     fun getSpirit(player: Player): Double
 
     /**
-     * 获得玩家的最大精力值
+     * 获取玩家的最大精力值。
+     *
      * @param player 玩家
-     * */
+     * @return 最大精力值
+     */
     fun getMaxSpirit(player: Player): CompletableFuture<Double>
 
     /**

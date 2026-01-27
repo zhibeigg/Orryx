@@ -4,22 +4,16 @@ import org.gitee.orryx.core.targets.ITargetLocation
 import org.joml.Vector3d
 
 /**
- * 球体碰撞箱
+ * 球体碰撞箱接口。
+ *
+ * @param T 目标位置类型
+ * @property radius 半径
+ * @property center 中心点
  */
 interface ISphere<T: ITargetLocation<*>> : ICollider<T> {
 
-    /**
-     * 半径
-     *
-     * 设置半径
-     * */
     var radius: Double
 
-    /**
-     * 中心点
-     *
-     * 设置中心点
-     * */
     var center: Vector3d
 
     override val type: ColliderType

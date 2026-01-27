@@ -3,6 +3,9 @@ package org.gitee.orryx.core.common.timer
 import org.gitee.orryx.core.kether.parameter.IParameter
 import taboolib.common.platform.ProxyCommandSender
 
+/**
+ * 计时器接口。
+ */
 interface ITimer {
 
     /**
@@ -17,6 +20,7 @@ interface ITimer {
      * 是否已完成冷却
      * @param sender 计时者
      * @param tag 计时名
+     * @return 是否完成冷却
      * */
     fun hasNext(sender: ProxyCommandSender, tag: String): Boolean
 
@@ -62,6 +66,7 @@ interface ITimer {
     /**
      * 获取缓存
      * @param sender 计时者
+     * @param tag 计时名
      * @return 缓存的子计时器
      * */
     fun getCooldownEntry(sender: ProxyCommandSender, tag: String): CooldownEntry?

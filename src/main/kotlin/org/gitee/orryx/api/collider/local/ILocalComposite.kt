@@ -5,32 +5,26 @@ import org.gitee.orryx.core.targets.ITargetLocation
 import org.joml.Quaterniond
 import org.joml.Vector3d
 
+/**
+ * 局部坐标系复合碰撞箱接口。
+ *
+ * @param T 目标位置类型
+ * @param C 子碰撞箱类型
+ * @property localPosition 局部坐标系坐标
+ * @property localRotation 局部坐标系旋转
+ * @property position 全局坐标
+ * @property rotation 全局旋转
+ * @property converter 坐标转换器
+ */
 interface ILocalComposite<T: ITargetLocation<*>, C : ILocalCollider<T>> : IComposite<T, C>, ILocalCollider<T> {
 
-    /**
-     * 设置局部坐标系坐标
-     * @return  局部坐标系坐标
-     */
     var localPosition: Vector3d
 
-    /**
-     * 设置局部坐标系旋转
-     * @return 局部坐标系旋转
-     */
     var localRotation: Quaterniond
 
-    /**
-     * @return 坐标
-     */
     val position: Vector3d
 
-    /**
-     * @return 旋转
-     */
     val rotation: Quaterniond
 
-    /**
-     * @return 坐标转换器
-     */
     val converter: ICoordinateConverter
 }

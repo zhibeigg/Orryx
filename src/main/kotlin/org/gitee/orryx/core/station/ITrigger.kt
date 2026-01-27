@@ -4,16 +4,17 @@ import org.bukkit.event.Cancellable
 import taboolib.module.kether.ScriptContext
 import taboolib.module.kether.extend
 
+/**
+ * 触发器接口。
+ *
+ * @param E 监听事件类型
+ * @property event 监听的事件代名
+ * @property clazz 监听的事件类型
+ */
 interface ITrigger<E> {
 
-    /**
-     * 监听的事件代名
-     * */
     val event: String
 
-    /**
-     * 监听的事件
-     * */
     val clazz: Class<E>
 
     /**
@@ -31,7 +32,7 @@ interface ITrigger<E> {
     }
 
     /**
-     * 当结束运行脚本时
+     * 当结束运行脚本时。
      * @param context 执行的脚本上下文
      * @param event 监听到的事件
      * @param map 传入的特殊参数

@@ -8,6 +8,11 @@ import org.gitee.orryx.core.skill.IPlayerSkill
 import java.util.concurrent.CompletableFuture
 import java.util.function.Function
 
+/**
+ * 按键相关 API 接口。
+ *
+ * 用于管理技能按键绑定与玩家按键设置。
+ */
 interface IKeyAPI {
 
     /**

@@ -2,6 +2,11 @@ package org.gitee.orryx.core.container
 
 import org.gitee.orryx.core.targets.ITarget
 
+/**
+ * 目标容器接口。
+ *
+ * @property targets 目标集合
+ */
 interface IContainer {
 
     val targets: MutableSet<ITarget<*>>

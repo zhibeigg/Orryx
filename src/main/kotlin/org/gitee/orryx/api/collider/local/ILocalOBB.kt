@@ -6,21 +6,15 @@ import org.joml.Quaterniond
 import org.joml.Vector3d
 
 /**
- * 局部坐标系OBB碰撞箱
- * */
+ * 局部坐标系 OBB 碰撞箱接口。
+ *
+ * @param T 目标位置类型
+ * @property localCenter 局部坐标系中心点
+ * @property localRotation 局部坐标系旋转
+ */
 interface ILocalOBB<T: ITargetLocation<*>> : IOBB<T>, ILocalCollider<T> {
 
-    /**
-     * 局部坐标系中心点
-     *
-     * 设置局部坐标系中心点
-     */
     var localCenter: Vector3d
 
-    /**
-     * 局部坐标系旋转
-     *
-     * 设置局部坐标系旋转
-     */
     var localRotation: Quaterniond
 }

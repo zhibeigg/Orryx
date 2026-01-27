@@ -1,9 +1,11 @@
 package org.gitee.orryx.module.state
 
+/**
+ * 精力消耗接口。
+ *
+ * @property spirit 消耗的精力值
+ */
 interface ISpiritCost {
 
-    /**
-     * 消耗体力值
-     * */
     val spirit: Double
 }

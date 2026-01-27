@@ -20,6 +20,11 @@ import taboolib.module.chat.colored
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
+/**
+ * 同步缓存管理接口。
+ *
+ * 用于跨服缓存读取与回写玩家相关数据。
+ */
 interface ISyncCacheManager {
 
     companion object {
@@ -120,7 +125,6 @@ interface ISyncCacheManager {
      * 保存玩家数据到缓存
      * @param player 玩家的UUID
      * @param playerProfilePO 玩家数据
-     * @param async 是否异步
      * */
     fun savePlayerProfile(player: UUID, playerProfilePO: PlayerProfilePO)
 
@@ -128,7 +132,6 @@ interface ISyncCacheManager {
      * 保存职业数据到缓存
      * @param player 玩家的UUID
      * @param playerJobPO 职业数据
-     * @param async 是否异步
      * */
     fun savePlayerJob(player: UUID, playerJobPO: PlayerJobPO)
 
@@ -136,7 +139,6 @@ interface ISyncCacheManager {
      * 保存技能数据到缓存
      * @param player 玩家的UUID
      * @param playerSkillPO 技能数据
-     * @param async 是否异步
      * */
     fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO)
 
@@ -144,14 +146,12 @@ interface ISyncCacheManager {
      * 保存按键数据到缓存
      * @param player 玩家的UUID
      * @param playerKeySettingPO 按键数据
-     * @param async 是否异步
      * */
     fun savePlayerKeySetting(player: UUID, playerKeySettingPO: PlayerKeySettingPO)
 
     /**
      * 删除缓存中的玩家数据
      * @param player 玩家的UUID
-     * @param async 是否异步
      * */
     fun removePlayerProfile(player: UUID)
 
@@ -159,7 +159,6 @@ interface ISyncCacheManager {
      * 删除缓存中的职业数据
      * @param player 玩家的UUID
      * @param job 职业键名
-     * @param async 是否异步
      * */
     fun removePlayerJob(player: UUID, id: Int, job: String)
 
@@ -168,14 +167,12 @@ interface ISyncCacheManager {
      * @param player 玩家的UUID
      * @param job 职业键名
      * @param skill 技能键名
-     * @param async 是否异步
      * */
     fun removePlayerSkill(player: UUID, id: Int, job: String, skill: String)
 
     /**
      * 删除缓存中的按键数据
      * @param player 玩家的UUID
-     * @param async 是否异步
      * */
     fun removePlayerKeySetting(player: UUID)
 

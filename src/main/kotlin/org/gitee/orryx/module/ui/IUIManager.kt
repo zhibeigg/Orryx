@@ -35,6 +35,11 @@ import taboolib.module.chat.colored
 import taboolib.module.configuration.Configuration
 import java.util.*
 
+/**
+ * UI 管理接口。
+ *
+ * @property config UI 配置
+ */
 interface IUIManager {
 
     companion object {
@@ -187,36 +192,36 @@ interface IUIManager {
         }
     }
 
-    /**
-     * UI配置
-     * */
     val config: Configuration
 
     /**
-     * 创建技能UI
+     * 创建技能 UI。
+     *
      * @param viewer 浏览者
      * @param owner 拥有者
-     * @return 技能UI[ISkillUI]
-     * */
+     * @return 技能 UI
+     */
     fun createSkillUI(viewer: Player, owner: Player): ISkillUI
 
     /**
-     * 创建技能HUD
+     * 创建技能 HUD。
+     *
      * @param viewer 浏览者
      * @param owner 拥有者
-     * @return 技能HUD[ISkillHud]
-     * */
+     * @return 技能 HUD
+     */
     fun createSkillHUD(viewer: Player, owner: Player): ISkillHud
 
     /**
-     * 获取技能HUD
+     * 获取技能 HUD。
+     *
      * @param viewer 浏览者
-     * @return 技能HUD[ISkillHud]
-     * */
+     * @return 技能 HUD
+     */
     fun getSkillHUD(viewer: Player): ISkillHud?
 
     /**
-     * 重载
-     * */
+     * 重载 UI 配置。
+     */
     fun reload()
 }

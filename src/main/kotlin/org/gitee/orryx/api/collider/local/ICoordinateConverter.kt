@@ -3,22 +3,34 @@ package org.gitee.orryx.api.collider.local
 import org.joml.Quaterniond
 import org.joml.Vector3d
 
+/**
+ * 坐标转换器接口。
+ *
+ * @property position 当前坐标
+ * @property rotation 当前旋转
+ */
 interface ICoordinateConverter {
 
-    /** 位置版本 */
+    /**
+     * 获取位置版本号。
+     *
+     * @return 位置版本
+     */
     fun positionVersion(): Short
 
-    /** 位置 */
     val position: Vector3d
 
-    /** 旋转版本 */
+    /**
+     * 获取旋转版本号。
+     *
+     * @return 旋转版本
+     */
     fun rotationVersion(): Short
 
-    /** 旋转 */
     val rotation: Quaterniond
 
     /**
-     * 更新
-     * */
+     * 更新缓存。
+     */
     fun update()
 }

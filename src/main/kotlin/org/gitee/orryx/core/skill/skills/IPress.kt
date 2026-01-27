@@ -1,24 +1,20 @@
 package org.gitee.orryx.core.skill.skills
 
+/**
+ * 蓄力技能参数接口。
+ *
+ * @property pressBrockTriggers 蓄力会被打断的 Trigger
+ * @property period 周期
+ * @property pressPeriodAction 蓄力时每周期执行
+ * @property maxPressTickAction 最大蓄力时间
+ */
 interface IPress {
 
-    /**
-     * 蓄力会被打断的Trigger
-     * */
     val pressBrockTriggers: Array<String>
 
-    /**
-     * 周期
-     */
     val period: Long
 
-    /**
-     * 蓄力时每周期执行
-     */
     val pressPeriodAction: String
 
-    /**
-     * 最大蓄力时间
-     */
     val maxPressTickAction: String
 }

@@ -1,5 +1,8 @@
 package org.gitee.orryx.api.collider
 
+/**
+ * 碰撞回调函数接口。
+ */
 @FunctionalInterface
 interface ICollideFunction {
 

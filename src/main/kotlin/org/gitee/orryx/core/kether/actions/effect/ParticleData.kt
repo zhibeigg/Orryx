@@ -4,6 +4,9 @@ import taboolib.common.util.Location
 import java.awt.Color
 import java.util.*
 
+/**
+ * 粒子数据接口。
+ */
 interface ParticleData {
 
     open class DustData(val color: Color, val size: Float) : ParticleData
@@ -22,6 +25,9 @@ interface ParticleData {
 
     class VibrationData(val origin: Location, val destination: Destination, val arrivalTime: Int) : ParticleData {
 
+        /**
+         * 震动目标类型接口。
+         */
         sealed interface Destination
 
         class EntityDestination(val entity: UUID) : Destination

@@ -3,16 +3,22 @@ package org.gitee.orryx.core.station.stations
 import org.gitee.orryx.core.station.ITrigger
 import taboolib.common.platform.ProxyCommandSender
 
+/**
+ * 中转站触发器接口。
+ *
+ * @param E 监听事件类型
+ * @property specialKeys 中转站需要读取的特殊配置键
+ */
 interface IStationTrigger<E>: ITrigger<E> {
 
-    /**
-     * 中转站需要读取的特殊配置文件键
-     * */
     val specialKeys: Array<String>
 
     /**
-     * 注册时预先触发
-     * */
+     * 注册时预先触发。
+     *
+     * @param station 中转站
+     * @param map 传入的特殊参数
+     */
     fun onRegister(station: IStation, map: Map<String, Any?>)
 
     /**

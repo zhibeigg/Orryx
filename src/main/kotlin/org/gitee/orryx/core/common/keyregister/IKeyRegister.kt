@@ -2,6 +2,11 @@ package org.gitee.orryx.core.common.keyregister
 
 import org.bukkit.entity.Player
 
+/**
+ * 按键状态寄存器接口。
+ *
+ * @property player 关联的玩家
+ */
 interface IKeyRegister {
 
     val player: Player
@@ -76,6 +81,9 @@ interface IKeyRegister {
      * */
     fun keyRelease(key: String)
 
+    /**
+     * 按键动作类型。
+     */
     enum class ActionType {
         PRESS, RELEASE;
     }

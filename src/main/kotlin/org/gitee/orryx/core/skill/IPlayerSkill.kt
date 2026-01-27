@@ -8,46 +8,34 @@ import org.gitee.orryx.utils.Tuple2
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 
+/**
+ * 玩家技能数据接口。
+ *
+ * @property id 玩家 ID
+ * @property uuid 玩家 UUID
+ * @property player 玩家实体
+ * @property key 技能键名
+ * @property skill 技能配置
+ * @property job 技能所属职业
+ * @property locked 技能是否锁定
+ * @property level 技能等级
+ */
 interface IPlayerSkill: Saveable {
 
-    /**
-     * 玩家ID
-     * */
     val id: Int
 
-    /**
-     * 拥有玩家
-     * */
     val uuid: UUID
 
-    /**
-     * 拥有玩家
-     * */
     val player: Player
 
-    /**
-     * 技能键名
-     * */
     val key: String
 
-    /**
-     * 技能配置文件
-     * */
     val skill: ISkill
 
-    /**
-     * 技能所属职业
-     * */
     val job: String
 
-    /**
-     * 技能是否锁定
-     * */
     val locked: Boolean
 
-    /**
-     * 技能等级
-     * */
     val level: Int
 
     /**
@@ -55,6 +43,7 @@ interface IPlayerSkill: Saveable {
      *
      * 不会经过任何检测，同时Cast事件也在此call
      * @param parameter 释放参数
+     * @param consume 是否消耗资源
      * @return 释放结果
      * */
     fun cast(parameter: IParameter, consume: Boolean = true): CastResult
@@ -120,6 +109,8 @@ interface IPlayerSkill: Saveable {
 
     /**
      * 创建序列化存储数据
-     * */
+     *
+     * @return 序列化数据
+     */
     fun createPO(): PlayerSkillPO
 }

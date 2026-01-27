@@ -5,37 +5,25 @@ import org.joml.Quaterniond
 import org.joml.Vector3d
 
 /**
- * 有向包围盒OBB
- * */
+ * 有向包围盒 OBB 接口。
+ *
+ * @param T 目标位置类型
+ * @property halfExtents 轴半长
+ * @property center 中心点
+ * @property rotation 旋转
+ * @property vertices 顶点
+ * @property axes 轴向
+ */
 interface IOBB<T: ITargetLocation<*>> : ICollider<T> {
 
-    /**
-     * 轴半长
-     *
-     * 设置轴半长
-     * */
     var halfExtents: Vector3d
 
-    /**
-     * 中心点
-     *
-     * 设置中心点
-     * */
     var center: Vector3d
 
-    /**
-     * 设置旋转
-     * */
     var rotation: Quaterniond
 
-    /**
-     * 顶点
-     * */
     val vertices: Array<Vector3d>
 
-    /**
-     * 轴向
-     * */
     val axes: Array<Vector3d>
 
     override val type: ColliderType

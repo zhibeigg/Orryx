@@ -3,33 +3,25 @@ package org.gitee.orryx.api.collider
 import org.gitee.orryx.core.targets.ITargetLocation
 import org.joml.Vector3d
 
-/** AABB碰撞箱
+/**
+ * AABB 碰撞箱接口。
  *
- * 区别于原版实现，使用中心点加半长宽高定义。 */
+ * 区别于原版实现，使用中心点加半长宽高定义。
+ *
+ * @param T 目标位置类型
+ * @property halfExtents 轴半长
+ * @property center 中心点
+ * @property min 最小点
+ * @property max 最大点
+ */
 interface IAABB<T: ITargetLocation<*>> : ICollider<T> {
 
-    /**
-     * 设置轴半长
-     *
-     * @return 轴半长
-     * */
     var halfExtents: Vector3d
 
-    /**
-     * 设置中心点
-     *
-     * @return 中心点w
-     */
     var center: Vector3d
 
-    /**
-     * @return 最小点
-     */
     val min: Vector3d
 
-    /**
-     * @return 最大点
-     */
     val max: Vector3d
 
     override val type: ColliderType
