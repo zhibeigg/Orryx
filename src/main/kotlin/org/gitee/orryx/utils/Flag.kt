@@ -4,6 +4,7 @@ import ink.ptms.adyeshach.core.Adyeshach
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.bukkit.Bukkit
+import org.bukkit.inventory.ItemStack
 import org.gitee.orryx.api.adapters.entity.AbstractAdyeshachEntity
 import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
 import org.gitee.orryx.core.profile.Flag
@@ -89,6 +90,10 @@ enum class SerializableType(val key: String, val type: KClass<*>) {
         override fun encodeToString(value: Any) = Json.encodeToString((value as AbstractAdyeshachEntity).entityId)
         override fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long) = Adyeshach.api().getEntityFinder().getEntityFromEntityId(Json.decodeFromString(value))?.let { Flag(AbstractAdyeshachEntity(it), isPersistence, timeout) }
     },
+    ITEM_STACK("item_stack", ItemStack::class) {
+        override fun encodeToString(value: Any) = Json.encodeToString(ItemStackSerializer, value as ItemStack)
+        override fun decodeFromString(value: String, isPersistence: Boolean, timeout: Long) = Flag(Json.decodeFromString(ItemStackSerializer, value), isPersistence, timeout)
+    },
     Array("array", kotlin.Array::class) {
         override fun encodeToString(value: Any) = Json.encodeToString((value as Array<*>).map {
             val type = getType(it!!)
@@ -125,6 +130,7 @@ fun getType(value: Any): SerializableType {
         SerializableType.UUID.type -> SerializableType.UUID
         SerializableType.ABSTRACT_BUKKIT_ENTITY.type -> SerializableType.ABSTRACT_BUKKIT_ENTITY
         SerializableType.ABSTRACT_ADYESHACH_ENTITY.type -> SerializableType.ABSTRACT_ADYESHACH_ENTITY
+        SerializableType.ITEM_STACK.type -> SerializableType.ITEM_STACK
         SerializableType.Array.type -> SerializableType.Array
         else -> error("无法序列化${value::class.simpleName}类型 请勿持久化存储")
     }
@@ -148,6 +154,7 @@ fun SerializableFlag.toFlag(): IFlag? {
         SerializableType.UUID.key -> SerializableType.UUID
         SerializableType.ABSTRACT_BUKKIT_ENTITY.key -> SerializableType.ABSTRACT_BUKKIT_ENTITY
         SerializableType.ABSTRACT_ADYESHACH_ENTITY.key -> SerializableType.ABSTRACT_ADYESHACH_ENTITY
+        SerializableType.ITEM_STACK.key -> SerializableType.ITEM_STACK
         SerializableType.Array.key -> SerializableType.Array
         else -> error("无法反序列化${type}类型")
     }
