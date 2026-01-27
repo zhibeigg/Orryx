@@ -4,6 +4,7 @@ import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.OrryxAPI
+import org.gitee.orryx.api.events.player.key.OrryxPlayerKeySettingSaveEvents
 import org.gitee.orryx.core.GameManager
 import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.dao.cache.ISyncCacheManager
@@ -63,24 +64,28 @@ class PlayerKeySetting(
     }
 
     override fun save(async: Boolean, remove: Boolean, callback: Runnable) {
+        val event = OrryxPlayerKeySettingSaveEvents.Pre(player, this, async, remove)
+        event.call()
         val data = createPO()
         fun remove() {
-            if (remove) {
+            if (event.remove) {
                 ISyncCacheManager.INSTANCE.removePlayerKeySetting(player.uniqueId)
                 MemoryCache.removePlayerKeySetting(player.uniqueId)
             }
         }
-        if (async && !GameManager.shutdown) {
+        if (event.async && !GameManager.shutdown) {
             OrryxAPI.ioScope.launch {
                 IStorageManager.INSTANCE.savePlayerKey(data) {
                     remove()
                     callback.run()
+                    OrryxPlayerKeySettingSaveEvents.Post(player, this@PlayerKeySetting, event.async, event.remove).call()
                 }
             }
         } else {
             IStorageManager.INSTANCE.savePlayerKey(data) {
                 remove()
                 callback.run()
+                OrryxPlayerKeySettingSaveEvents.Post(player, this, event.async, event.remove).call()
             }
         }
     }

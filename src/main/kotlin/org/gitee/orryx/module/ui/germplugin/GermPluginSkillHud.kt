@@ -9,6 +9,7 @@ import org.gitee.orryx.module.ui.AbstractSkillHud
 import org.gitee.orryx.module.ui.IUIManager
 import org.gitee.orryx.module.ui.IUIManager.Companion.skillCooldownMap
 import org.gitee.orryx.utils.*
+import taboolib.common.function.debounce
 import taboolib.common.platform.function.getDataFolder
 import taboolib.common.platform.function.submitAsync
 import taboolib.common.util.unsafeLazy
@@ -17,6 +18,10 @@ import java.util.*
 import kotlin.collections.set
 
 open class GermPluginSkillHud(override val viewer: Player, override val owner: Player): AbstractSkillHud(viewer, owner) {
+
+    private val debouncedUpdate = debounce(50L) {
+        updateNow()
+    }
 
     companion object {
 
@@ -49,6 +54,10 @@ open class GermPluginSkillHud(override val viewer: Player, override val owner: P
     protected open var isH = true
 
     override fun update(skill: IPlayerSkill?) {
+        debouncedUpdate()
+    }
+
+    private fun updateNow() {
         if (isH) {
             screen.pickPart<GermGuiCanvas>("skillBindCanvasV").enable = false
             screen.pickPart<GermGuiCanvas>("canvasV").enable = false

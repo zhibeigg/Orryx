@@ -1,12 +1,12 @@
 package org.gitee.orryx.core.profile
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.api.events.player.OrryxPlayerFlagChangeEvents
 import org.gitee.orryx.api.events.player.OrryxPlayerPointEvents
+import org.gitee.orryx.api.events.player.OrryxPlayerProfileSaveEvents
 import org.gitee.orryx.api.events.player.job.OrryxPlayerJobChangeEvents
 import org.gitee.orryx.core.GameManager
 import org.gitee.orryx.core.job.IPlayerJob
@@ -14,7 +14,6 @@ import org.gitee.orryx.dao.cache.ISyncCacheManager
 import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.storage.IStorageManager
-import org.gitee.orryx.utils.minecraftAsync
 import org.gitee.orryx.utils.toSerializable
 import taboolib.common.platform.function.isPrimaryThread
 import java.util.*
@@ -136,24 +135,28 @@ class PlayerProfile(
     }
 
     override fun save(async: Boolean, remove: Boolean, callback: Runnable) {
+        val event = OrryxPlayerProfileSaveEvents.Pre(player, this, async, remove)
+        event.call()
         val data = createPO()
         fun remove() {
-            if (remove) {
+            if (event.remove) {
                 ISyncCacheManager.INSTANCE.removePlayerProfile(player.uniqueId)
                 MemoryCache.removePlayerProfile(player.uniqueId)
             }
         }
-        if (async && !GameManager.shutdown) {
+        if (event.async && !GameManager.shutdown) {
             OrryxAPI.ioScope.launch {
                 IStorageManager.INSTANCE.savePlayerData(data) {
                     remove()
                     callback.run()
+                    OrryxPlayerProfileSaveEvents.Post(player, this@PlayerProfile, event.async, event.remove).call()
                 }
             }
         } else {
             IStorageManager.INSTANCE.savePlayerData(data) {
                 remove()
                 callback.run()
+                OrryxPlayerProfileSaveEvents.Post(player, this, event.async, event.remove).call()
             }
         }
     }

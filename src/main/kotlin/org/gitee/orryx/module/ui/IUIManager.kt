@@ -3,9 +3,13 @@ package org.gitee.orryx.module.ui
 import org.bukkit.entity.Player
 import org.bukkit.event.player.PlayerQuitEvent
 import org.gitee.orryx.api.Orryx
+import org.gitee.orryx.api.events.player.OrryxPlayerProfileSaveEvents
 import org.gitee.orryx.api.events.player.job.OrryxPlayerJobChangeEvents
+import org.gitee.orryx.api.events.player.job.OrryxPlayerJobSaveEvents
+import org.gitee.orryx.api.events.player.key.OrryxPlayerKeySettingSaveEvents
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillBindKeyEvent
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillCooldownEvents
+import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillSaveEvents
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillUnBindKeyEvent
 import org.gitee.orryx.core.common.timer.SkillTimer
 import org.gitee.orryx.core.reload.Reload
@@ -21,10 +25,10 @@ import org.gitee.orryx.utils.GermPluginPlugin
 import org.gitee.orryx.utils.consoleMessage
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
-import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.adaptPlayer
-import taboolib.common.platform.function.info
+import taboolib.common.platform.function.isPrimaryThread
+import taboolib.common.platform.function.submit
 import taboolib.common.util.unsafeLazy
 import taboolib.common5.cdouble
 import taboolib.module.chat.colored
@@ -64,6 +68,10 @@ interface IUIManager {
         }
 
         private fun updateAll(player: Player, skill: IPlayerSkill? = null) {
+            if (!isPrimaryThread) {
+                submit { updateAll(player, skill) }
+                return
+            }
             bukkitSkillHudMap[player.uniqueId]?.forEach { (_, u) ->
                 u.update(skill)
             }
@@ -111,6 +119,26 @@ interface IUIManager {
 
         @SubscribeEvent
         private fun changeJob(e: OrryxPlayerJobChangeEvents.Post) {
+            updateAll(e.player)
+        }
+
+        @SubscribeEvent
+        private fun save(e: OrryxPlayerProfileSaveEvents.Post) {
+            updateAll(e.player)
+        }
+
+        @SubscribeEvent
+        private fun save(e: OrryxPlayerJobSaveEvents.Post) {
+            updateAll(e.player)
+        }
+
+        @SubscribeEvent
+        private fun save(e: OrryxPlayerSkillSaveEvents.Post) {
+            updateAll(e.player, e.skill)
+        }
+
+        @SubscribeEvent
+        private fun save(e: OrryxPlayerKeySettingSaveEvents.Post) {
             updateAll(e.player)
         }
 

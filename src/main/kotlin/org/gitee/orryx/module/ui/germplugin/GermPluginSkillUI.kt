@@ -9,10 +9,15 @@ import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.module.ui.AbstractSkillUI
 import org.gitee.orryx.module.ui.IUIManager
 import org.gitee.orryx.utils.*
+import taboolib.common.function.debounce
 import taboolib.common.platform.function.getDataFolder
 import java.io.File
 
 open class GermPluginSkillUI(override val viewer: Player, override val owner: Player): AbstractSkillUI(viewer, owner) {
+
+    private val debouncedUpdate = debounce(50L) {
+        updateNow()
+    }
 
     companion object {
 
@@ -32,6 +37,10 @@ open class GermPluginSkillUI(override val viewer: Player, override val owner: Pl
     }
 
     override fun update() {
+        debouncedUpdate()
+    }
+
+    private fun updateNow() {
         owner.job { job ->
             job.bindSkills {
                 it.forEach { entry ->
@@ -84,7 +93,7 @@ open class GermPluginSkillUI(override val viewer: Player, override val owner: Pl
 
                     background.callback(GermGuiButton.EventType.LEFT_CLICK) { _, _ ->
                         name.setText(skill.skill.name)
-                        description.setTexts(skill.getDescriptionComparison())
+                        description.texts = skill.getDescriptionComparison()
                     }
                     background.enable = true
 

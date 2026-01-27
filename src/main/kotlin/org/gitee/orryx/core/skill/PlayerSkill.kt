@@ -8,6 +8,7 @@ import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillCastEvents
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillClearEvents
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillLevelEvents
+import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillSaveEvents
 import org.gitee.orryx.command.OrryxTestCommand
 import org.gitee.orryx.core.GameManager
 import org.gitee.orryx.core.common.timer.SkillTimer
@@ -180,24 +181,28 @@ class PlayerSkill(
     }
 
     override fun save(async: Boolean, remove: Boolean, callback: Runnable) {
+        val event = OrryxPlayerSkillSaveEvents.Pre(player, this, async, remove)
+        event.call()
         val data = createPO()
         fun remove() {
-            if (remove) {
+            if (event.remove) {
                 ISyncCacheManager.INSTANCE.removePlayerSkill(player.uniqueId, id, job, key)
                 MemoryCache.removePlayerSkill(player.uniqueId, id, job, key)
             }
         }
-        if (async && !GameManager.shutdown) {
+        if (event.async && !GameManager.shutdown) {
             OrryxAPI.ioScope.launch {
                 IStorageManager.INSTANCE.savePlayerSkill(data) {
                     remove()
                     callback.run()
+                    OrryxPlayerSkillSaveEvents.Post(player, this@PlayerSkill, event.async, event.remove).call()
                 }
             }
         } else {
             IStorageManager.INSTANCE.savePlayerSkill(data) {
                 remove()
                 callback.run()
+                OrryxPlayerSkillSaveEvents.Post(player, this, event.async, event.remove).call()
             }
         }
     }

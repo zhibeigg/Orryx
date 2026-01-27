@@ -35,6 +35,9 @@ Functions:
         方法.添加组件(局部变量.组件5);
       });
     };
+    if(局部变量.args.0 == 'Orryx_bind_player_keys') {
+      界面变量.玩家绑定按键列表 = 方法.分割(局部变量.args.1, '<br>');
+    };
     if(局部变量.args.0 == 'Orryx_bind_skills') {
       界面变量.绑定技能列表 = 方法.分割(局部变量.args.1, '<br>');
     };
@@ -212,7 +215,7 @@ check_texture:
   index: "0"
   scale: "界面变量.界面大小"
   alpha: "背景_up_texture.alpha"
-  texts: "方法.取成员(界面变量.绑定按键列表, 局部变量.当前组件.index)"
+  texts: "方法.取成员(界面变量.玩家绑定按键列表, 局部变量.当前组件.index)"
   visible: "方法.取组件值(方法.合并文本('绑定技能背景_' & 局部变量.当前组件.index & '_texture'),'visible')"
   center: true
 绑定贴图:

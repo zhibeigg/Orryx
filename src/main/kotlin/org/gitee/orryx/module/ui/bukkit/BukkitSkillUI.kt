@@ -9,6 +9,7 @@ import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.module.ui.AbstractSkillUI
 import org.gitee.orryx.module.ui.IUIManager
 import org.gitee.orryx.utils.*
+import taboolib.common.function.debounce
 import taboolib.common5.cdouble
 import taboolib.common5.cint
 import taboolib.library.configuration.ConfigurationSection
@@ -21,6 +22,10 @@ import kotlin.jvm.optionals.getOrNull
 import kotlin.math.ceil
 
 open class BukkitSkillUI(override val viewer: Player, override val owner: Player): AbstractSkillUI(viewer, owner) {
+
+    private val debouncedUpdate = debounce(50L) {
+        updateNow()
+    }
 
     companion object {
 
@@ -229,6 +234,10 @@ open class BukkitSkillUI(override val viewer: Player, override val owner: Player
     }
 
     override fun update() {
+        debouncedUpdate()
+    }
+
+    private fun updateNow() {
         owner.job {
             it.getBindSkills()
         }

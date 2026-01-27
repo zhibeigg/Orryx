@@ -10,6 +10,7 @@ import org.gitee.orryx.module.ui.IUIManager.Companion.skillCooldownMap
 import org.gitee.orryx.utils.getBindSkill
 import org.gitee.orryx.utils.getDescriptionComparison
 import org.gitee.orryx.utils.getIcon
+import taboolib.common.function.debounce
 import taboolib.common.util.unsafeLazy
 import taboolib.common5.cdouble
 import taboolib.common5.cint
@@ -19,6 +20,10 @@ import java.util.*
 import kotlin.collections.set
 
 open class BukkitSkillHud(override val viewer: Player, override val owner: Player): AbstractSkillHud(viewer, owner) {
+
+    private val debouncedUpdate = debounce(50L) { r: Result<IPlayerSkill?> ->
+        updateNow(r.getOrNull())
+    }
 
     companion object {
 
@@ -55,6 +60,10 @@ open class BukkitSkillHud(override val viewer: Player, override val owner: Playe
     }
 
     override fun update(skill: IPlayerSkill?) {
+        debouncedUpdate(Result.success(skill))
+    }
+
+    private fun updateNow(skill: IPlayerSkill?) {
         if (skill != null) {
             slotIndex.forEach { i ->
                 val bindKey = getBindKey("MC" + (i + 1)) ?: return@forEach

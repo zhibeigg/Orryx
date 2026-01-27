@@ -8,6 +8,7 @@ import org.gitee.orryx.api.events.player.OrryxPlayerChangeGroupEvents
 import org.gitee.orryx.api.events.player.job.OrryxPlayerJobClearEvents
 import org.gitee.orryx.api.events.player.job.OrryxPlayerJobExperienceEvents
 import org.gitee.orryx.api.events.player.job.OrryxPlayerJobLevelEvents
+import org.gitee.orryx.api.events.player.job.OrryxPlayerJobSaveEvents
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillBindKeyEvent
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillUnBindKeyEvent
 import org.gitee.orryx.core.GameManager
@@ -281,24 +282,28 @@ class PlayerJob(
     }
 
     override fun save(async: Boolean, remove: Boolean, callback: Runnable) {
+        val event = OrryxPlayerJobSaveEvents.Pre(player, this, async, remove)
+        event.call()
         val data = createPO()
         fun remove() {
-            if (remove) {
+            if (event.remove) {
                 ISyncCacheManager.INSTANCE.removePlayerJob(player.uniqueId, id, key)
                 MemoryCache.removePlayerJob(player.uniqueId, id, key)
             }
         }
-        if (async && !GameManager.shutdown) {
+        if (event.async && !GameManager.shutdown) {
             OrryxAPI.ioScope.launch {
                 IStorageManager.INSTANCE.savePlayerJob(data) {
                     remove()
                     callback.run()
+                    OrryxPlayerJobSaveEvents.Post(player, this@PlayerJob, event.async, event.remove).call()
                 }
             }
         } else {
             IStorageManager.INSTANCE.savePlayerJob(data) {
                 remove()
                 callback.run()
+                OrryxPlayerJobSaveEvents.Post(player, this, event.async, event.remove).call()
             }
         }
     }

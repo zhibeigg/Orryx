@@ -13,7 +13,9 @@ import org.gitee.orryx.utils.bindKeys
 import org.gitee.orryx.utils.bindSkills
 import org.gitee.orryx.utils.getIcon
 import org.gitee.orryx.utils.job
+import org.gitee.orryx.utils.keySetting
 import org.gitee.orryx.utils.parameter
+import taboolib.common.function.debounce
 import taboolib.common.platform.function.getDataFolder
 import taboolib.common.util.unsafeLazy
 import taboolib.platform.util.onlinePlayers
@@ -21,6 +23,10 @@ import java.io.File
 import java.util.*
 
 open class DragonCoreSkillHud(override val viewer: Player, override val owner: Player): AbstractSkillHud(viewer, owner) {
+
+    private val debouncedUpdate = debounce(50L) { r: Result<IPlayerSkill?> ->
+        updateNow(r.getOrNull())
+    }
 
     companion object {
 
@@ -52,21 +58,28 @@ open class DragonCoreSkillHud(override val viewer: Player, override val owner: P
     }
 
     override fun update(skill: IPlayerSkill?) {
+        debouncedUpdate(Result.success(skill))
+    }
+
+    private fun updateNow(skill: IPlayerSkill?) {
         if (skill != null) {
             PacketSender.sendSyncPlaceholder(viewer, mapOf(
                 "Orryx_bind_cooldown_${skill.key}" to skillCooldownMap[owner.uniqueId]?.get(skill.key)?.getCountdown(owner).toString()
             ))
         } else {
-            owner.job { job ->
-                job.bindSkills { bindSkills ->
-                    val keys = bindKeys()
-                    PacketSender.sendSyncPlaceholder(viewer, mapOf(
-                        "Orryx_bind_keys" to keys.joinToString("<br>") { it.key },
-                        "Orryx_bind_skills" to keys.joinToString("<br>") { bindSkills[it]?.key ?: "none" },
-                        "Orryx_bind_skills_Icon" to keys.joinToString("<br>") { bindSkills[it]?.getIcon() ?: "none" },
-                        "Orryx_bind_cooldowns" to keys.joinToString("<br>") { bindSkills[it]?.key?.let { skill -> skillCooldownMap[owner.uniqueId]?.get(skill)?.getCountdown(owner) }.toString() },
-                        "Orryx_bind_skills_mana" to keys.joinToString("<br>") { bindSkills[it]?.parameter()?.manaValue()?.toString() ?: "0" },
-                    ))
+            owner.keySetting { keySetting ->
+                owner.job { job ->
+                    job.bindSkills { bindSkills ->
+                        val keys = bindKeys()
+                        PacketSender.sendSyncPlaceholder(viewer, mapOf(
+                            "Orryx_bind_keys" to keys.joinToString("<br>") { keySetting.bindKeyMap[it] ?: "none" },
+                            "Orryx_bind_player_keys" to keys.joinToString("<br>") { it.key },
+                            "Orryx_bind_skills" to keys.joinToString("<br>") { bindSkills[it]?.key ?: "none" },
+                            "Orryx_bind_skills_Icon" to keys.joinToString("<br>") { bindSkills[it]?.getIcon() ?: "none" },
+                            "Orryx_bind_cooldowns" to keys.joinToString("<br>") { bindSkills[it]?.key?.let { skill -> skillCooldownMap[owner.uniqueId]?.get(skill)?.getCountdown(owner) }.toString() },
+                            "Orryx_bind_skills_mana" to keys.joinToString("<br>") { bindSkills[it]?.parameter()?.manaValue()?.toString() ?: "0" },
+                        ))
+                    }
                 }
             }
         }
