@@ -1,18 +1,23 @@
 package org.gitee.orryx.api
 
+import com.germ.germplugin.api.GermPacketAPI
+import com.germ.germplugin.api.KeyType
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.interfaces.IKeyAPI
+import org.gitee.orryx.compat.dragoncore.DragonCoreCustomPacketSender
+import org.gitee.orryx.core.common.keyregister.IKeyRegister
+import org.gitee.orryx.core.common.keyregister.KeyRegisterManager
 import org.gitee.orryx.core.common.keyregister.PlayerKeySetting
 import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.key.IGroup
 import org.gitee.orryx.core.skill.IPlayerSkill
-import org.gitee.orryx.utils.getSkill
-import org.gitee.orryx.utils.job
-import org.gitee.orryx.utils.keySetting
+import org.gitee.orryx.utils.*
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.PlatformFactory
+import taboolib.common.platform.function.warning
+import yslelf.cloudpick.bukkit.api.PacketSender
 import java.util.concurrent.CompletableFuture
 import java.util.function.Function
 
@@ -44,6 +49,38 @@ class KeyAPI: IKeyAPI {
     override fun getGroup(key: String): IGroup = BindKeyLoaderManager.getGroup(key) ?: error("未找到组 $key 请在 config.yml 中配置")
 
     override fun getBindKey(key: String): IBindKey = BindKeyLoaderManager.getBindKey(key) ?: error("未找到绑定按键 $key 请在 keys.yml 中配置")
+
+    override fun updateKeyRegister(player: Player): CompletableFuture<Unit> {
+        return player.keySetting { keySetting ->
+            when {
+                GermPluginPlugin.isEnabled -> {
+                    keySetting.keySettingSet().forEach {
+                        val key = when (it) {
+                            MOUSE_LEFT -> "MLEFT"
+                            MOUSE_RIGHT -> "MRIGHT"
+                            else -> it
+                        }
+                        try {
+                            GermPacketAPI.sendKeyRegister(player, KeyType.valueOf("KEY_${key}").keyId)
+                        } catch (ex: Throwable) {
+                            warning("GermPlugin 按键注册失败: ${ex.message}")
+                        }
+                    }
+                }
+                DragonCorePlugin.isEnabled -> {
+                    try {
+                        DragonCoreCustomPacketSender.sendKeyRegister(player, keySetting.keySettingSet())
+                    } catch (ex: Throwable) {
+                        warning("DragonCore按键注册失败: ${ex.message}")
+                    }
+                }
+            }
+        }
+    }
+
+    override fun getKeyRegister(player: Player): IKeyRegister? {
+        return KeyRegisterManager.getKeyRegister(player.uniqueId)
+    }
 
     companion object {
 

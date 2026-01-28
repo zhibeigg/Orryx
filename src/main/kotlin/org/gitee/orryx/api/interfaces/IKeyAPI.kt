@@ -1,6 +1,7 @@
 package org.gitee.orryx.api.interfaces
 
 import org.bukkit.entity.Player
+import org.gitee.orryx.core.common.keyregister.IKeyRegister
 import org.gitee.orryx.core.common.keyregister.PlayerKeySetting
 import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.key.IGroup
@@ -69,4 +70,23 @@ interface IKeyAPI {
      * @throws IllegalStateException 如果未找到指定的绑定键
      * */
     fun getBindKey(key: String): IBindKey
+
+    /**
+     * 更新玩家的按键注册
+     *
+     * 此方法会根据当前启用的客户端模组（龙核或萌芽）向客户端发送按键注册请求。
+     * 当玩家的按键设置发生变化后，应调用此方法以同步客户端的按键监听。
+     *
+     * @param player 需要更新按键注册的玩家
+     * @return 异步操作的 CompletableFuture
+     * */
+    fun updateKeyRegister(player: Player): CompletableFuture<Unit>
+
+    /**
+     * 获取玩家的按键状态寄存器
+     *
+     * @param player 玩家
+     * @return 按键状态寄存器，如果玩家未加载则返回 null
+     * */
+    fun getKeyRegister(player: Player): IKeyRegister?
 }
