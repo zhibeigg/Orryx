@@ -1,6 +1,8 @@
 package org.gitee.orryx.core
 
+import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
+import org.bukkit.event.entity.EntityCombustEvent
 import org.bukkit.event.entity.FoodLevelChangeEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.gitee.orryx.api.Orryx
@@ -27,6 +29,7 @@ import taboolib.platform.util.onlinePlayers
 object GameManager {
 
     private val disabledHunger by ReloadAwareLazy(Orryx.config) { Orryx.config.getBoolean("DisableHunger") }
+    private val disabledCombust by ReloadAwareLazy(Orryx.config) { Orryx.config.getBoolean("DisabledCombust") }
     var shutdown: Boolean = false
 
     private const val ORRYX_JOB_ATTRIBUTE = "ORRYX@JOB@ATTRIBUTE"
@@ -98,6 +101,13 @@ object GameManager {
                 e.entity.foodLevel = 20
                 e.entity.saturation = 20F
             }
+        }
+    }
+
+    @SubscribeEvent
+    private fun combust(e: EntityCombustEvent) {
+        if (disabledCombust && e.entity.type == EntityType.ZOMBIE) {
+            e.isCancelled = true
         }
     }
 
