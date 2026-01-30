@@ -57,7 +57,11 @@ interface ISyncCacheManager {
         @Awake(LifeCycle.ENABLE)
         private fun enable() {
             when(lazy) {
-                "REDIS" -> {}
+                "REDIS" -> {
+                    // 兜底：在 Redis 客户端就绪前使用本地存储，避免 INSTANCE 未初始化导致异常
+                    INSTANCE = DisableManager()
+                    consoleMessage(("&e┣&7Redis 客户端未就绪，临时使用本地缓存 &6*").colored())
+                }
                 "BROKER" -> {
                     consoleMessage(("&e┣&7已选择 BROKE 通道缓存 &a√").colored())
                     error("暂不支持")

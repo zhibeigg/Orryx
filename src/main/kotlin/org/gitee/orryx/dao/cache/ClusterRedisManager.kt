@@ -21,23 +21,48 @@ class ClusterRedisManager: ISyncCacheManager {
         debug { "Redis 获取玩家 Profile" }
         val tag = playerDataTag(player)
         val future = CompletableFuture<PlayerProfilePO>()
-        try {
-            api.useAsyncCommands { commands ->
-                commands[tag].thenAccept { json ->
-                    if (json == null) {
-                        IStorageManager.INSTANCE.getPlayerData(player).thenAccept {
-                            savePlayerProfile(player, it)
-                            future.complete(it)
+        api.useAsyncCommands { commands ->
+            commands[tag].whenComplete { json, error ->
+                when {
+                    error != null -> {
+                        error.printStackTrace()
+                        IStorageManager.INSTANCE.getPlayerData(player).whenComplete { data, storageError ->
+                            if (storageError != null) {
+                                future.completeExceptionally(storageError)
+                            } else {
+                                savePlayerProfile(player, data)
+                                future.complete(data)
+                            }
                         }
-                    } else {
-                        commands.expire(tag, RedisManager.SECOND_12_HOURS)
-                        future.complete(Json.decodeFromString<PlayerProfilePO>(json))
+                    }
+                    json == null -> {
+                        IStorageManager.INSTANCE.getPlayerData(player).whenComplete { data, storageError ->
+                            if (storageError != null) {
+                                future.completeExceptionally(storageError)
+                            } else {
+                                savePlayerProfile(player, data)
+                                future.complete(data)
+                            }
+                        }
+                    }
+                    else -> {
+                        try {
+                            commands.expire(tag, RedisManager.SECOND_12_HOURS)
+                            future.complete(Json.decodeFromString<PlayerProfilePO>(json))
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            IStorageManager.INSTANCE.getPlayerData(player).whenComplete { data, storageError ->
+                                if (storageError != null) {
+                                    future.completeExceptionally(storageError)
+                                } else {
+                                    savePlayerProfile(player, data)
+                                    future.complete(data)
+                                }
+                            }
+                        }
                     }
                 }
             }
-        } catch (e: Throwable) {
-            e.printStackTrace()
-            future.completeExceptionally(e)
         }
         return future
     }
@@ -47,23 +72,48 @@ class ClusterRedisManager: ISyncCacheManager {
         debug { "Redis 获取玩家 Job" }
         val tag = playerJobDataTag(player, id, job)
         val future = CompletableFuture<PlayerJobPO?>()
-        try {
-            api.useAsyncCommands { commands ->
-                commands[tag].thenAccept { json ->
-                    if (json == null) {
-                        IStorageManager.INSTANCE.getPlayerJob(player, id, job).thenAccept {
-                            it?.let { savePlayerJob(player, it) }
-                            future.complete(it)
+        api.useAsyncCommands { commands ->
+            commands[tag].whenComplete { json, error ->
+                when {
+                    error != null -> {
+                        error.printStackTrace()
+                        IStorageManager.INSTANCE.getPlayerJob(player, id, job).whenComplete { data, storageError ->
+                            if (storageError != null) {
+                                future.completeExceptionally(storageError)
+                            } else {
+                                data?.let { savePlayerJob(player, it) }
+                                future.complete(data)
+                            }
                         }
-                    } else {
-                        commands.expire(tag, RedisManager.SECOND_12_HOURS)
-                        future.complete(Json.decodeFromString<PlayerJobPO>(json))
+                    }
+                    json == null -> {
+                        IStorageManager.INSTANCE.getPlayerJob(player, id, job).whenComplete { data, storageError ->
+                            if (storageError != null) {
+                                future.completeExceptionally(storageError)
+                            } else {
+                                data?.let { savePlayerJob(player, it) }
+                                future.complete(data)
+                            }
+                        }
+                    }
+                    else -> {
+                        try {
+                            commands.expire(tag, RedisManager.SECOND_12_HOURS)
+                            future.complete(Json.decodeFromString<PlayerJobPO>(json))
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            IStorageManager.INSTANCE.getPlayerJob(player, id, job).whenComplete { data, storageError ->
+                                if (storageError != null) {
+                                    future.completeExceptionally(storageError)
+                                } else {
+                                    data?.let { savePlayerJob(player, it) }
+                                    future.complete(data)
+                                }
+                            }
+                        }
                     }
                 }
             }
-        } catch (e: Throwable) {
-            e.printStackTrace()
-            future.completeExceptionally(e)
         }
         return future
     }
@@ -73,23 +123,48 @@ class ClusterRedisManager: ISyncCacheManager {
         debug { "Redis 获取玩家 Skill" }
         val tag = playerJobSkillDataTag(player, id, job, skill)
         val future = CompletableFuture<PlayerSkillPO?>()
-        try {
-            api.useAsyncCommands { commands ->
-                commands[tag].thenAccept { json ->
-                    if (json == null) {
-                        IStorageManager.INSTANCE.getPlayerSkill(player, id, job, skill).thenAccept {
-                            it?.let { savePlayerSkill(player, it) }
-                            future.complete(it)
+        api.useAsyncCommands { commands ->
+            commands[tag].whenComplete { json, error ->
+                when {
+                    error != null -> {
+                        error.printStackTrace()
+                        IStorageManager.INSTANCE.getPlayerSkill(player, id, job, skill).whenComplete { data, storageError ->
+                            if (storageError != null) {
+                                future.completeExceptionally(storageError)
+                            } else {
+                                data?.let { savePlayerSkill(player, it) }
+                                future.complete(data)
+                            }
                         }
-                    } else {
-                        commands.expire(tag, RedisManager.SECOND_6_HOURS)
-                        future.complete(Json.decodeFromString<PlayerSkillPO>(json))
+                    }
+                    json == null -> {
+                        IStorageManager.INSTANCE.getPlayerSkill(player, id, job, skill).whenComplete { data, storageError ->
+                            if (storageError != null) {
+                                future.completeExceptionally(storageError)
+                            } else {
+                                data?.let { savePlayerSkill(player, it) }
+                                future.complete(data)
+                            }
+                        }
+                    }
+                    else -> {
+                        try {
+                            commands.expire(tag, RedisManager.SECOND_6_HOURS)
+                            future.complete(Json.decodeFromString<PlayerSkillPO>(json))
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            IStorageManager.INSTANCE.getPlayerSkill(player, id, job, skill).whenComplete { data, storageError ->
+                                if (storageError != null) {
+                                    future.completeExceptionally(storageError)
+                                } else {
+                                    data?.let { savePlayerSkill(player, it) }
+                                    future.complete(data)
+                                }
+                            }
+                        }
                     }
                 }
             }
-        } catch (e: Throwable) {
-            e.printStackTrace()
-            future.completeExceptionally(e)
         }
         return future
     }
@@ -99,23 +174,48 @@ class ClusterRedisManager: ISyncCacheManager {
         debug { "Redis 获取玩家 KeySetting" }
         val tag = playerKeySettingDataTag(player)
         val future = CompletableFuture<PlayerKeySettingPO?>()
-        try {
-            api.useAsyncCommands { commands ->
-                commands[tag].thenAccept { json ->
-                    if (json == null) {
-                        IStorageManager.INSTANCE.getPlayerKey(id).thenAccept {
-                            it?.let { savePlayerKeySetting(player, it) }
-                            future.complete(it)
+        api.useAsyncCommands { commands ->
+            commands[tag].whenComplete { json, error ->
+                when {
+                    error != null -> {
+                        error.printStackTrace()
+                        IStorageManager.INSTANCE.getPlayerKey(id).whenComplete { data, storageError ->
+                            if (storageError != null) {
+                                future.completeExceptionally(storageError)
+                            } else {
+                                data?.let { savePlayerKeySetting(player, it) }
+                                future.complete(data)
+                            }
                         }
-                    } else {
-                        commands.expire(tag, RedisManager.SECOND_6_HOURS)
-                        future.complete(Json.decodeFromString<PlayerKeySettingPO>(json))
+                    }
+                    json == null -> {
+                        IStorageManager.INSTANCE.getPlayerKey(id).whenComplete { data, storageError ->
+                            if (storageError != null) {
+                                future.completeExceptionally(storageError)
+                            } else {
+                                data?.let { savePlayerKeySetting(player, it) }
+                                future.complete(data)
+                            }
+                        }
+                    }
+                    else -> {
+                        try {
+                            commands.expire(tag, RedisManager.SECOND_6_HOURS)
+                            future.complete(Json.decodeFromString<PlayerKeySettingPO>(json))
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            IStorageManager.INSTANCE.getPlayerKey(id).whenComplete { data, storageError ->
+                                if (storageError != null) {
+                                    future.completeExceptionally(storageError)
+                                } else {
+                                    data?.let { savePlayerKeySetting(player, it) }
+                                    future.complete(data)
+                                }
+                            }
+                        }
                     }
                 }
             }
-        } catch (e: Throwable) {
-            e.printStackTrace()
-            future.completeExceptionally(e)
         }
         return future
     }
