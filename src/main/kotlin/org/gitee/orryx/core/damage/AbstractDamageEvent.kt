@@ -2,7 +2,6 @@ package org.gitee.orryx.core.damage
 
 import cn.bukkitmc.hero.AstraXHero
 import cn.bukkitmc.hero.astrax.operation.NumberOperation
-import com.eatthepath.uuid.FastUUID
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
 import org.bukkit.entity.Projectile
@@ -15,7 +14,6 @@ import org.gitee.orryx.utils.*
 import taboolib.common5.cdouble
 import taboolib.module.kether.ScriptContext
 import taboolib.platform.type.BukkitProxyEvent
-import java.util.*
 
 abstract class AbstractDamageEvent(
     val attacker: Entity,
@@ -63,9 +61,9 @@ abstract class AbstractDamageEvent(
             isAttributePlus() -> apEvent()!!.damage += damage
             isNodens() -> {
                 when(type) {
-                    PHYSICS -> noEvent()!!.processor.addDamageSource("Orryx@${FastUUID.toString(UUID.randomUUID())}", Damage.Physics, damage)
-                    MAGIC -> noEvent()!!.processor.addDamageSource("Orryx@${FastUUID.toString(UUID.randomUUID())}", Damage.Magic, damage)
-                    REAL -> noEvent()!!.processor.addDamageSource("Orryx@${FastUUID.toString(UUID.randomUUID())}", Damage.Real, damage)
+                    PHYSICS -> noEvent()!!.processor.addDamageSource("Orryx@${NanoId.generate()}", Damage.Physics, damage)
+                    MAGIC -> noEvent()!!.processor.addDamageSource("Orryx@${NanoId.generate()}", Damage.Magic, damage)
+                    REAL -> noEvent()!!.processor.addDamageSource("Orryx@${NanoId.generate()}", Damage.Real, damage)
                     else -> error("unsupported $type")
                 }
             }
@@ -80,8 +78,8 @@ abstract class AbstractDamageEvent(
             isAttributePlus() -> apEvent()!!.damage -= damage
             isNodens() -> {
                 when(type) {
-                    PHYSICS -> noEvent()!!.processor.addDefenceSource("Orryx@${FastUUID.toString(UUID.randomUUID())}", Defence.Physics, damage)
-                    MAGIC -> noEvent()!!.processor.addDamageSource("Orryx@${FastUUID.toString(UUID.randomUUID())}", Defence.Magic, damage)
+                    PHYSICS -> noEvent()!!.processor.addDefenceSource("Orryx@${NanoId.generate()}", Defence.Physics, damage)
+                    MAGIC -> noEvent()!!.processor.addDamageSource("Orryx@${NanoId.generate()}", Defence.Magic, damage)
                     else -> error("unsupported $type")
                 }
             }

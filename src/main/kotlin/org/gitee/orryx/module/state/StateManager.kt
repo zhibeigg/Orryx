@@ -56,6 +56,10 @@ object StateManager {
 
     private val playerInvisibleHandTaskMap = ConcurrentHashMap<UUID, SimpleTimeoutTask>()
 
+    // 按键事件节流 Map，key 为 "玩家UUID_按键"，value 为上次处理时间
+    private val keyPressThrottleMap = ConcurrentHashMap<String, Long>()
+    private const val THROTTLE_INTERVAL = 50L // 50ms 节流间隔
+
     @Config("state.yml")
     lateinit var state: ConfigFile
         private set
@@ -127,6 +131,8 @@ object StateManager {
     @SubscribeEvent
     private fun quit(e: PlayerQuitEvent) {
         playerDataMap.remove(e.player.uniqueId)?.nowRunningState?.stop()
+        // 清理节流 Map 中该玩家的数据
+        keyPressThrottleMap.keys.removeIf { it.startsWith("${e.player.uniqueId}_") }
     }
 
     @SubscribeEvent
@@ -134,27 +140,49 @@ object StateManager {
         autoCheckStatus(e.player)
     }
 
+    /**
+     * 公共按键处理方法
+     * @param player 玩家
+     * @param key 按键
+     */
+    private fun handleKeyPress(player: Player, key: String) {
+        // 节流检查：限制同一玩家同一按键的处理频率
+        val throttleKey = "${player.uniqueId}_$key"
+        val now = System.currentTimeMillis()
+        val lastPress = keyPressThrottleMap[throttleKey] ?: 0L
+        if (now - lastPress < THROTTLE_INTERVAL) return
+        keyPressThrottleMap[throttleKey] = now
+
+        val data = playerDataMap[player.uniqueId]
+        if (data == null) {
+            playerDataMap.getOrPut(player.uniqueId) { PlayerData(player) }
+                .updateMoveState(key)
+            return
+        }
+
+        data.updateMoveState(key)
+        if (data.status != null) {
+            data.tryNext(key)
+        }
+    }
+
     @Ghost
     @SubscribeEvent
     private fun press(e: KeyPressEvent) {
         if (e.isCancelled) return
-        val data = playerDataMap.getOrPut(e.player.uniqueId) { PlayerData(e.player) }
-        data.updateMoveState(e.key)
-        data.tryNext(e.key)
+        handleKeyPress(e.player, e.key)
     }
 
     @Ghost
     @SubscribeEvent
     private fun press(e: GermKeyDownEvent) {
         if (e.isCancelled) return
-        val data = playerDataMap.getOrPut(e.player.uniqueId) { PlayerData(e.player) }
         val key = when (val simpleKey = e.keyType.simpleKey) {
             "MLEFT" -> MOUSE_LEFT
             "MRIGHT" -> MOUSE_RIGHT
             else -> simpleKey
         }
-        data.updateMoveState(key)
-        data.tryNext(key)
+        handleKeyPress(e.player, key)
     }
 
     @Ghost

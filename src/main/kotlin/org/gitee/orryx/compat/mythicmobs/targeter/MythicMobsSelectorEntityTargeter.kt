@@ -1,6 +1,5 @@
 package org.gitee.orryx.compat.mythicmobs.targeter
 
-import com.eatthepath.uuid.FastUUID
 import io.lumine.xikage.mythicmobs.adapters.AbstractEntity
 import io.lumine.xikage.mythicmobs.adapters.bukkit.BukkitAdapter
 import io.lumine.xikage.mythicmobs.io.MythicLineConfig
@@ -11,6 +10,7 @@ import org.gitee.orryx.core.kether.ScriptManager.runKether
 import org.gitee.orryx.core.kether.parameter.MythicMobsParameter
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.targets.ITargetEntity
+import org.gitee.orryx.utils.NanoId
 import org.gitee.orryx.utils.PARAMETER
 import org.gitee.orryx.utils.forEachInstance
 import org.gitee.orryx.utils.orryxEnvironmentNamespaces
@@ -20,7 +20,6 @@ import taboolib.common.platform.function.adaptPlayer
 import taboolib.library.kether.BlockReader
 import taboolib.module.kether.ScriptContext
 import taboolib.module.kether.ScriptService
-import java.util.*
 
 @Ghost
 class MythicMobsSelectorEntityTargeter(mlc: MythicLineConfig): IEntitySelector(mlc) {
@@ -33,7 +32,7 @@ class MythicMobsSelectorEntityTargeter(mlc: MythicLineConfig): IEntitySelector(m
             val caster = BukkitAdapter.adapt(am)
             val targets = hashSetOf<AbstractEntity?>()
 
-            val context = ScriptContext.create(BlockReader(null, ScriptService, orryxEnvironmentNamespaces).parse(FastUUID.toString(UUID.randomUUID()))).also {
+            val context = ScriptContext.create(BlockReader(null, ScriptService, orryxEnvironmentNamespaces).parse(NanoId.generate())).also {
                 it.sender = adaptPlayer(data.caster.entity.bukkitEntity)
                 it[PARAMETER] = MythicMobsParameter(caster, BukkitAdapter.adapt(data.origin).toTarget())
             }

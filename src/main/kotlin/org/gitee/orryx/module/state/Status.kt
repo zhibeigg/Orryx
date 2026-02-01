@@ -1,6 +1,5 @@
 package org.gitee.orryx.module.state
 
-import com.eatthepath.uuid.FastUUID
 import kotlinx.coroutines.future.future
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.OrryxAPI
@@ -17,11 +16,14 @@ import taboolib.module.configuration.Configuration
 import taboolib.module.kether.Script
 import taboolib.module.kether.ScriptContext
 import taboolib.module.kether.orNull
-import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
 
 class Status(override val key: String, configuration: Configuration): IStatus {
+
+    // 使用递增 ID 替代 UUID.randomUUID()，减少性能开销
+    private val idCounter = AtomicLong(0)
 
     val options = Options(key, configuration.getConfigurationSection("Options")!!)
     val privateStates = mutableMapOf<String, IActionState>()
@@ -80,7 +82,8 @@ class Status(override val key: String, configuration: Configuration): IStatus {
         return runKether(CompletableFuture.completedFuture(null)) {
             ScriptContext.create(script).also {
                 it.sender = adaptPlayer(playerData.player)
-                it.id = FastUUID.toString(UUID.randomUUID())
+                // 使用递增 ID 替代 UUID，减少 randomUUID() 和 toString() 的开销
+                it.id = "${key}_${playerData.player.uniqueId}_${idCounter.incrementAndGet()}"
                 it["input"] = input
             }.runActions().thenApply {
                 it as IRunningState?

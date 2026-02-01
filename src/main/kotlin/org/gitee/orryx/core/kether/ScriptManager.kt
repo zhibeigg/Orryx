@@ -1,11 +1,11 @@
 package org.gitee.orryx.core.kether
 
-import com.eatthepath.uuid.FastUUID
 import com.github.benmanes.caffeine.cache.Caffeine
 import org.bukkit.event.player.PlayerQuitEvent
 import org.gitee.orryx.api.OrryxAPI.Companion.ketherScriptLoader
 import org.gitee.orryx.core.kether.parameter.IParameter
 import org.gitee.orryx.core.reload.Reload
+import org.gitee.orryx.utils.NanoId
 import org.gitee.orryx.utils.PARAMETER
 import org.gitee.orryx.utils.getBytes
 import org.gitee.orryx.utils.orryxEnvironmentNamespaces
@@ -38,7 +38,7 @@ object ScriptManager {
             .expireAfterAccess(10, TimeUnit.MINUTES)
             .build<String, Script>()
     }
-    private val closeableMap = ConcurrentHashMap<String, ConcurrentMap<UUID, AutoCloseable>>()
+    private val closeableMap = ConcurrentHashMap<String, ConcurrentMap<String, AutoCloseable>>()
 
     fun terminateAllSkills() {
         runningSkillScriptsMap.forEach {
@@ -71,22 +71,22 @@ object ScriptManager {
     }
 
     fun ScriptFrame.addOrryxCloseable(future: CompletableFuture<*>, closeable: AutoCloseable) {
-        val uuid = UUID.randomUUID()
-        script().addCloseable(uuid, closeable)
+        val id = NanoId.generate()
+        script().addCloseable(id, closeable)
         future.whenComplete { _, _ ->
             closeableMap[script().id]?.apply {
                 if (isNotEmpty()) {
-                    remove(uuid)
+                    remove(id)
                 }
             }
         }
     }
 
-    private fun ScriptContext.addCloseable(uuid: UUID, closeable: AutoCloseable) {
-        closeableMap.getOrPut(id) { ConcurrentHashMap() }[uuid] = closeable
+    private fun ScriptContext.addCloseable(closeableId: String, closeable: AutoCloseable) {
+        closeableMap.getOrPut(id) { ConcurrentHashMap() }[closeableId] = closeable
     }
 
-    internal fun ScriptContext.removeCloseable(): ConcurrentMap<UUID, AutoCloseable>? {
+    internal fun ScriptContext.removeCloseable(): ConcurrentMap<String, AutoCloseable>? {
         return closeableMap.remove(id)
     }
 
@@ -100,14 +100,14 @@ object ScriptManager {
             ScriptContext.create(script).also {
                 context?.invoke(it)
                 it.sender = sender
-                it.id = FastUUID.toString(UUID.randomUUID())
+                it.id = NanoId.generate()
                 it[PARAMETER] = parameter
             }.runActions()
         }
     }
 
     fun runScript(sender: ProxyCommandSender, parameter: IParameter, action: String, context: (ScriptContext.() -> Unit)? = null): CompletableFuture<Any?> {
-        val uuid = FastUUID.toString(UUID.randomUUID())
+        val uuid = NanoId.generate()
         val script = scriptCache.get(action) {
             runKether {
                 ketherScriptLoader.load(
@@ -130,7 +130,7 @@ object ScriptManager {
     }
 
     fun parseScript(sender: ProxyCommandSender, parameter: IParameter, actions: String, context: (ScriptContext.() -> Unit)? = null): String {
-        val uuid = FastUUID.toString(UUID.randomUUID())
+        val uuid = NanoId.generate()
         return reader.replaceNested(actions) {
             val script = scriptCache.get(this) {
                 runKether {
