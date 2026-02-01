@@ -32,13 +32,13 @@ object ScriptManager {
     val wikiSelectors by unsafeLazy { mutableListOf<org.gitee.orryx.module.wiki.Selector>() }
     val wikiTriggers by unsafeLazy { mutableListOf<org.gitee.orryx.module.wiki.Trigger>() }
 
-    private val scriptCache by unsafeLazy {
+    private val scriptCache by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         Caffeine.newBuilder()
             .maximumSize(1000)
             .expireAfterAccess(10, TimeUnit.MINUTES)
             .build<String, Script>()
     }
-    private val closeableMap by unsafeLazy { hashMapOf<String, ConcurrentMap<UUID, AutoCloseable>>() }
+    private val closeableMap = ConcurrentHashMap<String, ConcurrentMap<UUID, AutoCloseable>>()
 
     fun terminateAllSkills() {
         runningSkillScriptsMap.forEach {

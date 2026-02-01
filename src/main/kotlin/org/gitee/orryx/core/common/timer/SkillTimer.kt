@@ -9,12 +9,12 @@ import org.gitee.orryx.utils.getSkill
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.adaptPlayer
-import taboolib.common.util.unsafeLazy
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 object SkillTimer : ITimer {
 
-    private val playerCooldowns: MutableMap<UUID, MutableMap<String, CooldownEntry>> by unsafeLazy { hashMapOf() }
+    private val playerCooldowns = ConcurrentHashMap<UUID, ConcurrentHashMap<String, CooldownEntry>>()
 
     fun reset(player: Player, parameter: SkillParameter) {
         reset(adaptPlayer(player), parameter)
@@ -94,7 +94,7 @@ object SkillTimer : ITimer {
 
     override fun getCooldownMap(sender: ProxyCommandSender): MutableMap<String, CooldownEntry> {
         val playerId = sender.castSafely<Player>()?.uniqueId ?: throw IllegalArgumentException("Sender must be a Player")
-        return playerCooldowns.getOrPut(playerId) { hashMapOf() }
+        return playerCooldowns.getOrPut(playerId) { ConcurrentHashMap() }
     }
 
     override fun getCooldownEntry(sender: ProxyCommandSender, tag: String): CooldownEntry? {

@@ -41,6 +41,7 @@ interface IStorageManager {
 
         internal val lazyType: String by unsafeLazy { type }
 
+        @Volatile
         internal lateinit var INSTANCE: IStorageManager
 
         @Parallel("orryx_sql", runOn = LifeCycle.ENABLE)

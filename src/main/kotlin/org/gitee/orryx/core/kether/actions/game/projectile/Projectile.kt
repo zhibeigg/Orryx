@@ -20,6 +20,7 @@ import taboolib.library.kether.QuestContext
 import taboolib.module.kether.run
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentHashMap
 
 class Projectile<T: ITargetLocation<*>>(
     val type: ProjectileType,
@@ -44,7 +45,7 @@ class Projectile<T: ITargetLocation<*>>(
     lateinit var task: PlatformExecutor.PlatformTask
     private var ticked = -period
     private var hitCount = 0
-    private var hitCountMap = hashMapOf<UUID, Int>()
+    private var hitCountMap = ConcurrentHashMap<UUID, Int>()
 
     fun start(frame: QuestContext.Frame) {
         ensureSync {

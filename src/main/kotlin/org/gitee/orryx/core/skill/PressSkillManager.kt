@@ -14,10 +14,11 @@ import taboolib.common.platform.Ghost
 import taboolib.common.platform.event.SubscribeEvent
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentHashMap
 
 object PressSkillManager {
 
-    internal val pressTaskMap by lazy { hashMapOf<UUID, Tuple2<String, PipeTask>>() }
+    internal val pressTaskMap = ConcurrentHashMap<UUID, Tuple2<String, PipeTask>>()
 
     @Ghost
     @SubscribeEvent

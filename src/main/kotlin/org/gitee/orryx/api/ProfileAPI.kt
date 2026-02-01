@@ -15,9 +15,9 @@ import taboolib.common.platform.Awake
 import taboolib.common.platform.PlatformFactory
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.submit
-import taboolib.common.util.unsafeLazy
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 import java.util.function.Function
 
@@ -259,18 +259,18 @@ class ProfileAPI: IProfileAPI {
 
     companion object {
 
-        private val superBodyModifier: AttributeModifier by unsafeLazy { AttributeModifier("Orryx@SuperBody", 99999.0, AttributeModifier.Operation.ADD_NUMBER) }
+        private val superBodyModifier: AttributeModifier by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { AttributeModifier("Orryx@SuperBody", 99999.0, AttributeModifier.Operation.ADD_NUMBER) }
 
         // 霸体过期时间
-        private val superBodyMap by unsafeLazy { hashMapOf<UUID, SuperBodyInfo>() }
+        private val superBodyMap = ConcurrentHashMap<UUID, SuperBodyInfo>()
         // 无敌过期时间
-        private val invincibleMap by unsafeLazy { hashMapOf<UUID, InvincibleInfo>() }
+        private val invincibleMap = ConcurrentHashMap<UUID, InvincibleInfo>()
         // 免疫摔伤过期时间
-        private val superFootMap by unsafeLazy { hashMapOf<UUID, SuperFootInfo>() }
+        private val superFootMap = ConcurrentHashMap<UUID, SuperFootInfo>()
         // 格挡过期时间
-        private val blockMap by unsafeLazy { hashMapOf<UUID, BlockInfo>() }
+        private val blockMap = ConcurrentHashMap<UUID, BlockInfo>()
         // 沉默过期时间
-        private val silenceMap by unsafeLazy { hashMapOf<UUID, SilenceInfo>() }
+        private val silenceMap = ConcurrentHashMap<UUID, SilenceInfo>()
 
         class SuperBodyInfo(var timeout: Long)
         class InvincibleInfo(var timeout: Long)

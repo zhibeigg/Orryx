@@ -29,11 +29,11 @@ import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common.platform.function.submit
-import taboolib.common.util.unsafeLazy
 import taboolib.common5.cdouble
 import taboolib.module.chat.colored
 import taboolib.module.configuration.Configuration
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * UI 管理接口。
@@ -47,7 +47,7 @@ interface IUIManager {
         /**
          * owner, skill, [Cooldown]
          */
-        internal val skillCooldownMap by unsafeLazy { hashMapOf<UUID, MutableMap<String, Cooldown>>() }
+        internal val skillCooldownMap = ConcurrentHashMap<UUID, ConcurrentHashMap<String, Cooldown>>()
 
         class Cooldown(val skill: String, val max: Long) {
 
@@ -90,7 +90,7 @@ interface IUIManager {
 
         @SubscribeEvent
         private fun cooldown(e: OrryxPlayerSkillCooldownEvents.Set.Post) {
-            val cooldownMap = skillCooldownMap.getOrPut(e.player.uniqueId) { hashMapOf() }
+            val cooldownMap = skillCooldownMap.getOrPut(e.player.uniqueId) { ConcurrentHashMap() }
             val iterator = cooldownMap.iterator()
             while (iterator.hasNext()) {
                 val entry = iterator.next()
@@ -155,6 +155,7 @@ interface IUIManager {
         private val type
             get() = Orryx.config.getString("UI.use", "bukkit")!!.uppercase()
 
+        @Volatile
         internal lateinit var INSTANCE: IUIManager
 
         @Awake(LifeCycle.ENABLE)

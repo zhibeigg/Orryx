@@ -34,6 +34,7 @@ interface ISyncCacheManager {
 
         private val lazy by unsafeLazy { type }
 
+        @Volatile
         internal lateinit var INSTANCE: ISyncCacheManager
 
         @Ghost

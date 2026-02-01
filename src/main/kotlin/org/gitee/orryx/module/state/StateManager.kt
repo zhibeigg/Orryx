@@ -32,7 +32,6 @@ import taboolib.common.platform.Ghost
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.warning
-import taboolib.common.util.unsafeLazy
 import taboolib.common5.cbool
 import taboolib.common5.cfloat
 import taboolib.common5.clong
@@ -46,15 +45,16 @@ import taboolib.module.kether.orNull
 import taboolib.platform.util.onlinePlayers
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentHashMap
 
 object StateManager {
 
-    private val playerDataMap = hashMapOf<UUID, PlayerData>()
-    private val statusMap = hashMapOf<String, Status>()
-    private val controllerMap = hashMapOf<String, Configuration>()
-    private val globalState = hashMapOf<String, IActionState>()
+    private val playerDataMap = ConcurrentHashMap<UUID, PlayerData>()
+    private val statusMap = ConcurrentHashMap<String, Status>()
+    private val controllerMap = ConcurrentHashMap<String, Configuration>()
+    private val globalState = ConcurrentHashMap<String, IActionState>()
 
-    private val playerInvisibleHandTaskMap by unsafeLazy { hashMapOf<UUID, SimpleTimeoutTask>() }
+    private val playerInvisibleHandTaskMap = ConcurrentHashMap<UUID, SimpleTimeoutTask>()
 
     @Config("state.yml")
     lateinit var state: ConfigFile
