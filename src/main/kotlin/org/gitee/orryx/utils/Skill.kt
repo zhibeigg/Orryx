@@ -2,9 +2,6 @@ package org.gitee.orryx.utils
 
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.Orryx
-import org.gitee.orryx.api.events.player.press.OrryxPlayerPressStartEvent
-import org.gitee.orryx.api.events.player.press.OrryxPlayerPressStopEvent
-import org.gitee.orryx.api.events.player.press.OrryxPlayerPressTickEvent
 import org.gitee.orryx.api.events.player.skill.OrryxClearSkillLevelAndBackPointEvent
 import org.gitee.orryx.api.events.player.state.OrryxPlayerStateSkillEvents
 import org.gitee.orryx.core.common.timer.SkillTimer
@@ -14,28 +11,17 @@ import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.key.IBindKey
-import org.gitee.orryx.core.message.PluginMessageHandler
 import org.gitee.orryx.core.skill.*
-import org.gitee.orryx.core.skill.skills.DirectAimSkill
-import org.gitee.orryx.core.skill.skills.DirectSkill
-import org.gitee.orryx.core.skill.skills.PressingAimSkill
-import org.gitee.orryx.core.skill.skills.PressingSkill
-import org.gitee.orryx.core.station.pipe.PipeBuilder
+import org.gitee.orryx.core.skill.caster.SkillCasterRegistry
 import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.module.state.StateManager
 import org.gitee.orryx.module.state.StateManager.statusData
 import org.gitee.orryx.module.state.states.SkillState
 import taboolib.common.platform.function.adaptPlayer
-import taboolib.common5.cdouble
-import taboolib.common5.clong
 import taboolib.module.configuration.util.ReloadAwareLazy
 import taboolib.module.kether.extend
-import taboolib.module.kether.orNull
-import taboolib.platform.util.sendLang
-import java.util.*
 import java.util.concurrent.CompletableFuture
-import kotlin.Pair
 
 const val DIRECT = "Direct"
 const val DIRECT_AIM = "Direct Aim"
@@ -184,79 +170,7 @@ fun ICastSkill.consume(player: Player, parameter: SkillParameter) {
 
 fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean = true) {
     debug { "玩家 ${player.name} cast skill $key" }
-    when(val skill = this) {
-        is PressingSkill -> {
-            if (PressSkillManager.pressTaskMap.containsKey(player.uniqueId)) return
-            val maxPressTick = parameter.runCustomAction(skill.maxPressTickAction).orNull().clong
-            val time = System.currentTimeMillis()
-            PressSkillManager.pressTaskMap[player.uniqueId] = key paired PipeBuilder()
-                .uuid(UUID.randomUUID())
-                .timeout(maxPressTick)
-                .brokeTriggers(*skill.pressBrockTriggers)
-                .periodTask(period) {
-                    parameter.runCustomAction(skill.pressPeriodAction, mapOf(Pair("pressTick", (System.currentTimeMillis() - time) / 50)))
-                    OrryxPlayerPressTickEvent(player, skill, period, (System.currentTimeMillis() - time) / 50, maxPressTick).call()
-                }.onComplete {
-                    if (consume) skill.consume(player, parameter)
-                    val tick = (System.currentTimeMillis() - time) / 50
-                    parameter.runSkillAction(mapOf(Pair("pressTick", tick)))
-                    PressSkillManager.pressTaskMap.remove(player.uniqueId)
-                    OrryxPlayerPressStopEvent(player, skill, tick, maxPressTick).call()
-                    CompletableFuture.completedFuture(null)
-                }.onBrock {
-                    player.sendLang("pressing-broke", name)
-                    PressSkillManager.pressTaskMap.remove(player.uniqueId)
-                    OrryxPlayerPressStopEvent(player, skill, (System.currentTimeMillis() - time) / 50, maxPressTick).call()
-                    CompletableFuture.completedFuture(null)
-                }.build()
-            OrryxPlayerPressStartEvent(player, skill, maxPressTick).call()
-        }
-        is PressingAimSkill -> {
-            val aimRadius = parameter.runCustomAction(skill.aimRadiusAction).orNull().cdouble
-            val aimMin = parameter.runCustomAction(skill.aimMinAction).orNull().cdouble
-            val aimMax = parameter.runCustomAction(skill.aimMaxAction).orNull().cdouble
-            val maxTick = parameter.runCustomAction(skill.maxPressTickAction).orNull().clong
-            val timestamp = System.currentTimeMillis()
-            PluginMessageHandler.requestAiming(player, key, DEFAULT_PICTURE, aimMin, aimMax, aimRadius, maxTick) { aimInfo ->
-                aimInfo.getOrNull()?.let {
-                    if (it.skillId == skill.key) {
-                        if (consume) skill.consume(player, parameter)
-                        parameter.origin = it.location.toTarget()
-                        parameter.runSkillAction(
-                            mapOf(
-                                Pair("aimRadius", aimRadius),
-                                Pair("aimMin", aimMin),
-                                Pair("aimMax", aimMax),
-                                Pair("pressTick", (it.timestamp - timestamp)/50)
-                            )
-                        )
-                    }
-                }
-            }
-        }
-        is DirectSkill -> {
-            if (consume) skill.consume(player, parameter)
-            parameter.runSkillAction()
-        }
-        is DirectAimSkill -> {
-            val aimRadius = parameter.runCustomAction(skill.aimRadiusAction).orNull().cdouble
-            val aimSize = parameter.runCustomAction(skill.aimSizeAction).orNull().cdouble
-            PluginMessageHandler.requestAiming(player, key, DEFAULT_PICTURE, aimSize, aimRadius) { aimInfo ->
-                aimInfo.onSuccess {
-                    if (it.skillId == skill.key) {
-                        parameter.origin = it.location.toTarget()
-                        if (consume) skill.consume(player, parameter)
-                        parameter.runSkillAction(
-                            mapOf(
-                                Pair("aimRadius", aimRadius),
-                                Pair("aimSize", aimSize)
-                            )
-                        )
-                    }
-                }
-            }
-        }
-    }
+    SkillCasterRegistry.getCaster(this)?.cast(this, player, parameter, consume)
 }
 
 fun IPlayerSkill.tryCast(): CompletableFuture<CastResult> {
