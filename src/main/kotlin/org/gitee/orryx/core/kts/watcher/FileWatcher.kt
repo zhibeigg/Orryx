@@ -1,9 +1,11 @@
 package org.gitee.orryx.core.kts.watcher
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flowOn
 import java.io.File
 import java.nio.file.FileSystems
 import java.nio.file.Path
@@ -65,5 +67,5 @@ fun watchFolder(path: Path): Flow<FileEvent> {
             watchThread.unregisterWatcher()
             if (watchThread.isAlive) watchThread.interrupt()
         }
-    }
+    }.flowOn(Dispatchers.IO)
 }

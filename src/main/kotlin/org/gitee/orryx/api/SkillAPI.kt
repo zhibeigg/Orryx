@@ -4,6 +4,7 @@ import org.bukkit.entity.Player
 import org.gitee.orryx.api.interfaces.ISkillAPI
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.kether.parameter.SkillParameter
+import org.gitee.orryx.core.kether.parameter.SkillTrigger
 import org.gitee.orryx.core.skill.*
 import org.gitee.orryx.utils.castSkill
 import org.gitee.orryx.utils.getSkill
@@ -33,12 +34,15 @@ class SkillAPI: ISkillAPI {
     }
 
     override fun castSkill(player: Player, skill: String, level: Int) {
-        (SkillLoaderManager.getSkillLoader(skill) as ICastSkill).castSkill(player, SkillParameter(skill, player, level), false)
+        val parameter = SkillParameter(skill, player, level).apply {
+            trigger = SkillTrigger.Api("SkillAPI")
+        }
+        (SkillLoaderManager.getSkillLoader(skill) as ICastSkill).castSkill(player, parameter, false)
     }
 
     override fun tryCastSkill(player: Player, skill: String): CompletableFuture<CastResult?> {
         return player.getSkill(skill).thenCompose {
-            it?.tryCast()
+            it?.tryCast(SkillTrigger.Api("SkillAPI"))
         }
     }
 

@@ -4,6 +4,7 @@ import org.gitee.orryx.core.job.IJob
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.kether.ScriptManager.addOrryxCloseable
 import org.gitee.orryx.core.kether.parameter.SkillParameter
+import org.gitee.orryx.core.kether.parameter.SkillTrigger
 import org.gitee.orryx.core.profile.IPlayerProfile
 import org.gitee.orryx.core.skill.*
 import org.gitee.orryx.core.targets.ITargetLocation
@@ -109,7 +110,10 @@ object Actions {
                         containerOrSelf(they) { container ->
                             val skill = SkillLoaderManager.getSkillLoader(key) as ICastSkill
                             container.forEachInstance<PlayerTarget> { player ->
-                                skill.castSkill(player.getSource(), SkillParameter(skill.key, player.getSource(), level), consume)
+                                val parameter = SkillParameter(skill.key, player.getSource(), level).apply {
+                                    trigger = SkillTrigger.Script
+                                }
+                                skill.castSkill(player.getSource(), parameter, consume)
                             }
                         }
                     }
@@ -156,7 +160,7 @@ object Actions {
                     CompletableFuture.allOf(
                         *container.mapInstance<PlayerTarget, CompletableFuture<Void>> { player ->
                             player.getSource().getSkill(key).thenAccept { skill ->
-                                skill?.tryCast()
+                                skill?.tryCast(SkillTrigger.Script)
                             }
                         }.toTypedArray()
                     ).thenRun {

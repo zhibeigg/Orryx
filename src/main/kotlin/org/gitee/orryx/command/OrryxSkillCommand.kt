@@ -1,6 +1,7 @@
 package org.gitee.orryx.command
 
 import org.gitee.orryx.core.kether.parameter.SkillParameter
+import org.gitee.orryx.core.kether.parameter.SkillTrigger
 import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.skill.ICastSkill
 import org.gitee.orryx.core.skill.PressSkillManager
@@ -56,20 +57,29 @@ object OrryxSkillCommand {
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
                     val skill = SkillLoaderManager.getSkillLoader(ctx["skill"]) as ICastSkill
-                    skill.castSkill(player, SkillParameter(skill.key, player, 1), false)
+                    val parameter = SkillParameter(skill.key, player, 1).apply {
+                        trigger = SkillTrigger.Command("/skill cast ${ctx["skill"]}")
+                    }
+                    skill.castSkill(player, parameter, false)
                 }
                 int("level") {
                     exec<ProxyCommandSender> {
                         val player = ctx.bukkitPlayer() ?: return@exec
                         val skill = SkillLoaderManager.getSkillLoader(ctx["skill"]) as ICastSkill
-                        skill.castSkill(player, SkillParameter(skill.key, player, ctx["level"].cint), false)
+                        val parameter = SkillParameter(skill.key, player, ctx["level"].cint).apply {
+                            trigger = SkillTrigger.Command("/skill cast ${ctx["skill"]} ${ctx["level"]}")
+                        }
+                        skill.castSkill(player, parameter, false)
                     }
                     bool("consume") {
                         exec<ProxyCommandSender> {
                             val player = ctx.bukkitPlayer() ?: return@exec
                             val skill = SkillLoaderManager.getSkillLoader(ctx["skill"]) as ICastSkill
                             val consume = ctx["consume"].cbool
-                            skill.castSkill(player, SkillParameter(skill.key, player, ctx["level"].cint), consume)
+                            val parameter = SkillParameter(skill.key, player, ctx["level"].cint).apply {
+                                trigger = SkillTrigger.Command("/skill cast ${ctx["skill"]} ${ctx["level"]} ${ctx["consume"]}")
+                            }
+                            skill.castSkill(player, parameter, consume)
                         }
                     }
                 }
@@ -101,7 +111,7 @@ object OrryxSkillCommand {
                 exec<ProxyCommandSender> {
                     val player = ctx.bukkitPlayer() ?: return@exec
                     player.getSkill(ctx["skill"]).thenApply {
-                        it?.tryCast()
+                        it?.tryCast(SkillTrigger.Command("/skill tryCast ${ctx["skill"]}"))
                     }
                 }
             }

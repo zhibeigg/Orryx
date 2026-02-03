@@ -1,6 +1,7 @@
 package org.gitee.orryx.utils
 
 import org.bukkit.entity.Player
+import org.gitee.orryx.core.kether.parameter.SkillTrigger
 import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.key.IGroup
@@ -26,8 +27,9 @@ fun IBindKey.getBindSkill(player: Player): CompletableFuture<IPlayerSkill?> {
 }
 
 fun IBindKey.tryCast(player: Player): CompletableFuture<CastResult?> {
+    val bindKey = this
     return getBindSkill(player).thenCompose { skill ->
-        skill?.tryCast() ?: CompletableFuture.completedFuture(null)
+        skill?.tryCast(SkillTrigger.Key(bindKey)) ?: CompletableFuture.completedFuture(null)
     }
 }
 

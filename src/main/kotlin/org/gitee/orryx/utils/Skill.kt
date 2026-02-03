@@ -9,6 +9,7 @@ import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.kether.KetherScript
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.kether.parameter.SkillParameter
+import org.gitee.orryx.core.kether.parameter.SkillTrigger
 import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.skill.*
@@ -175,9 +176,9 @@ fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean
     SkillCasterRegistry.getCaster(this)?.cast(this, player, parameter, consume)
 }
 
-fun IPlayerSkill.tryCast(): CompletableFuture<CastResult> {
+fun IPlayerSkill.tryCast(trigger: SkillTrigger = SkillTrigger.Unknown): CompletableFuture<CastResult> {
     debug { "玩家 ${player.name} try cast skill $key" }
-    val parameter = parameter()
+    val parameter = parameter().apply { this.trigger = trigger }
     val result = castCheck(parameter)
     result.thenAccept {
         debug { "玩家 ${player.name} try cast skill result ${it.name}" }
