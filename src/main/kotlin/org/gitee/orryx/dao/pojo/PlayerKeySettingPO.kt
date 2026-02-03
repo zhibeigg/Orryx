@@ -2,7 +2,7 @@ package org.gitee.orryx.dao.pojo
 
 import kotlinx.serialization.Serializable
 import org.gitee.orryx.dao.serializer.UUIDSerializer
-import java.util.UUID
+import java.util.*
 
 @Serializable
 data class PlayerKeySettingPO(

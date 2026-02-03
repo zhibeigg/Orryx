@@ -5,18 +5,8 @@ import org.gitee.orryx.compat.IAttributeBridge
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
-import org.gitee.orryx.utils.ORRYX_NAMESPACE
-import org.gitee.orryx.utils.container
-import org.gitee.orryx.utils.forEachInstance
-import org.gitee.orryx.utils.nextTheyContainerOrNull
-import org.gitee.orryx.utils.scriptParser
-import org.gitee.orryx.utils.self
-import taboolib.module.kether.KetherParser
-import taboolib.module.kether.actionNow
-import taboolib.module.kether.long
-import taboolib.module.kether.run
-import taboolib.module.kether.str
-import taboolib.module.kether.switch
+import org.gitee.orryx.utils.*
+import taboolib.module.kether.*
 
 object AttributeActions {
 

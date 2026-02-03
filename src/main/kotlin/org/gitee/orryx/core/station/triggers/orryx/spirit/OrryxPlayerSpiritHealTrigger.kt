@@ -9,7 +9,6 @@ import org.gitee.orryx.module.wiki.Type
 import taboolib.common.OpenResult
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
-import taboolib.module.kether.KetherProperty
 
 object OrryxPlayerSpiritHealTrigger: AbstractPropertyEventTrigger<OrryxPlayerSpiritEvents.Heal>("Orryx Player Spirit Heal") {
 

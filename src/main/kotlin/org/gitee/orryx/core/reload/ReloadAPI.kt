@@ -14,13 +14,10 @@ import taboolib.common.platform.Awake
 import taboolib.common.platform.Ghost
 import taboolib.common.platform.PlatformFactory
 import taboolib.common.platform.event.SubscribeEvent
-import taboolib.common.platform.function.console
-import taboolib.common.platform.function.info
 import taboolib.common.platform.function.submit
 import taboolib.common.util.unsafeLazy
 import taboolib.library.reflex.ClassMethod
 import taboolib.library.reflex.ReflexClass
-import taboolib.module.chat.colored
 
 @Awake
 object ReloadAPI: IReloadAPI, ClassVisitor(3) {

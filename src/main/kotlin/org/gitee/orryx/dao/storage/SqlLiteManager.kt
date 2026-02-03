@@ -3,7 +3,6 @@ package org.gitee.orryx.dao.storage
 import com.eatthepath.uuid.FastUUID
 import com.google.common.collect.Interner
 import com.google.common.collect.Interners
-import eos.moe.armourers.tr
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.gitee.orryx.api.OrryxAPI

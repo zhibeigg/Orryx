@@ -10,11 +10,7 @@ import org.gitee.orryx.core.kether.ScriptManager.runKether
 import org.gitee.orryx.core.kether.parameter.MythicMobsParameter
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.targets.ITargetLocation
-import org.gitee.orryx.utils.NanoId
-import org.gitee.orryx.utils.PARAMETER
-import org.gitee.orryx.utils.forEachInstance
-import org.gitee.orryx.utils.orryxEnvironmentNamespaces
-import org.gitee.orryx.utils.toTarget
+import org.gitee.orryx.utils.*
 import taboolib.common.platform.Ghost
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.library.kether.BlockReader

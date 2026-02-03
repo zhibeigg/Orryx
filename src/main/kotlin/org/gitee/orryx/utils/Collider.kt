@@ -1,13 +1,6 @@
 package org.gitee.orryx.utils
 
-import org.gitee.orryx.api.collider.ColliderType
-import org.gitee.orryx.api.collider.IAABB
-import org.gitee.orryx.api.collider.ICapsule
-import org.gitee.orryx.api.collider.ICollider
-import org.gitee.orryx.api.collider.IComposite
-import org.gitee.orryx.api.collider.IOBB
-import org.gitee.orryx.api.collider.IRay
-import org.gitee.orryx.api.collider.ISphere
+import org.gitee.orryx.api.collider.*
 import org.gitee.orryx.api.collider.local.ICoordinateConverter
 import org.gitee.orryx.core.kether.actions.math.hitbox.collider.local.TargetCoordinateConverter
 import org.gitee.orryx.core.targets.ITargetLocation

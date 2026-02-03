@@ -1,10 +1,8 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
-import org.bukkit.event.player.PlayerCommandSendEvent
 import org.gitee.orryx.api.events.damage.OrryxDamageEvents
 import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.station.stations.IStation
-import org.gitee.orryx.core.station.triggers.AbstractEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup

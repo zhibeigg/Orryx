@@ -4,11 +4,8 @@ import org.gitee.orryx.api.collider.IAABB
 import org.gitee.orryx.api.collider.local.ICoordinateConverter
 import org.gitee.orryx.api.collider.local.ILocalOBB
 import org.gitee.orryx.core.targets.ITargetLocation
-import org.gitee.orryx.utils.bukkit
 import org.joml.Quaterniond
 import org.joml.Vector3d
-import taboolib.platform.util.onlinePlayers
-import kotlin.collections.get
 
 open class LocalOBB<T : ITargetLocation<*>>(
     halfExtents: Vector3d,

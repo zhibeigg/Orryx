@@ -2,7 +2,6 @@ package org.gitee.orryx.api.interfaces
 
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.job.IPlayerJob
-import org.gitee.orryx.core.profile.IPlayerProfile
 import org.gitee.orryx.core.skill.CastResult
 import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.core.skill.ISkill

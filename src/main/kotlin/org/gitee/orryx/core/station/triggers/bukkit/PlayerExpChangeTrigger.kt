@@ -1,19 +1,12 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
-import org.bukkit.event.player.PlayerEggThrowEvent
 import org.bukkit.event.player.PlayerExpChangeEvent
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
-import org.gitee.orryx.utils.abstract
 import taboolib.common.OpenResult
-import taboolib.common5.cbool
-import taboolib.common5.cbyte
 import taboolib.common5.cint
-import taboolib.library.xseries.XEntityType
-import taboolib.module.kether.ScriptContext
 
 object PlayerExpChangeTrigger: AbstractPropertyPlayerEventTrigger<PlayerExpChangeEvent>("Player Exp Change") {
 

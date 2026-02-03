@@ -73,7 +73,6 @@ taboolib {
     relocate("com.larksuite.oapi", "org.gitee.orryx.larksuite.oapi")
     relocate("com.eatthepath.uuid", "org.gitee.orryx.eatthepath.uuid")
     relocate("kotlinx.serialization", "org.gitee.orryx.serialization")
-    relocate("kotlin.script.experimental", "kotlin2120.script.experimental")
     version { taboolib = "6.2.4-1645904" }
 }
 
@@ -111,14 +110,6 @@ dependencies {
     compileOnly("org.joml:joml:1.10.7")
     compileOnly("com.larksuite.oapi:oapi-sdk:2.4.22")
     compileOnly("com.eatthepath:fast-uuid:0.2.0")
-
-    compileOnly("org.jetbrains.kotlin:kotlin-scripting-common:2.1.20")
-    compileOnly("org.jetbrains.kotlin:kotlin-scripting-jvm:2.1.20")
-    compileOnly("org.jetbrains.kotlin:kotlin-scripting-jvm-host:2.1.20")
-    compileOnly("org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:2.1.20")
-    compileOnly("org.jetbrains.kotlin:kotlin-scripting-dependencies:2.1.20")
-    compileOnly("org.jetbrains.kotlin:kotlin-scripting-dependencies-maven:2.1.20")
-    compileOnly("org.jetbrains.kotlin:kotlin-compiler-embeddable:2.1.20")
 
     testCompileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
     testCompileOnly("com.github.ben-manes.caffeine:caffeine:2.9.3")

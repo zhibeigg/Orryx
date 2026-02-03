@@ -2,8 +2,8 @@ package org.gitee.orryx.core.kether.parameter
 
 import org.bukkit.Location
 import org.bukkit.entity.Player
-import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.kether.ScriptManager
+import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.skill.ISkill
 import org.gitee.orryx.core.skill.SkillLoaderManager
 import org.gitee.orryx.core.targets.ITargetLocation

@@ -10,8 +10,6 @@ import taboolib.common.OpenResult
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common5.clong
-import taboolib.module.kether.KetherLoader
-import taboolib.module.kether.KetherProperty
 
 object OrryxPlayerSkillCooldownReduceTrigger: AbstractPropertyEventTrigger<OrryxPlayerSkillCooldownEvents.Reduce.Pre>("Orryx Player Skill Cooldown Reduce") {
 

@@ -5,11 +5,7 @@ import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.message.PluginMessageHandler
 import org.gitee.orryx.core.skill.ISkill
 import org.gitee.orryx.core.skill.skills.PressingAimSkill
-import org.gitee.orryx.utils.DEFAULT_PICTURE
-import org.gitee.orryx.utils.consume
-import org.gitee.orryx.utils.runCustomAction
-import org.gitee.orryx.utils.runSkillAction
-import org.gitee.orryx.utils.toTarget
+import org.gitee.orryx.utils.*
 import taboolib.common5.cdouble
 import taboolib.common5.clong
 import taboolib.module.kether.orNull

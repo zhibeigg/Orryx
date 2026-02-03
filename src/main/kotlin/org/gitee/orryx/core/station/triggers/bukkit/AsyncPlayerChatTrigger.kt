@@ -1,16 +1,11 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
 import org.bukkit.event.player.AsyncPlayerChatEvent
-import org.bukkit.event.player.AsyncPlayerChatPreviewEvent
-import org.gitee.orryx.core.container.Container
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
-import org.gitee.orryx.utils.toTarget
 import taboolib.common.OpenResult
-import taboolib.module.kether.ScriptContext
 
 object AsyncPlayerChatTrigger: AbstractPropertyPlayerEventTrigger<AsyncPlayerChatEvent>("Async Player Chat") {
 

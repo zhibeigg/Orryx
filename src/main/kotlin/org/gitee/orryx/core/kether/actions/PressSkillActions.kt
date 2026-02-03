@@ -6,14 +6,7 @@ import org.gitee.orryx.core.skill.PressSkillManager
 import org.gitee.orryx.core.targets.PlayerTarget
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
-import org.gitee.orryx.utils.ORRYX_NAMESPACE
-import org.gitee.orryx.utils.container
-import org.gitee.orryx.utils.firstInstanceOrNull
-import org.gitee.orryx.utils.forEachInstance
-import org.gitee.orryx.utils.nextHeadActionOrNull
-import org.gitee.orryx.utils.nextTheyContainerOrNull
-import org.gitee.orryx.utils.scriptParser
-import org.gitee.orryx.utils.self
+import org.gitee.orryx.utils.*
 import taboolib.common5.clong
 import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*

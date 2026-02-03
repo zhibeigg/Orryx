@@ -8,7 +8,6 @@ import org.gitee.orryx.utils.scriptParser
 import taboolib.module.kether.KetherParser
 import taboolib.module.kether.actionNow
 import kotlin.math.*
-import kotlin.math.pow
 
 object MathActions {
 

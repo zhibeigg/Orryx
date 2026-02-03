@@ -1,15 +1,11 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
-import org.bukkit.event.player.PlayerExpCooldownChangeEvent
 import org.bukkit.event.player.PlayerGameModeChangeEvent
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
 import taboolib.common.OpenResult
-import taboolib.common5.cint
-import taboolib.module.kether.ScriptContext
 
 object PlayerGameModeChangeTrigger: AbstractPropertyPlayerEventTrigger<PlayerGameModeChangeEvent>("Player GameMode Change") {
 

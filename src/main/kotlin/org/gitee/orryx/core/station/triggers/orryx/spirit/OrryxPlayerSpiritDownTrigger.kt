@@ -10,7 +10,6 @@ import taboolib.common.OpenResult
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common5.cdouble
-import taboolib.module.kether.KetherProperty
 
 object OrryxPlayerSpiritDownTrigger: AbstractPropertyEventTrigger<OrryxPlayerSpiritEvents.Down>("Orryx Player Spirit Down") {
 

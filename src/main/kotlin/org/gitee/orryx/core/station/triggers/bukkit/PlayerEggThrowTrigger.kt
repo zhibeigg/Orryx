@@ -1,9 +1,6 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
-import org.bukkit.event.player.PlayerEditBookEvent
 import org.bukkit.event.player.PlayerEggThrowEvent
-import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
@@ -13,7 +10,6 @@ import taboolib.common.OpenResult
 import taboolib.common5.cbool
 import taboolib.common5.cbyte
 import taboolib.library.xseries.XEntityType
-import taboolib.module.kether.ScriptContext
 
 object PlayerEggThrowTrigger: AbstractPropertyPlayerEventTrigger<PlayerEggThrowEvent>("Player Egg Throw") {
 

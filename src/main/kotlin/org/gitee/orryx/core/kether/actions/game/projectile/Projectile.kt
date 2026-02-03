@@ -18,7 +18,7 @@ import taboolib.common.platform.service.PlatformExecutor
 import taboolib.library.kether.ParsedAction
 import taboolib.library.kether.QuestContext
 import taboolib.module.kether.run
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 

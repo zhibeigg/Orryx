@@ -1,17 +1,13 @@
 package org.gitee.orryx.core.station.triggers.bukkit
 
-import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
-import org.gitee.orryx.core.station.triggers.AbstractPlayerEventTrigger
 import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
-import org.gitee.orryx.core.targets.LocationTarget
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.abstract
 import org.gitee.orryx.utils.toTarget
 import taboolib.common.OpenResult
-import taboolib.module.kether.ScriptContext
 
 object PlayerInteractTrigger: AbstractPropertyPlayerEventTrigger<PlayerInteractEvent>("Player Interact") {
 

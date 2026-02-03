@@ -2,12 +2,9 @@ package org.gitee.orryx.utils
 
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
-import org.gitee.orryx.api.Orryx
 import taboolib.common5.cint
 import taboolib.common5.clong
 import kotlin.math.pow
-import kotlin.properties.ReadOnlyProperty
-import kotlin.reflect.KProperty
 
 internal fun String?.toIntPair(vararg delimiters: String): Pair<Int, Int> {
     this ?: return Pair(0, 0)

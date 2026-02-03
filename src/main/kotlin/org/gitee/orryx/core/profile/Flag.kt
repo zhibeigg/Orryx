@@ -4,7 +4,7 @@ import org.bukkit.entity.Player
 import org.gitee.orryx.utils.orryxProfileTo
 import taboolib.common.platform.function.submit
 import taboolib.common.platform.service.PlatformExecutor
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 open class Flag<T: Any>(override val value: T, override val isPersistence: Boolean, override val timeout: Long) : IFlag {

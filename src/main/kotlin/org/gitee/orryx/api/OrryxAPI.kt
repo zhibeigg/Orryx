@@ -44,48 +44,6 @@ import kotlin.time.Duration.Companion.seconds
         test = "!org.gitee.orryx.serialization.json.Json",
         relocate = ["!kotlin.", "!kotlin2120.", "!kotlinx.serialization.", "!org.gitee.orryx.serialization."],
         transitive = false
-    ),
-    RuntimeDependency(
-        "!org.jetbrains.kotlin:kotlin-scripting-common:2.1.20",
-        test = "!kotlin2120.script.experimental.api.ScriptEvaluator",
-        relocate = ["!kotlin.", "!kotlin2120."],
-        transitive = false
-    ),
-    RuntimeDependency(
-        "!org.jetbrains.kotlin:kotlin-scripting-jvm:2.1.20",
-        test = "!kotlin2120.script.experimental.jvm.JvmDependency",
-        relocate = ["!kotlin.", "!kotlin2120."],
-        transitive = false
-    ),
-    RuntimeDependency(
-        "!org.jetbrains.kotlin:kotlin-scripting-jvm-host:2.1.20",
-        test = "!kotlin2120.script.experimental.jvmhost.JvmScriptCompiler",
-        relocate = ["!kotlin.", "!kotlin2120."],
-        transitive = false
-    ),
-    RuntimeDependency(
-        "!org.jetbrains.kotlin:kotlin-scripting-dependencies:2.1.20",
-        test = "!kotlin2120.script.experimental.dependencies.DependsOn",
-        relocate = ["!kotlin.", "!kotlin2120."],
-        transitive = false
-    ),
-    RuntimeDependency(
-        "!org.jetbrains.kotlin:kotlin-scripting-dependencies-maven:2.1.20",
-        test = "!kotlin2120.script.experimental.dependencies.maven.MavenDependenciesResolver",
-        relocate = ["!kotlin.", "!kotlin2120."],
-        transitive = false
-    ),
-    RuntimeDependency(
-        "!org.jetbrains.kotlin:kotlin-compiler-embeddable:2.1.20",
-        test = "!org.jetbrains.kotlin.compilerRunner.CompilerEnvironment",
-        relocate = ["!kotlin.", "!kotlin2120."],
-        transitive = false
-    ),
-    RuntimeDependency(
-        "!org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:2.1.20",
-        test = "!org.jetbrains.kotlin.scripting.configuration.ScriptingConfigurationKeys",
-        relocate = ["!kotlin.", "!kotlin2120."],
-        transitive = false
     )
 )
 class OrryxAPI: IOrryxAPI {

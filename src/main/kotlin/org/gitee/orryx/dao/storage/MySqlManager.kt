@@ -18,7 +18,6 @@ import taboolib.module.database.ColumnOptionSQL
 import taboolib.module.database.ColumnTypeSQL
 import taboolib.module.database.Table
 import taboolib.module.database.getHost
-import taboolib.platform.bukkit.Parallel
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap

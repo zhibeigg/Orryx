@@ -29,7 +29,7 @@ import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common5.cbool
 import taboolib.common5.cint
 import taboolib.module.kether.orNull
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.CompletableFuture
 
 class PlayerSkill(

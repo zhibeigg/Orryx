@@ -2,7 +2,7 @@ package org.gitee.orryx.utils
 
 import com.eatthepath.uuid.FastUUID
 import java.nio.ByteBuffer
-import java.util.UUID
+import java.util.*
 
 fun String.parseUUID(): UUID? {
     return runCatching { FastUUID.parseUUID(this) }.getOrNull()

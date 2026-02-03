@@ -1,6 +1,5 @@
 package org.gitee.orryx.core.kether.actions
 
-import eos.moe.armourers.tr
 import org.gitee.orryx.core.common.timer.SkillTimer
 import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.key.BindKeyLoaderManager

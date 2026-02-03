@@ -1,10 +1,6 @@
 package org.gitee.orryx.module.wiki
 
-import com.lark.oapi.service.docx.v1.enums.BlockBlockTypeEnum
-import com.lark.oapi.service.docx.v1.enums.CalloutCalloutBackgroundColorEnum
-import com.lark.oapi.service.docx.v1.enums.CalloutCalloutBorderColorEnum
-import com.lark.oapi.service.docx.v1.enums.TextStyleAlignEnum
-import com.lark.oapi.service.docx.v1.enums.TextStyleCodeLanguageEnum
+import com.lark.oapi.service.docx.v1.enums.*
 import com.lark.oapi.service.docx.v1.model.*
 
 class Action(val group: String, val name: String, val key: String, val sharded: Boolean, val entries: MutableList<Entry> = mutableListOf(), var description: String = "", var example: MutableList<String> = mutableListOf()): WikiBlock {

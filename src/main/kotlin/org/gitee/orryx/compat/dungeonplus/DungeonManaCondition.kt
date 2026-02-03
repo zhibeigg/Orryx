@@ -2,7 +2,6 @@ package org.gitee.orryx.compat.dungeonplus
 
 import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.utils.RangedDouble
-import org.gitee.orryx.utils.job
 import org.serverct.ersha.dungeon.common.api.annotation.AutoRegister
 import org.serverct.ersha.dungeon.common.api.component.script.ActionScriptDescription
 import org.serverct.ersha.dungeon.common.api.component.script.BasicActionScript

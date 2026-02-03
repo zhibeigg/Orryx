@@ -1,17 +1,12 @@
 package org.gitee.orryx.command
 
 import org.gitee.orryx.api.Orryx
-import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.utils.bukkitPlayer
-import org.gitee.orryx.utils.debug
-import org.gitee.orryx.utils.orryxProfile
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.command.CommandBody
 import taboolib.common.platform.command.int
 import taboolib.common.platform.command.player
-import taboolib.common.platform.command.restrictDouble
 import taboolib.common.platform.command.subCommand
-import taboolib.common5.cdouble
 import taboolib.common5.cint
 
 object OrryxSilenceCommand {

@@ -4,13 +4,10 @@ import com.germ.germplugin.api.GermKeyAPI
 import com.germ.germplugin.api.KeyType
 import com.germ.germplugin.api.bean.KeyBinding
 import com.germ.germplugin.api.event.GermKeyDownEvent
-import eos.moe.dragoncore.config.Config
-import org.bukkit.inventory.meta.BookMeta
 import org.gitee.orryx.core.station.Plugin
 import org.gitee.orryx.core.station.pipe.IPipeTask
 import org.gitee.orryx.core.station.stations.IStation
 import org.gitee.orryx.core.station.triggers.AbstractPropertyEventTrigger
-import org.gitee.orryx.core.station.triggers.bukkit.PlayerEditBookTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
@@ -19,7 +16,6 @@ import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common5.cint
 import taboolib.module.kether.KetherLoader
-import taboolib.module.kether.KetherProperty
 import taboolib.module.kether.ScriptProperty
 
 @Plugin("GermPlugin")

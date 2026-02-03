@@ -5,12 +5,7 @@ import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
 import taboolib.common.platform.function.adaptCommandSender
-import taboolib.module.kether.KetherParser
-import taboolib.module.kether.actionFuture
-import taboolib.module.kether.actionNow
-import taboolib.module.kether.run
-import taboolib.module.kether.script
-import kotlin.run
+import taboolib.module.kether.*
 
 object ContextActions {
 

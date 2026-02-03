@@ -9,16 +9,7 @@ import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.core.targets.PlayerTarget
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
-import org.gitee.orryx.utils.DragonCorePlugin
-import org.gitee.orryx.utils.ORRYX_NAMESPACE
-import org.gitee.orryx.utils.all
-import org.gitee.orryx.utils.consoleMessage
-import org.gitee.orryx.utils.containerOrSelf
-import org.gitee.orryx.utils.ensureSync
-import org.gitee.orryx.utils.forEachInstance
-import org.gitee.orryx.utils.nextTheyContainerOrNull
-import org.gitee.orryx.utils.parse
-import org.gitee.orryx.utils.scriptParser
+import org.gitee.orryx.utils.*
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.event.SubscribeEvent
