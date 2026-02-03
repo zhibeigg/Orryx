@@ -1,14 +1,43 @@
 package org.gitee.orryx.core.kether.actions
 
 import org.gitee.orryx.core.key.BindKeyLoaderManager
+import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.ORRYX_NAMESPACE
 import org.gitee.orryx.utils.keySetting
 import org.gitee.orryx.utils.scriptParser
+import taboolib.common.OpenResult
 import taboolib.module.kether.*
 
 object KeyActions {
+
+    init {
+        KetherLoader.registerProperty(propertyBindKey(), IBindKey::class.java, false)
+    }
+
+    /**
+     * IBindKey 的 ScriptProperty。
+     *
+     * 支持的属性：
+     * - key: 按键绑定的键名
+     * - name: 同 key
+     * - sort: 排序权重
+     */
+    fun propertyBindKey() = object : ScriptProperty<IBindKey>("bindKey.operator") {
+
+        override fun read(instance: IBindKey, key: String): OpenResult {
+            return when (key) {
+                "key", "name" -> OpenResult.successful(instance.key)
+                "sort" -> OpenResult.successful(instance.sort)
+                else -> OpenResult.failed()
+            }
+        }
+
+        override fun write(instance: IBindKey, key: String, value: Any?): OpenResult {
+            return OpenResult.failed()
+        }
+    }
 
     @KetherParser(["keySetting"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun actionState() = scriptParser(

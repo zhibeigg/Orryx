@@ -22,6 +22,15 @@ object VectorMathActions {
         KetherLoader.registerProperty(propertyVector(), IVector::class.java, false)
     }
 
+    /**
+     * Vector3dc (JOML 只读向量) 的 ScriptProperty。
+     *
+     * 支持的属性（只读）：
+     * - x: X 分量
+     * - y: Y 分量
+     * - z: Z 分量
+     * - size/length: 向量长度
+     */
     fun propertyIVector() = object : ScriptProperty<Vector3dc>("Vector3dc.operator") {
 
         override fun read(instance: Vector3dc, key: String): OpenResult {
@@ -39,6 +48,14 @@ object VectorMathActions {
         }
     }
 
+    /**
+     * IVector (可变向量) 的 ScriptProperty。
+     *
+     * 支持的属性（可读写）：
+     * - x: X 分量
+     * - y: Y 分量
+     * - z: Z 分量
+     */
     fun propertyVector() = object : ScriptProperty<IVector>("vector.operator") {
 
         override fun read(instance: IVector, key: String): OpenResult {

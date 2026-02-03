@@ -157,6 +157,13 @@ object ItemActions {
     }
 
 
+    /**
+     * ItemTag 的 ScriptProperty。
+     *
+     * 支持读写任意 NBT 键值：
+     * - 读取: 返回指定键的 NBT 数据
+     * - 写入: 设置指定键的 NBT 数据（主线程同步执行）
+     */
     private fun itemTagProperty() = object : ScriptProperty<ItemTag>("orryx.player.itemtag.operator") {
 
         override fun read(instance: ItemTag, key: String): OpenResult {

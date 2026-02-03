@@ -20,7 +20,7 @@ interface IKetherScript {
      * @param map 额外变量
      * @return 执行结果
      */
-    fun runActions(skillParameter: SkillParameter, map: Map<String, Any>? = null): CompletableFuture<Any?>
+    fun runActions(skillParameter: SkillParameter, map: Map<String, Any?>? = null): CompletableFuture<Any?>
 
     /**
      * 运行扩展脚本动作。
@@ -30,5 +30,5 @@ interface IKetherScript {
      * @param map 额外变量
      * @return 执行结果
      */
-    fun runExtendActions(skillParameter: SkillParameter, extend: String, map: Map<String, Any>? = null): CompletableFuture<Any?>
+    fun runExtendActions(skillParameter: SkillParameter, extend: String, map: Map<String, Any?>? = null): CompletableFuture<Any?>
 }

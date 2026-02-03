@@ -167,6 +167,27 @@ object Actions {
         }
     }
 
+    /**
+     * IPlayerJob 的 ScriptProperty。
+     *
+     * 支持的属性：
+     * - key: 职业键名
+     * - name: 职业显示名
+     * - config: 职业配置对象 (IJob)
+     * - player: 玩家对象
+     * - level: 当前等级
+     * - maxLevel: 最大等级
+     * - experienceOfLevel: 当前等级经验
+     * - maxExperienceOfLevel: 当前等级最大经验
+     * - experience: 总经验
+     * - binds: 按键绑定映射
+     * - maxMana: 最大法力值
+     * - regainMana: 法力恢复值
+     * - maxSpirit: 最大精力值
+     * - regainSpirit: 精力恢复值
+     * - attributes: 属性列表
+     * - spirit: 当前精力值
+     */
     private fun playerJobProperty() = object : ScriptProperty<IPlayerJob>("orryx.player.job.operator") {
 
         override fun read(instance: IPlayerJob, key: String): OpenResult {
@@ -196,6 +217,17 @@ object Actions {
         }
     }
 
+    /**
+     * IPlayerSkill 的 ScriptProperty。
+     *
+     * 支持的属性：
+     * - key: 技能键名
+     * - job: 所属职业键名
+     * - player: 玩家对象
+     * - level: 技能等级
+     * - config: 技能配置对象 (ISkill)
+     * - locked: 是否锁定
+     */
     private fun playerSkillProperty() = object : ScriptProperty<IPlayerSkill>("orryx.player.skill.operator") {
 
         override fun read(instance: IPlayerSkill, key: String): OpenResult {
@@ -215,6 +247,15 @@ object Actions {
         }
     }
 
+    /**
+     * IPlayerProfile 的 ScriptProperty。
+     *
+     * 支持的属性：
+     * - point: 技能点数
+     * - job: 当前职业键名
+     * - player: 玩家对象
+     * - flags: 标记映射
+     */
     private fun profileProperty() = object : ScriptProperty<IPlayerProfile>("orryx.player.profile.operator") {
 
         override fun read(instance: IPlayerProfile, key: String): OpenResult {
@@ -232,6 +273,20 @@ object Actions {
         }
     }
 
+    /**
+     * ISkill 的 ScriptProperty。
+     *
+     * 支持的属性：
+     * - key: 技能键名
+     * - name: 技能显示名
+     * - type: 技能类型
+     * - minLevel: 最小等级
+     * - maxLevel: 最大等级
+     * - icon: 图标
+     * - locked: 是否需要解锁
+     * - sort: 排序权重
+     * - material: 材质名
+     */
     private fun skillProperty() = object : ScriptProperty<ISkill>("orryx.skill.operator") {
 
         override fun read(instance: ISkill, key: String): OpenResult {
@@ -254,6 +309,16 @@ object Actions {
         }
     }
 
+    /**
+     * IJob 的 ScriptProperty。
+     *
+     * 支持的属性：
+     * - key: 职业键名
+     * - name: 职业显示名
+     * - experience: 经验配置
+     * - attributes: 属性配置
+     * - skills: 技能列表
+     */
     private fun jobProperty() = object : ScriptProperty<IJob>("orryx.player.profile.operator") {
 
         override fun read(instance: IJob, key: String): OpenResult {

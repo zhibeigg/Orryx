@@ -2,6 +2,7 @@ package org.gitee.orryx.core.kether.parameter
 
 import org.bukkit.Location
 import org.bukkit.entity.Player
+import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.skill.ISkill
 import org.gitee.orryx.core.skill.SkillLoaderManager
@@ -16,11 +17,50 @@ import taboolib.module.kether.orNull
 class SkillParameter(val skill: String?, val player: Player, var level: Int = 1): IParameter {
 
     constructor(skillParameter: SkillParameter, origin: ITargetLocation<*>?): this(skillParameter.skill, skillParameter.player, skillParameter.level) {
-
         this.origin = origin ?: player.toTarget()
+        this.trigger = skillParameter.trigger
     }
 
     override var origin: ITargetLocation<*>? = player.toTarget()
+
+    /**
+     * 技能触发方式。
+     */
+    var trigger: SkillTrigger = SkillTrigger.Unknown
+
+    /**
+     * 获取触发的按键绑定（如果是按键触发）。
+     *
+     * @return 按键绑定，如果不是按键触发则返回 null
+     */
+    fun getBindKey(): IBindKey? {
+        return (trigger as? SkillTrigger.Key)?.bindKey
+    }
+
+    /**
+     * 构建触发方式相关的变量 Map。
+     *
+     * @return 包含触发方式信息的变量 Map
+     */
+    fun buildTriggerVariables(): Map<String, Any?> {
+        val map = mutableMapOf<String, Any?>(
+            "triggerType" to trigger.name
+        )
+        when (val t = trigger) {
+            is SkillTrigger.Key -> {
+                map["bindKey"] = t.bindKey
+                map["bindKeyName"] = t.bindKey.key
+            }
+            is SkillTrigger.Command -> {
+                map["triggerCommand"] = t.command
+            }
+            is SkillTrigger.Api -> {
+                map["triggerSource"] = t.source
+            }
+            else -> {}
+        }
+        return map
+    }
 
     private val proxyCommandSender by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { adaptPlayer(player) }
 
@@ -73,6 +113,6 @@ class SkillParameter(val skill: String?, val player: Player, var level: Int = 1)
     }
 
     override fun toString(): String {
-        return "SkillParameter{skill=$skill, player=${player.name}, level=$level}"
+        return "SkillParameter{skill=$skill, player=${player.name}, level=$level, trigger=${trigger.name}}"
     }
 }

@@ -136,6 +136,13 @@ object ContainerActions {
         }
     }
 
+    /**
+     * IContainer 的 ScriptProperty。
+     *
+     * 支持的属性：
+     * - list: 目标列表
+     * - length/size: 容器中目标数量
+     */
     private fun containerProperty() = object : ScriptProperty<IContainer>("orryx.container.operator") {
 
         override fun read(instance: IContainer, key: String): OpenResult {

@@ -23,7 +23,7 @@ class KetherScript(val skill: String, override val script: Script): IKetherScrip
         if (SkillLoaderManager.getSkillLoader(skill) == null) error("KetherScript初始化时检测到不存在的技能$skill")
     }
 
-    override fun runActions(skillParameter: SkillParameter, map: Map<String, Any>?): CompletableFuture<Any?> {
+    override fun runActions(skillParameter: SkillParameter, map: Map<String, Any?>?): CompletableFuture<Any?> {
         val future = CompletableFuture<Any?>()
         pluginScope.launch {
             debug { "run skill: $skill action map: $map" }
@@ -46,7 +46,7 @@ class KetherScript(val skill: String, override val script: Script): IKetherScrip
         return future
     }
 
-    override fun runExtendActions(skillParameter: SkillParameter, extend: String, map: Map<String, Any>?): CompletableFuture<Any?> {
+    override fun runExtendActions(skillParameter: SkillParameter, extend: String, map: Map<String, Any?>?): CompletableFuture<Any?> {
         val future = CompletableFuture<Any?>()
         pluginScope.launch {
             debug { "run skill: $skill extend: $extend action" }

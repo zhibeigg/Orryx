@@ -33,17 +33,19 @@ const val DEFAULT_PICTURE = "default"
 
 val silence: Boolean by ReloadAwareLazy(Orryx.config) { Orryx.config.getBoolean("Silence", false) }
 
-internal fun SkillParameter.runSkillAction(map: Map<String, Any> = emptyMap()): CompletableFuture<Any?>? {
+internal fun SkillParameter.runSkillAction(map: Map<String, Any?> = emptyMap()): CompletableFuture<Any?>? {
     return SkillLoaderManager.getSkillLoader(skill ?: return CompletableFuture.completedFuture(null))?.let { skill ->
         skill as ICastSkill
-        KetherScript(skill.key, skill.script ?: error("请修复技能配置中的错误${skill.key}")).runActions(this, map)
+        val combinedMap = buildTriggerVariables() + map
+        KetherScript(skill.key, skill.script ?: error("请修复技能配置中的错误${skill.key}")).runActions(this, combinedMap)
     }
 }
 
-internal fun SkillParameter.runSkillExtendAction(extend: String, map: Map<String, Any> = emptyMap()): CompletableFuture<Any?>? {
+internal fun SkillParameter.runSkillExtendAction(extend: String, map: Map<String, Any?> = emptyMap()): CompletableFuture<Any?>? {
     return SkillLoaderManager.getSkillLoader(skill ?: return CompletableFuture.completedFuture(null))?.let { skill ->
         skill as ICastSkill
-        KetherScript(skill.key, skill.extendScripts[extend] ?: error("请修复技能配置中的错误${skill.key} extend $extend")).runExtendActions(this, extend, map)
+        val combinedMap = buildTriggerVariables() + map
+        KetherScript(skill.key, skill.extendScripts[extend] ?: error("请修复技能配置中的错误${skill.key} extend $extend")).runExtendActions(this, extend, combinedMap)
     }
 }
 
