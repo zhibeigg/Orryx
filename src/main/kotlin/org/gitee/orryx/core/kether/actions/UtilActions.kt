@@ -1,13 +1,16 @@
 package org.gitee.orryx.core.kether.actions
 
+import org.gitee.orryx.command.OrryxTestCommand
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.ORRYX_NAMESPACE
+import org.gitee.orryx.utils.bukkitPlayer
 import org.gitee.orryx.utils.nextHeadActionOrNull
 import org.gitee.orryx.utils.scriptParser
 import taboolib.library.kether.ParsedAction
 import taboolib.module.kether.KetherParser
 import taboolib.module.kether.actionFuture
+import taboolib.module.kether.actionNow
 import taboolib.module.kether.run
 import java.util.concurrent.CompletableFuture
 
@@ -483,6 +486,17 @@ object UtilActions {
                     }
                 }
             }
+        }
+    }
+
+    @KetherParser(["isUnlimited"], namespace = ORRYX_NAMESPACE, shared = true)
+    private fun actionIsUnlimited() = scriptParser(
+        Action.new("Util工具类", "是否无限模式", "isUnlimited", true)
+            .description("检测当前玩家是否处于无限模式（unlimit），无限模式下施放技能不消耗资源")
+            .result("是否处于无限模式", Type.BOOLEAN)
+    ) {
+        actionNow {
+            OrryxTestCommand.isUnlimited(bukkitPlayer())
         }
     }
 }
