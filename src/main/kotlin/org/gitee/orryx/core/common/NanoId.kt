@@ -1,8 +1,8 @@
-package org.gitee.orryx.utils
+package org.gitee.orryx.core.common
 
 import org.jetbrains.annotations.NotNull
 import java.security.SecureRandom
-import java.util.*
+import java.util.Random
 import kotlin.math.abs
 import kotlin.math.ceil
 

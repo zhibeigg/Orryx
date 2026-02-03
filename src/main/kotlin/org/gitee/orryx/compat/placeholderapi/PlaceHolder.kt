@@ -3,6 +3,7 @@ package org.gitee.orryx.compat.placeholderapi
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.OrryxAPI
+import org.gitee.orryx.core.common.NanoId
 import org.gitee.orryx.core.kether.ScriptManager.runKether
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.utils.*

@@ -6,6 +6,7 @@ import io.lumine.xikage.mythicmobs.io.MythicLineConfig
 import io.lumine.xikage.mythicmobs.skills.SkillMetadata
 import io.lumine.xikage.mythicmobs.skills.targeters.ILocationSelector
 import org.bukkit.Location
+import org.gitee.orryx.core.common.NanoId
 import org.gitee.orryx.core.kether.ScriptManager.runKether
 import org.gitee.orryx.core.kether.parameter.MythicMobsParameter
 import org.gitee.orryx.core.parser.StringParser

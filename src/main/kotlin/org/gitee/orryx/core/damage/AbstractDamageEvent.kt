@@ -10,6 +10,7 @@ import org.gitee.nodens.core.attribute.Damage
 import org.gitee.nodens.core.attribute.Defence
 import org.gitee.orryx.api.events.damage.DamageType
 import org.gitee.orryx.api.events.damage.DamageType.*
+import org.gitee.orryx.core.common.NanoId
 import org.gitee.orryx.utils.*
 import taboolib.common5.cdouble
 import taboolib.module.kether.ScriptContext

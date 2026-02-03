@@ -5,7 +5,7 @@ import org.bukkit.event.player.PlayerQuitEvent
 import org.gitee.orryx.api.OrryxAPI.Companion.ketherScriptLoader
 import org.gitee.orryx.core.kether.parameter.IParameter
 import org.gitee.orryx.core.reload.Reload
-import org.gitee.orryx.utils.NanoId
+import org.gitee.orryx.core.common.NanoId
 import org.gitee.orryx.utils.PARAMETER
 import org.gitee.orryx.utils.getBytes
 import org.gitee.orryx.utils.orryxEnvironmentNamespaces
