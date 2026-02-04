@@ -4,6 +4,7 @@ import com.germ.germplugin.api.event.GermKeyUpEvent
 import eos.moe.dragoncore.api.event.KeyReleaseEvent
 import org.bukkit.entity.Player
 import org.bukkit.event.entity.PlayerDeathEvent
+import org.bukkit.event.player.PlayerQuitEvent
 import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.core.station.pipe.PipeTask
@@ -35,6 +36,14 @@ object PressSkillManager {
     @SubscribeEvent
     private fun death(e: PlayerDeathEvent) {
         pressTaskMap.remove(e.entity.uniqueId)?.second?.close { CompletableFuture.completedFuture(null) }
+    }
+
+    /**
+     * 玩家退出时清理蓄力技能任务，防止内存泄漏
+     */
+    @SubscribeEvent
+    private fun quit(e: PlayerQuitEvent) {
+        pressTaskMap.remove(e.player.uniqueId)?.second?.close { CompletableFuture.completedFuture(null) }
     }
 
     @Reload(2)

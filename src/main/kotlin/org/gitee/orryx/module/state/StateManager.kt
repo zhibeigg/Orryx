@@ -133,6 +133,8 @@ object StateManager {
         playerDataMap.remove(e.player.uniqueId)?.nowRunningState?.stop()
         // 清理节流 Map 中该玩家的数据
         keyPressThrottleMap.keys.removeIf { it.startsWith("${e.player.uniqueId}_") }
+        // 清理玩家的隐藏手部任务
+        playerInvisibleHandTaskMap.remove(e.player.uniqueId)?.let { SimpleTimeoutTask.cancel(it, false) }
     }
 
     @SubscribeEvent

@@ -5,6 +5,7 @@ import org.gitee.orryx.api.interfaces.*
 import taboolib.common.env.RuntimeDependencies
 import taboolib.common.env.RuntimeDependency
 import taboolib.common.platform.PlatformFactory
+import taboolib.common.platform.function.warning
 import taboolib.module.kether.KetherScriptLoader
 import kotlin.time.Duration.Companion.seconds
 
@@ -70,13 +71,24 @@ class OrryxAPI: IOrryxAPI {
 
         val ketherScriptLoader by lazy { KetherScriptLoader() }
 
+        /**
+         * 协程异常处理器，捕获未处理的异常并记录日志
+         */
+        private val exceptionHandler = CoroutineExceptionHandler { context, throwable ->
+            val coroutineName = context[CoroutineName]?.name ?: "unknown"
+            warning("[Orryx] 协程 '$coroutineName' 发生未捕获异常: ${throwable.message}")
+            if (throwable !is CancellationException) {
+                throwable.printStackTrace()
+            }
+        }
+
         private val ioJob = SupervisorJob()
         private val effectJob = SupervisorJob()
         private val pluginJob = SupervisorJob()
 
-        internal val ioScope = CoroutineScope(Dispatchers.IO + ioJob)
-        internal val effectScope = CoroutineScope(Dispatchers.Default + effectJob)
-        internal val pluginScope = CoroutineScope(Dispatchers.Default + pluginJob)
+        internal val ioScope = CoroutineScope(Dispatchers.IO + ioJob + exceptionHandler + CoroutineName("orryx-io"))
+        internal val effectScope = CoroutineScope(Dispatchers.Default + effectJob + exceptionHandler + CoroutineName("orryx-effect"))
+        internal val pluginScope = CoroutineScope(Dispatchers.Default + pluginJob + exceptionHandler + CoroutineName("orryx-plugin"))
 
         /**
          * 优雅关闭所有协程作用域

@@ -120,6 +120,12 @@ object MemoryCache {
         printStats("职业", playerJobCache.synchronous().stats())
         printStats("技能", playerSkillCache.synchronous().stats())
         printStats("按键", playerKeyCache.synchronous().stats())
+
+        // 清理所有缓存，释放内存
+        playerProfileCache.synchronous().invalidateAll()
+        playerJobCache.synchronous().invalidateAll()
+        playerSkillCache.synchronous().invalidateAll()
+        playerKeyCache.synchronous().invalidateAll()
     }
 
     fun getPlayerProfile(player: UUID): CompletableFuture<IPlayerProfile> {

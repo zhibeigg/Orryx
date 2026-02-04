@@ -10,6 +10,8 @@ import org.gitee.orryx.utils.PARAMETER
 import org.gitee.orryx.utils.getBytes
 import org.gitee.orryx.utils.orryxEnvironmentNamespaces
 import org.gitee.orryx.utils.printKetherErrorMessage
+import taboolib.common.LifeCycle
+import taboolib.common.platform.Awake
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
@@ -57,6 +59,24 @@ object ScriptManager {
         runningStationScriptsMap.remove(e.player.uniqueId)?.terminateAll()
     }
 
+    /**
+     * 插件关闭时清理所有未关闭的资源
+     */
+    @Awake(LifeCycle.DISABLE)
+    private fun onDisable() {
+        // 清理所有未关闭的 Closeable 资源
+        closeableMap.forEach { (scriptId, closeables) ->
+            closeables.forEach { (closeableId, closeable) ->
+                try {
+                    closeable.close()
+                } catch (e: Exception) {
+                    warning("[Orryx] 关闭脚本 $scriptId 的资源 $closeableId 时发生异常: ${e.message}")
+                }
+            }
+        }
+        closeableMap.clear()
+    }
+
     internal fun cleanUp(id: String) {
         val closeable = closeableMap.remove(id) ?: return
         val iterator = closeable.iterator()
@@ -74,11 +94,7 @@ object ScriptManager {
         val id = NanoId.generate()
         script().addCloseable(id, closeable)
         future.whenComplete { _, _ ->
-            closeableMap[script().id]?.apply {
-                if (isNotEmpty()) {
-                    remove(id)
-                }
-            }
+            closeableMap[script().id]?.remove(id)
         }
     }
 
