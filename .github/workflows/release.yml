@@ -33,7 +33,7 @@ jobs:
         run: ./gradlew taboolibBuildApi -Pbuild=./build -PpublishUsername=${{ secrets.PUBLISH_USERNAME }} -PpublishPassword=${{ secrets.PUBLISH_PASSWORD }} -Ptoken=${{ secrets.TOKEN }}
 
       - name: Build and Publish
-        run: ./gradlew build publishLibraryPublicationToMavenRepository publishGprPublicationToMavenRepository -Pbuild=./build -PpublishUsername=${{ secrets.PUBLISH_USERNAME }} -PpublishPassword=${{ secrets.PUBLISH_PASSWORD }} -Ptoken=${{ secrets.TOKEN }}
+        run: ./gradlew build publishGprPublicationToMavenRepository -Pbuild=./build -PpublishUsername=${{ secrets.PUBLISH_USERNAME }} -PpublishPassword=${{ secrets.PUBLISH_PASSWORD }} -Ptoken=${{ secrets.TOKEN }}
 
       - name: Create Release
         uses: ncipollo/release-action@v1

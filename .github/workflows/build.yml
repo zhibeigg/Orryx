@@ -24,13 +24,13 @@ jobs:
       - name: Grant execute permission to gradlew
         run: chmod +x gradlew
 
-      - name: Build project with Gradle
-        run: ./gradlew taboolibBuildApi -Pbuild=./build -PpublishUsername=${{ secrets.PUBLISH_USERNAME }} -PpublishPassword=${{ secrets.PUBLISH_PASSWORD }} -Ptoken=${{ secrets.TOKEN }}
+      - name: Build API
+        run: ./gradlew taboolibBuildApi -Pbuild=./build
 
-      - name: Build project with Gradle
-        run: ./gradlew build publishGprPublicationToMavenRepository -Pbuild=./build -PpublishUsername=${{ secrets.PUBLISH_USERNAME }} -PpublishPassword=${{ secrets.PUBLISH_PASSWORD }} -Ptoken=${{ secrets.TOKEN }}
+      - name: Build
+        run: ./gradlew build -Pbuild=./build
 
-      - name: Upload a Build Artifact
+      - name: Upload Build Artifact
         uses: actions/upload-artifact@v4.6.2
         with:
           name: Orryx
