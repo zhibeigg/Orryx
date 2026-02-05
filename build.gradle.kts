@@ -78,7 +78,7 @@ taboolib {
 
 repositories {
     mavenCentral()
-    maven("https://jfrog.mcwar.cn/artifactory/maven-releases")
+    maven("https://maven.mcwar.cn/releases")
     maven("https://repo.codemc.io/repository/maven-releases")
 }
 
@@ -88,9 +88,9 @@ dependencies {
     compileOnly("ink.ptms.core:v11200:11200")
     compileOnly("ink.ptms:nms-all:1.0.0")
 
-    compileOnly("org.gitee.nodens:Nodens:latest.release:api")
-    compileOnly("com.gitee.redischannel:RedisChannel:latest.release:api")
-    compileOnly("ink.ptms.adyeshach:api:latest.release")
+    compileOnly("org.gitee.nodens:Nodens:1.22.37:api")
+    compileOnly("com.gitee.redischannel:RedisChannel:1.14.10:api")
+    compileOnly("ink.ptms.adyeshach:api:2.1.28")
     compileOnly("com.github.retrooper:packetevents-spigot:2.7.0")
     compileOnly("org.eldergod.ext:DragonCore:2.6.2.9")
     compileOnly("org.eldergod.ext:GermPlugin:4.4.1-5")
@@ -100,10 +100,10 @@ dependencies {
     }
     compileOnly("org.eldergod.ext:GDDTitle:2.1")
     compileOnly("org.eldergod.ext:GlowAPI:1.4.6")
-    compileOnly("org.eldergod.ext:AttributePlus:api")
+    compileOnly("org.eldergod.ext:AttributePlus-api:1.0")
     compileOnly("org.eldergod.ext:DungeonPlus:1.4.3")
     compileOnly("org.eldergod.ext:ProtocolLib:5.3.0")
-    compileOnly("org.eldergod.ext:cloudpick:1.2.1:CloudPick")
+    compileOnly("org.eldergod.ext:CloudPick:1.2.1")
 
     compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
     compileOnly("com.github.ben-manes.caffeine:caffeine:2.9.3")
@@ -140,7 +140,7 @@ kotlin {
 publishing {
     repositories {
         maven {
-            url = uri("https://jfrog.mcwar.cn/artifactory/maven-releases")
+            url = uri("https://maven.mcwar.cn/releases")
             credentials {
                 username = publishUsername
                 password = publishPassword
