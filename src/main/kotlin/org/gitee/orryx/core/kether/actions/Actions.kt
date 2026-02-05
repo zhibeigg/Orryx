@@ -11,6 +11,7 @@ import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.core.targets.PlayerTarget
 import org.gitee.orryx.module.spirit.ISpiritManager
 import org.gitee.orryx.module.wiki.Action
+import org.gitee.orryx.module.wiki.Property
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
 import taboolib.common.OpenResult
@@ -22,11 +23,76 @@ import java.util.concurrent.CompletableFuture
 object Actions {
 
     init {
-        KetherLoader.registerProperty(playerJobProperty(), IPlayerJob::class.java, false)
-        KetherLoader.registerProperty(playerSkillProperty(), IPlayerSkill::class.java, false)
-        KetherLoader.registerProperty(profileProperty(), IPlayerProfile::class.java, false)
-        KetherLoader.registerProperty(skillProperty(), ISkill::class.java, false)
-        KetherLoader.registerProperty(jobProperty(), IJob::class.java, false)
+        registerProperty(
+            playerJobProperty(),
+            Property.new("Orryx核心", "IPlayerJob", "orryx.player.job.operator")
+                .description("玩家职业对象，包含职业相关的所有信息")
+                .addEntry("key", Type.STRING, "职业键名")
+                .addEntry("name", Type.STRING, "职业显示名")
+                .addEntry("config", Type.ANY, "职业配置对象 (IJob)")
+                .addEntry("player", Type.PLAYER, "玩家对象")
+                .addEntry("level", Type.INT, "当前等级")
+                .addEntry("maxLevel", Type.INT, "最大等级")
+                .addEntry("experienceOfLevel", Type.LONG, "当前等级经验")
+                .addEntry("maxExperienceOfLevel", Type.LONG, "当前等级最大经验")
+                .addEntry("experience", Type.LONG, "总经验")
+                .addEntry("binds", Type.ANY, "按键绑定映射")
+                .addEntry("maxMana", Type.DOUBLE, "最大法力值")
+                .addEntry("regainMana", Type.DOUBLE, "法力恢复值")
+                .addEntry("maxSpirit", Type.DOUBLE, "最大精力值")
+                .addEntry("regainSpirit", Type.DOUBLE, "精力恢复值")
+                .addEntry("attributes", Type.ANY, "属性列表")
+                .addEntry("spirit", Type.DOUBLE, "当前精力值"),
+            IPlayerJob::class.java
+        )
+        registerProperty(
+            playerSkillProperty(),
+            Property.new("Orryx核心", "IPlayerSkill", "orryx.player.skill.operator")
+                .description("玩家技能对象，包含技能相关的所有信息")
+                .addEntry("key", Type.STRING, "技能键名")
+                .addEntry("job", Type.STRING, "所属职业键名")
+                .addEntry("player", Type.PLAYER, "玩家对象")
+                .addEntry("level", Type.INT, "技能等级")
+                .addEntry("config", Type.ANY, "技能配置对象 (ISkill)")
+                .addEntry("locked", Type.BOOLEAN, "是否锁定"),
+            IPlayerSkill::class.java
+        )
+        registerProperty(
+            profileProperty(),
+            Property.new("Orryx核心", "IPlayerProfile", "orryx.player.profile.operator")
+                .description("玩家档案对象，包含玩家的基础信息")
+                .addEntry("point", Type.INT, "技能点数")
+                .addEntry("job", Type.STRING, "当前职业键名")
+                .addEntry("player", Type.PLAYER, "玩家对象")
+                .addEntry("flags", Type.ANY, "标记映射"),
+            IPlayerProfile::class.java
+        )
+        registerProperty(
+            skillProperty(),
+            Property.new("Orryx核心", "ISkill", "orryx.skill.operator")
+                .description("技能配置对象，包含技能的配置信息")
+                .addEntry("key", Type.STRING, "技能键名")
+                .addEntry("name", Type.STRING, "技能显示名")
+                .addEntry("type", Type.STRING, "技能类型")
+                .addEntry("minLevel", Type.INT, "最小等级")
+                .addEntry("maxLevel", Type.INT, "最大等级")
+                .addEntry("icon", Type.STRING, "图标")
+                .addEntry("locked", Type.BOOLEAN, "是否需要解锁")
+                .addEntry("sort", Type.INT, "排序权重")
+                .addEntry("material", Type.STRING, "材质名"),
+            ISkill::class.java
+        )
+        registerProperty(
+            jobProperty(),
+            Property.new("Orryx核心", "IJob", "orryx.job.operator")
+                .description("职业配置对象，包含职业的配置信息")
+                .addEntry("key", Type.STRING, "职业键名")
+                .addEntry("name", Type.STRING, "职业显示名")
+                .addEntry("experience", Type.ANY, "经验配置")
+                .addEntry("attributes", Type.ANY, "属性配置")
+                .addEntry("skills", Type.ANY, "技能列表"),
+            IJob::class.java
+        )
     }
 
     @KetherParser(["wait", "delay", "sleep"], namespace = ORRYX_NAMESPACE)

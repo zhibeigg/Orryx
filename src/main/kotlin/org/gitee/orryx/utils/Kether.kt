@@ -12,6 +12,7 @@ import org.gitee.orryx.core.container.Container
 import org.gitee.orryx.core.container.IContainer
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.kether.ScriptManager.wikiActions
+import org.gitee.orryx.core.kether.ScriptManager.wikiProperties
 import org.gitee.orryx.core.kether.actions.effect.EffectBuilder
 import org.gitee.orryx.core.kether.actions.effect.EffectSpawner
 import org.gitee.orryx.core.kether.actions.math.hitbox.collider.local.None
@@ -318,6 +319,24 @@ fun <T> combinationParser(action: org.gitee.orryx.module.wiki.Action, builder: P
 inline fun <T> combinationParser(builder: ParserHolder.(Instance) -> App<Mu, Action<T>>): ScriptActionParser<T> {
     val parser = Parser.build(builder(ParserHolder, instance()))
     return ScriptActionParser { parser.resolve<T>(this) }
+}
+
+/**
+ * 注册 ScriptProperty 并添加到 wiki 文档
+ *
+ * @param property ScriptProperty 实例
+ * @param wikiProperty wiki 文档模型
+ * @param clazz 属性对应的类
+ * @param shared 是否共享
+ */
+fun <T : Any> registerProperty(
+    property: ScriptProperty<T>,
+    wikiProperty: org.gitee.orryx.module.wiki.Property,
+    clazz: Class<T>,
+    shared: Boolean = false
+) {
+    wikiProperties += wikiProperty
+    KetherLoader.registerProperty(property, clazz, shared)
 }
 
 fun Throwable.printKetherErrorMessage(detailError: Boolean = false) {

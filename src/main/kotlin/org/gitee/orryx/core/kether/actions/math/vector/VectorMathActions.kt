@@ -3,6 +3,7 @@ package org.gitee.orryx.core.kether.actions.math.vector
 import org.gitee.orryx.api.adapters.IVector
 import org.gitee.orryx.api.adapters.vector.AbstractVector
 import org.gitee.orryx.module.wiki.Action
+import org.gitee.orryx.module.wiki.Property
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
 import org.joml.Matrix3d
@@ -16,8 +17,26 @@ import taboolib.module.kether.*
 object VectorMathActions {
 
     init {
-        KetherLoader.registerProperty(propertyIVector(), Vector3dc::class.java, false)
-        KetherLoader.registerProperty(propertyVector(), IVector::class.java, false)
+        registerProperty(
+            propertyIVector(),
+            Property.new("Math数学运算", "Vector3dc", "Vector3dc.operator")
+                .description("JOML 只读向量对象")
+                .addEntry("x", Type.DOUBLE, "X 分量")
+                .addEntry("y", Type.DOUBLE, "Y 分量")
+                .addEntry("z", Type.DOUBLE, "Z 分量")
+                .addEntry("size", Type.DOUBLE, "向量长度")
+                .addEntry("length", Type.DOUBLE, "向量长度（同size）"),
+            Vector3dc::class.java
+        )
+        registerProperty(
+            propertyVector(),
+            Property.new("Math数学运算", "IVector", "vector.operator")
+                .description("可变向量对象")
+                .addEntry("x", Type.DOUBLE, "X 分量", true)
+                .addEntry("y", Type.DOUBLE, "Y 分量", true)
+                .addEntry("z", Type.DOUBLE, "Z 分量", true),
+            IVector::class.java
+        )
     }
 
     /**

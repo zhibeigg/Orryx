@@ -3,6 +3,7 @@ package org.gitee.orryx.core.kether.actions.game
 import org.bukkit.inventory.ItemStack
 import org.gitee.orryx.core.targets.PlayerTarget
 import org.gitee.orryx.module.wiki.Action
+import org.gitee.orryx.module.wiki.Property
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
 import taboolib.common.OpenResult
@@ -15,7 +16,13 @@ import java.util.concurrent.CompletableFuture
 object ItemActions {
 
     init {
-        KetherLoader.registerProperty(itemTagProperty(), ItemTag::class.java, false)
+        registerProperty(
+            itemTagProperty(),
+            Property.new("Game原版游戏", "ItemTag", "orryx.player.itemtag.operator")
+                .description("物品NBT标签对象，支持读写任意NBT键值")
+                .addEntry("<任意键>", Type.ANY, "读取/写入指定键的NBT数据", true),
+            ItemTag::class.java
+        )
     }
 
     @KetherParser(["itemInMainHand"], namespace = ORRYX_NAMESPACE, shared = true)

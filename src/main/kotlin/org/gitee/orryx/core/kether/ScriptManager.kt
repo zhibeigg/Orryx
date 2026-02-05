@@ -33,6 +33,7 @@ object ScriptManager {
     val wikiActions by unsafeLazy { mutableListOf<org.gitee.orryx.module.wiki.Action>() }
     val wikiSelectors by unsafeLazy { mutableListOf<org.gitee.orryx.module.wiki.Selector>() }
     val wikiTriggers by unsafeLazy { mutableListOf<org.gitee.orryx.module.wiki.Trigger>() }
+    val wikiProperties by unsafeLazy { mutableListOf<org.gitee.orryx.module.wiki.Property>() }
 
     private val scriptCache by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         Caffeine.newBuilder()

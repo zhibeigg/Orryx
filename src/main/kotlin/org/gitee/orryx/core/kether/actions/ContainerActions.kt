@@ -5,6 +5,7 @@ import org.gitee.orryx.core.container.IContainer
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.module.wiki.Action
+import org.gitee.orryx.module.wiki.Property
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
 import taboolib.common.OpenResult
@@ -14,7 +15,15 @@ import taboolib.module.kether.*
 object ContainerActions {
 
     init {
-        KetherLoader.registerProperty(containerProperty(), IContainer::class.java, false)
+        registerProperty(
+            containerProperty(),
+            Property.new("Container容器", "IContainer", "orryx.container.operator")
+                .description("目标容器对象，用于储存各类Target")
+                .addEntry("list", Type.ANY, "目标列表")
+                .addEntry("length", Type.INT, "容器中目标数量")
+                .addEntry("size", Type.INT, "容器中目标数量（同length）"),
+            IContainer::class.java
+        )
     }
 
     @KetherParser(["container"], namespace = ORRYX_NAMESPACE, shared = true)
