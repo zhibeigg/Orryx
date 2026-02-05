@@ -144,7 +144,7 @@ object CooldownActions {
                     }
                 }
             }
-            case("get/countdown") { getCountDown(it) }
+            case("get", "countdown") { getCountDown(it) }
             other { getCountDown(it) }
         }
     }

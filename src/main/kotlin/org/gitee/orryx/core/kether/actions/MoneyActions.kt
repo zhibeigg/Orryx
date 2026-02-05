@@ -31,7 +31,7 @@ object MoneyActions {
             .addContainerEntry("减少财富的目标", true, "@self"),
         Action.new("Money财富", "获取财富值", "money")
             .description("获取玩家拥有的财富值")
-            .addEntry("get", optional = true, type = Type.SYMBOL, head = "get")
+            .addEntry("get", optional = true, type = Type.SYMBOL, head = "get/look")
             .addContainerEntry("获取的目标", true, "@self")
             .result("财富值", Type.DOUBLE)
     ) {

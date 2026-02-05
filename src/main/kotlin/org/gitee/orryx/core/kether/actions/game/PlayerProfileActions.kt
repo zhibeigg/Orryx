@@ -18,7 +18,7 @@ object PlayerProfileActions {
             .addContainerEntry(optional = true, default = "@self"),
         Action.new("Orryx Profile玩家信息", "获取霸体状态倒计时", "superBody", true)
             .description("获取霸体状态倒计时")
-            .addEntry("倒计时占位符", Type.STRING, false, head = "count")
+            .addEntry("倒计时占位符", Type.SYMBOL, false, head = "count")
             .addContainerEntry(optional = true, default = "@self")
             .result("倒计时Tick", Type.LONG)
     ) {
@@ -104,7 +104,7 @@ object PlayerProfileActions {
             .addContainerEntry(optional = true, default = "@self"),
         Action.new("Orryx Profile玩家信息", "获取免疫摔落状态倒计时", "superFoot", true)
             .description("获取免疫摔落状态倒计时")
-            .addEntry("倒计时占位符", Type.STRING, false, head = "count")
+            .addEntry("倒计时占位符", Type.SYMBOL, false, head = "count")
             .addContainerEntry(optional = true, default = "@self")
             .result("倒计时Tick", Type.LONG)
     ) {
@@ -190,7 +190,7 @@ object PlayerProfileActions {
             .addContainerEntry(optional = true, default = "@self"),
         Action.new("Orryx Profile玩家信息", "获取无敌状态倒计时", "invincible", true)
             .description("获取无敌状态倒计时")
-            .addEntry("倒计时占位符", Type.STRING, false, head = "count")
+            .addEntry("倒计时占位符", Type.SYMBOL, false, head = "count")
             .addContainerEntry(optional = true, default = "@self")
             .result("倒计时Tick", Type.LONG)
     ) {
@@ -276,7 +276,7 @@ object PlayerProfileActions {
             .addContainerEntry(optional = true, default = "@self"),
         Action.new("Orryx Profile玩家信息", "获取沉默状态倒计时", "silence", true)
             .description("获取沉默状态倒计时")
-            .addEntry("倒计时占位符", Type.STRING, false, head = "count")
+            .addEntry("倒计时占位符", Type.SYMBOL, false, head = "count")
             .addContainerEntry(optional = true, default = "@self")
             .result("倒计时Tick", Type.LONG)
     ) {
