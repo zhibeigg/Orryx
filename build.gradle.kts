@@ -37,7 +37,7 @@ taboolib {
         install(Kether)
         install(Jexl)
         install("database-h2")
-        //repoTabooLib = "https://jfrog.mcwar.cn/artifactory/maven-releases"
+        //repoTabooLib = "https://maven.mcwar.cn/releases"
     }
     description {
         name = "Orryx"
