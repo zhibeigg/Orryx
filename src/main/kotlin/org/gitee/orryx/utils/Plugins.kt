@@ -30,6 +30,8 @@ val DragonArmourersPlugin = Plugin("DragonArmourers")
 
 val GermPluginPlugin = Plugin("GermPlugin")
 
+val ArcartXPlugin = Plugin("ArcartX")
+
 val MythicMobsPlugin = Plugin("MythicMobs")
 
 val RedisChannelPlugin = Plugin("RedisChannel")

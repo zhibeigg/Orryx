@@ -10,6 +10,7 @@ import org.gitee.orryx.module.spirit.ISpiritManager
 import org.gitee.orryx.module.state.StateManager.getController
 import org.gitee.orryx.module.state.StateManager.statusDataList
 import org.gitee.orryx.utils.DragonArmourersPlugin
+import org.gitee.orryx.utils.DragonCorePlugin
 import org.gitee.orryx.utils.GermPluginPlugin
 import taboolib.common.platform.function.warning
 import taboolib.platform.util.onlinePlayers
@@ -110,6 +111,7 @@ class PlayerData(val player: Player) {
 
     // 龙核的控制器更新
     fun updateController(status: Status) {
+        if (!dragonCoreEnabled) return
         val controller = status.options.controller?.let { getController(it) } ?: return
         DragonCoreCustomPacketSender.setPlayerAnimationController(player, player.uniqueId, controller.saveToString())
         statusDataList().forEach {
@@ -121,6 +123,7 @@ class PlayerData(val player: Player) {
 
     // 龙核的控制器删除
     fun removeController() {
+        if (!dragonCoreEnabled) return
         DragonCoreCustomPacketSender.removePlayerAnimationController(player, player.uniqueId)
         statusDataList().forEach {
             if (player.uniqueId in it.cacheJoiner) {
@@ -160,6 +163,7 @@ class PlayerData(val player: Player) {
     companion object {
 
         val germEnabled: Boolean by lazy { GermPluginPlugin.isEnabled }
+        val dragonCoreEnabled: Boolean by lazy { DragonCorePlugin.isEnabled }
         val dragonArmourersEnabled: Boolean by lazy { DragonArmourersPlugin.isEnabled }
     }
 }

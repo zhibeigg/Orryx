@@ -17,6 +17,7 @@ import org.bukkit.plugin.messaging.PluginMessageListener
 import org.gitee.orryx.core.message.bloom.BloomConfig
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.utils.*
+import priv.seventeen.artist.arcartx.event.client.ClientKeyPressEvent
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.Ghost
@@ -116,9 +117,21 @@ object PluginMessageHandler {
         }
     }
 
+    @Ghost
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    private fun onKeyPress(e: ClientKeyPressEvent) {
+        e.player.keySetting {
+            when (e.keyName.uppercase()) {
+                it.aimConfirmKey -> handleConfirmation(e.player, true)
+                it.aimCancelKey -> handleConfirmation(e.player, false)
+                else -> return@keySetting
+            }
+        }
+    }
+
     @SubscribeEvent
     private fun onPlayerInteract(e: PlayerInteractEvent) {
-        if (DragonCorePlugin.isEnabled || GermPluginPlugin.isEnabled) return
+        if (DragonCorePlugin.isEnabled || GermPluginPlugin.isEnabled || ArcartXPlugin.isEnabled) return
         when (e.action) {
             Action.LEFT_CLICK_AIR, Action.LEFT_CLICK_BLOCK -> handleConfirmation(e.player, true)
             Action.RIGHT_CLICK_AIR, Action.RIGHT_CLICK_BLOCK -> handleConfirmation(e.player, false)

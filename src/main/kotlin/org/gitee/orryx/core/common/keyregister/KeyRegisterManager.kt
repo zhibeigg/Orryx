@@ -11,6 +11,8 @@ import org.gitee.orryx.api.events.compat.DragonCacheLoadedEvent
 import org.gitee.orryx.compat.dragoncore.DragonCoreCustomPacketSender
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.utils.*
+import priv.seventeen.artist.arcartx.api.ArcartXAPI
+import priv.seventeen.artist.arcartx.event.client.ClientChannelEvent
 import taboolib.common.platform.Ghost
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
@@ -26,7 +28,7 @@ object KeyRegisterManager {
 
     @SubscribeEvent
     private fun onJoin(e: PlayerJoinEvent) {
-        if (!DragonCorePlugin.isEnabled && !GermPluginPlugin.isEnabled) return
+        if (!DragonCorePlugin.isEnabled && !GermPluginPlugin.isEnabled && !ArcartXPlugin.isEnabled) return
         players.add(e.player.uniqueId)
         keyRegisterMap[e.player.uniqueId] = KeyRegister(e.player)
     }
@@ -55,6 +57,14 @@ object KeyRegisterManager {
     @Ghost
     @SubscribeEvent(priority = EventPriority.LOW)
     private fun onPlayerJoin(e: GermClientLinkedEvent) {
+        if (players.remove(e.player.uniqueId)) {
+            sendKeyRegister(e.player)
+        }
+    }
+
+    @Ghost
+    @SubscribeEvent(priority = EventPriority.LOW)
+    private fun onPlayerJoin(e: ClientChannelEvent) {
         if (players.remove(e.player.uniqueId)) {
             sendKeyRegister(e.player)
         }
@@ -89,6 +99,15 @@ object KeyRegisterManager {
                         DragonCoreCustomPacketSender.sendKeyRegister(player, keySetting.keySettingSet())
                     } catch (ex: Throwable) {
                         warning("DragonCore按键注册失败: ${ex.message}")
+                    }
+                }
+                ArcartXPlugin.isEnabled -> {
+                    try {
+                        keySetting.keySettingSet().forEach {
+                            ArcartXAPI.getKeyBindRegistry().registerSimpleKeyBind(it, mutableListOf(it))
+                        }
+                    } catch (ex: Throwable) {
+                        warning("ArcartX按键注册失败: ${ex.message}")
                     }
                 }
             }

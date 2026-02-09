@@ -1,8 +1,10 @@
 package org.gitee.orryx.compat
 
 import org.bukkit.entity.Player
+import org.gitee.orryx.compat.arcartx.ArcartXAnimationBridge
 import org.gitee.orryx.compat.dragoncore.DragonCoreAnimationBridge
 import org.gitee.orryx.compat.germplugin.GermPluginAnimationBridge
+import org.gitee.orryx.utils.ArcartXPlugin
 import org.gitee.orryx.utils.DragonCorePlugin
 import org.gitee.orryx.utils.GermPluginPlugin
 import taboolib.common.util.unsafeLazy
@@ -16,6 +18,7 @@ interface IAnimationBridge {
 
         val INSTANCE by unsafeLazy {
             when {
+                ArcartXPlugin.isEnabled -> ArcartXAnimationBridge()
                 DragonCorePlugin.isEnabled -> DragonCoreAnimationBridge()
                 GermPluginPlugin.isEnabled -> GermPluginAnimationBridge()
                 else -> DefaultAnimationBridge()

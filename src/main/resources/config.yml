@@ -26,7 +26,7 @@ SyncExperience: true
 OffSpeedFovChange: true
 UI:
   # ！修改后需要重启
-  # bukkit/germplugin/dragoncore
+  # bukkit/germplugin/dragoncore/arcartx
   use: "bukkit"
 # 持久存储数据库
 Database:

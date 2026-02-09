@@ -26,6 +26,11 @@ import org.gitee.orryx.core.skill.CastResult
 import org.gitee.orryx.core.skill.ICastSkill
 import org.gitee.orryx.module.state.states.*
 import org.gitee.orryx.utils.*
+import priv.seventeen.artist.arcartx.event.client.ClientChannelEvent
+import priv.seventeen.artist.arcartx.event.client.ClientEntityJoinEvent
+import priv.seventeen.artist.arcartx.event.client.ClientEntityLeaveEvent
+import priv.seventeen.artist.arcartx.event.client.ClientKeyPressEvent
+import priv.seventeen.artist.arcartx.event.client.ClientKeyReleaseEvent
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.Ghost
@@ -189,6 +194,12 @@ object StateManager {
 
     @Ghost
     @SubscribeEvent
+    private fun press(e: ClientKeyPressEvent) {
+        handleKeyPress(e.player, e.keyName.uppercase())
+    }
+
+    @Ghost
+    @SubscribeEvent
     private fun release(e: KeyReleaseEvent) {
         if (e.isCancelled) return
         val data = playerDataMap.getOrPut(e.player.uniqueId) { PlayerData(e.player) }
@@ -215,6 +226,19 @@ object StateManager {
                 else -> simpleKey
             }
             if (it.generalAttackKey == key) {
+                running.castAttack()
+            }
+        }
+    }
+
+    @Ghost
+    @SubscribeEvent
+    private fun release(e: ClientKeyReleaseEvent) {
+        val data = playerDataMap.getOrPut(e.player.uniqueId) { PlayerData(e.player) }
+        val running = data.nowRunningState as? PressGeneralAttackState.Running ?: return
+
+        e.player.keySetting {
+            if (it.generalAttackKey == e.keyName.uppercase()) {
                 running.castAttack()
             }
         }
@@ -254,7 +278,34 @@ object StateManager {
 
     @Ghost
     @SubscribeEvent
+    private fun join(e: ClientEntityJoinEvent) {
+        val joiner = Bukkit.getPlayer(e.entityUUID) ?: return
+        val joinerData = joiner.statusData()
+        val data = e.player.statusData()
+        data.cacheJoiner.add(joiner.uniqueId)
+        val joinerStatus = joinerData.status as? Status ?: return
+        joinerStatus.options.controller?.let { getController(it) }?.let { controller ->
+            DragonCoreCustomPacketSender.setPlayerAnimationController(e.player, joiner.uniqueId, controller.saveToString())
+        }
+    }
+
+    @Ghost
+    @SubscribeEvent
+    private fun leave(e: ClientEntityLeaveEvent) {
+        val leaver = Bukkit.getPlayer(e.entityUUID) ?: return
+        val data = e.player.statusData()
+        data.cacheJoiner.remove(leaver.uniqueId)
+    }
+
+    @Ghost
+    @SubscribeEvent
     private fun join(e: GermClientLinkedEvent) {
+        autoCheckStatus(e.player)
+    }
+
+    @Ghost
+    @SubscribeEvent
+    private fun channel(e: ClientChannelEvent) {
         autoCheckStatus(e.player)
     }
 
