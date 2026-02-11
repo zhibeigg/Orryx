@@ -22,7 +22,7 @@ class Property(
     var description: String = ""
 ): WikiBlock {
 
-    private val entries by unsafeLazy { mutableListOf<Entry>() }
+    internal val entries by unsafeLazy { mutableListOf<Entry>() }
 
     /**
      * 属性条目

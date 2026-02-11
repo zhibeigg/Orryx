@@ -7,8 +7,8 @@ import taboolib.common.util.unsafeLazy
 
 class Trigger(val group: TriggerGroup, val key: String, var description: String = ""): WikiBlock {
 
-    private val entries by unsafeLazy { mutableListOf<Entry>() }
-    private val specialKeyEntries by unsafeLazy { mutableListOf<Entry>() }
+    internal val entries by unsafeLazy { mutableListOf<Entry>() }
+    internal val specialKeyEntries by unsafeLazy { mutableListOf<Entry>() }
 
     class Entry(val type: Type, val key: String, val description: String)
 
