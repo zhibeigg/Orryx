@@ -1,0 +1,19 @@
+Options:
+  Event: "Player Damaged Pre"
+  Weight: 1
+  Priority: "normal"
+Actions: |-
+  if &isCancelled then exit
+  if check orryx skill level 无畏护盾 >= 1 then {
+    # 重置5秒冷却计时
+    flag 无畏护盾冷却 to true timeout 100
+    if check flag 无畏护盾 >= &event[damage] then {
+      # 护盾完全吸收
+      event cancelled true
+      flag 无畏护盾 to math sub [ flag 无畏护盾 &event[damage] ]
+    } else if check flag 无畏护盾 > 0 then {
+      # 护盾部分吸收
+      set &event[damage] to math sub [ &event[damage] flag 无畏护盾 ]
+      flag 无畏护盾 to 0
+    }
+  }

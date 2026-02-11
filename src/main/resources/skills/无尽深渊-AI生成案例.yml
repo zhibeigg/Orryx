@@ -1,0 +1,60 @@
+Options:
+  Type: "DIRECT AIM"
+  Name: "无尽深渊"
+  Sort: 0
+  Icon: "无尽深渊"
+  XMaterial: "IRON_SWORD"
+  AimRadiusAction: 20
+  AimSizeAction: 8
+  Description:
+    - '&f技能等级&7: &e{{ &level }} &f级'
+    - '&f冷却时间&7: &3{{ scaled math div [ lazy *cooldown 20.0 ] }} &fs'
+    - '&f灵力消耗&7: &b{{ scaled lazy *mana }}'
+    - ''
+    - '&f在指定位置召唤一个持续 &b{{ scaled math div [ lazy *duration 20.0 ] }}s &f的深渊黑洞'
+    - '&f吸引 &68格 &f范围内的敌人向中心聚拢'
+    - '&f每秒对范围内敌人造成 &c{{ scaled lazy *damage }} &f伤害'
+    - '&f中心 &63格 &f内血量低于 &410% &f的敌人将被直接斩杀'
+    - ''
+    - '*&f下一级需求等级&7: &b{{ calc "5+3*level" }}'
+  IsLocked: false
+  MinLevel: 1
+  MaxLevel: 8
+  UpgradePointAction: 1
+  UpLevelCheckAction: |-
+    check orryx level >= calc "5+3*(to-1)"
+  CastCheckAction: true
+  Variables:
+    Silence: 20
+    Mana: |-
+      calc "80+40/7*(level-1)"
+    Cooldown: |-
+      calc "(30-5/7*(level-1))*20"
+    damage: |-
+      calc "100+50/7*(level-1)"
+    duration: |-
+      calc "(5+5/7*(level-1))*20"
+Actions: |-
+  # 生成黑洞实体
+  entity ady 无尽深渊 ARMOR_STAND gravity false timeout lazy *duration viewer "@range 50" they "@origin"
+  # 计算持续秒数用于循环
+  set sec to math floor math div [ lazy *duration 20 ]
+  # 主循环 - 每秒执行一次
+  for i in range 1 to &sec then {
+    sync {
+      # 吸引8格范围内敌人向黑洞中心聚拢
+      drag 0.5 true they "@range 8 !@self !@type ARMOR_STAND !@team"
+    }
+    # 对8格范围内敌人造成伤害
+    damage lazy *damage false they "@range 8 !@self !@type ARMOR_STAND !@team" source "@self" type MAGIC
+    # 斩杀：3格内血量低于10%的敌人
+    set closeTargets to container they "@range 3 !@self !@type ARMOR_STAND !@team"
+    for t in &closeTargets[list] then {
+      set hp to entity HEALTH they &t
+      set maxHp to entity MAX_HEALTH they &t
+      if check &hp <= math mul [ &maxHp 0.1 ] then {
+        damage 99999 false they &t source "@self" type MAGIC
+      }
+    }
+    sleep 20
+  }
