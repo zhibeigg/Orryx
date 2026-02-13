@@ -43,8 +43,7 @@ class SqlLiteManager: IStorageManager {
 
     private val jobsTable: Table<*, *> = Table("orryx_player_jobs", host) {
         add(USER_ID) {
-            type(ColumnTypeSQLite.INTEGER)
-            { options(ColumnOptionSQLite.NOTNULL) }
+            type(ColumnTypeSQLite.INTEGER) { options(ColumnOptionSQLite.NOTNULL) }
         }
         add(JOB) { type(ColumnTypeSQLite.TEXT) }
         add(EXPERIENCE) { type(ColumnTypeSQLite.INTEGER) }
@@ -54,8 +53,7 @@ class SqlLiteManager: IStorageManager {
 
     private val skillsTable: Table<*, *> = Table("orryx_player_job_skills", host) {
         add(USER_ID) {
-            type(ColumnTypeSQLite.INTEGER)
-            { options(ColumnOptionSQLite.NOTNULL) }
+            type(ColumnTypeSQLite.INTEGER) { options(ColumnOptionSQLite.NOTNULL) }
         }
         add(JOB) { type(ColumnTypeSQLite.TEXT) }
         add(SKILL) { type(ColumnTypeSQLite.TEXT) }
@@ -65,16 +63,14 @@ class SqlLiteManager: IStorageManager {
 
     private val keyTable: Table<*, *> = Table("orryx_player_key_setting", host) {
         add(USER_ID) {
-            type(ColumnTypeSQLite.INTEGER)
-            { options(ColumnOptionSQLite.NOTNULL, ColumnOptionSQLite.PRIMARY_KEY) }
+            type(ColumnTypeSQLite.INTEGER) { options(ColumnOptionSQLite.NOTNULL, ColumnOptionSQLite.PRIMARY_KEY) }
         }
         add(KEY_SETTING) { type(ColumnTypeSQLite.TEXT) }
     }
 
     private val globalFlagTable: Table<*, *> = Table("orryx_global_flag", host) {
         add(FLAG_KEY) {
-            type(ColumnTypeSQLite.TEXT)
-            { options(ColumnOptionSQLite.NOTNULL, ColumnOptionSQLite.UNIQUE) }
+            type(ColumnTypeSQLite.TEXT) { options(ColumnOptionSQLite.NOTNULL, ColumnOptionSQLite.UNIQUE) }
         }
         add(FLAG) { type(ColumnTypeSQLite.TEXT) }
         add(DELETED) { type(ColumnTypeSQLite.BLOB) { def("\$false") } }
@@ -354,30 +350,32 @@ class SqlLiteManager: IStorageManager {
                             ps.executeUpdate()
                         }
                     }
-                    for (skillPO in skillPOs) {
-                        val skillExists = conn.prepareStatement("SELECT 1 FROM `orryx_player_job_skills` WHERE `$USER_ID` = ? AND `$JOB` = ? AND `$SKILL` = ? LIMIT 1").use { ps ->
-                            ps.setInt(1, skillPO.id)
-                            ps.setString(2, skillPO.job)
-                            ps.setString(3, skillPO.skill)
-                            ps.executeQuery().next()
-                        }
-                        if (skillExists) {
-                            conn.prepareStatement("UPDATE `orryx_player_job_skills` SET `$LOCKED` = ?, `$LEVEL` = ? WHERE `$USER_ID` = ? AND `$JOB` = ? AND `$SKILL` = ?").use { ps ->
-                                ps.setBoolean(1, skillPO.locked)
-                                ps.setInt(2, skillPO.level)
-                                ps.setInt(3, skillPO.id)
-                                ps.setString(4, skillPO.job)
-                                ps.setString(5, skillPO.skill)
-                                ps.executeUpdate()
-                            }
-                        } else {
-                            conn.prepareStatement("INSERT INTO `orryx_player_job_skills` (`$USER_ID`, `$JOB`, `$SKILL`, `$LOCKED`, `$LEVEL`) VALUES (?, ?, ?, ?, ?)").use { ps ->
-                                ps.setInt(1, skillPO.id)
-                                ps.setString(2, skillPO.job)
-                                ps.setString(3, skillPO.skill)
-                                ps.setBoolean(4, skillPO.locked)
-                                ps.setInt(5, skillPO.level)
-                                ps.executeUpdate()
+                    if (skillPOs.isNotEmpty()) {
+                        conn.prepareStatement("SELECT 1 FROM `orryx_player_job_skills` WHERE `$USER_ID` = ? AND `$JOB` = ? AND `$SKILL` = ? LIMIT 1").use { selectPs ->
+                            conn.prepareStatement("UPDATE `orryx_player_job_skills` SET `$LOCKED` = ?, `$LEVEL` = ? WHERE `$USER_ID` = ? AND `$JOB` = ? AND `$SKILL` = ?").use { updatePs ->
+                                conn.prepareStatement("INSERT INTO `orryx_player_job_skills` (`$USER_ID`, `$JOB`, `$SKILL`, `$LOCKED`, `$LEVEL`) VALUES (?, ?, ?, ?, ?)").use { insertPs ->
+                                    for (skillPO in skillPOs) {
+                                        selectPs.setInt(1, skillPO.id)
+                                        selectPs.setString(2, skillPO.job)
+                                        selectPs.setString(3, skillPO.skill)
+                                        val skillExists = selectPs.executeQuery().use { it.next() }
+                                        if (skillExists) {
+                                            updatePs.setBoolean(1, skillPO.locked)
+                                            updatePs.setInt(2, skillPO.level)
+                                            updatePs.setInt(3, skillPO.id)
+                                            updatePs.setString(4, skillPO.job)
+                                            updatePs.setString(5, skillPO.skill)
+                                            updatePs.executeUpdate()
+                                        } else {
+                                            insertPs.setInt(1, skillPO.id)
+                                            insertPs.setString(2, skillPO.job)
+                                            insertPs.setString(3, skillPO.skill)
+                                            insertPs.setBoolean(4, skillPO.locked)
+                                            insertPs.setInt(5, skillPO.level)
+                                            insertPs.executeUpdate()
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -426,7 +424,7 @@ class SqlLiteManager: IStorageManager {
             rows(FLAG)
             limit(1)
         }.firstOrNull {
-            Json.decodeFromString<IFlag>(getString(FLAG))
+            Json.decodeFromString<org.gitee.orryx.core.profile.SerializableFlag>(getString(FLAG)).toFlag()
         }
     }
 
@@ -444,12 +442,12 @@ class SqlLiteManager: IStorageManager {
                     if (select { where { FLAG_KEY eq key } }.find()) {
                         update {
                             where { FLAG_KEY eq key }
-                            set(FLAG, Json.encodeToString(flag))
+                            set(FLAG, Json.encodeToString(flag.toSerializable()))
                             set(DELETED, false)
                         }
                     } else {
                         insert(FLAG_KEY, FLAG, DELETED) {
-                            value(key, Json.encodeToString(flag), 0)
+                            value(key, Json.encodeToString(flag.toSerializable()), 0)
                         }
                     }
                 }

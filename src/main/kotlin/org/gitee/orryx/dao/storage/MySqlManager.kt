@@ -40,8 +40,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
 
     private val jobsTable: Table<*, *> = Table("orryx_player_jobs", host) {
         add(USER_ID) {
-            type(ColumnTypeSQL.BIGINT)
-            { options(ColumnOptionSQL.UNSIGNED, ColumnOptionSQL.NOTNULL) }
+            type(ColumnTypeSQL.BIGINT) { options(ColumnOptionSQL.UNSIGNED, ColumnOptionSQL.NOTNULL) }
         }
         add(JOB) { type(ColumnTypeSQL.VARCHAR, 255) { options(ColumnOptionSQL.KEY, ColumnOptionSQL.NOTNULL) } }
         add(EXPERIENCE) { type(ColumnTypeSQL.INT) }
@@ -52,8 +51,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
 
     private val skillsTable: Table<*, *> = Table("orryx_player_job_skills", host) {
         add(USER_ID) {
-            type(ColumnTypeSQL.BIGINT)
-            { options(ColumnOptionSQL.UNSIGNED, ColumnOptionSQL.NOTNULL) }
+            type(ColumnTypeSQL.BIGINT) { options(ColumnOptionSQL.UNSIGNED, ColumnOptionSQL.NOTNULL) }
         }
         add(JOB) { type(ColumnTypeSQL.VARCHAR, 255) { options(ColumnOptionSQL.KEY, ColumnOptionSQL.NOTNULL) } }
         add(SKILL) { type(ColumnTypeSQL.VARCHAR, 255) { options(ColumnOptionSQL.KEY, ColumnOptionSQL.NOTNULL) } }
@@ -64,8 +62,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
 
     private val keyTable: Table<*, *> = Table("orryx_player_key_setting", host) {
         add(USER_ID) {
-            type(ColumnTypeSQL.BIGINT)
-            { options(ColumnOptionSQL.UNSIGNED, ColumnOptionSQL.NOTNULL, ColumnOptionSQL.PRIMARY_KEY) }
+            type(ColumnTypeSQL.BIGINT) { options(ColumnOptionSQL.UNSIGNED, ColumnOptionSQL.NOTNULL, ColumnOptionSQL.PRIMARY_KEY) }
         }
         add(KEY_SETTING) { type(ColumnTypeSQL.TEXT) }
     }
@@ -352,7 +349,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
             rows(FLAG)
             limit(1)
         }.firstOrNull {
-            Json.decodeFromString<IFlag>(getString(FLAG))
+            Json.decodeFromString<org.gitee.orryx.core.profile.SerializableFlag>(getString(FLAG)).toFlag()
         }
     }
 
@@ -368,10 +365,10 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
             } else {
                 insert(FLAG_KEY, FLAG, DELETED) {
                     onDuplicateKeyUpdate {
-                        update(FLAG, Json.encodeToString(flag))
+                        update(FLAG, Json.encodeToString(flag.toSerializable()))
                         update(DELETED, false)
                     }
-                    value(key, Json.encodeToString(flag), false)
+                    value(key, Json.encodeToString(flag.toSerializable()), false)
                 }
             }
         }.onSuccess { onSuccess.run() }

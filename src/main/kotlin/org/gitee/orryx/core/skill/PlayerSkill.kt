@@ -143,7 +143,7 @@ class PlayerSkill(
             if (privateLevel - event.downLevel < skill.minLevel) result = SkillLevelResult.MIN
             privateLevel = (privateLevel - event.downLevel).coerceAtLeast(skill.minLevel)
             save(isPrimaryThread) {
-                OrryxPlayerSkillLevelEvents.Down.Pre(player, this, event.downLevel).call()
+                OrryxPlayerSkillLevelEvents.Down.Post(player, this, event.downLevel).call()
                 future.complete(result)
             }
         } else {
@@ -232,16 +232,6 @@ class PlayerSkill(
     }
 
     override fun hashCode(): Int {
-        var result = id
-        result = 31 * result + privateLevel
-        result = 31 * result + privateLocked.hashCode()
-        result = 31 * result + uuid.hashCode()
-        result = 31 * result + key.hashCode()
-        result = 31 * result + job.hashCode()
-        result = 31 * result + level
-        result = 31 * result + locked.hashCode()
-        result = 31 * result + player.hashCode()
-        result = 31 * result + skill.hashCode()
-        return result
+        return key.hashCode()
     }
 }

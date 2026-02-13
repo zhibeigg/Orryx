@@ -93,7 +93,7 @@ class PlayerProfile(
         if (event.call()) {
             privatePoint = (privatePoint + event.point).coerceAtLeast(0)
             save {
-                OrryxPlayerPointEvents.Up.Post(player, this, event.point)
+                OrryxPlayerPointEvents.Up.Post(player, this, event.point).call()
             }
         }
     }
@@ -104,7 +104,7 @@ class PlayerProfile(
         if (event.call()) {
             privatePoint = (privatePoint - event.point).coerceAtLeast(0)
             save {
-                OrryxPlayerPointEvents.Down.Post(player, this, event.point)
+                OrryxPlayerPointEvents.Down.Post(player, this, event.point).call()
             }
         }
     }

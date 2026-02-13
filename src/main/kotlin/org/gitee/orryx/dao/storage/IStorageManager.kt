@@ -33,11 +33,16 @@ interface IStorageManager {
             get() = Orryx.config.getString("Database.use", "SQLLITE")!!.uppercase()
 
         internal val file: File
-            get() = newFile(
-                Orryx.config.getString("Database.file", getDataFolder().absolutePath)!!.replace("{0}", getDataFolder().absolutePath),
-                create = true,
-                folder = true
-            )
+            get() {
+                val basePath = Orryx.config.getString("Database.path")
+                    ?: Orryx.config.getString("Database.file")
+                    ?: getDataFolder().absolutePath
+                return newFile(
+                    basePath.replace("{0}", getDataFolder().absolutePath),
+                    create = true,
+                    folder = true
+                )
+            }
 
         internal val lazyType: String by unsafeLazy { type }
 
