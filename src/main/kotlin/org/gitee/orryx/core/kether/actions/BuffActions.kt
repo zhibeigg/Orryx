@@ -66,10 +66,9 @@ object BuffActions {
 
     fun sendBuff(player: Player, name: String, timeout: Long) {
         val buff = buffMap[name] ?: return
-        playerBuffMap.putIfAbsent(
-            player.uniqueId,
-            hashMapOf(name to PlayerBuff(player, buff, timeout).register() as PlayerBuff)
-        )
+        val map = playerBuffMap.computeIfAbsent(player.uniqueId) { hashMapOf() }
+        map[name]?.let { SimpleTimeoutTask.cancel(it) }
+        map[name] = PlayerBuff(player, buff, timeout).register() as PlayerBuff
         if (DragonCorePlugin.isEnabled) {
             sendBuffDragonCore(player, buff, timeout)
         }

@@ -297,7 +297,7 @@ fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(ray: IRay<T1>, 
     val checkNotInside =
         ray2ObbX < -halfExtents.x || ray2ObbX > halfExtents.x || ray2ObbY < -halfExtents.y || ray2ObbY > halfExtents.y || ray2ObbZ < -halfExtents.z || ray2ObbZ > halfExtents.z
     // 判断反向情况
-    val checkFoward = center.sub(center, v).dot(direction) < 0
+    val checkFoward = center.sub(origin, v).dot(direction) < 0
     if (checkNotInside && checkFoward) {
         return false
     }

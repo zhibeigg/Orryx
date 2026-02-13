@@ -53,7 +53,7 @@ class PlayerSkill(
         get() = privateLocked
 
     override val skill: ISkill
-        get() = SkillLoaderManager.getSkillLoader(key)!!
+        get() = SkillLoaderManager.getSkillLoader(key) ?: error("Skill '$key' not found")
 
     override fun cast(parameter: IParameter, consume: Boolean): CastResult {
         if (parameter !is SkillParameter) return CastResult.PARAMETER

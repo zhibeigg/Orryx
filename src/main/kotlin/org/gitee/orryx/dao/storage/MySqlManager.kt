@@ -103,7 +103,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
 
     private val statsMap = ConcurrentHashMap<String, TimeStats>()
 
-    private fun getStats(key: String): TimeStats = statsMap.getOrPut(key) { TimeStats() }
+    private fun getStats(key: String): TimeStats = statsMap.computeIfAbsent(key) { TimeStats() }
 
     /**
      * 统一的异步读取模板

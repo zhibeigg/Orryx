@@ -55,6 +55,7 @@ class SpiritManagerDefault: ISpiritManager {
                 val event = OrryxPlayerSpiritEvents.Up(player, profile, spirit)
                 if (event.call()) {
                     spiritMap[player.uniqueId] = (spiritMap.getOrPut(player.uniqueId) { 0.0 } + event.spirit).coerceIn(0.0, job.getMaxSpirit())
+                    future.complete(SpiritResult.SUCCESS)
                 } else {
                     future.complete(SpiritResult.CANCELLED)
                 }

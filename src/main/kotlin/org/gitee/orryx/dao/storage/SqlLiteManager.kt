@@ -30,8 +30,8 @@ class SqlLiteManager: IStorageManager {
     private val globalLockMap = ConcurrentHashMap<String, Any>()
     private val playerLockMap = ConcurrentHashMap<UUID, Any>()
 
-    private fun getPlayerLock(uuid: UUID): Any = playerLockMap.getOrPut(uuid) { Any() }
-    private fun getGlobalLock(key: String): Any = globalLockMap.getOrPut(key) { Any() }
+    private fun getPlayerLock(uuid: UUID): Any = playerLockMap.computeIfAbsent(uuid) { Any() }
+    private fun getGlobalLock(key: String): Any = globalLockMap.computeIfAbsent(key) { Any() }
 
     private val playerTable: Table<*, *> = Table("orryx_player", host) {
         add { id() }
@@ -286,7 +286,7 @@ class SqlLiteManager: IStorageManager {
                     val jobExists = conn.prepareStatement("SELECT 1 FROM `orryx_player_jobs` WHERE `$USER_ID` = ? AND `$JOB` = ? LIMIT 1").use { ps ->
                         ps.setInt(1, jobPO.id)
                         ps.setString(2, jobPO.job)
-                        ps.executeQuery().next()
+                        ps.executeQuery().use { it.next() }
                     }
                     if (jobExists) {
                         conn.prepareStatement("UPDATE `orryx_player_jobs` SET `$EXPERIENCE` = ?, `$GROUP` = ?, `$BIND_KEY_OF_GROUP` = ? WHERE `$USER_ID` = ? AND `$JOB` = ?").use { ps ->
@@ -329,7 +329,7 @@ class SqlLiteManager: IStorageManager {
                     val jobExists = conn.prepareStatement("SELECT 1 FROM `orryx_player_jobs` WHERE `$USER_ID` = ? AND `$JOB` = ? LIMIT 1").use { ps ->
                         ps.setInt(1, jobPO.id)
                         ps.setString(2, jobPO.job)
-                        ps.executeQuery().next()
+                        ps.executeQuery().use { it.next() }
                     }
                     if (jobExists) {
                         conn.prepareStatement("UPDATE `orryx_player_jobs` SET `$EXPERIENCE` = ?, `$GROUP` = ?, `$BIND_KEY_OF_GROUP` = ? WHERE `$USER_ID` = ? AND `$JOB` = ?").use { ps ->
