@@ -267,7 +267,11 @@ class PlayerJob(
                 val doSave = {
                     try {
                         IStorageManager.INSTANCE.saveJobAndSkills(jobPO, skillPOs) {
+                            ISyncCacheManager.INSTANCE.removePlayerJob(player.uniqueId, id, key)
+                            MemoryCache.removePlayerJob(player.uniqueId, id, key)
                             clearedSkills.forEach { skill ->
+                                ISyncCacheManager.INSTANCE.removePlayerSkill(player.uniqueId, id, key, skill.key)
+                                MemoryCache.removePlayerSkill(player.uniqueId, id, key, skill.key)
                                 OrryxPlayerSkillClearEvents.Post(player, skill).call()
                             }
                             OrryxPlayerJobClearEvents.Post(player, this).call()

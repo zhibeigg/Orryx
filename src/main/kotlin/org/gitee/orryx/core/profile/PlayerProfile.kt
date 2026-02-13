@@ -124,6 +124,10 @@ class PlayerProfile(
             val doSave = {
                 try {
                     IStorageManager.INSTANCE.savePlayerDataAndJob(profilePO, jobPO) {
+                        ISyncCacheManager.INSTANCE.removePlayerProfile(player.uniqueId)
+                        MemoryCache.removePlayerProfile(player.uniqueId)
+                        ISyncCacheManager.INSTANCE.removePlayerJob(player.uniqueId, id, job.key)
+                        MemoryCache.removePlayerJob(player.uniqueId, id, job.key)
                         OrryxPlayerJobChangeEvents.Post(player, job).call()
                     }
                 } catch (e: Throwable) {
