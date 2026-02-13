@@ -180,6 +180,21 @@ class PlayerSkill(
         return future
     }
 
+    /**
+     * 仅重置内存状态，不执行数据库保存。
+     * 供 [org.gitee.orryx.core.job.PlayerJob.clear] 批量收集 PO 后统一事务保存。
+     * @return Pre 事件是否通过
+     */
+    internal fun clearMemoryState(): Boolean {
+        val event = OrryxPlayerSkillClearEvents.Pre(player, this)
+        if (event.call()) {
+            privateLocked = skill.isLocked
+            privateLevel = skill.minLevel
+            return true
+        }
+        return false
+    }
+
     override fun save(async: Boolean, remove: Boolean, callback: Runnable) {
         val event = OrryxPlayerSkillSaveEvents.Pre(player, this, async, remove)
         event.call()

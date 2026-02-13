@@ -140,6 +140,22 @@ interface IStorageManager {
     fun savePlayerSkill(playerSkillPO: PlayerSkillPO, onSuccess: Runnable)
 
     /**
+     * 原子保存玩家数据和职业数据到数据库（事务）
+     * @param profilePO 玩家数据
+     * @param jobPO 职业数据
+     * @param onSuccess 成功时执行
+     * */
+    fun savePlayerDataAndJob(profilePO: PlayerProfilePO, jobPO: PlayerJobPO, onSuccess: Runnable)
+
+    /**
+     * 原子保存职业数据和技能数据到数据库（事务）
+     * @param jobPO 职业数据
+     * @param skillPOs 技能数据列表
+     * @param onSuccess 成功时执行
+     * */
+    fun saveJobAndSkills(jobPO: PlayerJobPO, skillPOs: List<PlayerSkillPO>, onSuccess: Runnable)
+
+    /**
      * 保存按键数据到数据库
      * @param playerKeySettingPO 按键数据
      * @param onSuccess 成功时执行
