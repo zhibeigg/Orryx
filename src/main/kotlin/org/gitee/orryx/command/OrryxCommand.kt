@@ -33,12 +33,6 @@ object OrryxCommand {
     }
 
     @CommandBody
-    val axkey = subCommandExec<ProxyCommandSender> {
-        KeyRegisterManager.reloadArcartX()
-        sender.sendMessage("ArcartX按键同步完成")
-    }
-
-    @CommandBody
     val job = OrryxJobCommand
 
     @CommandBody

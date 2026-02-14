@@ -98,6 +98,7 @@ dependencies {
     compileOnly("org.eldergod.ext:MythicMobs:4.11.0") {
         exclude("com.google.guava", "guava")
     }
+
     compileOnly("org.eldergod.ext:GDDTitle:2.1")
     compileOnly("org.eldergod.ext:GlowAPI:1.4.6")
     compileOnly("org.eldergod.ext:AttributePlus-api:1.0")

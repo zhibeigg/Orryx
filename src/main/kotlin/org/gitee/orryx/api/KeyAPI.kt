@@ -13,7 +13,7 @@ import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.key.IGroup
 import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.utils.*
-import priv.seventeen.artist.arcartx.api.ArcartXAPI
+import priv.seventeen.artist.arcartx.internal.network.NetworkMessageSender
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.PlatformFactory
@@ -76,18 +76,9 @@ class KeyAPI: IKeyAPI {
                 }
                 ArcartXPlugin.isEnabled -> {
                     try {
-                        val clientKeyBindIds = mutableSetOf<String>()
-                        BindKeyLoaderManager.getBindKeys().values.forEach { bindKey ->
-                            if (bindKey.isClientKeyBind) {
-                                clientKeyBindIds.add(bindKey.key)
-                                ArcartXAPI.getKeyBindRegistry().registerClientKeyBind(bindKey.key, bindKey.category!!, bindKey.defaultKey!!)
-                            }
-                        }
-                        keySetting.keySettingSet().filter { it !in clientKeyBindIds }.forEach {
-                            ArcartXAPI.getKeyBindRegistry().registerSimpleKeyBind(it, mutableListOf(it))
-                        }
+                        NetworkMessageSender.sendPlayerJoinPacket(player)
                     } catch (ex: Throwable) {
-                        warning("ArcartX按键注册失败: ${ex.message}")
+                        warning("ArcartX按键同步失败: ${ex.message}")
                     }
                 }
             }

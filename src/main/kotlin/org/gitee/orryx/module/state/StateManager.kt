@@ -31,6 +31,7 @@ import priv.seventeen.artist.arcartx.event.client.ClientEntityJoinEvent
 import priv.seventeen.artist.arcartx.event.client.ClientEntityLeaveEvent
 import priv.seventeen.artist.arcartx.event.client.ClientKeyPressEvent
 import priv.seventeen.artist.arcartx.event.client.ClientKeyReleaseEvent
+import priv.seventeen.artist.arcartx.internal.network.NetworkMessageSender
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.Ghost
@@ -283,10 +284,9 @@ object StateManager {
         val joinerData = joiner.statusData()
         val data = e.player.statusData()
         data.cacheJoiner.add(joiner.uniqueId)
-        if (!DragonCorePlugin.isEnabled) return
         val joinerStatus = joinerData.status as? Status ?: return
         joinerStatus.options.controller?.let { getController(it) }?.let { controller ->
-            DragonCoreCustomPacketSender.setPlayerAnimationController(e.player, joiner.uniqueId, controller.saveToString())
+            NetworkMessageSender.sendSetController(e.player, joiner.uniqueId, controller.saveToString())
         }
     }
 

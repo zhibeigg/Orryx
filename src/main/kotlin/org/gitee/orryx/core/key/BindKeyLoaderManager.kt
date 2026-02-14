@@ -1,8 +1,6 @@
 package org.gitee.orryx.core.key
 
 import org.gitee.orryx.api.Orryx
-import org.gitee.orryx.core.common.keyregister.KeyRegisterManager
-import org.gitee.orryx.core.common.keyregister.KeyRegisterManager.sendKeyRegister
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.utils.ArcartXPlugin
 import org.gitee.orryx.utils.DEFAULT

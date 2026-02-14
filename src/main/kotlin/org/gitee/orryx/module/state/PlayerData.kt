@@ -9,9 +9,11 @@ import org.gitee.orryx.core.common.keyregister.KeyRegisterManager
 import org.gitee.orryx.module.spirit.ISpiritManager
 import org.gitee.orryx.module.state.StateManager.getController
 import org.gitee.orryx.module.state.StateManager.statusDataList
+import org.gitee.orryx.utils.ArcartXPlugin
 import org.gitee.orryx.utils.DragonArmourersPlugin
 import org.gitee.orryx.utils.DragonCorePlugin
 import org.gitee.orryx.utils.GermPluginPlugin
+import priv.seventeen.artist.arcartx.internal.network.NetworkMessageSender
 import taboolib.common.platform.function.warning
 import taboolib.platform.util.onlinePlayers
 import java.util.*
@@ -109,25 +111,48 @@ class PlayerData(val player: Player) {
         }
     }
 
-    // 龙核的控制器更新
+    // 控制器更新
     fun updateController(status: Status) {
-        if (!dragonCoreEnabled) return
         val controller = status.options.controller?.let { getController(it) } ?: return
-        DragonCoreCustomPacketSender.setPlayerAnimationController(player, player.uniqueId, controller.saveToString())
-        statusDataList().forEach {
-            if (player.uniqueId in it.cacheJoiner) {
-                DragonCoreCustomPacketSender.setPlayerAnimationController(it.player, player.uniqueId, controller.saveToString())
+        val controllerString = controller.saveToString()
+        when {
+            dragonCoreEnabled -> {
+                DragonCoreCustomPacketSender.setPlayerAnimationController(player, player.uniqueId, controllerString)
+                statusDataList().forEach {
+                    if (player.uniqueId in it.cacheJoiner) {
+                        DragonCoreCustomPacketSender.setPlayerAnimationController(it.player, player.uniqueId, controllerString)
+                    }
+                }
+            }
+            arcartXEnabled -> {
+                NetworkMessageSender.sendSetController(player, player.uniqueId, controllerString)
+                statusDataList().forEach {
+                    if (player.uniqueId in it.cacheJoiner) {
+                        NetworkMessageSender.sendSetController(it.player, player.uniqueId, controllerString)
+                    }
+                }
             }
         }
     }
 
-    // 龙核的控制器删除
+    // 控制器删除
     fun removeController() {
-        if (!dragonCoreEnabled) return
-        DragonCoreCustomPacketSender.removePlayerAnimationController(player, player.uniqueId)
-        statusDataList().forEach {
-            if (player.uniqueId in it.cacheJoiner) {
-                DragonCoreCustomPacketSender.removePlayerAnimationController(it.player, player.uniqueId)
+        when {
+            dragonCoreEnabled -> {
+                DragonCoreCustomPacketSender.removePlayerAnimationController(player, player.uniqueId)
+                statusDataList().forEach {
+                    if (player.uniqueId in it.cacheJoiner) {
+                        DragonCoreCustomPacketSender.removePlayerAnimationController(it.player, player.uniqueId)
+                    }
+                }
+            }
+            arcartXEnabled -> {
+                NetworkMessageSender.sendSetController(player, player.uniqueId, "")
+                statusDataList().forEach {
+                    if (player.uniqueId in it.cacheJoiner) {
+                        NetworkMessageSender.sendSetController(it.player, player.uniqueId, "")
+                    }
+                }
             }
         }
     }
@@ -164,6 +189,7 @@ class PlayerData(val player: Player) {
 
         val germEnabled: Boolean by lazy { GermPluginPlugin.isEnabled }
         val dragonCoreEnabled: Boolean by lazy { DragonCorePlugin.isEnabled }
+        val arcartXEnabled: Boolean by lazy { ArcartXPlugin.isEnabled }
         val dragonArmourersEnabled: Boolean by lazy { DragonArmourersPlugin.isEnabled }
     }
 }
