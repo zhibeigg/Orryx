@@ -7,7 +7,9 @@ import priv.seventeen.artist.arcartx.glimmer.annotations.GlimmerInvokeHandler
 import priv.seventeen.artist.arcartx.glimmer.annotations.GlimmerObjectConstructor
 import priv.seventeen.artist.arcartx.glimmer.callable.InvocationData
 import priv.seventeen.artist.arcartx.glimmer.`object`.IGlimmerObject
+import taboolib.common.platform.Ghost
 
+@Ghost
 class OrryxPlayerObject: IGlimmerObject {
 
     private val player: Player?
