@@ -74,12 +74,26 @@ interface IPlayerSkill: Saveable {
     fun upLevelCheck(from: Int, to: Int): Boolean
 
     /**
+     * 降级检测
+     * @param from 从等级
+     * @param to 到等级
+     * @return 是否可以升级
+     * */
+    fun downLevelCheck(from: Int, to: Int): Boolean
+
+    /**
      * 升级成功执行
      * @param from 从等级
      * @param to 到等级
      * */
     fun upLevelSuccess(from: Int, to: Int)
 
+    /**
+     * 降级成功执行
+     * @param from 从等级
+     * @param to 到等级
+     * */
+    fun downLevelSuccess(from: Int, to: Int)
     /**
      * 升级技能
      * @param level 等级

@@ -8,7 +8,9 @@ import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.dao.cache.MemoryCache
+import java.util.Collections
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentHashMap
 
 fun IPlayerJob.clearAllLevelAndBackPoint(): CompletableFuture<Boolean> {
     val event = OrryxClearAllSkillLevelAndBackPointEvent(player, this)
@@ -38,7 +40,7 @@ fun IPlayerJob.getSkills(): List<CompletableFuture<IPlayerSkill?>> {
 }
 
 inline fun <T> IPlayerJob.skills(crossinline func: (skills: List<IPlayerSkill>) -> T): CompletableFuture<T> {
-    val skills = mutableListOf<IPlayerSkill>()
+    val skills = Collections.synchronizedList(mutableListOf<IPlayerSkill>())
     val fSkills = getSkills()
     return CompletableFuture.allOf(
         *fSkills.map { s ->
@@ -52,10 +54,12 @@ inline fun <T> IPlayerJob.skills(crossinline func: (skills: List<IPlayerSkill>) 
 }
 
 inline fun <T> IPlayerJob.bindSkills(crossinline func: (bindSkills: Map<IBindKey, IPlayerSkill?>) -> T): CompletableFuture<T> {
-    val bindSkills = hashMapOf<IBindKey, IPlayerSkill?>()
+    val bindSkills = ConcurrentHashMap<IBindKey, IPlayerSkill>()
     return CompletableFuture.allOf(*getBindSkills().map { (k, s) ->
         s?.thenAccept {
-            bindSkills[k] = it
+            if (it != null) {
+                bindSkills[k] = it
+            }
         } ?: CompletableFuture.completedFuture(null)
     }.toTypedArray()).thenApply {
         func(bindSkills)

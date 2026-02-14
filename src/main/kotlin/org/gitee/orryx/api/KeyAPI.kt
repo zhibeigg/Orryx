@@ -76,7 +76,14 @@ class KeyAPI: IKeyAPI {
                 }
                 ArcartXPlugin.isEnabled -> {
                     try {
-                        keySetting.keySettingSet().forEach {
+                        val clientKeyBindIds = mutableSetOf<String>()
+                        BindKeyLoaderManager.getBindKeys().values.forEach { bindKey ->
+                            if (bindKey.isClientKeyBind) {
+                                clientKeyBindIds.add(bindKey.key)
+                                ArcartXAPI.getKeyBindRegistry().registerClientKeyBind(bindKey.key, bindKey.category!!, bindKey.defaultKey!!)
+                            }
+                        }
+                        keySetting.keySettingSet().filter { it !in clientKeyBindIds }.forEach {
                             ArcartXAPI.getKeyBindRegistry().registerSimpleKeyBind(it, mutableListOf(it))
                         }
                     } catch (ex: Throwable) {

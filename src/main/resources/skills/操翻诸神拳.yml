@@ -46,8 +46,15 @@ Options:
   UpLevelCheckAction: |-
     tell inline "从{{ &from }}到{{ &to }}"
     true
+  # 降级检查
+  DownLevelCheckAction: |-
+    tell inline "从{{ &from }}到{{ &to }}"
+    true
   # 升级成功Action
   UpLevelSuccessAction: |-
+    tell inline "从{{ &from }}到{{ &to }}"
+  # 降级成功Action
+  DownLevelSuccessAction: |-
     tell inline "从{{ &from }}到{{ &to }}"
   # 尝试释放时检测，需要返回Boolean值
   CastCheckAction: |-

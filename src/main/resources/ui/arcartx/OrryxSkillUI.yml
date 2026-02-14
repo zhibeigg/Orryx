@@ -1,0 +1,528 @@
+
+ui:
+  isHud: "false"
+  itemSize: "16"
+  through: "false"
+  escClose: "true"
+  background: "true"
+  closeDied: "false"
+  show: "true"
+  jei: "false"
+  level: "0"
+  screenScale: true
+  action:
+    load: |-
+      val.方法定义.actions['注册']
+      var.选中技能 = {}
+      var.当前拖动技能id = ""
+    open: |-
+      //启动更新数据
+      var.更新数据()
+      async{
+        Thread.sleep(100)
+        var.选择技能(var.技能列表[0]['key'])
+      }
+    clickRight: |-
+      var.当前拖动技能id = ""
+      val.鼠标跟随.visible = false
+  packetHandler:
+    OrryxDescription: |-
+      技能 = var.取技能对象(packet['skill'])
+      var.选中技能 = 技能
+      var.选中技能['description'] = packet['description'].split('<n>')
+      
+      val.总技能组件['技能:'+packet['skill']]['画布布局']['技能名称'].texts = 技能['name']
+      val.总技能组件['技能:'+packet['skill']]['画布布局']['技能名称']['等级显示'].texts = 技能['level'].round + "/" + 技能['maxLevel'].round
+    OrryxUIUpdate: |-
+      var.职业 = packet['Orryx_job']
+      var.技能组 = packet['Orryx_group']
+      var.对象 = packet['Orryx_owner']
+      var.技能点 = packet['Orryx_point']
+      var.技能列表 = packet['Orryx_skills']
+      var.绑定列表 = packet['Orryx_bind_keys']
+      if (val.总绑定组件.childrenCount()<2) {
+        val.总绑定组件.actions['创建']
+      }else{
+        val.总绑定组件.actions['更新']
+      }
+  defaultOpen: "true"
+tasks:
+  每秒更新任务:
+    type: loop
+    time: 2000
+    cycle: 500
+    run: |-
+      var.更新数据()
+controls:
+  方法定义:
+    type: "Text"
+    val: "方法定义"
+    action:
+      注册: |-
+        self.actions['OR语句']
+
+      OR语句: |-
+        //var.取技能属性(skill文件名,属性文本<名称/等级/最大等级/所需点数/可绑定/锁定>)
+        var.取技能属性 = ->{
+          for(技能 in var.技能列表){
+            if(技能['key'] == args[0]){
+              switch (args[1]) {
+                case "名称" {
+                  return 技能['name']
+                }
+                case "最大等级" {
+                  return 技能['maxLevel']
+                }
+                case "等级" {
+                  return 技能['level']
+                }
+                case "所需点数" {
+                  return 技能['point']
+                }
+                case "可绑定" {
+                  return 技能['canBind']
+                }
+                case "锁定" {
+                  return 技能['locked']
+                }
+              }
+              return 技能
+            }
+          }
+          return null
+        }
+        //var.取技能对象(skill文件名)
+        var.取技能对象 = ->{
+          for(技能 in var.技能列表){
+            if(技能['key'] == args[0]){
+              return 技能
+            }
+          }
+          return null
+        }
+
+        //var.升级技能(skill文件名)
+        var.升级技能 = ->{
+          Packet.send("OrryxUpgradeSkill",var.对象,args[0])
+        }
+        //var.降级技能(skill文件名)
+        var.降级技能 = ->{
+          Packet.send("OrryxDowngradeSkill",var.对象,args[0])
+        }
+        //var.重置技能(skill文件名) | 清除并返回技能点
+        var.重置技能 = ->{
+          Packet.send("OrryxResetSkill",var.对象,args[0])
+        }
+        //var.选择技能(skill文件名) | 查看技能的描述等信息
+        var.选择技能 = ->{
+          Packet.send("OrryxSelectSkill",var.对象,args[0])
+        }
+        //var.绑定技能(skill文件名,绑定按键Key) | 将技能绑定到按键上
+        var.绑定技能 = ->{
+          Packet.send("OrryxBindSkill",var.对象,var.技能组,args[1],args[0])
+        }
+        //var.解绑技能(skill文件名) | 为技能解除在按键上绑定
+        var.解绑技能 = ->{
+          Packet.send("OrryxUnBindSkill",var.对象,var.技能组,args[0])
+        }
+        //var.更新数据() | 获取插件的新数据,主要为AXUI提供数据
+        var.更新数据 = ->{
+          Packet.send("OrryxUIUpdate")
+        }
+  adapt:
+    type: "Adaptive"
+    val: ""
+    attribute:
+      width: "1440"
+      height: "843"
+    children: 
+      背景:
+        type: "Texture"
+        val: ""
+        attribute:
+          normal: "~44,56,76,255"
+          width: "1270"
+          point: "~vertical_stretch_center"
+          height: "650"
+        children:
+          技能按钮布局:
+            type: "Canvas"
+            val: ""
+            attribute:
+              width: "347.66"
+              x: "39.82"
+              y: "58.17"
+              height: "545.12"
+            children:
+              背景:
+                type: "Texture"
+                val: ""
+                attribute:
+                  normal: "~64,52,89,255"
+                  width: "400"
+                  height: "400"
+                  point: "~stretch_all"
+                  alpha: 1
+
+              滑块:
+                type: "Canvas"
+                val: ""
+                attribute:
+                  width: "10.71"
+                  x: "356.28"
+                  height: "546.36"
+                children:
+                  背景:
+                    type: "Texture"
+                    val: ""
+                    attribute:
+                      normal: "~55,55,55,255"
+                      width: "400"
+                      point: "~stretch_all"
+                      height: "400"
+                  主体:
+                    type: "Texture"
+                    val: "滑块"
+                    attribute:
+                      normal: "~255,255,255"
+                      width: "14"
+                      x: "0"
+                      y: "-241.18"
+                      point: "~middle_center"
+                      height: "64"
+                      maxDragY: "545.12-64"
+              滚动组件:
+                type: Scroll
+                attribute:
+                  x: 5
+                  y: 10
+                  width: 339.78
+                  height: 74*Math.min(var.技能列表.size(), 7)
+                  moveY: "val.滑块.getDragYRatio()"
+                children:
+                  纵向布局:
+                    type: "Grid"
+                    val: "总技能组件"
+                    attribute:
+                      spaceBetweenY: "6"
+                      column: 1
+                    action:
+                      create: |-
+                        async{
+                          Thread.sleep(100)
+                          for(技能 in  var.技能列表){
+                            组件 = self['技能'].copy('技能:' + 技能['key'])
+                            组件.技能 = 技能
+                            组件.visible = true
+                          }
+                        } 
+                    children:
+                      技能:
+                        type: "Texture"
+                        attribute:
+                          normal: "~0,0,0,128"
+                          hover: "~0,0,0,149"
+                          width: "336.75"
+                          height: "68"
+                          visible: "false"
+                        action:
+                          clickLeft: "var.选择技能(self.技能['key'])"
+                        children:
+                          画布布局:
+                            type: "Canvas"
+                            val: ""
+                            attribute:
+                              width: "self.parent.width"
+                              height: "self.parent.height"
+                              visible: "true"
+                              技能: "self.parent.技能"
+                            action:
+                              clickLeft: "self.parent.actions['clickLeft']"
+                            children:
+                              技能图标背景:
+                                type: "Texture"
+                                val: ""
+                                attribute:
+                                  normal: "~65,67,111,255"
+                                  width: "self.height"
+                                  x: "8"
+                                  point: "~middle_left"
+                                  height: "52"
+                              技能图标:
+                                type: "Texture"
+                                val: ""
+                                attribute:
+                                  normal: "'icon/技能/' + self.parent.技能['key'] + '.png'"
+                                  width: "self.height"
+                                  x: "10"
+                                  point: "~middle_left"
+                                  height: "48"
+                                action:
+                                  clickLeft: |-
+                                    var.当前拖动技能id = self.parent.技能['key']
+                                    val.鼠标跟随.visible = true
+                              
+                              技能名称:
+                                type: "Text"
+                                val: ""
+                                attribute:
+                                  x: "80"
+                                  y: "10"
+                                  width: "99.28"
+                                  fontSize: "24"
+                                  point: "~top_left"
+                                  技能: "self.parent.技能"
+                                action:
+                                  create: "self.texts = self.技能['name']"
+                                children:
+                                  等级显示:
+                                    type: "Text"
+                                    val: ""
+                                    attribute:
+                                      x: "0"
+                                      y: "20"
+                                      width: "99.28"
+                                      fontSize: "24"
+                                      point: "~top_left"
+                                      技能: "self.parent.技能"
+                                    action:
+                                      create: |-
+                                        self.texts = self.技能['level'].round + "/" + self.技能['maxLevel'].round
+
+          
+          
+          技能描述布局:
+            type: "Canvas"
+            val: ""
+            attribute:
+              width: "722.94"
+              x: "469.81"
+              y: "35.91"
+              height: "650.99"
+              visible: "true"
+            children:
+              背景:
+                type: "Texture"
+                val: ""
+                attribute:
+                  normal: "~58,58,82,255"
+                  width: "400"
+                  point: "~stretch_all"
+                  height: "400"
+              名称:
+                type: "Text"
+                val: ""
+                attribute:
+                  texts: "~{var.选中技能['name']}"
+                  y: "20"
+                  fontSize: "64"
+                  point: "~top_center"
+                  visible: "true"
+              基础信息:
+                type: "Text"
+                val: ""
+                attribute:
+                  texts:
+                    - "~等级: {var.选中技能['level'].round}/{var.选中技能['maxLevel'].round}"
+                    - "~升级所需技能点: {var.选中技能['point'].round}"
+                  x: "100"
+                  y: "120"
+                  fontSize: "48"
+                  point: "~top_left"
+                  visible: "true"
+              描述:
+                type: "Text"
+                val: ""
+                attribute:
+                  texts: "var.选中技能['description']"
+                  lineSpace: "8"
+                  x: "100"
+                  y: "self.parent['基础信息'].height+self.parent['基础信息'].y+60"
+                  fontSize: "48"
+                  visible: "true"
+              升级按钮:
+                type: "Texture"
+                val: ""
+                attribute:
+                  x: "-255.67"
+                  y: "100"
+                  width: "211.6"
+                  height: "64"
+                  normal: "~62,32,32,255"
+                  hover: "~0,0,0,200"
+                  point: "~bottom_center"
+                  texts:
+                    - "~升级技能"
+                  fontSize: "64"
+                action:
+                  clickLeft: |-
+                    var.升级技能(var.选中技能['key'])
+              降级按钮:
+                type: "Texture"
+                val: ""
+                attribute:
+                  x: "12.36"
+                  y: "100"
+                  width: "211.6"
+                  height: "64"
+                  normal: "~62,32,32,255"
+                  hover: "~0,0,0,200"
+                  point: "~bottom_center"
+                  texts:
+                    - "~降级技能"
+                  fontSize: "64"
+                action:
+                  clickLeft: |-
+                    var.降级技能(var.选中技能['key'])
+              重置:
+                type: "Texture"
+                val: ""
+                attribute:
+                  x: "329.95"
+                  y: "99.05"
+                  width: "self.height"
+                  height: "63.05"
+                  normal: "~62,32,32,255"
+                  hover: "~0,0,0,200"
+                  point: "~bottom_center"
+                  texts:
+                    - "~R"
+                  fontSize: "64"
+                action:
+                  clickLeft: |-
+                    var.重置技能(var.选中技能['key'])
+        
+        
+          绑定布局:
+            type: "Canvas"
+            val: ""
+            attribute:
+              width: "342.73"
+              x: "44.75"
+              y: "637.65"
+              height: "150.02"
+            children:
+              背景:
+                type: "Texture"
+                val: ""
+                attribute:
+                  normal: "~52,59,88,255"
+                  width: "400"
+                  point: "~stretch_all"
+                  height: "400"
+              绑定:
+                type: "HGrid"
+                val: "总绑定组件"
+                attribute:
+                  spaceBetweenX: "5"
+                  spaceBetweenY: "5"
+                  width: "450.09"
+                  column: "4"
+                  x: "0"
+                  point: "~middle_center"
+                  height: "203.68"
+                action:
+                  create: |-
+                    async{
+                      Thread.sleep(110)
+                      for (key in var.绑定列表) {
+                          组件 = self['技能'].copy('技能绑定' + key['key'])
+                          组件.keyName = Keyboard.getKeyBindingKeyName(key['key'])
+                          组件.key = key['key']
+                          组件.skill = key['skill']
+                          组件.icon = key['icon']
+                          组件.visible = true
+                      }
+                    }
+                  更新: |-
+                    for (key in var.绑定列表) {
+                      组件 = self['技能绑定' + key['key']]
+                      组件.keyName = Keyboard.getKeyBindingKeyName(key['key'])
+                      组件.key = key['key']
+                      组件.skill = key['skill']
+                      组件.icon = key['icon']
+                      组件['图标'].normal = key['icon'] != 'none' ? 'icon/技能/'+key['icon']+'.png' :'icon/技能/'+key['skill']+'.png'
+                      组件.visible = true
+                    }
+
+                children:
+                  技能:
+                    type: "Canvas"
+                    val: ""
+                    attribute:
+                      width: "self.height"
+                      x: "0"
+                      y: "0"
+                      height: "64"
+                      visible: "false"
+                      keyName: "~R"
+                      key: "~技能名"
+                    action:
+                      clickLeft: |-
+                        if(var.当前拖动技能id.length>=1){
+                          var.绑定技能(var.当前拖动技能id,self.key)
+                          self.skill = var.当前拖动技能id
+                          var.当前拖动技能id = ""
+                          val.鼠标跟随.visible = false
+                        }elif((var.当前拖动技能id.length == 0 || var.当前拖动技能id == null  || var.当前拖动技能id == "" ) && self.skill != "none"){
+                          //如果没拖动技能
+                          tmp = self.skill
+                          var.当前拖动技能id = tmp
+                          val.鼠标跟随.visible = true
+                        }
+                      clickRight: |-
+                        //右键解除技能绑定
+                        if(self.skill != "none"){
+                          var.解绑技能(self.skill)
+                          self.skill = "none"
+                        }
+
+
+                    children:
+                      背景:
+                        type: "Texture"
+                        attribute:
+                          normal: "~26,26,26,255"
+                          width: "400"
+                          point: "~stretch_all"
+                          height: "400"
+                        action:
+                          clickLeft: |-
+                            self.parent.actions['clickLeft']
+                          clickRight: |-
+                            self.parent.actions['clickRight']
+                      图标:
+                        type: "Texture"
+                        attribute:
+                          normal: "~126,116,126,255"
+                          point: ~middle_center
+                          width: "self.height"
+                          normal: "self.parent.icon != 'none' ? 'icon/技能/'+self.parent.icon+'.png' :'icon/技能/'+self.parent.skill+'.png'"
+                          height: "58"
+                          tip:
+                          - "~&7{var.取技能属性(self.parent.skill,'名称')}{var.取技能属性(self.parent.skill,'名称')!=null?' &f| &c右键解绑':''}"
+                        action:
+                          clickLeft: |-
+                            self.parent.actions['clickLeft']
+                          clickRight: |-
+                            self.parent.actions['clickRight']
+                      按键名:
+                        type: "Text"
+                        attribute:
+                          texts: "self.parent.keyName"
+                          x: "-2"
+                          y: "-2"
+                          fontSize: "24"
+                          point: "~bottom_right"
+
+
+      技能鼠标跟随图标:
+        type: "Texture"
+        val: "鼠标跟随"
+        attribute:
+          normal: "'icon/技能/' + var.当前拖动技能id + '.png'"
+          width: "self.height"
+          x: "Mouse.x()+5"
+          y: "Mouse.y()+5"
+          height: "52"
+          visible: false

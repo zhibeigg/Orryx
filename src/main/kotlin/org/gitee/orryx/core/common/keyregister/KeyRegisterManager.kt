@@ -9,10 +9,12 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.gitee.orryx.api.events.compat.DragonCacheLoadedEvent
 import org.gitee.orryx.compat.dragoncore.DragonCoreCustomPacketSender
+import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.utils.*
 import priv.seventeen.artist.arcartx.api.ArcartXAPI
 import priv.seventeen.artist.arcartx.event.client.ClientChannelEvent
+import priv.seventeen.artist.arcartx.internal.network.NetworkMessageSender
 import taboolib.common.platform.Ghost
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
@@ -77,7 +79,21 @@ object KeyRegisterManager {
         }
     }
 
-    private fun sendKeyRegister(player: Player) {
+    fun reloadArcartX() {
+        if (ArcartXPlugin.isEnabled) {
+            onlinePlayers.forEach { player ->
+                player.keySetting {
+                    try {
+                        NetworkMessageSender.sendPlayerJoinPacket(player)
+                    } catch (ex: Throwable) {
+                        warning("ArcartX按键同步失败: ${ex.message}")
+                    }
+                }
+            }
+        }
+    }
+
+    fun sendKeyRegister(player: Player) {
         player.keySetting { keySetting ->
             when {
                 GermPluginPlugin.isEnabled -> {
@@ -103,7 +119,14 @@ object KeyRegisterManager {
                 }
                 ArcartXPlugin.isEnabled -> {
                     try {
-                        keySetting.keySettingSet().forEach {
+                        val clientKeyBindIds = mutableSetOf<String>()
+                        BindKeyLoaderManager.getBindKeys().values.forEach { bindKey ->
+                            if (bindKey.isClientKeyBind) {
+                                clientKeyBindIds.add(bindKey.key)
+                                ArcartXAPI.getKeyBindRegistry().registerClientKeyBind(bindKey.key, bindKey.category!!, bindKey.defaultKey!!)
+                            }
+                        }
+                        keySetting.keySettingSet().filter { it !in clientKeyBindIds }.forEach {
                             ArcartXAPI.getKeyBindRegistry().registerSimpleKeyBind(it, mutableListOf(it))
                         }
                     } catch (ex: Throwable) {

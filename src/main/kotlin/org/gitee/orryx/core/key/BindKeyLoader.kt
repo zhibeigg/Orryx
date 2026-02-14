@@ -10,6 +10,10 @@ class BindKeyLoader(override val key: String, val configurationSection: Configur
 
     override val sort: Int = configurationSection.getInt("sort")
 
+    override val category: String? = configurationSection.getString("category")
+
+    override val defaultKey: String? = configurationSection.getString("default")
+
     override fun checkAndCast(player: Player, key: List<String>, timeout: Long, actionType: IKeyRegister.ActionType, sort: Boolean): Boolean {
         val boolean = KeyRegisterManager.getKeyRegister(player.uniqueId)?.isKeysInTimeout(key, timeout, actionType, sort) ?: false
         if (boolean) tryCast(player)

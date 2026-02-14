@@ -11,9 +11,11 @@ import org.gitee.orryx.utils.*
 import priv.seventeen.artist.arcartx.api.ArcartXAPI
 import taboolib.common.function.debounce
 import taboolib.common.platform.function.getDataFolder
+import taboolib.common.platform.function.warning
 import taboolib.common.util.unsafeLazy
 import java.io.File
 import java.util.*
+import java.util.concurrent.CompletableFuture
 
 open class ArcartXSkillHud(override val viewer: Player, override val owner: Player): AbstractSkillHud(viewer, owner) {
 
@@ -33,6 +35,7 @@ open class ArcartXSkillHud(override val viewer: Player, override val owner: Play
         private fun reload() {
             if (IUIManager.INSTANCE !is ArcartXUIManager) return
             skillHudConfiguration = YamlConfiguration.loadConfiguration(File(getDataFolder(), "ui/arcartx/OrryxSkillHUD.yml"))
+            ArcartXAPI.getUIRegistry().reload("OrryxSkillHUD", skillHudConfiguration)
             arcartxSkillHudMap.toList().forEach { (_, u) ->
                 u.values.toList().forEach {
                     it.open()
@@ -52,26 +55,51 @@ open class ArcartXSkillHud(override val viewer: Player, override val owner: Play
     }
 
     private fun updateNow(skill: IPlayerSkill?) {
-        val networkSender = ArcartXAPI.getNetworkSender()
+        val uiRegistry = ArcartXAPI.getUIRegistry()
+
         if (skill != null) {
             val cooldown = skillCooldownMap[owner.uniqueId]?.get(skill.key)
-            networkSender.sendServerVariable(viewer, "Orryx_bind_cooldown_${skill.key}", cooldown?.getCountdown(owner).toString())
+            uiRegistry.sendPacket(
+                viewer, "OrryxSkillHUD", "OrryxHudCooldown",
+                mapOf(
+                    "skill" to skill.key,
+                    "cooldown" to cooldown?.getCountdown(owner).toString()
+                )
+            )
         } else {
-            owner.keySetting { keySetting ->
-                owner.job { job ->
+            owner.keySetting { it }
+                .thenCompose { keySetting ->
+                    owner.job { it }.thenApply { keySetting to it }
+                }
+                .thenCompose { (keySetting, job) ->
+                    if (job == null) return@thenCompose CompletableFuture.completedFuture(null)
                     job.bindSkills { bindSkills ->
                         val keys = bindKeys()
-                        networkSender.sendMultipleServerVariable(viewer, mapOf(
-                            "Orryx_bind_keys" to keys.joinToString("<br>") { it.key },
-                            "Orryx_bind_player_keys" to keys.joinToString("<br>") { keySetting.bindKeyMap[it] ?: "none" },
-                            "Orryx_bind_skills" to keys.joinToString("<br>") { bindSkills[it]?.key ?: "none" },
-                            "Orryx_bind_skills_Icon" to keys.joinToString("<br>") { bindSkills[it]?.getIcon() ?: "none" },
-                            "Orryx_bind_cooldowns" to keys.joinToString("<br>") { bindSkills[it]?.key?.let { skill -> skillCooldownMap[owner.uniqueId]?.get(skill)?.getCountdown(owner) }.toString() },
-                            "Orryx_bind_skills_mana" to keys.joinToString("<br>") { bindSkills[it]?.parameter()?.manaValue()?.toString() ?: "0" }
-                        ))
+
+                        val bindSkillsData = keys.map { key ->
+                            val bindSkill = bindSkills[key]
+                            mapOf(
+                                "key" to key.key,
+                                "player_key" to (if (key.isClientKeyBind) key.defaultKey ?: "none" else keySetting.bindKeyMap[key] ?: "none"),
+                                "skill" to (bindSkill?.key ?: "none"),
+                                "icon" to (bindSkill?.getIcon() ?: "none"),
+                                "cooldown" to (bindSkill?.key?.let { skillKey ->
+                                    skillCooldownMap[owner.uniqueId]?.get(skillKey)?.getCountdown(owner)
+                                }?.toString() ?: "0"),
+                                "mana" to (bindSkill?.parameter()?.manaValue()?.toString() ?: "0")
+                            )
+                        }
+
+                        uiRegistry.sendPacket(
+                            viewer, "OrryxSkillHUD", "OrryxHudUpdate",
+                            mapOf("bind_skills" to bindSkillsData)
+                        )
                     }
+                }.exceptionally { ex ->
+                    warning("[Orryx] OrryxHudUpdate error: ${ex.message}")
+                    ex.printStackTrace()
+                    null
                 }
-            }
         }
     }
 

@@ -1,0 +1,143 @@
+技能显示个数: &技能显示个数 6
+
+
+ui:
+  isHud: "true"
+  itemSize: "16"
+  through: "false"
+  escClose: "true"
+  background: "true"
+  closeDied: "false"
+  show: "true"
+  jei: "false"
+  level: "0"
+  screenScale: true
+  defaultOpen: "true"
+  packetHandler:
+    OrryxHudUpdate: |-
+      var.绑定列表 = packet['bind_skills']
+      if (val.总技能布局.childrenCount()<2){
+        val.总技能布局.actions['创建']
+      }else{
+        val.总技能布局.actions['更新']
+      }
+  action:
+    load: |-
+      var.已创建 = 0
+tasks:
+  每秒更新任务:
+    type: loop
+    time: 2000
+    cycle: 1000
+    run: |-
+      Packet.send('OrryxUpdateHUD')
+controls:
+
+  adapt:
+    type: "Adaptive"
+    val: ""
+    attribute:
+      width: "1600"
+      height: "900"
+      y: "0"
+    children:
+      主体:
+        type: "Canvas"
+        val: "main"
+        attribute:
+          width: "84"
+          point: "~middle_right"
+          height: "10+70*self.技能个数"
+          y: "45.75"
+          技能个数: *技能显示个数
+        children:
+          背景:
+            type: "Texture"
+            val: ""
+            attribute:
+              normal: "~38,44,60,255"
+              width: "111.21"
+              y: "0"
+              point: "~stretch_all"
+          总技能布局:
+            type: "VStack"
+            val: "总技能布局"
+            attribute:
+              width: "0"
+              x: "10"
+              y: "10"
+              maxSize: "999"
+              point: "~stretch_all"
+              spaceBetween: "6"
+            action:
+              创建: |-
+                if (var.已创建<1) {
+                  var.已创建 = 1
+                  for (i in range(0, (val.main.技能个数)-1)) {
+                    绑定 = var.绑定列表[i]
+                    key = 绑定['key']
+                    组件 = self['技能'].copy(key)
+                    组件['图标'].normal = 'icon/技能/' +绑定['icon']+ '.png'
+                    组件['按键名'].keyName = Keyboard.getKeyBindingKeyName(绑定['key'])
+                    组件.visible = true
+                  }
+                }
+              更新: |-
+                for (i in range(0, (val.main.技能个数)-1)) {
+                  绑定 = var.绑定列表[i]
+                  key = 绑定['key']
+                  组件 = self[key]
+                  组件['图标'].normal = 'icon/技能/' +绑定['icon']+ '.png'
+                  组件['按键名'].keyName = Keyboard.getKeyBindingKeyName(绑定['key'])
+                  组件.visible = true
+                }
+
+            children:
+              技能:
+                type: "Canvas"
+                val: ""
+                attribute:
+                  visible: "false"
+                  width: "64"
+                  height: "64"
+                children:
+                  背景:
+                    type: "Texture"
+                    val: ""
+                    attribute:
+                      normal: "~23,28,40,255"
+                      width: "64"
+                      point: "~stretch_all"
+                      height: "self.width"
+                  图标:
+                    type: "Texture"
+                    val: ""
+                    attribute:
+                      width: "52"
+                      point: "~middle_center"
+                      height: "52"
+                  冷却:
+                    type: "Texture"
+                    val: ""
+                    attribute:
+                      normal: "~255,255,255,60"
+                      width: "52"
+                      cooldown: "20"
+                      y: "-6"
+                      point: "~bottom_center"
+                      height: "52"
+                    action:
+                      create: |-
+                        self.height = Q2(52, 0, 0, self.cooldown*20)
+                  按键名:
+                    type: "Text"
+                    val: ""
+                    attribute:
+                      texts:
+                        - "~{self.keyName}"
+                      fontSize: "26"
+                      point: "~bottom_left"
+                      keyName: "R"
+                      shadow: true
+                      y: "-2"
+                      x: "4"
