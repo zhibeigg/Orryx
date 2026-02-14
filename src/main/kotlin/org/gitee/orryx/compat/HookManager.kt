@@ -23,5 +23,6 @@ object HookManager {
         PlaceholderAPIPlugin.load()
         GlowAPIPlugin.load()
         DungeonPlusPlugin.load()
+        ArcartXPlugin.load()
     }
 }

@@ -8,7 +8,6 @@ import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.module.ui.AbstractSkillHud
 import org.gitee.orryx.module.ui.IUIManager
 import org.gitee.orryx.module.ui.IUIManager.Companion.skillCooldownMap
-import org.gitee.orryx.module.ui.germplugin.GermPluginSkillHud
 import org.gitee.orryx.utils.*
 import taboolib.common.function.debounce
 import taboolib.common.platform.function.getDataFolder
@@ -26,7 +25,7 @@ open class DragonCoreSkillHud(override val viewer: Player, override val owner: P
     companion object {
 
         /**
-         * owner, viewer, [GermPluginSkillHud]
+         * owner, viewer, [DragonSkillHud]
          */
         internal val dragonSkillHudMap by unsafeLazy { hashMapOf<UUID, MutableMap<UUID, DragonCoreSkillHud>>() }
         internal lateinit var skillHudConfiguration: YamlConfiguration

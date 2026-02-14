@@ -38,21 +38,36 @@ internal fun SkillParameter.runSkillAction(map: Map<String, Any?> = emptyMap()):
     return SkillLoaderManager.getSkillLoader(skill ?: return CompletableFuture.completedFuture(null))?.let { skill ->
         skill as ICastSkill
         val combinedMap = buildTriggerVariables() + map
-        KetherScript(skill.key, skill.script ?: error("请修复技能配置中的错误${skill.key}")).runActions(this, combinedMap)
+        KetherScript(skill.key, skill.script ?: error("请修复技能配置中的错误${skill.key}")).runActions(
+            this,
+            combinedMap
+        )
     }
 }
 
-internal fun SkillParameter.runSkillExtendAction(extend: String, map: Map<String, Any?> = emptyMap()): CompletableFuture<Any?>? {
+internal fun SkillParameter.runSkillExtendAction(
+    extend: String,
+    map: Map<String, Any?> = emptyMap()
+): CompletableFuture<Any?>? {
     return SkillLoaderManager.getSkillLoader(skill ?: return CompletableFuture.completedFuture(null))?.let { skill ->
         skill as ICastSkill
         val combinedMap = buildTriggerVariables() + map
-        KetherScript(skill.key, skill.extendScripts[extend] ?: error("请修复技能配置中的错误${skill.key} extend $extend")).runExtendActions(this, extend, combinedMap)
+        KetherScript(
+            skill.key,
+            skill.extendScripts[extend] ?: error("请修复技能配置中的错误${skill.key} extend $extend")
+        ).runExtendActions(this, extend, combinedMap)
     }
 }
 
 internal fun IPlayerSkill.runSkillAction(map: Map<String, Any> = emptyMap()) {
     (skill as? ICastSkill)?.let { skill ->
-        KetherScript(key, skill.script ?: error("请修复技能配置中的错误$key")).runActions(SkillParameter(key, player, level), map)
+        KetherScript(key, skill.script ?: error("请修复技能配置中的错误$key")).runActions(
+            SkillParameter(
+                key,
+                player,
+                level
+            ), map
+        )
     }
 }
 
@@ -66,7 +81,10 @@ internal fun IPlayerSkill.runCustomAction(action: String, map: Map<String, Any> 
     }
 }
 
-internal fun SkillParameter.runCustomAction(action: String, map: Map<String, Any> = emptyMap()): CompletableFuture<Any?> {
+internal fun SkillParameter.runCustomAction(
+    action: String,
+    map: Map<String, Any> = emptyMap()
+): CompletableFuture<Any?> {
     return ScriptManager.runScript(adaptPlayer(player), this, action) {
         extend(map)
     }
@@ -75,7 +93,7 @@ internal fun SkillParameter.runCustomAction(action: String, map: Map<String, Any
 fun IPlayerSkill.up(): CompletableFuture<SkillLevelResult> {
     if (level == skill.maxLevel) return CompletableFuture.completedFuture(SkillLevelResult.MAX)
     val from = level
-    val to = level+1
+    val to = level + 1
     return player.orryxProfile { profile ->
         if (upLevelCheck(from, to)) {
             upgradePointCheck(from, to).thenCompose { pointCheck ->
@@ -98,7 +116,37 @@ fun IPlayerSkill.up(): CompletableFuture<SkillLevelResult> {
     }
 }
 
-inline fun <T> Player.skill(skill: String, create: Boolean = false, crossinline function: (IPlayerSkill) -> T): CompletableFuture<T?> {
+fun IPlayerSkill.down(): CompletableFuture<SkillLevelResult> {
+    if (level == skill.minLevel) return CompletableFuture.completedFuture(SkillLevelResult.MIN)
+    val from = level - 1
+    val to = level
+    return player.orryxProfile { profile ->
+        if (downLevelCheck(from, to)) {
+            upgradePointCheck(from, to).thenCompose { pointCheck ->
+                if (pointCheck.second) {
+                    val result = downLevel(1)
+                    result.thenApply {
+                        if (it == SkillLevelResult.SUCCESS) {
+                            profile.givePoint(pointCheck.first)
+                            downLevelSuccess(from, level)
+                        }
+                        it
+                    }
+                } else {
+                    CompletableFuture.completedFuture(SkillLevelResult.POINT_REFUND)
+                }
+            }
+        } else {
+            CompletableFuture.completedFuture(SkillLevelResult.CHECK)
+        }
+    }
+}
+
+inline fun <T> Player.skill(
+    skill: String,
+    create: Boolean = false,
+    crossinline function: (IPlayerSkill) -> T
+): CompletableFuture<T?> {
     return getSkill(skill, create).thenApply {
         it?.let { it1 -> function(it1) }
     }
@@ -108,13 +156,23 @@ fun Player.getSkill(job: IPlayerJob, skill: String, create: Boolean = false): Co
     return getSkill(job.key, skill, create)
 }
 
-inline fun <T> Player.skill(job: IPlayerJob, skill: String, create: Boolean = false, crossinline function: (IPlayerSkill) -> T): CompletableFuture<T?> {
+inline fun <T> Player.skill(
+    job: IPlayerJob,
+    skill: String,
+    create: Boolean = false,
+    crossinline function: (IPlayerSkill) -> T
+): CompletableFuture<T?> {
     return getSkill(job, skill, create).thenApply {
         it?.let { it1 -> function(it1) }
     }
 }
 
-inline fun <T> Player.skill(job: String, skill: String, create: Boolean = false, crossinline function: (IPlayerSkill) -> T): CompletableFuture<T?> {
+inline fun <T> Player.skill(
+    job: String,
+    skill: String,
+    create: Boolean = false,
+    crossinline function: (IPlayerSkill) -> T
+): CompletableFuture<T?> {
     return getSkill(job, skill, create).thenApply {
         it?.let { it1 -> function(it1) }
     }

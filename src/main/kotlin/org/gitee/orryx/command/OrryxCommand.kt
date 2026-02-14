@@ -1,6 +1,7 @@
 package org.gitee.orryx.command
 
 import org.bukkit.entity.Player
+import org.gitee.orryx.core.common.keyregister.KeyRegisterManager
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.job.JobLoaderManager
 import org.gitee.orryx.core.reload.ReloadAPI
@@ -14,7 +15,13 @@ import taboolib.expansion.createHelper
 import taboolib.module.lang.sendLang
 import taboolib.platform.util.sendLang
 
-@CommandHeader("Orryx", ["or"], "Orryx技能插件主指令", permission = "Orryx.Command.Main", permissionMessage = "你没有权限使用此指令")
+@CommandHeader(
+    "Orryx",
+    ["or"],
+    "Orryx技能插件主指令",
+    permission = "Orryx.Command.Main",
+    permissionMessage = "你没有权限使用此指令"
+)
 object OrryxCommand {
 
     @CommandBody
@@ -26,9 +33,19 @@ object OrryxCommand {
     val test = OrryxTestCommand
 
     @CommandBody
-    val reload = subCommandExec<ProxyCommandSender> {
-        ReloadAPI.reload()
-        sender.sendMessage("Orryx 重载成功")
+    val reload = subCommand {
+        literal("axkey", optional = true) {
+            exec<ProxyCommandSender> {
+                ReloadAPI.reload()
+                KeyRegisterManager.reloadArcartX()
+                sender.sendMessage("Orryx 重载成功")
+                sender.sendMessage("ArcartX按键同步完成")
+            }
+        }
+        exec<ProxyCommandSender> {
+            ReloadAPI.reload()
+            sender.sendMessage("Orryx 重载成功")
+        }
     }
 
     @CommandBody
@@ -138,7 +155,7 @@ object OrryxCommand {
                                 skill.level,
                                 skill.skill.maxLevel,
                                 skill.parameter().manaValue(),
-                                skill.parameter().cooldownValue()/20
+                                skill.parameter().cooldownValue() / 20
                             )
                         }
                     }
@@ -151,7 +168,7 @@ object OrryxCommand {
         var count = job.job.skills.size
         for (i in job.job.skills.indices) {
             player.sendLang("skill", player.name, job.job.skills[i])
-            count --
+            count--
             if (count != 0) {
                 player.sendMessage(", ")
             }

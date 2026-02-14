@@ -52,8 +52,9 @@ object PlaceHolder: PlaceholderExpansion {
         get() = "orryx"
 
     override fun onPlaceholderRequest(player: Player?, args: String): String {
+        val script = scriptsMap[args] ?: return ""
         return runKether(CompletableFuture.completedFuture(null)) {
-            ScriptContext.create(scriptsMap[args]!!).also {
+            ScriptContext.create(script).also {
                 it.sender = adaptCommandSender(player ?: Bukkit.getConsoleSender())
                 it.id = NanoId.generate()
             }.runActions()

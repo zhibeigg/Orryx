@@ -101,7 +101,20 @@ class PlayerSkill(
         return true
     }
 
+    override fun downLevelCheck(from: Int, to: Int): Boolean {
+        skill.downLevelCheckAction?.let {
+            return runCustomAction(it, mapOf("from" to from, "to" to to)).orNull().cbool
+        }
+        return true
+    }
+
     override fun upLevelSuccess(from: Int, to: Int) {
+        skill.downLevelSuccessAction?.let {
+            runCustomAction(it, mapOf("from" to from, "to" to to))
+        }
+    }
+
+    override fun downLevelSuccess(from: Int, to: Int) {
         skill.upLevelSuccessAction?.let {
             runCustomAction(it, mapOf("from" to from, "to" to to))
         }

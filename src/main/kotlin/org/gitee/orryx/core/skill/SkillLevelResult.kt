@@ -26,6 +26,10 @@ enum class SkillLevelResult {
      * */
     POINT,
     /**
+     * 点数退还
+     * */
+    POINT_REFUND,
+    /**
      * checkAction不通过
      * */
     CHECK,

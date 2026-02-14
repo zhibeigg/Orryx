@@ -53,6 +53,7 @@ taboolib {
             name("DragonCore").optional(true)
             name("DragonArmourers").optional(true)
             name("GermPlugin").optional(true)
+            name("ArcartX").optional(true)
             name("MythicMobs").optional(true)
             name("RedisChannel").optional(true)
             name("AttributePlus").optional(true)
@@ -65,7 +66,6 @@ taboolib {
             name("DungeonPlus").optional(true)
             name("Nodens").optional(true)
             name("CloudPick").optional(true)
-            name("ArcartX").optional(true)
         }
     }
     relocate("com.github.benmanes.caffeine", "org.gitee.orryx.caffeine")
@@ -102,7 +102,7 @@ dependencies {
     compileOnly("org.eldergod.ext:GlowAPI:1.4.6")
     compileOnly("org.eldergod.ext:AttributePlus-api:1.0")
     compileOnly("org.eldergod.ext:DungeonPlus:1.4.3")
-    compileOnly("org.eldergod.ext:ProtocolLib:5.3.0")
+    compileOnly("net.dmulloy2:ProtocolLib:5.3.0")
     compileOnly("org.eldergod.ext:CloudPick:1.2.1")
 
     compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")

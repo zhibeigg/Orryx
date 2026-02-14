@@ -8,12 +8,26 @@ import org.gitee.orryx.core.common.keyregister.IKeyRegister
  *
  * @property key 绑定键名
  * @property sort 排序权重
+ * @property category ArcartX客户端按键分类（为null则非客户端按键）
+ * @property defaultKey ArcartX客户端按键默认键位（为null则非客户端按键）
  */
 interface IBindKey {
 
     val key: String
 
     val sort: Int
+
+    val category: String?
+        get() = null
+
+    val defaultKey: String?
+        get() = null
+
+    /**
+     * 是否为ArcartX自定义客户端按键
+     */
+    val isClientKeyBind: Boolean
+        get() = category != null && defaultKey != null
 
     /**
      * 校验并执行按键触发。

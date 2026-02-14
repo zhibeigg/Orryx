@@ -15,7 +15,9 @@ package org.gitee.orryx.core.skill
  * @property description 技能介绍
  * @property upgradePointAction 技能升级消耗的技能点
  * @property upLevelCheckAction 技能升级前检测
+ * @property downLevelCheckAction 技能降级前检测
  * @property upLevelSuccessAction 技能升级成功执行
+ * @property downLevelSuccessAction 技能降级成功执行
  * @property ignoreSilence 是否无视沉默
  * @property variables 技能的延迟生成变量
  */
@@ -45,7 +47,11 @@ interface ISkill {
 
     val upLevelCheckAction: String?
 
+    val downLevelCheckAction: String?
+
     val upLevelSuccessAction: String?
+
+    val downLevelSuccessAction: String?
 
     val ignoreSilence: Boolean
 

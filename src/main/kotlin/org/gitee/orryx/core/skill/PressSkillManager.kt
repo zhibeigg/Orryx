@@ -11,6 +11,7 @@ import org.gitee.orryx.core.station.pipe.PipeTask
 import org.gitee.orryx.utils.Tuple2
 import org.gitee.orryx.utils.job
 import org.gitee.orryx.utils.keySetting
+import priv.seventeen.artist.arcartx.event.client.ClientKeyReleaseEvent
 import taboolib.common.platform.Ghost
 import taboolib.common.platform.event.SubscribeEvent
 import java.util.*
@@ -31,6 +32,12 @@ object PressSkillManager {
     @SubscribeEvent
     private fun keyUp(e: GermKeyUpEvent) {
         check(e.player, e.keyType.simpleKey)
+    }
+
+    @Ghost
+    @SubscribeEvent
+    private fun clientKeyRelease(e: ClientKeyReleaseEvent) {
+        check(e.player, e.keyName.uppercase())
     }
 
     @SubscribeEvent

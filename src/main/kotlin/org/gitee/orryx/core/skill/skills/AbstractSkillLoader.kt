@@ -33,7 +33,11 @@ abstract class AbstractSkillLoader(key: String, open val configuration: Configur
 
     override val upLevelCheckAction: String? = options.getString("UpLevelCheckAction")
 
+    override val downLevelCheckAction: String? = options.getString("DownLevelCheckAction")
+
     override val upLevelSuccessAction: String? = options.getString("UpLevelSuccessAction")
+
+    override val downLevelSuccessAction: String? = options.getString("DownLevelSuccessAction")
 
     override val ignoreSilence: Boolean = options.getBoolean("IgnoreSilence", false)
 

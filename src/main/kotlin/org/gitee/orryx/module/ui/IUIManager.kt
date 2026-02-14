@@ -20,6 +20,9 @@ import org.gitee.orryx.module.ui.dragoncore.DragonCoreSkillHud.Companion.dragonS
 import org.gitee.orryx.module.ui.dragoncore.DragonCoreUIManager
 import org.gitee.orryx.module.ui.germplugin.GermPluginSkillHud.Companion.germSkillHudMap
 import org.gitee.orryx.module.ui.germplugin.GermPluginUIManager
+import org.gitee.orryx.module.ui.arcartx.ArcartXSkillHud.Companion.arcartxSkillHudMap
+import org.gitee.orryx.module.ui.arcartx.ArcartXUIManager
+import org.gitee.orryx.utils.ArcartXPlugin
 import org.gitee.orryx.utils.DragonCorePlugin
 import org.gitee.orryx.utils.GermPluginPlugin
 import org.gitee.orryx.utils.consoleMessage
@@ -84,6 +87,9 @@ interface IUIManager {
                 u.update(skill)
             }
             dragonSkillHudMap[player.uniqueId]?.forEach { (_, u) ->
+                u.update(skill)
+            }
+            arcartxSkillHudMap[player.uniqueId]?.forEach { (_, u) ->
                 u.update(skill)
             }
         }
@@ -180,6 +186,15 @@ interface IUIManager {
                         GermPluginUIManager()
                     } else {
                         consoleMessage(("&e┣&7因为未检测到GermPlugin，已自动选择BUKKIT UI &a√").colored())
+                        BukkitUIManager()
+                    }
+                }
+                "ARCARTX", "AX" -> {
+                    if (ArcartXPlugin.isEnabled) {
+                        consoleMessage(("&e┣&7已选择ArcartxUI &a√").colored())
+                        ArcartXUIManager()
+                    } else {
+                        consoleMessage(("&e┣&7因为未检测到ArcartX，已自动选择BUKKIT UI &a√").colored())
                         BukkitUIManager()
                     }
                 }

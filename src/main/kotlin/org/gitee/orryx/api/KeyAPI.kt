@@ -13,6 +13,7 @@ import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.key.IGroup
 import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.utils.*
+import priv.seventeen.artist.arcartx.api.ArcartXAPI
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.PlatformFactory
@@ -71,6 +72,22 @@ class KeyAPI: IKeyAPI {
                         DragonCoreCustomPacketSender.sendKeyRegister(player, keySetting.keySettingSet())
                     } catch (ex: Throwable) {
                         warning("DragonCore按键注册失败: ${ex.message}")
+                    }
+                }
+                ArcartXPlugin.isEnabled -> {
+                    try {
+                        val clientKeyBindIds = mutableSetOf<String>()
+                        BindKeyLoaderManager.getBindKeys().values.forEach { bindKey ->
+                            if (bindKey.isClientKeyBind) {
+                                clientKeyBindIds.add(bindKey.key)
+                                ArcartXAPI.getKeyBindRegistry().registerClientKeyBind(bindKey.key, bindKey.category!!, bindKey.defaultKey!!)
+                            }
+                        }
+                        keySetting.keySettingSet().filter { it !in clientKeyBindIds }.forEach {
+                            ArcartXAPI.getKeyBindRegistry().registerSimpleKeyBind(it, mutableListOf(it))
+                        }
+                    } catch (ex: Throwable) {
+                        warning("ArcartX按键注册失败: ${ex.message}")
                     }
                 }
             }
