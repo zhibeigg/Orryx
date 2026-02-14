@@ -44,8 +44,10 @@ object BindKeyLoaderManager {
                     if (bindKey.isClientKeyBind) {
                         clientKeyBindIds.add(bindKey.key)
                         ArcartXAPI.getKeyBindRegistry().registerClientKeyBind(bindKey.key, bindKey.category!!, bindKey.defaultKey!!)
-                        consoleMessage("&e┣&7ArcartX Client KeyBinds registered &a√")
                     }
+                }
+                if (clientKeyBindIds.isNotEmpty()) {
+                    consoleMessage("&e┣&7ArcartX Client KeyBinds registered &e${clientKeyBindIds.size} &a√")
                 }
                 bindKeyLoaderMap.keys.filter { it !in clientKeyBindIds }.forEach {
                     ArcartXAPI.getKeyBindRegistry().registerSimpleKeyBind(it, mutableListOf(it))

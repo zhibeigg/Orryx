@@ -15,13 +15,7 @@ import taboolib.expansion.createHelper
 import taboolib.module.lang.sendLang
 import taboolib.platform.util.sendLang
 
-@CommandHeader(
-    "Orryx",
-    ["or"],
-    "Orryx技能插件主指令",
-    permission = "Orryx.Command.Main",
-    permissionMessage = "你没有权限使用此指令"
-)
+@CommandHeader("Orryx", ["or"], "Orryx技能插件主指令", permission = "Orryx.Command.Main", permissionMessage = "你没有权限使用此指令")
 object OrryxCommand {
 
     @CommandBody
@@ -33,19 +27,15 @@ object OrryxCommand {
     val test = OrryxTestCommand
 
     @CommandBody
-    val reload = subCommand {
-        literal("axkey", optional = true) {
-            exec<ProxyCommandSender> {
-                ReloadAPI.reload()
-                KeyRegisterManager.reloadArcartX()
-                sender.sendMessage("Orryx 重载成功")
-                sender.sendMessage("ArcartX按键同步完成")
-            }
-        }
-        exec<ProxyCommandSender> {
-            ReloadAPI.reload()
-            sender.sendMessage("Orryx 重载成功")
-        }
+    val reload = subCommandExec<ProxyCommandSender> {
+        ReloadAPI.reload()
+        sender.sendMessage("Orryx 重载成功")
+    }
+
+    @CommandBody
+    val axkey = subCommandExec<ProxyCommandSender> {
+        KeyRegisterManager.reloadArcartX()
+        sender.sendMessage("ArcartX按键同步完成")
     }
 
     @CommandBody

@@ -35,5 +35,4 @@ class BindKeyLoader(override val key: String, val configurationSection: Configur
             false
         }
     }
-
 }

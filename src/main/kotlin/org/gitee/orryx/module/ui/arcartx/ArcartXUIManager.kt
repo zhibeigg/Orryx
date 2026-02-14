@@ -10,7 +10,6 @@ import org.gitee.orryx.module.ui.ISkillUI
 import org.gitee.orryx.module.ui.IUIManager
 import org.gitee.orryx.utils.*
 import priv.seventeen.artist.arcartx.api.ArcartXAPI
-import priv.seventeen.artist.arcartx.core.ui.adapter.ArcartXUI
 import priv.seventeen.artist.arcartx.event.client.ClientChannelEvent
 import priv.seventeen.artist.arcartx.event.client.ClientCustomPacketEvent
 import priv.seventeen.artist.arcartx.event.client.ClientKeyPressEvent
@@ -45,11 +44,11 @@ class ArcartXUIManager: IUIManager {
         uiRegistry.register("OrryxSkillHUD", ArcartXSkillHud.skillHudConfiguration)
 
         registerBukkitListener(ClientKeyPressEvent::class.java) { e ->
-            e.player.keyPress(e.keyName.uppercase(), setting.castType === IKeyRegister.ActionType.PRESS)
+            e.player.keyPress(e.keyName.uppercase(), setting.castType == IKeyRegister.ActionType.PRESS)
         }
 
         registerBukkitListener(ClientKeyReleaseEvent::class.java) { e ->
-            e.player.keyRelease(e.keyName.uppercase(), setting.castType === IKeyRegister.ActionType.RELEASE)
+            e.player.keyRelease(e.keyName.uppercase(), setting.castType == IKeyRegister.ActionType.RELEASE)
         }
 
         registerBukkitListener(ClientChannelEvent::class.java) { e ->
@@ -93,7 +92,9 @@ class ArcartXUIManager: IUIManager {
                         val owner = Bukkit.getPlayer(e.data[0].parseUUID() ?: return@registerBukkitListener) ?: return@registerBukkitListener
                         val group = e.data[1]
                         val skill = e.data[2]
-                        ArcartXSkillUI.unBindSkill(e.player, owner, group, skill)
+                        if (e.player == owner || e.player.isOp) {
+                            ArcartXSkillUI.unBindSkill(e.player, owner, group, skill)
+                        }
                     }
                 }
                 "OrryxUpgradeSkill" -> {

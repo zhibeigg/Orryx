@@ -283,6 +283,7 @@ object StateManager {
         val joinerData = joiner.statusData()
         val data = e.player.statusData()
         data.cacheJoiner.add(joiner.uniqueId)
+        if (!DragonCorePlugin.isEnabled) return
         val joinerStatus = joinerData.status as? Status ?: return
         joinerStatus.options.controller?.let { getController(it) }?.let { controller ->
             DragonCoreCustomPacketSender.setPlayerAnimationController(e.player, joiner.uniqueId, controller.saveToString())

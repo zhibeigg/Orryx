@@ -109,13 +109,13 @@ class PlayerSkill(
     }
 
     override fun upLevelSuccess(from: Int, to: Int) {
-        skill.downLevelSuccessAction?.let {
+        skill.upLevelSuccessAction?.let {
             runCustomAction(it, mapOf("from" to from, "to" to to))
         }
     }
 
     override fun downLevelSuccess(from: Int, to: Int) {
-        skill.upLevelSuccessAction?.let {
+        skill.downLevelSuccessAction?.let {
             runCustomAction(it, mapOf("from" to from, "to" to to))
         }
     }

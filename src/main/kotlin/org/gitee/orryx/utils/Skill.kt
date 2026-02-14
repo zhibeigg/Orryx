@@ -118,11 +118,11 @@ fun IPlayerSkill.up(): CompletableFuture<SkillLevelResult> {
 
 fun IPlayerSkill.down(): CompletableFuture<SkillLevelResult> {
     if (level == skill.minLevel) return CompletableFuture.completedFuture(SkillLevelResult.MIN)
-    val from = level - 1
-    val to = level
+    val from = level
+    val to = level - 1
     return player.orryxProfile { profile ->
         if (downLevelCheck(from, to)) {
-            upgradePointCheck(from, to).thenCompose { pointCheck ->
+            upgradePointCheck(to, from).thenCompose { pointCheck ->
                 if (pointCheck.second) {
                     val result = downLevel(1)
                     result.thenApply {
