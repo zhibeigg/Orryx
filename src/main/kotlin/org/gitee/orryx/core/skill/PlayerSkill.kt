@@ -53,7 +53,7 @@ class PlayerSkill(
         get() = privateLocked
 
     override val skill: ISkill
-        get() = SkillLoaderManager.getSkillLoader(key)!!
+        get() = SkillLoaderManager.getSkillLoader(key) ?: error("Skill '$key' not found")
 
     override fun cast(parameter: IParameter, consume: Boolean): CastResult {
         if (parameter !is SkillParameter) return CastResult.PARAMETER
@@ -156,7 +156,7 @@ class PlayerSkill(
             if (privateLevel - event.downLevel < skill.minLevel) result = SkillLevelResult.MIN
             privateLevel = (privateLevel - event.downLevel).coerceAtLeast(skill.minLevel)
             save(isPrimaryThread) {
-                OrryxPlayerSkillLevelEvents.Down.Pre(player, this, event.downLevel).call()
+                OrryxPlayerSkillLevelEvents.Down.Post(player, this, event.downLevel).call()
                 future.complete(result)
             }
         } else {
@@ -191,6 +191,21 @@ class PlayerSkill(
             future.complete(false)
         }
         return future
+    }
+
+    /**
+     * 仅重置内存状态，不执行数据库保存。
+     * 供 [org.gitee.orryx.core.job.PlayerJob.clear] 批量收集 PO 后统一事务保存。
+     * @return Pre 事件是否通过
+     */
+    internal fun clearMemoryState(): Boolean {
+        val event = OrryxPlayerSkillClearEvents.Pre(player, this)
+        if (event.call()) {
+            privateLocked = skill.isLocked
+            privateLevel = skill.minLevel
+            return true
+        }
+        return false
     }
 
     override fun save(async: Boolean, remove: Boolean, callback: Runnable) {
@@ -230,16 +245,6 @@ class PlayerSkill(
     }
 
     override fun hashCode(): Int {
-        var result = id
-        result = 31 * result + privateLevel
-        result = 31 * result + privateLocked.hashCode()
-        result = 31 * result + uuid.hashCode()
-        result = 31 * result + key.hashCode()
-        result = 31 * result + job.hashCode()
-        result = 31 * result + level
-        result = 31 * result + locked.hashCode()
-        result = 31 * result + player.hashCode()
-        result = 31 * result + skill.hashCode()
-        return result
+        return key.hashCode()
     }
 }

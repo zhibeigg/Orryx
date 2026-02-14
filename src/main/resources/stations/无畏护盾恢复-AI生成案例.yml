@@ -1,0 +1,15 @@
+Options:
+  Event: "Orryx Player Flag Change Post"
+  Weight: 1
+  Priority: "normal"
+Actions: |-
+  if check &event[flagName] == 无畏护盾冷却 then {
+    # 冷却到期（5秒未受击），恢复护盾
+    if check &event[newFlag] == null then {
+      if check orryx skill level 无畏护盾 >= 1 then {
+        set lvl to orryx skill level 无畏护盾
+        set rate to calc "0.10+0.025*(&lvl-1)"
+        flag 无畏护盾 to math mul [ &rate player max health ]
+      }
+    }
+  }

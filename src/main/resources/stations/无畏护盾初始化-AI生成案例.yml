@@ -1,0 +1,10 @@
+Options:
+  Event: "Dragon Cache Load"
+  Weight: 1
+  Priority: "normal"
+Actions: |-
+  if check orryx skill level 无畏护盾 >= 1 then {
+    set lvl to orryx skill level 无畏护盾
+    set rate to calc "0.10+0.025*(&lvl-1)"
+    flag 无畏护盾 to math mul [ &rate player max health ]
+  }

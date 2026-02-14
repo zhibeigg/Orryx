@@ -180,9 +180,11 @@ object LarkSuite {
         val actionGroup = ScriptManager.wikiActions.groupBy { it.group }
         val selectorsGroup = ScriptManager.wikiSelectors.groupBy { it.type }
         val triggersGroup = ScriptManager.wikiTriggers.groupBy { it.group }
+        val propertiesGroup = ScriptManager.wikiProperties.groupBy { it.group }
         debug { actionGroup.mapValues { it.value.map { action -> action.name } }.toString() }
         debug { selectorsGroup.mapValues { it.value.map { selector -> selector.name } }.toString() }
         debug { triggersGroup.mapValues { it.value.map { trigger -> trigger.key } }.toString() }
+        debug { propertiesGroup.mapValues { it.value.map { property -> property.name } }.toString() }
         createPs(token, documentId)
         actionGroup.forEach { (g, u) ->
             createGroup(token, g, u, documentId)
@@ -194,6 +196,10 @@ object LarkSuite {
         createTriggerHanging(token, documentId)
         triggersGroup.forEach { (g, u) ->
             createTriggerType(token, g, u, documentId)
+        }
+        createPropertyHanging(token, documentId)
+        propertiesGroup.forEach { (g, u) ->
+            createPropertyGroup(token, g, u, documentId)
         }
     }
 
@@ -784,6 +790,169 @@ object LarkSuite {
                 consoleMessage("&e┃┗&7Trigger: ${trigger.key} 创建成功 &a√")
             } else {
                 consoleMessage("&e┃┣&7Trigger: ${trigger.key} 创建成功 &a√")
+            }
+        }.await()
+    }
+
+    private suspend fun CoroutineScope.createPropertyHanging(token: String, documentId: String) {
+        async {
+            val req = CreateDocumentBlockChildrenReq.newBuilder()
+                .documentId(documentId)
+                .blockId(documentId)
+                .documentRevisionId(-1)
+                .createDocumentBlockChildrenReqBody(
+                    CreateDocumentBlockChildrenReqBody.newBuilder()
+                        .children(
+                            arrayOf(
+                                Block.newBuilder()
+                                    .blockId("Property_hanging1")
+                                    .children(arrayOf())
+                                    .blockType(BlockBlockTypeEnum.HEADING1)
+                                    .heading1(
+                                        Text.newBuilder().elements(
+                                            arrayOf(
+                                                TextElement.newBuilder()
+                                                    .textRun(
+                                                        TextRun.newBuilder().content("Property属性列表").build()
+                                                    ).build()
+                                            )
+                                        ).build()
+                                    )
+                                    .build()
+                            )
+                        )
+                        .index(-1)
+                        .build()
+                )
+                .build()
+
+            // 发起请求
+            val resp = client.docx().v1().documentBlockChildren().create(
+                req, RequestOptions.newBuilder()
+                    .userAccessToken(token)
+                    .build()
+            )
+
+            // 处理服务端错误
+            if (!resp.success()) {
+                println(
+                    String.format(
+                        "code:%s,msg:%s,reqId:%s, resp:%s",
+                        resp.code,
+                        resp.msg,
+                        resp.requestId,
+                        String(resp.rawResponse.body, UTF_8)
+                    )
+                )
+                return@async
+            }
+        }.await()
+    }
+
+    private suspend fun CoroutineScope.createPropertyGroup(token: String, group: String, list: List<Property>, documentId: String) {
+        async {
+            val req = CreateDocumentBlockChildrenReq.newBuilder()
+                .documentId(documentId)
+                .blockId(documentId)
+                .documentRevisionId(-1)
+                .createDocumentBlockChildrenReqBody(
+                    CreateDocumentBlockChildrenReqBody.newBuilder()
+                        .children(
+                            arrayOf(
+                                Block.newBuilder()
+                                    .blockId("Property_${group}_heading2")
+                                    .children(arrayOf())
+                                    .blockType(BlockBlockTypeEnum.HEADING2)
+                                    .heading2(
+                                        Text.newBuilder().elements(
+                                            arrayOf(
+                                                TextElement.newBuilder()
+                                                    .textRun(
+                                                        TextRun.newBuilder().content(group).build()
+                                                    ).build()
+                                            )
+                                        ).build()
+                                    )
+                                    .build()
+                            )
+                        )
+                        .index(-1)
+                        .build()
+                )
+                .build()
+
+            // 发起请求
+            val resp = client.docx().v1().documentBlockChildren().create(
+                req, RequestOptions.newBuilder()
+                    .userAccessToken(token)
+                    .build()
+            )
+
+            // 处理服务端错误
+            if (!resp.success()) {
+                println(
+                    String.format(
+                        "code:%s,msg:%s,reqId:%s, resp:%s",
+                        resp.code,
+                        resp.msg,
+                        resp.requestId,
+                        String(resp.rawResponse.body, UTF_8)
+                    )
+                )
+                return@async
+            }
+            consoleMessage("&e┣┳&7PropertyGroup: $group 创建成功 &a√")
+        }.await()
+        list.forEach {
+            if (list.last() == it) {
+                createProperty(token, it, documentId, true)
+            } else {
+                createProperty(token, it, documentId, false)
+            }
+        }
+    }
+
+    private suspend fun CoroutineScope.createProperty(token: String, property: Property, documentId: String, last: Boolean) {
+        delay(300)
+        async {
+            val blocks = property.createBlocks()
+            val req = CreateDocumentBlockDescendantReq.newBuilder()
+                .documentId(documentId)
+                .blockId(documentId)
+                .documentRevisionId(-1)
+                .createDocumentBlockDescendantReqBody(
+                    CreateDocumentBlockDescendantReqBody.newBuilder()
+                        .childrenId(blocks.second.toTypedArray())
+                        .index(-1)
+                        .descendants(blocks.first.toTypedArray())
+                        .build()
+                )
+                .build()
+
+            // 发起请求
+            val resp = client.docx().v1().documentBlockDescendant().create(
+                req, RequestOptions.newBuilder()
+                    .userAccessToken(token)
+                    .build()
+            )
+
+            // 处理服务端错误
+            if (!resp.success()) {
+                println(
+                    String.format(
+                        "code:%s,msg:%s,reqId:%s, resp:%s",
+                        resp.code,
+                        resp.msg,
+                        resp.requestId,
+                        String(resp.rawResponse.body, UTF_8)
+                    )
+                )
+                return@async
+            }
+            if (last) {
+                consoleMessage("&e┃┗&7Property: ${property.name} 创建成功 &a√")
+            } else {
+                consoleMessage("&e┃┣&7Property: ${property.name} 创建成功 &a√")
             }
         }.await()
     }

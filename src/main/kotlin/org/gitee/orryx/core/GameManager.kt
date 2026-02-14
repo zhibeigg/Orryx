@@ -5,6 +5,7 @@ import org.bukkit.entity.Player
 import org.bukkit.event.entity.EntityCombustEvent
 import org.bukkit.event.entity.FoodLevelChangeEvent
 import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerQuitEvent
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.api.events.player.job.OrryxPlayerJobChangeEvents
@@ -41,7 +42,7 @@ object GameManager {
     }
 
     @SubscribeEvent
-    private fun onPlayerQuit(e: PlayerJoinEvent) {
+    private fun onPlayerQuit(e: PlayerQuitEvent) {
         cancelTimeoutFlag(e.player)
     }
 

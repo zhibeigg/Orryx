@@ -1,0 +1,24 @@
+Options:
+  Type: "PASSIVE"
+  Name: "无畏护盾"
+  Sort: 0
+  Icon: "无畏护盾"
+  XMaterial: "SHIELD"
+  Description:
+    - '&f技能等级&7: &e{{ &level }} &f级'
+    - ''
+    - '&f5秒内未受到攻击时，自动产生一个'
+    - '&f相当于最大生命值 &b{{ scaled math mul [ lazy *SHIELD 100 ] }}% &f的护盾'
+    - '&f护盾可吸收等量伤害'
+    - '&f护盾被击破或受损后，5秒未受击将恢复满额'
+    - ''
+    - '*&f下一级需求等级&7: &b{{ calc "2+2*level" }}'
+  IsLocked: false
+  MinLevel: 1
+  MaxLevel: 5
+  UpgradePointAction: 1
+  UpLevelCheckAction: |-
+    check orryx level >= calc "2+2*(to-1)"
+  Variables:
+    SHIELD: |-
+      calc "0.10+0.025*(level-1)"

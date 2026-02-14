@@ -40,8 +40,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
 
     private val jobsTable: Table<*, *> = Table("orryx_player_jobs", host) {
         add(USER_ID) {
-            type(ColumnTypeSQL.BIGINT)
-            { options(ColumnOptionSQL.UNSIGNED, ColumnOptionSQL.NOTNULL) }
+            type(ColumnTypeSQL.BIGINT) { options(ColumnOptionSQL.UNSIGNED, ColumnOptionSQL.NOTNULL) }
         }
         add(JOB) { type(ColumnTypeSQL.VARCHAR, 255) { options(ColumnOptionSQL.KEY, ColumnOptionSQL.NOTNULL) } }
         add(EXPERIENCE) { type(ColumnTypeSQL.INT) }
@@ -52,8 +51,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
 
     private val skillsTable: Table<*, *> = Table("orryx_player_job_skills", host) {
         add(USER_ID) {
-            type(ColumnTypeSQL.BIGINT)
-            { options(ColumnOptionSQL.UNSIGNED, ColumnOptionSQL.NOTNULL) }
+            type(ColumnTypeSQL.BIGINT) { options(ColumnOptionSQL.UNSIGNED, ColumnOptionSQL.NOTNULL) }
         }
         add(JOB) { type(ColumnTypeSQL.VARCHAR, 255) { options(ColumnOptionSQL.KEY, ColumnOptionSQL.NOTNULL) } }
         add(SKILL) { type(ColumnTypeSQL.VARCHAR, 255) { options(ColumnOptionSQL.KEY, ColumnOptionSQL.NOTNULL) } }
@@ -64,8 +62,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
 
     private val keyTable: Table<*, *> = Table("orryx_player_key_setting", host) {
         add(USER_ID) {
-            type(ColumnTypeSQL.BIGINT)
-            { options(ColumnOptionSQL.UNSIGNED, ColumnOptionSQL.NOTNULL, ColumnOptionSQL.PRIMARY_KEY) }
+            type(ColumnTypeSQL.BIGINT) { options(ColumnOptionSQL.UNSIGNED, ColumnOptionSQL.NOTNULL, ColumnOptionSQL.PRIMARY_KEY) }
         }
         add(KEY_SETTING) { type(ColumnTypeSQL.TEXT) }
     }
@@ -106,7 +103,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
 
     private val statsMap = ConcurrentHashMap<String, TimeStats>()
 
-    private fun getStats(key: String): TimeStats = statsMap.getOrPut(key) { TimeStats() }
+    private fun getStats(key: String): TimeStats = statsMap.computeIfAbsent(key) { TimeStats() }
 
     /**
      * 统一的异步读取模板
@@ -137,23 +134,27 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
 
     override fun getPlayerData(player: UUID): CompletableFuture<PlayerProfilePO> = asyncRead("获取玩家 Profile") {
         val uuid = uuidToBytes(player)
-        if (!playerTable.find(dataSource) { where { PLAYER_UUID eq uuid } }) {
-            playerTable.insert(dataSource, PLAYER_UUID, JOB, POINT, FLAGS) {
-                value(uuid, null, 0, null)
+        dataSource.connection.use { conn ->
+            conn.prepareStatement("INSERT IGNORE INTO `orryx_player` (`$PLAYER_UUID`, `$JOB`, `$POINT`, `$FLAGS`) VALUES (?, ?, ?, ?)").use { ps ->
+                ps.setBytes(1, uuid)
+                ps.setString(2, null)
+                ps.setInt(3, 0)
+                ps.setString(4, null)
+                ps.executeUpdate()
             }
-        }
-        playerTable.select(dataSource) {
-            where { PLAYER_UUID eq uuid }
-            rows(USER_ID, JOB, POINT, FLAGS)
-            limit(1)
-        }.first {
-            PlayerProfilePO(
-                getInt(USER_ID),
-                player,
-                getString(JOB),
-                getInt(POINT),
-                getString(FLAGS)?.let { Json.decodeFromString(it) } ?: emptyMap()
-            )
+            conn.prepareStatement("SELECT `$USER_ID`, `$JOB`, `$POINT`, `$FLAGS` FROM `orryx_player` WHERE `$PLAYER_UUID` = ? LIMIT 1").use { ps ->
+                ps.setBytes(1, uuid)
+                ps.executeQuery().use { rs ->
+                    if (!rs.next()) error("Player data not found after INSERT IGNORE")
+                    PlayerProfilePO(
+                        rs.getInt(USER_ID),
+                        player,
+                        rs.getString(JOB),
+                        rs.getInt(POINT),
+                        rs.getString(FLAGS)?.let { Json.decodeFromString(it) } ?: emptyMap()
+                    )
+                }
+            }
         }
     }
 
@@ -256,6 +257,76 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
         }.onSuccess { onSuccess.run() }
     }
 
+    override fun savePlayerDataAndJob(profilePO: PlayerProfilePO, jobPO: PlayerJobPO, onSuccess: Runnable) {
+        requireAsync("mysql")
+        debug { "${IStorageManager.lazyType} 事务保存玩家 Profile + Job" }
+        dataSource.connection.use { conn ->
+            conn.autoCommit = false
+            try {
+                conn.prepareStatement("UPDATE `orryx_player` SET `$JOB` = ?, `$POINT` = ?, `$FLAGS` = ? WHERE `$USER_ID` = ?").use { ps ->
+                    ps.setString(1, profilePO.job)
+                    ps.setInt(2, profilePO.point)
+                    ps.setString(3, Json.encodeToString(profilePO.flags))
+                    ps.setInt(4, profilePO.id)
+                    ps.executeUpdate()
+                }
+                conn.prepareStatement("INSERT INTO `orryx_player_jobs` (`$USER_ID`, `$JOB`, `$EXPERIENCE`, `$GROUP`, `$BIND_KEY_OF_GROUP`) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `$EXPERIENCE` = VALUES(`$EXPERIENCE`), `$GROUP` = VALUES(`$GROUP`), `$BIND_KEY_OF_GROUP` = VALUES(`$BIND_KEY_OF_GROUP`)").use { ps ->
+                    ps.setInt(1, jobPO.id)
+                    ps.setString(2, jobPO.job)
+                    ps.setInt(3, jobPO.experience)
+                    ps.setString(4, jobPO.group)
+                    ps.setString(5, Json.encodeToString(jobPO.bindKeyOfGroup))
+                    ps.executeUpdate()
+                }
+                conn.commit()
+            } catch (e: Throwable) {
+                conn.rollback()
+                throw e
+            } finally {
+                conn.autoCommit = true
+            }
+        }
+        onSuccess.run()
+    }
+
+    override fun saveJobAndSkills(jobPO: PlayerJobPO, skillPOs: List<PlayerSkillPO>, onSuccess: Runnable) {
+        requireAsync("mysql")
+        debug { "${IStorageManager.lazyType} 事务保存玩家 Job + Skills" }
+        dataSource.connection.use { conn ->
+            conn.autoCommit = false
+            try {
+                conn.prepareStatement("INSERT INTO `orryx_player_jobs` (`$USER_ID`, `$JOB`, `$EXPERIENCE`, `$GROUP`, `$BIND_KEY_OF_GROUP`) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `$EXPERIENCE` = VALUES(`$EXPERIENCE`), `$GROUP` = VALUES(`$GROUP`), `$BIND_KEY_OF_GROUP` = VALUES(`$BIND_KEY_OF_GROUP`)").use { ps ->
+                    ps.setInt(1, jobPO.id)
+                    ps.setString(2, jobPO.job)
+                    ps.setInt(3, jobPO.experience)
+                    ps.setString(4, jobPO.group)
+                    ps.setString(5, Json.encodeToString(jobPO.bindKeyOfGroup))
+                    ps.executeUpdate()
+                }
+                if (skillPOs.isNotEmpty()) {
+                    conn.prepareStatement("INSERT INTO `orryx_player_job_skills` (`$USER_ID`, `$JOB`, `$SKILL`, `$LOCKED`, `$LEVEL`) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `$LOCKED` = VALUES(`$LOCKED`), `$LEVEL` = VALUES(`$LEVEL`)").use { ps ->
+                        for (skillPO in skillPOs) {
+                            ps.setInt(1, skillPO.id)
+                            ps.setString(2, skillPO.job)
+                            ps.setString(3, skillPO.skill)
+                            ps.setBoolean(4, skillPO.locked)
+                            ps.setInt(5, skillPO.level)
+                            ps.addBatch()
+                        }
+                        ps.executeBatch()
+                    }
+                }
+                conn.commit()
+            } catch (e: Throwable) {
+                conn.rollback()
+                throw e
+            } finally {
+                conn.autoCommit = true
+            }
+        }
+        onSuccess.run()
+    }
+
     override fun savePlayerKey(playerKeySettingPO: PlayerKeySettingPO, onSuccess: Runnable) {
         requireAsync("mysql")
         debug { "${IStorageManager.lazyType} 保存玩家 KeySetting" }
@@ -278,7 +349,7 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
             rows(FLAG)
             limit(1)
         }.firstOrNull {
-            Json.decodeFromString<IFlag>(getString(FLAG))
+            Json.decodeFromString<org.gitee.orryx.core.profile.SerializableFlag>(getString(FLAG)).toFlag()
         }
     }
 
@@ -294,10 +365,10 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
             } else {
                 insert(FLAG_KEY, FLAG, DELETED) {
                     onDuplicateKeyUpdate {
-                        update(FLAG, Json.encodeToString(flag))
+                        update(FLAG, Json.encodeToString(flag.toSerializable()))
                         update(DELETED, false)
                     }
-                    value(key, Json.encodeToString(flag), false)
+                    value(key, Json.encodeToString(flag.toSerializable()), false)
                 }
             }
         }.onSuccess { onSuccess.run() }

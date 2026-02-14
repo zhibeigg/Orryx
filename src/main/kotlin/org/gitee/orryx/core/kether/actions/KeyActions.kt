@@ -3,9 +3,11 @@ package org.gitee.orryx.core.kether.actions
 import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.module.wiki.Action
+import org.gitee.orryx.module.wiki.Property
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.ORRYX_NAMESPACE
 import org.gitee.orryx.utils.keySetting
+import org.gitee.orryx.utils.registerProperty
 import org.gitee.orryx.utils.scriptParser
 import taboolib.common.OpenResult
 import taboolib.module.kether.*
@@ -13,7 +15,15 @@ import taboolib.module.kether.*
 object KeyActions {
 
     init {
-        KetherLoader.registerProperty(propertyBindKey(), IBindKey::class.java, false)
+        registerProperty(
+            propertyBindKey(),
+            Property.new("KeySetting按键设置", "IBindKey", "bindKey.operator")
+                .description("按键绑定对象")
+                .addEntry("key", Type.STRING, "按键绑定的键名")
+                .addEntry("name", Type.STRING, "同 key")
+                .addEntry("sort", Type.INT, "排序权重"),
+            IBindKey::class.java
+        )
     }
 
     /**

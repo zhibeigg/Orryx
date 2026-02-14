@@ -17,7 +17,6 @@ import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.utils.toSerializable
 import taboolib.common.platform.function.isPrimaryThread
 import java.util.*
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentMap
 
 class PlayerProfile(
@@ -94,7 +93,7 @@ class PlayerProfile(
         if (event.call()) {
             privatePoint = (privatePoint + event.point).coerceAtLeast(0)
             save {
-                OrryxPlayerPointEvents.Up.Post(player, this, event.point)
+                OrryxPlayerPointEvents.Up.Post(player, this, event.point).call()
             }
         }
     }
@@ -105,7 +104,7 @@ class PlayerProfile(
         if (event.call()) {
             privatePoint = (privatePoint - event.point).coerceAtLeast(0)
             save {
-                OrryxPlayerPointEvents.Down.Post(player, this, event.point)
+                OrryxPlayerPointEvents.Down.Post(player, this, event.point).call()
             }
         }
     }
@@ -120,12 +119,25 @@ class PlayerProfile(
     override fun setJob(job: IPlayerJob) {
         if (OrryxPlayerJobChangeEvents.Pre(player, job).call()) {
             privateJob = job.key
-            val future0 = CompletableFuture<Void>()
-            val future1 = CompletableFuture<Void>()
-            save { future0.complete(null) }
-            job.save { future1.complete(null) }
-            CompletableFuture.allOf(future0, future1).thenAccept {
-                OrryxPlayerJobChangeEvents.Post(player, job).call()
+            val profilePO = createPO()
+            val jobPO = job.createPO()
+            val doSave = {
+                try {
+                    IStorageManager.INSTANCE.savePlayerDataAndJob(profilePO, jobPO) {
+                        ISyncCacheManager.INSTANCE.removePlayerProfile(player.uniqueId)
+                        MemoryCache.removePlayerProfile(player.uniqueId)
+                        ISyncCacheManager.INSTANCE.removePlayerJob(player.uniqueId, id, job.key)
+                        MemoryCache.removePlayerJob(player.uniqueId, id, job.key)
+                        OrryxPlayerJobChangeEvents.Post(player, job).call()
+                    }
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+                }
+            }
+            if (isPrimaryThread && !GameManager.shutdown) {
+                OrryxAPI.ioScope.launch { doSave() }
+            } else {
+                doSave()
             }
         }
     }

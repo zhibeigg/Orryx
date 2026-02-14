@@ -1,8 +1,6 @@
 package org.gitee.orryx.dao.storage
 
 import com.eatthepath.uuid.FastUUID
-import com.google.common.collect.Interner
-import com.google.common.collect.Interners
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.gitee.orryx.api.OrryxAPI
@@ -29,10 +27,11 @@ class SqlLiteManager: IStorageManager {
     private val host = newFile(IStorageManager.file, "data.db").getHost()
     private val dataSource = host.createDataSource()
 
-    private val pluginInterner = Interners.newStrongInterner<String>()
-    private val internerMap = ConcurrentHashMap<UUID, Interner<String>>()
+    private val globalLockMap = ConcurrentHashMap<String, Any>()
+    private val playerLockMap = ConcurrentHashMap<UUID, Any>()
 
-    fun getInternerByUUID(uuid: UUID): Interner<String> = internerMap.getOrPut(uuid) { Interners.newStrongInterner() }
+    private fun getPlayerLock(uuid: UUID): Any = playerLockMap.computeIfAbsent(uuid) { Any() }
+    private fun getGlobalLock(key: String): Any = globalLockMap.computeIfAbsent(key) { Any() }
 
     private val playerTable: Table<*, *> = Table("orryx_player", host) {
         add { id() }
@@ -44,8 +43,7 @@ class SqlLiteManager: IStorageManager {
 
     private val jobsTable: Table<*, *> = Table("orryx_player_jobs", host) {
         add(USER_ID) {
-            type(ColumnTypeSQLite.INTEGER)
-            { options(ColumnOptionSQLite.NOTNULL) }
+            type(ColumnTypeSQLite.INTEGER) { options(ColumnOptionSQLite.NOTNULL) }
         }
         add(JOB) { type(ColumnTypeSQLite.TEXT) }
         add(EXPERIENCE) { type(ColumnTypeSQLite.INTEGER) }
@@ -55,8 +53,7 @@ class SqlLiteManager: IStorageManager {
 
     private val skillsTable: Table<*, *> = Table("orryx_player_job_skills", host) {
         add(USER_ID) {
-            type(ColumnTypeSQLite.INTEGER)
-            { options(ColumnOptionSQLite.NOTNULL) }
+            type(ColumnTypeSQLite.INTEGER) { options(ColumnOptionSQLite.NOTNULL) }
         }
         add(JOB) { type(ColumnTypeSQLite.TEXT) }
         add(SKILL) { type(ColumnTypeSQLite.TEXT) }
@@ -66,16 +63,14 @@ class SqlLiteManager: IStorageManager {
 
     private val keyTable: Table<*, *> = Table("orryx_player_key_setting", host) {
         add(USER_ID) {
-            type(ColumnTypeSQLite.INTEGER)
-            { options(ColumnOptionSQLite.NOTNULL, ColumnOptionSQLite.PRIMARY_KEY) }
+            type(ColumnTypeSQLite.INTEGER) { options(ColumnOptionSQLite.NOTNULL, ColumnOptionSQLite.PRIMARY_KEY) }
         }
         add(KEY_SETTING) { type(ColumnTypeSQLite.TEXT) }
     }
 
     private val globalFlagTable: Table<*, *> = Table("orryx_global_flag", host) {
         add(FLAG_KEY) {
-            type(ColumnTypeSQLite.TEXT)
-            { options(ColumnOptionSQLite.NOTNULL, ColumnOptionSQLite.UNIQUE) }
+            type(ColumnTypeSQLite.TEXT) { options(ColumnOptionSQLite.NOTNULL, ColumnOptionSQLite.UNIQUE) }
         }
         add(FLAG) { type(ColumnTypeSQLite.TEXT) }
         add(DELETED) { type(ColumnTypeSQLite.BLOB) { def("\$false") } }
@@ -104,7 +99,7 @@ class SqlLiteManager: IStorageManager {
         }
     }
 
-    private val statsMap = mutableMapOf<String, TimeStats>()
+    private val statsMap = ConcurrentHashMap<String, TimeStats>()
 
     private fun getStats(key: String): TimeStats = statsMap.getOrPut(key) { TimeStats() }
 
@@ -137,7 +132,7 @@ class SqlLiteManager: IStorageManager {
 
     override fun getPlayerData(player: UUID): CompletableFuture<PlayerProfilePO> = asyncRead("获取玩家 Profile") {
         val uuid = FastUUID.toString(player)
-        synchronized(getInternerByUUID(player).intern("PlayerData$uuid")) {
+        synchronized(getPlayerLock(player)) {
             if (!playerTable.find(dataSource) { where { PLAYER_UUID eq uuid } }) {
                 playerTable.insert(dataSource, PLAYER_UUID, JOB, POINT, FLAGS) {
                     value(uuid, null, 0, null)
@@ -208,19 +203,21 @@ class SqlLiteManager: IStorageManager {
     override fun savePlayerData(playerProfilePO: PlayerProfilePO, onSuccess: Runnable) {
         requireAsync("sqlLite")
         debug { "SqlLite 保存玩家 Profile" }
-        playerTable.update(dataSource) {
-            where { USER_ID eq playerProfilePO.id }
-            set(JOB, playerProfilePO.job)
-            set(POINT, playerProfilePO.point)
-            set(FLAGS, Json.encodeToString(playerProfilePO.flags))
+        synchronized(getPlayerLock(playerProfilePO.player)) {
+            playerTable.update(dataSource) {
+                where { USER_ID eq playerProfilePO.id }
+                set(JOB, playerProfilePO.job)
+                set(POINT, playerProfilePO.point)
+                set(FLAGS, Json.encodeToString(playerProfilePO.flags))
+            }
+            onSuccess.run()
         }
-        onSuccess.run()
     }
 
     override fun savePlayerJob(playerJobPO: PlayerJobPO, onSuccess: Runnable) {
         requireAsync("sqlLite")
         debug { "SqlLite 保存玩家 Job" }
-        synchronized(getInternerByUUID(playerJobPO.player).intern("PlayerJob${playerJobPO.id}${playerJobPO.job}")) {
+        synchronized(getPlayerLock(playerJobPO.player)) {
             jobsTable.workspace(dataSource) {
                 if (select { where { USER_ID eq playerJobPO.id and (JOB eq playerJobPO.job) } }.find()) {
                     update {
@@ -248,7 +245,7 @@ class SqlLiteManager: IStorageManager {
     override fun savePlayerSkill(playerSkillPO: PlayerSkillPO, onSuccess: Runnable) {
         requireAsync("sqlLite")
         debug { "SqlLite 保存玩家 Skill" }
-        synchronized(getInternerByUUID(playerSkillPO.player).intern("PlayerSkill${playerSkillPO.id}${playerSkillPO.job}${playerSkillPO.skill}")) {
+        synchronized(getPlayerLock(playerSkillPO.player)) {
             skillsTable.workspace(dataSource) {
                 if (select { where { USER_ID eq playerSkillPO.id and (JOB eq playerSkillPO.job) and (SKILL eq playerSkillPO.skill) } }.find()) {
                     update {
@@ -272,10 +269,132 @@ class SqlLiteManager: IStorageManager {
         }
     }
 
+    override fun savePlayerDataAndJob(profilePO: PlayerProfilePO, jobPO: PlayerJobPO, onSuccess: Runnable) {
+        requireAsync("sqlLite")
+        debug { "SqlLite 事务保存玩家 Profile + Job" }
+        synchronized(getPlayerLock(profilePO.player)) {
+            dataSource.connection.use { conn ->
+                conn.autoCommit = false
+                try {
+                    conn.prepareStatement("UPDATE `orryx_player` SET `$JOB` = ?, `$POINT` = ?, `$FLAGS` = ? WHERE `$USER_ID` = ?").use { ps ->
+                        ps.setString(1, profilePO.job)
+                        ps.setInt(2, profilePO.point)
+                        ps.setString(3, Json.encodeToString(profilePO.flags))
+                        ps.setInt(4, profilePO.id)
+                        ps.executeUpdate()
+                    }
+                    val jobExists = conn.prepareStatement("SELECT 1 FROM `orryx_player_jobs` WHERE `$USER_ID` = ? AND `$JOB` = ? LIMIT 1").use { ps ->
+                        ps.setInt(1, jobPO.id)
+                        ps.setString(2, jobPO.job)
+                        ps.executeQuery().use { it.next() }
+                    }
+                    if (jobExists) {
+                        conn.prepareStatement("UPDATE `orryx_player_jobs` SET `$EXPERIENCE` = ?, `$GROUP` = ?, `$BIND_KEY_OF_GROUP` = ? WHERE `$USER_ID` = ? AND `$JOB` = ?").use { ps ->
+                            ps.setInt(1, jobPO.experience)
+                            ps.setString(2, jobPO.group)
+                            ps.setString(3, Json.encodeToString(jobPO.bindKeyOfGroup))
+                            ps.setInt(4, jobPO.id)
+                            ps.setString(5, jobPO.job)
+                            ps.executeUpdate()
+                        }
+                    } else {
+                        conn.prepareStatement("INSERT INTO `orryx_player_jobs` (`$USER_ID`, `$JOB`, `$EXPERIENCE`, `$GROUP`, `$BIND_KEY_OF_GROUP`) VALUES (?, ?, ?, ?, ?)").use { ps ->
+                            ps.setInt(1, jobPO.id)
+                            ps.setString(2, jobPO.job)
+                            ps.setInt(3, jobPO.experience)
+                            ps.setString(4, jobPO.group)
+                            ps.setString(5, Json.encodeToString(jobPO.bindKeyOfGroup))
+                            ps.executeUpdate()
+                        }
+                    }
+                    conn.commit()
+                } catch (e: Throwable) {
+                    conn.rollback()
+                    throw e
+                } finally {
+                    conn.autoCommit = true
+                }
+            }
+            onSuccess.run()
+        }
+    }
+
+    override fun saveJobAndSkills(jobPO: PlayerJobPO, skillPOs: List<PlayerSkillPO>, onSuccess: Runnable) {
+        requireAsync("sqlLite")
+        debug { "SqlLite 事务保存玩家 Job + Skills" }
+        synchronized(getPlayerLock(jobPO.player)) {
+            dataSource.connection.use { conn ->
+                conn.autoCommit = false
+                try {
+                    val jobExists = conn.prepareStatement("SELECT 1 FROM `orryx_player_jobs` WHERE `$USER_ID` = ? AND `$JOB` = ? LIMIT 1").use { ps ->
+                        ps.setInt(1, jobPO.id)
+                        ps.setString(2, jobPO.job)
+                        ps.executeQuery().use { it.next() }
+                    }
+                    if (jobExists) {
+                        conn.prepareStatement("UPDATE `orryx_player_jobs` SET `$EXPERIENCE` = ?, `$GROUP` = ?, `$BIND_KEY_OF_GROUP` = ? WHERE `$USER_ID` = ? AND `$JOB` = ?").use { ps ->
+                            ps.setInt(1, jobPO.experience)
+                            ps.setString(2, jobPO.group)
+                            ps.setString(3, Json.encodeToString(jobPO.bindKeyOfGroup))
+                            ps.setInt(4, jobPO.id)
+                            ps.setString(5, jobPO.job)
+                            ps.executeUpdate()
+                        }
+                    } else {
+                        conn.prepareStatement("INSERT INTO `orryx_player_jobs` (`$USER_ID`, `$JOB`, `$EXPERIENCE`, `$GROUP`, `$BIND_KEY_OF_GROUP`) VALUES (?, ?, ?, ?, ?)").use { ps ->
+                            ps.setInt(1, jobPO.id)
+                            ps.setString(2, jobPO.job)
+                            ps.setInt(3, jobPO.experience)
+                            ps.setString(4, jobPO.group)
+                            ps.setString(5, Json.encodeToString(jobPO.bindKeyOfGroup))
+                            ps.executeUpdate()
+                        }
+                    }
+                    if (skillPOs.isNotEmpty()) {
+                        conn.prepareStatement("SELECT 1 FROM `orryx_player_job_skills` WHERE `$USER_ID` = ? AND `$JOB` = ? AND `$SKILL` = ? LIMIT 1").use { selectPs ->
+                            conn.prepareStatement("UPDATE `orryx_player_job_skills` SET `$LOCKED` = ?, `$LEVEL` = ? WHERE `$USER_ID` = ? AND `$JOB` = ? AND `$SKILL` = ?").use { updatePs ->
+                                conn.prepareStatement("INSERT INTO `orryx_player_job_skills` (`$USER_ID`, `$JOB`, `$SKILL`, `$LOCKED`, `$LEVEL`) VALUES (?, ?, ?, ?, ?)").use { insertPs ->
+                                    for (skillPO in skillPOs) {
+                                        selectPs.setInt(1, skillPO.id)
+                                        selectPs.setString(2, skillPO.job)
+                                        selectPs.setString(3, skillPO.skill)
+                                        val skillExists = selectPs.executeQuery().use { it.next() }
+                                        if (skillExists) {
+                                            updatePs.setBoolean(1, skillPO.locked)
+                                            updatePs.setInt(2, skillPO.level)
+                                            updatePs.setInt(3, skillPO.id)
+                                            updatePs.setString(4, skillPO.job)
+                                            updatePs.setString(5, skillPO.skill)
+                                            updatePs.executeUpdate()
+                                        } else {
+                                            insertPs.setInt(1, skillPO.id)
+                                            insertPs.setString(2, skillPO.job)
+                                            insertPs.setString(3, skillPO.skill)
+                                            insertPs.setBoolean(4, skillPO.locked)
+                                            insertPs.setInt(5, skillPO.level)
+                                            insertPs.executeUpdate()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    conn.commit()
+                } catch (e: Throwable) {
+                    conn.rollback()
+                    throw e
+                } finally {
+                    conn.autoCommit = true
+                }
+            }
+            onSuccess.run()
+        }
+    }
+
     override fun savePlayerKey(playerKeySettingPO: PlayerKeySettingPO, onSuccess: Runnable) {
         requireAsync("sqlLite")
         debug { "SqlLite 保存玩家 KeySetting" }
-        synchronized(getInternerByUUID(playerKeySettingPO.player).intern("KeySetting${playerKeySettingPO.id}")) {
+        synchronized(getPlayerLock(playerKeySettingPO.player)) {
             keyTable.workspace(dataSource) {
                 if (select { where { USER_ID eq playerKeySettingPO.id } }.find()) {
                     update {
@@ -296,7 +415,7 @@ class SqlLiteManager: IStorageManager {
     }
 
     fun quit(player: UUID) {
-        internerMap.remove(player)
+        playerLockMap.remove(player)
     }
 
     override fun getGlobalFlag(key: String): CompletableFuture<IFlag?> = asyncRead("获取全局 Flag") {
@@ -305,14 +424,14 @@ class SqlLiteManager: IStorageManager {
             rows(FLAG)
             limit(1)
         }.firstOrNull {
-            Json.decodeFromString<IFlag>(getString(FLAG))
+            Json.decodeFromString<org.gitee.orryx.core.profile.SerializableFlag>(getString(FLAG)).toFlag()
         }
     }
 
     override fun saveGlobalFlag(key: String, flag: IFlag?, onSuccess: Runnable) {
         requireAsync("sqlLite")
         debug { "SqlLite 保存全局 Flag" }
-        synchronized(pluginInterner.intern("GlobalFlag$key")) {
+        synchronized(getGlobalLock("Flag$key")) {
             globalFlagTable.workspace(dataSource) {
                 if (flag == null) {
                     update {
@@ -323,12 +442,12 @@ class SqlLiteManager: IStorageManager {
                     if (select { where { FLAG_KEY eq key } }.find()) {
                         update {
                             where { FLAG_KEY eq key }
-                            set(FLAG, Json.encodeToString(flag))
+                            set(FLAG, Json.encodeToString(flag.toSerializable()))
                             set(DELETED, false)
                         }
                     } else {
                         insert(FLAG_KEY, FLAG, DELETED) {
-                            value(key, Json.encodeToString(flag), 0)
+                            value(key, Json.encodeToString(flag.toSerializable()), 0)
                         }
                     }
                 }
