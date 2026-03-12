@@ -10,7 +10,7 @@ plugins {
     `maven-publish`
     kotlin("jvm") version "2.1.20"
     kotlin("plugin.serialization") version "2.1.20"
-    id("io.izzel.taboolib") version "2.0.27"
+    id("io.izzel.taboolib") version "2.0.30"
     id("org.jetbrains.dokka") version "2.0.0"
 }
 
@@ -73,7 +73,7 @@ taboolib {
     relocate("com.larksuite.oapi", "org.gitee.orryx.larksuite.oapi")
     relocate("com.eatthepath.uuid", "org.gitee.orryx.eatthepath.uuid")
     relocate("kotlinx.serialization", "org.gitee.orryx.serialization")
-    version { taboolib = "6.2.4-1645904" }
+    version { taboolib = "6.2.4-99fb800" }
 }
 
 repositories {
@@ -88,8 +88,8 @@ dependencies {
     compileOnly("ink.ptms.core:v11200:11200")
     compileOnly("ink.ptms:nms-all:1.0.0")
 
-    compileOnly("org.gitee.nodens:Nodens:1.22.37:api")
-    compileOnly("com.gitee.redischannel:RedisChannel:1.14.10:api")
+    compileOnly("org.gitee.nodens:Nodens:1.22.39:api")
+    compileOnly("com.gitee.redischannel:RedisChannel:1.14.11:api")
     compileOnly("ink.ptms.adyeshach:api:2.1.28")
     compileOnly("com.github.retrooper:packetevents-spigot:2.7.0")
     compileOnly("org.eldergod.ext:DragonCore:2.6.2.9")
