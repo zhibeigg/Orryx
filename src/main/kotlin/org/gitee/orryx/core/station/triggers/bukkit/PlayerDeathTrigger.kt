@@ -2,15 +2,17 @@ package org.gitee.orryx.core.station.triggers.bukkit
 
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.gitee.orryx.core.station.pipe.IPipeTask
-import org.gitee.orryx.core.station.triggers.AbstractPropertyPlayerEventTrigger
+import org.gitee.orryx.core.station.triggers.AbstractPropertyEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
 import taboolib.common.OpenResult
+import taboolib.common.platform.ProxyCommandSender
+import taboolib.common.platform.function.adaptPlayer
 import taboolib.common5.cbool
 import taboolib.common5.cint
 
-object PlayerDeathTrigger: AbstractPropertyPlayerEventTrigger<PlayerDeathEvent>("Player Death") {
+object PlayerDeathTrigger: AbstractPropertyEventTrigger<PlayerDeathEvent>("Player Death") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
@@ -25,6 +27,14 @@ object PlayerDeathTrigger: AbstractPropertyPlayerEventTrigger<PlayerDeathEvent>(
 
     override val clazz
         get() = PlayerDeathEvent::class.java
+
+    override fun onJoin(event: PlayerDeathEvent, map: Map<String, Any?>): ProxyCommandSender {
+        return adaptPlayer(event.entity)
+    }
+
+    override fun onCheck(pipeTask: IPipeTask, event: PlayerDeathEvent, map: Map<String, Any?>): Boolean {
+        return pipeTask.scriptContext?.sender?.origin == event.entity
+    }
 
     override fun read(instance: PlayerDeathEvent, key: String): OpenResult {
         return when(key) {
