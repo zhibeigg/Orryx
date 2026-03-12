@@ -313,7 +313,9 @@ fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(ray: IRay<T1>, 
     max.y = maxP.dot(axes[1])
     max.z = maxP.dot(axes[2])
     val projection = Vector3d()
-    projection.x = 1 / direction.dot(axes[2])
+    projection.x = 1 / direction.dot(axes[0])
+    projection.y = 1 / direction.dot(axes[1])
+    projection.z = 1 / direction.dot(axes[2])
     val pMin = min.mul(projection)
     val pMax = max.mul(projection)
     if (projection.x < 0) {

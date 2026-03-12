@@ -11,10 +11,10 @@ import org.gitee.orryx.module.ui.IUIManager.Companion.skillCooldownMap
 import org.gitee.orryx.utils.*
 import taboolib.common.function.debounce
 import taboolib.common.platform.function.getDataFolder
-import taboolib.common.util.unsafeLazy
 import taboolib.platform.util.onlinePlayers
 import java.io.File
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 open class DragonCoreSkillHud(override val viewer: Player, override val owner: Player): AbstractSkillHud(viewer, owner) {
 
@@ -27,7 +27,7 @@ open class DragonCoreSkillHud(override val viewer: Player, override val owner: P
         /**
          * owner, viewer, [DragonSkillHud]
          */
-        internal val dragonSkillHudMap by unsafeLazy { hashMapOf<UUID, MutableMap<UUID, DragonCoreSkillHud>>() }
+        internal val dragonSkillHudMap = ConcurrentHashMap<UUID, MutableMap<UUID, DragonCoreSkillHud>>()
         internal lateinit var skillHudConfiguration: YamlConfiguration
 
         @Reload(2)
@@ -83,7 +83,7 @@ open class DragonCoreSkillHud(override val viewer: Player, override val owner: P
         remove(true)
         PacketSender.sendOpenHud(viewer, "OrryxSkillHUD")
         update()
-        dragonSkillHudMap.getOrPut(owner.uniqueId) { hashMapOf() }[viewer.uniqueId] = this
+        dragonSkillHudMap.getOrPut(owner.uniqueId) { ConcurrentHashMap() }[viewer.uniqueId] = this
     }
 
     override fun close() {

@@ -11,12 +11,12 @@ import org.gitee.orryx.utils.getBindSkill
 import org.gitee.orryx.utils.getDescriptionComparison
 import org.gitee.orryx.utils.getIcon
 import taboolib.common.function.debounce
-import taboolib.common.util.unsafeLazy
 import taboolib.common5.cdouble
 import taboolib.common5.cint
 import taboolib.library.xseries.XMaterial
 import taboolib.platform.util.buildItem
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 open class BukkitSkillHud(override val viewer: Player, override val owner: Player): AbstractSkillHud(viewer, owner) {
 
@@ -32,7 +32,7 @@ open class BukkitSkillHud(override val viewer: Player, override val owner: Playe
         /**
          * owner, viewer, [BukkitSkillHud]
          */
-        internal val bukkitSkillHudMap by unsafeLazy { hashMapOf<UUID, MutableMap<UUID, BukkitSkillHud>>() }
+        internal val bukkitSkillHudMap = ConcurrentHashMap<UUID, MutableMap<UUID, BukkitSkillHud>>()
 
         fun getViewerHud(player: Player): BukkitSkillHud? {
             return bukkitSkillHudMap.firstNotNullOfOrNull {
@@ -54,7 +54,7 @@ open class BukkitSkillHud(override val viewer: Player, override val owner: Playe
     override fun open() {
         remove()
         viewer.inventory.heldItemSlot = slotIndex.firstOrNull { getBindKey("MC" + (it + 1)) == null } ?: 0
-        bukkitSkillHudMap.getOrPut(owner.uniqueId) { hashMapOf() }[viewer.uniqueId] = this
+        bukkitSkillHudMap.getOrPut(owner.uniqueId) { ConcurrentHashMap() }[viewer.uniqueId] = this
         update()
     }
 

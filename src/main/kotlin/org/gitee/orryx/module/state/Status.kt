@@ -25,20 +25,23 @@ class Status(override val key: String, configuration: Configuration): IStatus {
     // 使用递增 ID 替代 UUID.randomUUID()，减少性能开销
     private val idCounter = AtomicLong(0)
 
-    val options = Options(key, configuration.getConfigurationSection("Options")!!)
+    val options = Options(key, configuration.getConfigurationSection("Options")
+        ?: error("Status '$key' 缺少 Options 配置节点"))
     val privateStates = mutableMapOf<String, IActionState>()
 
     init {
         configuration.getConfigurationSection("States")?.getKeys(false)?.forEach {
-            privateStates[it] = StateManager.load(it, configuration.getConfigurationSection("States.$it")!!)
+            privateStates[it] = StateManager.load(it, configuration.getConfigurationSection("States.$it")
+                ?: error("Status '$key' 缺少 States.$it 配置节点"))
         }
     }
 
     class Options(val key: String, configurationSection: ConfigurationSection) {
-        val conditionAction = configurationSection.getString("Condition")!!
+        val conditionAction = configurationSection.getString("Condition")
+            ?: error("Status '$key' 缺少 Condition 配置")
         val cancelHeldEventWhenPlaying = configurationSection.getBoolean("CancelHeldEventWhenPlaying", true)
         val cancelBukkitAttack = configurationSection.getBoolean("CancelBukkitAttack", false)
-        val attackSpeedAction = configurationSection.getString("AttackSpeed", "1.0")!!
+        val attackSpeedAction = configurationSection.getString("AttackSpeed") ?: "1.0"
 
         // 龙核附属
         val controller = if (DragonCorePlugin.isEnabled) {
@@ -72,7 +75,7 @@ class Status(override val key: String, configuration: Configuration): IStatus {
         }
     }
 
-    val script: Script? = StateManager.loadScript(this, configuration.getString("Action")!!)
+    val script: Script? = configuration.getString("Action")?.let { StateManager.loadScript(this, it) }
 
     override fun next(playerData: PlayerData, input: String): CompletableFuture<IRunningState?> {
         val script = script ?: run {

@@ -95,28 +95,35 @@ class OrryxAPI: IOrryxAPI {
          * @param timeout 等待协程完成的超时时间（秒）
          */
         internal fun shutdownScopes(timeout: Long = 5) {
-            runBlocking {
-                // 先取消所有子协程，给它们发送取消信号
-                ioJob.cancelChildren()
-                effectJob.cancelChildren()
-                pluginJob.cancelChildren()
+            // 先取消所有子协程，给它们发送取消信号
+            ioJob.cancelChildren()
+            effectJob.cancelChildren()
+            pluginJob.cancelChildren()
 
-                // 等待子协程完成，带超时保护
-                try {
-                    withTimeout(timeout.seconds) {
-                        ioJob.children.forEach { it.join() }
-                        effectJob.children.forEach { it.join() }
-                        pluginJob.children.forEach { it.join() }
+            // 在独立线程中等待，避免阻塞主线程导致死锁
+            val latch = java.util.concurrent.CountDownLatch(1)
+            Thread({
+                runBlocking {
+                    try {
+                        withTimeout(timeout.seconds) {
+                            ioJob.children.forEach { it.join() }
+                            effectJob.children.forEach { it.join() }
+                            pluginJob.children.forEach { it.join() }
+                        }
+                    } catch (_: TimeoutCancellationException) {
+                        // 超时后强制取消
                     }
-                } catch (_: TimeoutCancellationException) {
-                    // 超时后强制取消
                 }
+                latch.countDown()
+            }, "orryx-shutdown").start()
 
-                // 最终取消整个作用域
-                ioJob.cancel()
-                effectJob.cancel()
-                pluginJob.cancel()
-            }
+            // 主线程最多等待 timeout 秒
+            latch.await(timeout, java.util.concurrent.TimeUnit.SECONDS)
+
+            // 最终取消整个作用域
+            ioJob.cancel()
+            effectJob.cancel()
+            pluginJob.cancel()
         }
     }
 }

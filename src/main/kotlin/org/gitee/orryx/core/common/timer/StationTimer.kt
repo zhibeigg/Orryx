@@ -7,12 +7,12 @@ import org.gitee.orryx.core.kether.parameter.StationParameter
 import org.gitee.orryx.utils.getBaffle
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.event.SubscribeEvent
-import taboolib.common.util.unsafeLazy
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 object StationTimer: ITimer {
 
-    private val playerCooldowns by unsafeLazy { hashMapOf<UUID, MutableMap<String, CooldownEntry>>() }
+    private val playerCooldowns = ConcurrentHashMap<UUID, MutableMap<String, CooldownEntry>>()
 
     override fun reset(sender: ProxyCommandSender, parameter: IParameter): Long {
         require(parameter is StationParameter<*>) { "Invalid parameter type" }
@@ -55,7 +55,7 @@ object StationTimer: ITimer {
 
     override fun getCooldownMap(sender: ProxyCommandSender): MutableMap<String, CooldownEntry> {
         val playerId = sender.castSafely<Player>()?.uniqueId ?: throw IllegalArgumentException("Sender must be a Player")
-        return playerCooldowns.getOrPut(playerId) { hashMapOf() }
+        return playerCooldowns.getOrPut(playerId) { ConcurrentHashMap() }
     }
 
     override fun getCooldownEntry(sender: ProxyCommandSender, tag: String): CooldownEntry? {

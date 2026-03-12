@@ -13,16 +13,16 @@ import org.gitee.orryx.utils.*
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.event.SubscribeEvent
-import taboolib.common.util.unsafeLazy
 import taboolib.module.configuration.Config
 import taboolib.module.configuration.ConfigFile
 import taboolib.module.kether.*
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 object BuffActions {
 
-    private val buffMap by unsafeLazy { hashMapOf<String, Buff>() }
-    private val playerBuffMap by unsafeLazy { hashMapOf<UUID, MutableMap<String, PlayerBuff>>() }
+    private val buffMap = ConcurrentHashMap<String, Buff>()
+    private val playerBuffMap = ConcurrentHashMap<UUID, MutableMap<String, PlayerBuff>>()
 
     class Buff(val key: String, description: List<String>) {
 
@@ -66,7 +66,7 @@ object BuffActions {
 
     fun sendBuff(player: Player, name: String, timeout: Long) {
         val buff = buffMap[name] ?: return
-        val map = playerBuffMap.computeIfAbsent(player.uniqueId) { hashMapOf() }
+        val map = playerBuffMap.computeIfAbsent(player.uniqueId) { ConcurrentHashMap() }
         map[name]?.let { SimpleTimeoutTask.cancel(it) }
         map[name] = PlayerBuff(player, buff, timeout).register() as PlayerBuff
         if (DragonCorePlugin.isEnabled) {

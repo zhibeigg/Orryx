@@ -12,9 +12,9 @@ import org.gitee.orryx.utils.*
 import taboolib.common.function.debounce
 import taboolib.common.platform.function.getDataFolder
 import taboolib.common.platform.function.submitAsync
-import taboolib.common.util.unsafeLazy
 import java.io.File
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 open class GermPluginSkillHud(override val viewer: Player, override val owner: Player): AbstractSkillHud(viewer, owner) {
 
@@ -27,7 +27,7 @@ open class GermPluginSkillHud(override val viewer: Player, override val owner: P
         /**
          * owner, viewer, [GermPluginSkillHud]
          */
-        internal val germSkillHudMap by unsafeLazy { hashMapOf<UUID, MutableMap<UUID, GermPluginSkillHud>>() }
+        internal val germSkillHudMap = ConcurrentHashMap<UUID, MutableMap<UUID, GermPluginSkillHud>>()
 
         fun getViewerHud(player: Player): GermPluginSkillHud? {
             return germSkillHudMap.firstNotNullOfOrNull {
@@ -260,7 +260,7 @@ open class GermPluginSkillHud(override val viewer: Player, override val owner: P
         )
         update()
         screen.openHud(viewer)
-        germSkillHudMap.getOrPut(owner.uniqueId) { hashMapOf() }[viewer.uniqueId] = this
+        germSkillHudMap.getOrPut(owner.uniqueId) { ConcurrentHashMap() }[viewer.uniqueId] = this
     }
 
     override fun close() {

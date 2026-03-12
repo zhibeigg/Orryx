@@ -32,11 +32,12 @@ import taboolib.module.kether.*
 import taboolib.platform.util.onlinePlayers
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentHashMap
 
 object DragonCoreActions {
 
-    private val armourersMap by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { hashMapOf<UUID, MutableList<String>>() }
-    private val effectMap by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { hashMapOf<UUID, MutableList<ModelEffect>>() }
+    private val armourersMap by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { ConcurrentHashMap<UUID, MutableList<String>>() }
+    private val effectMap by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { ConcurrentHashMap<UUID, MutableList<ModelEffect>>() }
 
     @Ghost
     @SubscribeEvent
@@ -49,6 +50,7 @@ object DragonCoreActions {
     @SubscribeEvent
     private fun quit(e: PlayerQuitEvent) {
         armourersMap.remove(e.player.uniqueId)
+        effectMap.remove(e.player.uniqueId)
     }
 
     @KetherParser(["dragoncore", "dragon"], namespace = ORRYX_NAMESPACE, shared = true)

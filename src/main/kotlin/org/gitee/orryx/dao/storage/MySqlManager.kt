@@ -207,13 +207,18 @@ class MySqlManager(replaceDataSource: DataSource? = null): IStorageManager {
     override fun savePlayerData(playerProfilePO: PlayerProfilePO, onSuccess: Runnable) {
         requireAsync("mysql")
         debug { "${IStorageManager.lazyType} 保存玩家 Profile" }
-        playerTable.update(dataSource) {
-            where { USER_ID eq playerProfilePO.id }
-            set(JOB, playerProfilePO.job)
-            set(POINT, playerProfilePO.point)
-            set(FLAGS, Json.encodeToString(playerProfilePO.flags))
+        playerTable.transaction(dataSource) {
+            update {
+                where { USER_ID eq playerProfilePO.id }
+                set(JOB, playerProfilePO.job)
+                set(POINT, playerProfilePO.point)
+                set(FLAGS, Json.encodeToString(playerProfilePO.flags))
+            }
+        }.onSuccess {
+            onSuccess.run()
+        }.onFailure { ex ->
+            taboolib.common.platform.function.warning("保存玩家 Profile 失败: ${ex.message}")
         }
-        onSuccess.run()
     }
 
     override fun savePlayerJob(playerJobPO: PlayerJobPO, onSuccess: Runnable) {

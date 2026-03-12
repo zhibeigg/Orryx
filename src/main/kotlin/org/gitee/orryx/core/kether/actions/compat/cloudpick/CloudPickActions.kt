@@ -31,11 +31,12 @@ import yslelf.cloudpick.bukkit.api.event.PlayerFashionUpdateEvent
 import yslelf.cloudpick.bukkit.repository.IDataBase
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentHashMap
 
 object CloudPickActions {
 
-    private val fashionMap by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { hashMapOf<UUID, MutableList<String>>() }
-    private val effectMap by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { hashMapOf<UUID, MutableList<ModelEffect>>() }
+    private val fashionMap by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { ConcurrentHashMap<UUID, MutableList<String>>() }
+    private val effectMap by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { ConcurrentHashMap<UUID, MutableList<ModelEffect>>() }
 
     @Ghost
     @SubscribeEvent
@@ -49,6 +50,7 @@ object CloudPickActions {
     @SubscribeEvent
     private fun quit(e: PlayerQuitEvent) {
         fashionMap.remove(e.player.uniqueId)
+        effectMap.remove(e.player.uniqueId)
     }
 
     @KetherParser(["cloudpick", "cp"], namespace = ORRYX_NAMESPACE, shared = true)

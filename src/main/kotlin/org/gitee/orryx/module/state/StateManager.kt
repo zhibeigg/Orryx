@@ -110,7 +110,10 @@ object StateManager {
             GENERAL_ATTACK_STATE -> GeneralAttackState(key, configurationSection)
             PRESS_ATTACK_STATE -> PressGeneralAttackState(key, configurationSection)
             VERTIGO_STATE -> VertigoState(key, configurationSection)
-            else -> error("state not support $type")
+            else -> {
+                warning("State '$key' has unsupported type: $type, falling back to BlockState")
+                BlockState(key, configurationSection)
+            }
         }
     }
 
@@ -369,20 +372,21 @@ object StateManager {
     fun autoCheckStatus(player: Player): CompletableFuture<Status?> {
         val data = playerDataMap.getOrPut(player.uniqueId) { PlayerData(player) }
         val future = CompletableFuture<Status?>()
+        val matchedStatus = java.util.concurrent.CopyOnWriteArrayList<Status>()
         CompletableFuture.allOf(
             *statusMap.values.map { status ->
                 status.options.getCondition(player).thenAccept { bool ->
                     val bool = bool.cbool
                     if (bool) {
-                        ensureSync { data.setStatus(status) }
-                        future.complete(status)
+                        matchedStatus.add(status)
                     }
                 }
             }.toTypedArray()
         ).whenComplete { _, _ ->
-            if (!future.isDone) {
-                ensureSync { data.setStatus(null) }
-                future.complete(null)
+            ensureSync {
+                val selected = matchedStatus.firstOrNull()
+                data.setStatus(selected)
+                future.complete(selected)
             }
         }
         return future

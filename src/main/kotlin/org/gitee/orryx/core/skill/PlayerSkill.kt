@@ -137,7 +137,7 @@ class PlayerSkill(
             if (privateLevel + event.upLevel > skill.maxLevel) result = SkillLevelResult.MIN
             privateLevel = (privateLevel + event.upLevel).coerceAtMost(skill.maxLevel)
             save(isPrimaryThread) {
-                OrryxPlayerSkillLevelEvents.Up.Post(player, this, event.upLevel)
+                OrryxPlayerSkillLevelEvents.Up.Post(player, this, event.upLevel).call()
                 future.complete(result)
             }
         } else {

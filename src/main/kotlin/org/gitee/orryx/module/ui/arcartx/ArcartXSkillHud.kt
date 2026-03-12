@@ -12,10 +12,10 @@ import priv.seventeen.artist.arcartx.api.ArcartXAPI
 import taboolib.common.function.debounce
 import taboolib.common.platform.function.getDataFolder
 import taboolib.common.platform.function.warning
-import taboolib.common.util.unsafeLazy
 import java.io.File
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentHashMap
 
 open class ArcartXSkillHud(override val viewer: Player, override val owner: Player): AbstractSkillHud(viewer, owner) {
 
@@ -28,7 +28,7 @@ open class ArcartXSkillHud(override val viewer: Player, override val owner: Play
         /**
          * owner, viewer, [ArcartXSkillHud]
          */
-        internal val arcartxSkillHudMap by unsafeLazy { hashMapOf<UUID, MutableMap<UUID, ArcartXSkillHud>>() }
+        internal val arcartxSkillHudMap = ConcurrentHashMap<UUID, MutableMap<UUID, ArcartXSkillHud>>()
         internal lateinit var skillHudConfiguration: YamlConfiguration
 
         @Reload(2)
@@ -107,7 +107,7 @@ open class ArcartXSkillHud(override val viewer: Player, override val owner: Play
         remove(true)
         ArcartXAPI.getUIRegistry().open(viewer, "OrryxSkillHUD")
         update()
-        arcartxSkillHudMap.getOrPut(owner.uniqueId) { hashMapOf() }[viewer.uniqueId] = this
+        arcartxSkillHudMap.getOrPut(owner.uniqueId) { ConcurrentHashMap() }[viewer.uniqueId] = this
     }
 
     override fun close() {

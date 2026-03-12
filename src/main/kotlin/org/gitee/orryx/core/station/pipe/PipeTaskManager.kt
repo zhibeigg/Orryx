@@ -1,6 +1,8 @@
 package org.gitee.orryx.core.station.pipe
 
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.gitee.orryx.api.OrryxAPI.Companion.pluginScope
 import org.gitee.orryx.core.station.TriggerManager
 import taboolib.common.platform.event.ProxyListener
@@ -12,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap
 object PipeTaskManager {
 
     private val pipeTaskMap = ConcurrentHashMap<UUID, IPipeTask>()
+    private val listenerMutex = Mutex()
 
     /**
      * 按触发器分组的任务索引，用于快速查找
@@ -27,7 +30,7 @@ object PipeTaskManager {
             pluginScope.launch {
                 val trigger = TriggerManager.pipeTriggersMap[triggerKey] ?: error("PipeTask UUID: ${task.uuid}发现写入不存在的trigger: $triggerKey")
                 if (trigger.listener == null) {
-                    synchronized(trigger) {
+                    listenerMutex.withLock {
                         if (trigger.listener == null) {
                             trigger.listener = registerBukkitListener(trigger)
                         }
@@ -70,7 +73,7 @@ object PipeTaskManager {
     private fun checkListener() {
         TriggerManager.pipeTriggersMap.values.forEach { trigger ->
             pluginScope.launch {
-                synchronized(trigger) {
+                listenerMutex.withLock {
                     // 使用索引检查是否有任务使用该Trigger
                     val taskUuids = triggerTaskIndex[trigger.event]
                     val isInactive = taskUuids.isNullOrEmpty()

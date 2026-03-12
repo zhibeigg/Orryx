@@ -36,6 +36,7 @@ object PluginMessageHandler {
 
     private const val CHANNEL_NAME = "orryxmod:main"
     internal val pendingRequests = ConcurrentHashMap<UUID, Pair<Double, CompletableFuture<AimInfo>>>()
+    private const val AIM_TIMEOUT_SECONDS = 30L
 
     private val isLegacyVersion by unsafeLazy { MinecraftVersion.versionId == 11202 }
 
@@ -167,7 +168,14 @@ object PluginMessageHandler {
 
         CompletableFuture<AimInfo>().apply {
             pendingRequests[player.uniqueId] = radius + size to this
+            // 超时清理：AIM_TIMEOUT_SECONDS 秒后若仍未完成则取消
+            submit(delay = AIM_TIMEOUT_SECONDS * 20) {
+                if (!isDone) {
+                    completeExceptionally(java.util.concurrent.TimeoutException("瞄准请求超时"))
+                }
+            }
             whenComplete { result, ex ->
+                pendingRequests.remove(player.uniqueId)
                 submit { // 切换到主线程执行回调
                     callback(
                         if (ex == null) {
@@ -216,7 +224,14 @@ object PluginMessageHandler {
 
         CompletableFuture<AimInfo>().apply {
             pendingRequests[player.uniqueId] = radius + max to this
+            // 超时清理：AIM_TIMEOUT_SECONDS 秒后若仍未完成则取消
+            submit(delay = AIM_TIMEOUT_SECONDS * 20) {
+                if (!isDone) {
+                    completeExceptionally(java.util.concurrent.TimeoutException("瞄准请求超时"))
+                }
+            }
             whenComplete { result, ex ->
+                pendingRequests.remove(player.uniqueId)
                 submit { // 切换到主线程执行回调
                     callback(
                         if (ex == null) {

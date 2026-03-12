@@ -17,14 +17,14 @@ import taboolib.common.platform.Ghost
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.warning
-import taboolib.common.util.unsafeLazy
 import taboolib.platform.util.onlinePlayers
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 object KeyRegisterManager {
 
-    private val keyRegisterMap by unsafeLazy { hashMapOf<UUID, KeyRegister>() }
-    private val players = hashSetOf<UUID>()
+    private val keyRegisterMap = ConcurrentHashMap<UUID, KeyRegister>()
+    private val players = ConcurrentHashMap.newKeySet<UUID>()
 
     @SubscribeEvent
     private fun onJoin(e: PlayerJoinEvent) {

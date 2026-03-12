@@ -3,6 +3,7 @@ package org.gitee.orryx.core.kether.actions.compat.germplugin
 import com.germ.germplugin.api.*
 import com.germ.germplugin.api.bean.AnimDataDTO
 import com.germ.germplugin.api.dynamic.skin.GermSkinBedrock
+import org.bukkit.event.player.PlayerQuitEvent
 import org.gitee.orryx.core.common.task.SimpleTimeoutTask
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.core.targets.ITargetLocation
@@ -10,16 +11,23 @@ import org.gitee.orryx.core.targets.PlayerTarget
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
+import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common5.cdouble
 import taboolib.common5.cfloat
 import taboolib.common5.cint
 import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 object GermPluginActions {
 
-    private val armourersMap by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { hashMapOf<UUID, MutableList<String>>() }
+    private val armourersMap by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { ConcurrentHashMap<UUID, MutableList<String>>() }
+
+    @SubscribeEvent
+    private fun quit(e: PlayerQuitEvent) {
+        armourersMap.remove(e.player.uniqueId)
+    }
 
     @KetherParser(["germplugin", "germ"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun germplugin() = scriptParser(
