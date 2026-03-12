@@ -116,6 +116,12 @@ dependencies {
     testCompileOnly("com.github.ben-manes.caffeine:caffeine:2.9.3")
     testCompileOnly("com.eatthepath:fast-uuid:0.2.0")
 
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation("org.joml:joml:1.10.7")
+    testImplementation("ink.ptms.core:v12004:12004:mapped")
+    testImplementation("ink.ptms.core:v12004:12004:universal")
+
     compileOnly(kotlin("stdlib"))
     compileOnly(kotlin("reflect"))
     compileOnly(fileTree("libs"))
@@ -123,6 +129,10 @@ dependencies {
 
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 tasks.withType<Jar> {
