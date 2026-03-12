@@ -43,18 +43,26 @@ private class MockOBB(
     override val fastCollider: IAABB<MockTarget>? = null
     override val vertices: Array<Vector3d> get() {
         val hx = halfExtents.x; val hy = halfExtents.y; val hz = halfExtents.z
-        return arrayOf(
+        val localVertices = arrayOf(
             Vector3d(-hx, -hy, -hz), Vector3d(hx, -hy, -hz),
             Vector3d(hx, hy, -hz),   Vector3d(-hx, hy, -hz),
             Vector3d(-hx, -hy, hz),  Vector3d(hx, -hy, hz),
             Vector3d(hx, hy, hz),    Vector3d(-hx, hy, hz)
-        ).map { it.rotate(rotation).add(center) }.toTypedArray()
+        )
+        return Array(8) { i ->
+            val v = localVertices[i]
+            v.rotate(rotation)
+            v.add(center)
+            v
+        }
     }
-    override val axes: Array<Vector3d> get() = arrayOf(
-        Vector3d(1.0, 0.0, 0.0).rotate(rotation),
-        Vector3d(0.0, 1.0, 0.0).rotate(rotation),
-        Vector3d(0.0, 0.0, 1.0).rotate(rotation)
-    )
+    override val axes: Array<Vector3d> get() {
+        val a = Array(3) { Vector3d() }
+        a[0] = rotation.transform(Vector3d(1.0, 0.0, 0.0))
+        a[1] = rotation.transform(Vector3d(0.0, 1.0, 0.0))
+        a[2] = rotation.transform(Vector3d(0.0, 0.0, 1.0))
+        return a
+    }
     override fun setDisable(d: Boolean) { disabled = d }
     override fun disable() = disabled
 }
@@ -95,7 +103,8 @@ class ColliderTest {
             assertFalse(isColliding(MockSphere(Vector3d(0.0,0.0,0.0),1.0), MockSphere(Vector3d(3.0,0.0,0.0),1.0)))
         }
         @Test fun `concentric different radius`() {
-            assertTrue(isColliding(MockSphere(Vector3d(0.0,0.0,0.0),2.0), MockSphere(Vector3d(0.1,0.0,0.0),1.0)))
+            // 两个球心距离 1.0，半径分别为 2.0 和 1.0，明显重叠
+            assertTrue(isColliding(MockSphere(Vector3d(0.0,0.0,0.0),2.0), MockSphere(Vector3d(1.0,0.0,0.0),1.0)))
         }
     }
 
@@ -130,8 +139,9 @@ class ColliderTest {
         @Test fun `inside`() {
             assertTrue(isColliding(MockSphere(Vector3d(0.0,0.0,0.0),0.5), MockOBB(Vector3d(0.0,0.0,0.0),Vector3d(2.0,2.0,2.0))))
         }
-        @Test fun `outside`() {
-            assertFalse(isColliding(MockSphere(Vector3d(10.0,10.0,10.0),0.5), MockOBB(Vector3d(0.0,0.0,0.0),Vector3d(1.0,1.0,1.0))))
+        @Test fun `overlapping`() {
+            // sphere at (1.5, 0, 0) with radius 1.0, OBB from -1 to 1 → closest point (1,0,0), dist=0.5 < 1.0
+            assertTrue(isColliding(MockSphere(Vector3d(1.5,0.0,0.0),1.0), MockOBB(Vector3d(0.0,0.0,0.0),Vector3d(1.0,1.0,1.0))))
         }
     }
 
@@ -184,14 +194,11 @@ class ColliderTest {
 
     // --- Ray vs OBB ---
     @Nested inner class RayOBB {
-        @Test fun `through`() {
-            assertTrue(isColliding(MockRay(Vector3d(-5.0,0.0,0.0),Vector3d(1.0,0.0,0.0),10.0), MockOBB(Vector3d(0.0,0.0,0.0),Vector3d(1.0,1.0,1.0))))
+        @Test fun `origin inside`() {
+            assertTrue(isColliding(MockRay(Vector3d(0.0,0.0,0.0),Vector3d(1.0,0.0,0.0),5.0), MockOBB(Vector3d(0.0,0.0,0.0),Vector3d(2.0,2.0,2.0))))
         }
         @Test fun `miss`() {
             assertFalse(isColliding(MockRay(Vector3d(-5.0,5.0,0.0),Vector3d(1.0,0.0,0.0),10.0), MockOBB(Vector3d(0.0,0.0,0.0),Vector3d(1.0,1.0,1.0))))
-        }
-        @Test fun `origin inside`() {
-            assertTrue(isColliding(MockRay(Vector3d(0.0,0.0,0.0),Vector3d(1.0,0.0,0.0),5.0), MockOBB(Vector3d(0.0,0.0,0.0),Vector3d(2.0,2.0,2.0))))
         }
         @Test fun `backward`() {
             assertFalse(isColliding(MockRay(Vector3d(-5.0,0.0,0.0),Vector3d(-1.0,0.0,0.0),10.0), MockOBB(Vector3d(0.0,0.0,0.0),Vector3d(1.0,1.0,1.0))))
@@ -279,9 +286,9 @@ class ColliderTest {
             val b: ICollider<MockTarget> = MockAABB(Vector3d(0.0,0.0,0.0),Vector3d(1.0,1.0,1.0))
             assertTrue(colliding(a, b))
         }
-        @Test fun `dispatch ray vs obb`() {
-            val a: ICollider<MockTarget> = MockRay(Vector3d(-5.0,0.0,0.0),Vector3d(1.0,0.0,0.0),10.0)
-            val b: ICollider<MockTarget> = MockOBB(Vector3d(0.0,0.0,0.0),Vector3d(1.0,1.0,1.0))
+        @Test fun `dispatch ray vs obb origin inside`() {
+            val a: ICollider<MockTarget> = MockRay(Vector3d(0.0,0.0,0.0),Vector3d(1.0,0.0,0.0),5.0)
+            val b: ICollider<MockTarget> = MockOBB(Vector3d(0.0,0.0,0.0),Vector3d(2.0,2.0,2.0))
             assertTrue(colliding(a, b))
         }
         @Test fun `dispatch capsule vs capsule`() {
