@@ -109,6 +109,8 @@ object ScriptManager {
 
     @Reload(weight = 2)
     fun reload() {
+        terminateAllSkills()
+        terminateAllStation()
         scriptCache.invalidateAll()
     }
 

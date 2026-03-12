@@ -89,6 +89,7 @@ object StateManager {
     @Reload(2)
     private fun reload() {
         controllerMap.clear()
+        keyPressThrottleMap.clear()
         files("controllers", "example.yml") { file ->
             controllerMap[file.nameWithoutExtension] = Configuration.loadFromFile(file)
         }

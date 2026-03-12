@@ -23,6 +23,16 @@ import java.util.concurrent.ConcurrentHashMap
 object GlobalActions {
 
     private val globalFlagMap = ConcurrentHashMap<String, IFlag>()
+    private const val MAX_CACHE_SIZE = 10000
+
+    /**
+     * 清理已过期的缓存条目，防止无限增长
+     */
+    private fun evictExpiredEntries() {
+        if (globalFlagMap.size > MAX_CACHE_SIZE) {
+            globalFlagMap.entries.removeIf { it.value.isTimeout() }
+        }
+    }
 
     private fun persistGlobalFlag(flagName: String, flag: IFlag?, callback: Runnable = Runnable { }) {
         val saveTask = {
@@ -40,6 +50,7 @@ object GlobalActions {
     }
 
     private fun getFlagAsync(flagName: String): CompletableFuture<IFlag?> {
+        evictExpiredEntries()
         globalFlagMap[flagName]?.let {
             if (it.isTimeout()) {
                 globalFlagMap.remove(flagName)
