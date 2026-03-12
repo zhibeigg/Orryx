@@ -3,3 +3,5 @@ build
 /.gradle-user-home/
 /.kotlin/
 /.idea/
+.narrafork/
+.worktrees/
