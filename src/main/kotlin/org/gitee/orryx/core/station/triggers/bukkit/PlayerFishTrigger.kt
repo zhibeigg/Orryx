@@ -12,7 +12,7 @@ import taboolib.common5.cdouble
 import taboolib.common5.cfloat
 import taboolib.common5.cint
 
-object PlayerFishTrigger: AbstractPropertyPlayerEventTrigger<PlayerFishEvent>("Player Exp Cooldown Change") {
+object PlayerFishTrigger: AbstractPropertyPlayerEventTrigger<PlayerFishEvent>("Player Fish") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
@@ -33,7 +33,7 @@ object PlayerFishTrigger: AbstractPropertyPlayerEventTrigger<PlayerFishEvent>("P
             .addParm(Type.INT, "maxWaitTime", "获取等待鱼出现的最大Tick数")
             .addParm(Type.INT, "minWaitTime", "获取等待鱼出现的最小Tick数")
             .addParm(Type.DOUBLE, "biteChance", "咬钩几率")
-            .description("当玩家经验冷却时间发生变化时触发")
+            .description("当玩家钓鱼时触发")
 
     override val clazz
         get() = PlayerFishEvent::class.java
