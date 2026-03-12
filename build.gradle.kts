@@ -112,9 +112,9 @@ dependencies {
     compileOnly("com.larksuite.oapi:oapi-sdk:2.4.22")
     compileOnly("com.eatthepath:fast-uuid:0.2.0")
 
-    testCompileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
-    testCompileOnly("com.github.ben-manes.caffeine:caffeine:2.9.3")
-    testCompileOnly("com.eatthepath:fast-uuid:0.2.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
+    testImplementation("com.github.ben-manes.caffeine:caffeine:2.9.3")
+    testImplementation("com.eatthepath:fast-uuid:0.2.0")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
