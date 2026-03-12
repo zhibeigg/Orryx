@@ -62,6 +62,10 @@ api.skillAPI.castSkill(player, "fireball", 5)
 - `effectScope` - 效果渲染
 - `pluginScope` - 插件逻辑
 
+## 语言设置
+
+- 始终以简体中文回复
+
 ## 编码规范
 
 - Kotlin 4 空格缩进，`val` 优先于 `var`
@@ -69,6 +73,13 @@ api.skillAPI.castSkill(player, "fireball", 5)
 - 包名以 `org.gitee.orryx` 开头
 - 提交信息格式：`type(scope): 摘要` 或 `type（scope）：摘要`
   - 类型：`feat`、`fix`、`refactor`、`chore`、`docs`
+
+## 代码规则
+
+- 禁止把 Bukkit 主线程敏感逻辑放到异步线程中执行。
+- 数据库与 Redis 的 I/O 必须异步处理。
+- 禁止滥用 `!!`，优先使用 Kotlin 空安全、显式判空和结果对象。
+- 新增功能时必须同步更新默认配置、示例配置、语言文件和外部 API 文档。
 
 ## 配置文件
 
