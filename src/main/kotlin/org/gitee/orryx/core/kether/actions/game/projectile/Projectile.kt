@@ -181,7 +181,7 @@ class Projectile<T: ITargetLocation<*>>(
     }
 
     fun syncClient() {
-        TODO()
+        warning("syncClient 尚未实现，暂不支持同步投射物到客户端引擎")
     }
 
     fun remove() {
