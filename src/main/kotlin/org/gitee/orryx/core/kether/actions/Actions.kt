@@ -9,6 +9,7 @@ import org.gitee.orryx.core.profile.IPlayerProfile
 import org.gitee.orryx.core.skill.*
 import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.core.targets.PlayerTarget
+import org.gitee.orryx.module.experience.IExperience
 import org.gitee.orryx.module.spirit.ISpiritManager
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Property
@@ -92,6 +93,16 @@ object Actions {
                 .addEntry("attributes", Type.ANY, "属性配置")
                 .addEntry("skills", Type.ANY, "技能列表"),
             IJob::class.java
+        )
+        registerProperty(
+            experienceProperty(),
+            Property.new("Orryx核心", "IExperience", "orryx.experience.operator")
+                .description("经验计算器对象，包含经验配置信息")
+                .addEntry("key", Type.STRING, "经验计算器键名")
+                .addEntry("minLevel", Type.INT, "最低等级")
+                .addEntry("maxLevel", Type.INT, "最高等级")
+                .addEntry("experienceEquation", Type.STRING, "经验算法表达式"),
+            IExperience::class.java
         )
     }
 
@@ -389,7 +400,7 @@ object Actions {
      * - attributes: 属性配置
      * - skills: 技能列表
      */
-    private fun jobProperty() = object : ScriptProperty<IJob>("orryx.player.profile.operator") {
+    private fun jobProperty() = object : ScriptProperty<IJob>("orryx.job.operator") {
 
         override fun read(instance: IJob, key: String): OpenResult {
             return when(key) {
@@ -403,6 +414,23 @@ object Actions {
         }
 
         override fun write(instance: IJob, key: String, value: Any?): OpenResult {
+            return OpenResult.failed()
+        }
+    }
+
+    private fun experienceProperty() = object : ScriptProperty<IExperience>("orryx.experience.operator") {
+
+        override fun read(instance: IExperience, key: String): OpenResult {
+            return when (key) {
+                "key" -> OpenResult.successful(instance.key)
+                "minLevel" -> OpenResult.successful(instance.minLevel)
+                "maxLevel" -> OpenResult.successful(instance.maxLevel)
+                "experienceEquation" -> OpenResult.successful(instance.experienceEquation)
+                else -> OpenResult.failed()
+            }
+        }
+
+        override fun write(instance: IExperience, key: String, value: Any?): OpenResult {
             return OpenResult.failed()
         }
     }

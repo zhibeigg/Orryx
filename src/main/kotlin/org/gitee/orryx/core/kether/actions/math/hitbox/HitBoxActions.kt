@@ -1,20 +1,93 @@
 package org.gitee.orryx.core.kether.actions.math.hitbox
 
+import org.gitee.orryx.api.adapters.IVector
 import org.gitee.orryx.api.adapters.vector.AbstractVector
+import org.gitee.orryx.api.collider.*
 import org.gitee.orryx.api.collider.local.ILocalCollider
 import org.gitee.orryx.api.collider.local.ILocalComposite
 import org.gitee.orryx.core.kether.actions.math.hitbox.collider.local.*
 import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.module.wiki.Action
+import org.gitee.orryx.module.wiki.Property
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
 import org.joml.Quaterniond
 import org.joml.Vector3d
+import org.joml.Vector3dc
+import taboolib.common.OpenResult
 import taboolib.common.platform.function.info
+import taboolib.common5.cbool
+import taboolib.common5.cdouble
 import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*
 
 object HitBoxActions {
+
+    init {
+        registerProperty(
+            colliderProperty(),
+            Property.new("Hitbox碰撞箱", "ICollider", "orryx.collider.operator")
+                .description("碰撞箱基础接口")
+                .addEntry("type", Type.STRING, "碰撞箱类型")
+                .addEntry("disable", Type.BOOLEAN, "是否禁用", true),
+            ICollider::class.java
+        )
+        registerProperty(
+            sphereProperty(),
+            Property.new("Hitbox碰撞箱", "ISphere", "orryx.sphere.operator")
+                .description("球体碰撞箱")
+                .addEntry("radius", Type.DOUBLE, "半径", true)
+                .addEntry("center", Type.VECTOR, "中心点", true),
+            ISphere::class.java
+        )
+        registerProperty(
+            aabbProperty(),
+            Property.new("Hitbox碰撞箱", "IAABB", "orryx.aabb.operator")
+                .description("AABB 碰撞箱")
+                .addEntry("halfExtents", Type.VECTOR, "轴半长", true)
+                .addEntry("center", Type.VECTOR, "中心点", true)
+                .addEntry("min", Type.VECTOR, "最小点")
+                .addEntry("max", Type.VECTOR, "最大点"),
+            IAABB::class.java
+        )
+        registerProperty(
+            obbProperty(),
+            Property.new("Hitbox碰撞箱", "IOBB", "orryx.obb.operator")
+                .description("OBB 碰撞箱")
+                .addEntry("halfExtents", Type.VECTOR, "轴半长", true)
+                .addEntry("center", Type.VECTOR, "中心点", true)
+                .addEntry("rotation", Type.QUATERNION, "旋转四元数", true),
+            IOBB::class.java
+        )
+        registerProperty(
+            capsuleProperty(),
+            Property.new("Hitbox碰撞箱", "ICapsule", "orryx.capsule.operator")
+                .description("胶囊体碰撞箱")
+                .addEntry("height", Type.DOUBLE, "高度", true)
+                .addEntry("radius", Type.DOUBLE, "半径", true)
+                .addEntry("center", Type.VECTOR, "中心点", true)
+                .addEntry("rotation", Type.QUATERNION, "旋转四元数", true)
+                .addEntry("direction", Type.VECTOR, "方向向量"),
+            ICapsule::class.java
+        )
+        registerProperty(
+            rayProperty(),
+            Property.new("Hitbox碰撞箱", "IRay", "orryx.ray.operator")
+                .description("射线碰撞箱")
+                .addEntry("length", Type.DOUBLE, "长度", true)
+                .addEntry("direction", Type.VECTOR, "方向", true)
+                .addEntry("origin", Type.VECTOR, "起点")
+                .addEntry("end", Type.VECTOR, "终点"),
+            IRay::class.java
+        )
+        registerProperty(
+            compositeProperty(),
+            Property.new("Hitbox碰撞箱", "IComposite", "orryx.composite.operator")
+                .description("复合碰撞箱")
+                .addEntry("count", Type.INT, "子碰撞箱数量"),
+            IComposite::class.java
+        )
+    }
 
     @KetherParser(["hitbox"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun actionHitbox() = scriptParser(
@@ -266,6 +339,196 @@ object HitBoxActions {
                     }
                 }
             }
+        }
+    }
+
+    private fun valueToVector3d(value: Any?): Vector3d? {
+        return when (value) {
+            is IVector -> Vector3d(value.joml)
+            is Vector3dc -> Vector3d(value)
+            else -> null
+        }
+    }
+
+    private fun Vector3d.toAbstract() = AbstractVector(x, y, z)
+
+    private fun colliderProperty() = object : ScriptProperty<ICollider<*>>("orryx.collider.operator") {
+
+        override fun read(instance: ICollider<*>, key: String): OpenResult {
+            return when (key) {
+                "type" -> OpenResult.successful(instance.type.name)
+                "disable" -> OpenResult.successful(instance.disable())
+                else -> OpenResult.failed()
+            }
+        }
+
+        override fun write(instance: ICollider<*>, key: String, value: Any?): OpenResult {
+            return when (key) {
+                "disable" -> {
+                    instance.setDisable(value.cbool)
+                    OpenResult.successful()
+                }
+                else -> OpenResult.failed()
+            }
+        }
+    }
+
+    private fun sphereProperty() = object : ScriptProperty<ISphere<*>>("orryx.sphere.operator") {
+
+        override fun read(instance: ISphere<*>, key: String): OpenResult {
+            return when (key) {
+                "radius" -> OpenResult.successful(instance.radius)
+                "center" -> OpenResult.successful(instance.center.toAbstract())
+                else -> OpenResult.failed()
+            }
+        }
+
+        override fun write(instance: ISphere<*>, key: String, value: Any?): OpenResult {
+            return when (key) {
+                "radius" -> {
+                    instance.radius = value.cdouble
+                    OpenResult.successful()
+                }
+                "center" -> {
+                    valueToVector3d(value)?.let { instance.center = it }
+                    OpenResult.successful()
+                }
+                else -> OpenResult.failed()
+            }
+        }
+    }
+
+    private fun aabbProperty() = object : ScriptProperty<IAABB<*>>("orryx.aabb.operator") {
+
+        override fun read(instance: IAABB<*>, key: String): OpenResult {
+            return when (key) {
+                "halfExtents" -> OpenResult.successful(instance.halfExtents.toAbstract())
+                "center" -> OpenResult.successful(instance.center.toAbstract())
+                "min" -> OpenResult.successful(instance.min.toAbstract())
+                "max" -> OpenResult.successful(instance.max.toAbstract())
+                else -> OpenResult.failed()
+            }
+        }
+
+        override fun write(instance: IAABB<*>, key: String, value: Any?): OpenResult {
+            return when (key) {
+                "halfExtents" -> {
+                    valueToVector3d(value)?.let { instance.halfExtents = it }
+                    OpenResult.successful()
+                }
+                "center" -> {
+                    valueToVector3d(value)?.let { instance.center = it }
+                    OpenResult.successful()
+                }
+                else -> OpenResult.failed()
+            }
+        }
+    }
+
+    private fun obbProperty() = object : ScriptProperty<IOBB<*>>("orryx.obb.operator") {
+
+        override fun read(instance: IOBB<*>, key: String): OpenResult {
+            return when (key) {
+                "halfExtents" -> OpenResult.successful(instance.halfExtents.toAbstract())
+                "center" -> OpenResult.successful(instance.center.toAbstract())
+                "rotation" -> OpenResult.successful(instance.rotation)
+                else -> OpenResult.failed()
+            }
+        }
+
+        override fun write(instance: IOBB<*>, key: String, value: Any?): OpenResult {
+            return when (key) {
+                "halfExtents" -> {
+                    valueToVector3d(value)?.let { instance.halfExtents = it }
+                    OpenResult.successful()
+                }
+                "center" -> {
+                    valueToVector3d(value)?.let { instance.center = it }
+                    OpenResult.successful()
+                }
+                "rotation" -> {
+                    (value as? Quaterniond)?.let { instance.rotation = it }
+                    OpenResult.successful()
+                }
+                else -> OpenResult.failed()
+            }
+        }
+    }
+
+    private fun capsuleProperty() = object : ScriptProperty<ICapsule<*>>("orryx.capsule.operator") {
+
+        override fun read(instance: ICapsule<*>, key: String): OpenResult {
+            return when (key) {
+                "height" -> OpenResult.successful(instance.height)
+                "radius" -> OpenResult.successful(instance.radius)
+                "center" -> OpenResult.successful(instance.center.toAbstract())
+                "rotation" -> OpenResult.successful(instance.rotation)
+                "direction" -> OpenResult.successful(instance.direction.toAbstract())
+                else -> OpenResult.failed()
+            }
+        }
+
+        override fun write(instance: ICapsule<*>, key: String, value: Any?): OpenResult {
+            return when (key) {
+                "height" -> {
+                    instance.height = value.cdouble
+                    OpenResult.successful()
+                }
+                "radius" -> {
+                    instance.radius = value.cdouble
+                    OpenResult.successful()
+                }
+                "center" -> {
+                    valueToVector3d(value)?.let { instance.center = it }
+                    OpenResult.successful()
+                }
+                "rotation" -> {
+                    (value as? Quaterniond)?.let { instance.rotation = it }
+                    OpenResult.successful()
+                }
+                else -> OpenResult.failed()
+            }
+        }
+    }
+
+    private fun rayProperty() = object : ScriptProperty<IRay<*>>("orryx.ray.operator") {
+
+        override fun read(instance: IRay<*>, key: String): OpenResult {
+            return when (key) {
+                "length" -> OpenResult.successful(instance.length)
+                "direction" -> OpenResult.successful(instance.direction.toAbstract())
+                "origin" -> OpenResult.successful(instance.origin.toAbstract())
+                "end" -> OpenResult.successful(instance.end.toAbstract())
+                else -> OpenResult.failed()
+            }
+        }
+
+        override fun write(instance: IRay<*>, key: String, value: Any?): OpenResult {
+            return when (key) {
+                "length" -> {
+                    instance.length = value.cdouble
+                    OpenResult.successful()
+                }
+                "direction" -> {
+                    valueToVector3d(value)?.let { instance.direction = it }
+                    OpenResult.successful()
+                }
+                else -> OpenResult.failed()
+            }
+        }
+    }
+
+    private fun compositeProperty() = object : ScriptProperty<IComposite<*, *>>("orryx.composite.operator") {
+
+        override fun read(instance: IComposite<*, *>, key: String): OpenResult {
+            return when (key) {
+                "count" -> OpenResult.successful(instance.collidersCount)
+                else -> OpenResult.failed()
+            }
+        }
+
+        override fun write(instance: IComposite<*, *>, key: String, value: Any?): OpenResult {
+            return OpenResult.failed()
         }
     }
 }

@@ -1,15 +1,29 @@
 package org.gitee.orryx.core.kether.actions
 
+import org.gitee.orryx.module.state.IRunningState
 import org.gitee.orryx.module.state.StateManager
 import org.gitee.orryx.module.state.StateManager.statusData
 import org.gitee.orryx.module.state.Status
 import org.gitee.orryx.module.state.states.*
 import org.gitee.orryx.module.wiki.Action
+import org.gitee.orryx.module.wiki.Property
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
+import taboolib.common.OpenResult
 import taboolib.module.kether.*
 
 object StateActions {
+
+    init {
+        registerProperty(
+            runningStateProperty(),
+            Property.new("State状态机", "IRunningState", "orryx.running.state.operator")
+                .description("运行中的状态对象")
+                .addEntry("key", Type.STRING, "状态键名")
+                .addEntry("stop", Type.BOOLEAN, "是否已停止"),
+            IRunningState::class.java
+        )
+    }
 
     @KetherParser(["running"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun actionRunning() = combinationParser(
@@ -107,6 +121,21 @@ object StateActions {
                     script().bukkitPlayer().statusData().nowRunningState?.stop()
                 }
             }
+        }
+    }
+
+    private fun runningStateProperty() = object : ScriptProperty<IRunningState>("orryx.running.state.operator") {
+
+        override fun read(instance: IRunningState, key: String): OpenResult {
+            return when (key) {
+                "key" -> OpenResult.successful(instance.state.key)
+                "stop" -> OpenResult.successful(instance.stop)
+                else -> OpenResult.failed()
+            }
+        }
+
+        override fun write(instance: IRunningState, key: String, value: Any?): OpenResult {
+            return OpenResult.failed()
         }
     }
 }

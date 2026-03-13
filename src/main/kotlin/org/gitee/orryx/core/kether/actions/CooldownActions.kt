@@ -1,21 +1,38 @@
 package org.gitee.orryx.core.kether.actions
 
+import org.gitee.orryx.core.common.timer.CooldownEntry
 import org.gitee.orryx.core.common.timer.SkillTimer
 import org.gitee.orryx.core.common.timer.StationTimer
 import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.kether.parameter.StationParameter
 import org.gitee.orryx.module.wiki.Action
+import org.gitee.orryx.module.wiki.Property
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.ORRYX_NAMESPACE
 import org.gitee.orryx.utils.getParameter
 import org.gitee.orryx.utils.nextHeadActionOrNull
+import org.gitee.orryx.utils.registerProperty
 import org.gitee.orryx.utils.scriptParser
+import taboolib.common.OpenResult
 import taboolib.library.kether.ParsedAction
 import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*
 import java.util.concurrent.CompletableFuture
 
 object CooldownActions {
+
+    init {
+        registerProperty(
+            cooldownEntryProperty(),
+            Property.new("Cooldown冷却", "CooldownEntry", "orryx.cooldown.entry.operator")
+                .description("冷却条目对象，包含冷却相关信息")
+                .addEntry("tag", Type.STRING, "冷却标签")
+                .addEntry("countdown", Type.LONG, "剩余冷却时间(ms)")
+                .addEntry("overStamp", Type.LONG, "冷却结束时间戳")
+                .addEntry("isReady", Type.BOOLEAN, "是否已就绪"),
+            CooldownEntry::class.java
+        )
+    }
 
     @KetherParser(["cooldown"], namespace = ORRYX_NAMESPACE)
     private fun actionCooldown() = scriptParser(
@@ -201,5 +218,22 @@ object CooldownActions {
         abstract fun ScriptFrame.skill(future: CompletableFuture<Any?>, skill: String)
 
         abstract fun ScriptFrame.station(future: CompletableFuture<Any?>, station: String)
+    }
+
+    private fun cooldownEntryProperty() = object : ScriptProperty<CooldownEntry>("orryx.cooldown.entry.operator") {
+
+        override fun read(instance: CooldownEntry, key: String): OpenResult {
+            return when (key) {
+                "tag" -> OpenResult.successful(instance.tag)
+                "countdown" -> OpenResult.successful(instance.countdown)
+                "overStamp" -> OpenResult.successful(instance.overStamp)
+                "isReady" -> OpenResult.successful(instance.isReady)
+                else -> OpenResult.failed()
+            }
+        }
+
+        override fun write(instance: CooldownEntry, key: String, value: Any?): OpenResult {
+            return OpenResult.failed()
+        }
     }
 }

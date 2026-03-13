@@ -1,13 +1,29 @@
 package org.gitee.orryx.core.kether.actions.math.vector
 
 import org.gitee.orryx.module.wiki.Action
+import org.gitee.orryx.module.wiki.Property
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
 import org.joml.Quaterniond
+import taboolib.common.OpenResult
+import taboolib.common5.cdouble
 import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*
 
 object QuaternionMathActions {
+
+    init {
+        registerProperty(
+            quaternionProperty(),
+            Property.new("Math数学运算", "Quaterniond", "orryx.quaternion.operator")
+                .description("JOML 四元数对象")
+                .addEntry("x", Type.DOUBLE, "X 分量", true)
+                .addEntry("y", Type.DOUBLE, "Y 分量", true)
+                .addEntry("z", Type.DOUBLE, "Z 分量", true)
+                .addEntry("w", Type.DOUBLE, "W 分量", true),
+            Quaterniond::class.java
+        )
+    }
 
     @KetherParser(["quaternion"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun actionQuaternion() = scriptParser(
@@ -305,6 +321,41 @@ object QuaternionMathActions {
                         future.complete(quaternion.scale(factor, it))
                     }
                 }
+            }
+        }
+    }
+
+    private fun quaternionProperty() = object : ScriptProperty<Quaterniond>("orryx.quaternion.operator") {
+
+        override fun read(instance: Quaterniond, key: String): OpenResult {
+            return when (key) {
+                "x" -> OpenResult.successful(instance.x)
+                "y" -> OpenResult.successful(instance.y)
+                "z" -> OpenResult.successful(instance.z)
+                "w" -> OpenResult.successful(instance.w)
+                else -> OpenResult.failed()
+            }
+        }
+
+        override fun write(instance: Quaterniond, key: String, value: Any?): OpenResult {
+            return when (key) {
+                "x" -> {
+                    instance.x = value.cdouble
+                    OpenResult.successful()
+                }
+                "y" -> {
+                    instance.y = value.cdouble
+                    OpenResult.successful()
+                }
+                "z" -> {
+                    instance.z = value.cdouble
+                    OpenResult.successful()
+                }
+                "w" -> {
+                    instance.w = value.cdouble
+                    OpenResult.successful()
+                }
+                else -> OpenResult.failed()
             }
         }
     }
