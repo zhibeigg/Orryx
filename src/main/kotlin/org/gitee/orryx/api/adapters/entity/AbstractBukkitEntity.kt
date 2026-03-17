@@ -2,7 +2,6 @@ package org.gitee.orryx.api.adapters.entity
 
 import org.bukkit.Location
 import org.bukkit.World
-import org.bukkit.attribute.Attribute
 import org.bukkit.entity.Entity
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.LivingEntity
@@ -10,6 +9,7 @@ import org.bukkit.util.Vector
 import org.gitee.orryx.api.adapters.IEntity
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.core.targets.ITargetLocation
+import org.gitee.orryx.utils.VersionCompat
 import java.util.*
 
 open class AbstractBukkitEntity(private val instance: Entity) : IEntity, ITargetEntity<Entity>, ITargetLocation<Entity> {
@@ -73,16 +73,16 @@ open class AbstractBukkitEntity(private val instance: Entity) : IEntity, ITarget
         set(value) { instance.velocity = value }
 
     override val moveSpeed: Double
-        get() = (instance as? LivingEntity)?.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED)?.value ?: 0.0
+        get() = (instance as? LivingEntity)?.getAttribute(VersionCompat.GENERIC_MOVEMENT_SPEED)?.value ?: 0.0
 
     override val isOnGround: Boolean
         get() = instance.isOnGround
 
     override val isFrozen: Boolean
-        get() = instance.isFrozen
+        get() = try { instance.isFrozen } catch (_: NoSuchMethodError) { false }
 
     override val isFired: Boolean
-        get() = instance.isVisualFire
+        get() = try { instance.isVisualFire } catch (_: NoSuchMethodError) { instance.fireTicks > 0 }
 
     override val isSilent: Boolean
         get() = instance.isSilent
@@ -94,7 +94,10 @@ open class AbstractBukkitEntity(private val instance: Entity) : IEntity, ITarget
         get() = instance.isGlowing
 
     override val isInWater: Boolean
-        get() = instance.isInWater
+        get() = try { instance.isInWater } catch (_: NoSuchMethodError) {
+            val loc = instance.location
+            loc.block.type.name.contains("WATER")
+        }
 
     override val isInvulnerable: Boolean
         get() = instance.isInvulnerable

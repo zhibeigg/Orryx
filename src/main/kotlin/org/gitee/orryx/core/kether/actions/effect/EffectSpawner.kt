@@ -25,6 +25,7 @@ import taboolib.module.effect.shape.OctagonalStar
 import taboolib.module.effect.shape.Pyramid
 import taboolib.module.effect.shape.Ray.RayStopType
 import taboolib.platform.util.toBukkitLocation
+import taboolib.module.nms.MinecraftVersion
 import java.util.concurrent.CompletableFuture
 
 class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick: Long = 1, val mode: SpawnerType = SpawnerType.PLAY, val origins: IContainer, val viewers: IContainer): ParticleSpawner {
@@ -73,17 +74,28 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
 
     private fun getParticleData(): Any? {
         return when (val data = builder.data) {
-            // 渐变红石
+            // 渐变红石（1.17+）
             is ParticleData.DustTransitionData -> {
-                Particle.DustTransition(
-                    Color.fromRGB(data.color.red, data.color.green, data.color.blue),
-                    Color.fromRGB(data.toColor.red, data.toColor.green, data.toColor.blue),
-                    data.size
-                )
+                if (MinecraftVersion.isHigherOrEqual(MinecraftVersion.V1_17)) {
+                    Particle.DustTransition(
+                        Color.fromRGB(data.color.red, data.color.green, data.color.blue),
+                        Color.fromRGB(data.toColor.red, data.toColor.green, data.toColor.blue),
+                        data.size
+                    )
+                } else if (MinecraftVersion.isHigher(MinecraftVersion.V1_12)) {
+                    // 1.13-1.16 降级为普通 DustOptions
+                    Particle.DustOptions(Color.fromRGB(data.color.red, data.color.green, data.color.blue), data.size)
+                } else {
+                    null
+                }
             }
-            // 红石
+            // 红石（1.13+）
             is ParticleData.DustData -> {
-                Particle.DustOptions(Color.fromRGB(data.color.red, data.color.green, data.color.blue), data.size)
+                if (MinecraftVersion.isHigher(MinecraftVersion.V1_12)) {
+                    Particle.DustOptions(Color.fromRGB(data.color.red, data.color.green, data.color.blue), data.size)
+                } else {
+                    null
+                }
             }
             // 物品
             is ParticleData.ItemData -> {
@@ -105,25 +117,29 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
             is ParticleData.BlockData -> {
                 if (builder.particle.get()?.dataType == MaterialData::class.java) {
                     MaterialData(Material.valueOf(data.material), data.data.toByte())
-                } else {
+                } else if (MinecraftVersion.isHigher(MinecraftVersion.V1_12)) {
                     Material.valueOf(data.material).createBlockData()
+                } else {
+                    MaterialData(Material.valueOf(data.material), data.data.toByte())
                 }
             }
-            // 震动（不知道怎么翻译，来自 1.17+）
+            // 震动（1.17+）
             is ParticleData.VibrationData -> {
-                Vibration(
-                    data.origin.toBukkitLocation(), when (val destination = data.destination) {
-                        // 坐标
-                        is ParticleData.VibrationData.LocationDestination -> {
-                            Vibration.Destination.BlockDestination(destination.location.toBukkitLocation())
-                        }
-                        // 实体
-                        is ParticleData.VibrationData.EntityDestination -> {
-                            Vibration.Destination.EntityDestination(Bukkit.getEntity(destination.entity)!!)
-                        }
-                    },
-                    data.arrivalTime
-                )
+                if (MinecraftVersion.isHigherOrEqual(MinecraftVersion.V1_17)) {
+                    Vibration(
+                        data.origin.toBukkitLocation(), when (val destination = data.destination) {
+                            is ParticleData.VibrationData.LocationDestination -> {
+                                Vibration.Destination.BlockDestination(destination.location.toBukkitLocation())
+                            }
+                            is ParticleData.VibrationData.EntityDestination -> {
+                                Vibration.Destination.EntityDestination(Bukkit.getEntity(destination.entity)!!)
+                            }
+                        },
+                        data.arrivalTime
+                    )
+                } else {
+                    null
+                }
             }
             else -> null
         }

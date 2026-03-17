@@ -15,6 +15,7 @@ import taboolib.common.util.Vector
 import taboolib.common.util.unsafeLazy
 import taboolib.library.xseries.particles.XParticle
 import taboolib.module.kether.ScriptContext
+import taboolib.module.nms.MinecraftVersion
 import java.util.concurrent.CompletableFuture
 
 class StringParser(val value: String) {
@@ -105,7 +106,12 @@ class StringParser(val value: String) {
             when(val selector = SelectorInit.getSelector(entry.head.uppercase())) {
                 is ISelectorGeometry -> {
                     selector.aFrameShowLocations(context, entry).forEach {
-                        adaptPlayer(context.bukkitPlayer()).sendParticle(XParticle.DUST.name, it, Vector(), 1, 0.0, Particle.DustOptions(Color.RED, 1.0f))
+                        val data = if (MinecraftVersion.isHigher(MinecraftVersion.V1_12)) {
+                            Particle.DustOptions(Color.RED, 1.0f)
+                        } else {
+                            null
+                        }
+                        adaptPlayer(context.bukkitPlayer()).sendParticle(XParticle.DUST.name, it, Vector(), 1, 0.0, data)
                     }
                 }
                 null -> {

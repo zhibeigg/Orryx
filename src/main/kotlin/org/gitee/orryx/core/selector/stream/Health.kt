@@ -1,6 +1,5 @@
 package org.gitee.orryx.core.selector.stream
 
-import org.bukkit.attribute.Attribute
 import org.bukkit.entity.LivingEntity
 import org.gitee.orryx.core.container.IContainer
 import org.gitee.orryx.core.parser.StringParser
@@ -9,6 +8,7 @@ import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.module.wiki.Selector
 import org.gitee.orryx.module.wiki.SelectorType
 import org.gitee.orryx.module.wiki.Type
+import org.gitee.orryx.utils.VersionCompat
 import org.gitee.orryx.utils.read
 import taboolib.module.kether.ScriptContext
 
@@ -33,7 +33,7 @@ object Health: ISelectorStream {
                 if (it is ITargetEntity<*>) {
                     val source = it.getSource()
                     if (source is LivingEntity) {
-                        val maxHealth = source.getAttribute(Attribute.GENERIC_MAX_HEALTH)?.value ?: return@removeIf false
+                        val maxHealth = source.getAttribute(VersionCompat.GENERIC_MAX_HEALTH)?.value ?: return@removeIf false
                         val percent = source.health / maxHealth
                         percent in minPercent..maxPercent
                     } else false
@@ -45,7 +45,7 @@ object Health: ISelectorStream {
                 if (it is ITargetEntity<*>) {
                     val source = it.getSource()
                     if (source is LivingEntity) {
-                        val maxHealth = source.getAttribute(Attribute.GENERIC_MAX_HEALTH)?.value ?: return@removeIf true
+                        val maxHealth = source.getAttribute(VersionCompat.GENERIC_MAX_HEALTH)?.value ?: return@removeIf true
                         val percent = source.health / maxHealth
                         percent !in minPercent..maxPercent
                     } else true

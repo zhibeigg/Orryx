@@ -1,9 +1,9 @@
 package org.gitee.orryx.core.kether.actions.game.entity
 
-import org.bukkit.attribute.Attribute
 import org.gitee.orryx.api.adapters.IEntity
 import org.gitee.orryx.api.adapters.entity.AbstractAdyeshachEntity
 import org.gitee.orryx.core.targets.LocationTarget
+import org.gitee.orryx.utils.VersionCompat
 import org.gitee.orryx.utils.abstract
 import org.gitee.orryx.utils.getBukkitLivingEntity
 
@@ -41,7 +41,7 @@ enum class EntityField(val get: IEntity.() -> Any?) {
 
     BODY_IN_ARROW({ getBukkitLivingEntity()?.arrowsInBody }),
 
-    MAX_HEALTH({ getBukkitLivingEntity()?.getAttribute(Attribute.GENERIC_MAX_HEALTH)?.value ?: 0.0 }),
+    MAX_HEALTH({ getBukkitLivingEntity()?.getAttribute(VersionCompat.GENERIC_MAX_HEALTH)?.value ?: 0.0 }),
 
     GRAVITY({ gravity }),
 

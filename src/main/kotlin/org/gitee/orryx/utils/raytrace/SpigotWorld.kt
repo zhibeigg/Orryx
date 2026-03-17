@@ -1,7 +1,6 @@
 package org.gitee.orryx.utils.raytrace
 
 import org.bukkit.Bukkit
-import org.bukkit.FluidCollisionMode
 import org.bukkit.World
 import org.bukkit.block.BlockFace
 import org.gitee.orryx.utils.bukkit
@@ -29,19 +28,29 @@ class SpigotWorld(private val world: World) : PlatformWorld {
             val startVec = start.bukkit()
             val directionVec = direction.bukkit()
 
+            val fluidCollisionModeClass = Class.forName("org.bukkit.FluidCollisionMode")
             val fluidMode = when(fluidHandling) {
-                NONE -> FluidCollisionMode.NEVER
-                SOURCE_ONLY -> FluidCollisionMode.SOURCE_ONLY
-                ALWAYS -> FluidCollisionMode.ALWAYS
+                NONE -> java.lang.Enum.valueOf(fluidCollisionModeClass as Class<out Enum<*>>, "NEVER")
+                SOURCE_ONLY -> java.lang.Enum.valueOf(fluidCollisionModeClass as Class<out Enum<*>>, "SOURCE_ONLY")
+                ALWAYS -> java.lang.Enum.valueOf(fluidCollisionModeClass as Class<out Enum<*>>, "ALWAYS")
             }
 
-            val result: org.bukkit.util.RayTraceResult = world.rayTraceBlocks(
+            val rayTraceBlocksMethod = World::class.java.getMethod(
+                "rayTraceBlocks",
+                org.bukkit.Location::class.java,
+                org.bukkit.util.Vector::class.java,
+                Double::class.javaPrimitiveType,
+                fluidCollisionModeClass,
+                Boolean::class.javaPrimitiveType
+            )
+            val result: org.bukkit.util.RayTraceResult = rayTraceBlocksMethod.invoke(
+                world,
                 startVec.toLocation(world),
                 directionVec,
                 maxDistance,
                 fluidMode,
                 checkAxisAlignedBB
-            ) ?: run {
+            ) as? org.bukkit.util.RayTraceResult ?: run {
                 if (returnClosestPos) {
                     val vector = startVec.add(directionVec)
                     val block = vector.toBlock(world)
@@ -49,7 +58,7 @@ class SpigotWorld(private val world: World) : PlatformWorld {
                         vector.joml(),
                         null,
                         block.let { Vector3i(it.x, it.y, it.z) },
-                        block.blockData,
+                        try { block.javaClass.getMethod("getBlockData").invoke(block) } catch (_: Exception) { null },
                         RayTraceResult.EnumMovingObjectType.MISS
                     )
                 } else {
@@ -61,7 +70,7 @@ class SpigotWorld(private val world: World) : PlatformWorld {
                 Vector3d(result.hitPosition.x, result.hitPosition.y, result.hitPosition.z),
                 result.hitBlockFace,
                 Vector3i(result.hitBlock!!.x, result.hitBlock!!.y, result.hitBlock!!.z),
-                if (result.hitBlock != null) { result.hitBlock!!.blockData } else null,
+                if (result.hitBlock != null) { try { result.hitBlock!!.javaClass.getMethod("getBlockData").invoke(result.hitBlock!!) } catch (_: Exception) { null } } else null,
                 if (result.hitBlock != null) {
                     RayTraceResult.EnumMovingObjectType.BLOCK
                 } else if (result.hitEntity != null) {

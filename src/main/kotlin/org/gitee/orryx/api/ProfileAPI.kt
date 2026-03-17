@@ -1,6 +1,5 @@
 package org.gitee.orryx.api
 
-import org.bukkit.attribute.Attribute
 import org.bukkit.attribute.AttributeModifier
 import org.bukkit.entity.Player
 import org.bukkit.event.entity.EntityDamageEvent
@@ -11,6 +10,7 @@ import org.gitee.orryx.api.interfaces.IBlockStatus
 import org.gitee.orryx.api.interfaces.IProfileAPI
 import org.gitee.orryx.api.interfaces.ITimedStatus
 import org.gitee.orryx.core.profile.IPlayerProfile
+import org.gitee.orryx.utils.VersionCompat
 import org.gitee.orryx.utils.orryxProfileTo
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
@@ -40,7 +40,7 @@ class ProfileAPI: IProfileAPI {
     companion object {
 
         private val superBodyModifier: AttributeModifier by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
-            AttributeModifier("Orryx@SuperBody", 99999.0, AttributeModifier.Operation.ADD_NUMBER)
+            VersionCompat.createAttributeModifier("Orryx@SuperBody", 99999.0, AttributeModifier.Operation.ADD_NUMBER)
         }
 
         // ==================== TimedStatusImpl ====================
@@ -180,12 +180,13 @@ class ProfileAPI: IProfileAPI {
 
         private val superBodyStatus = TimedStatusImpl(
             onActivate = { player ->
-                if (player.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE)?.modifiers?.any { it.name == superBodyModifier.name } != true) {
-                    player.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE)?.addModifier(superBodyModifier)
+                val attr = player.getAttribute(VersionCompat.GENERIC_KNOCKBACK_RESISTANCE)
+                if (attr?.modifiers?.any { VersionCompat.matchesModifierName(it, "Orryx@SuperBody") } != true) {
+                    attr?.addModifier(superBodyModifier)
                 }
             },
             onDeactivate = { player ->
-                player.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE)?.removeModifier(superBodyModifier)
+                player.getAttribute(VersionCompat.GENERIC_KNOCKBACK_RESISTANCE)?.removeModifier(superBodyModifier)
             }
         )
 

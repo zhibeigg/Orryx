@@ -18,6 +18,7 @@ import taboolib.common5.cfloat
 import taboolib.common5.cint
 import taboolib.library.xseries.XPotion
 import taboolib.module.kether.*
+import taboolib.module.nms.MinecraftVersion
 
 object GameActions {
 
@@ -349,7 +350,9 @@ object GameActions {
                 "isLiquid" -> OpenResult.successful(instance.isLiquid)
                 "isSolid" -> OpenResult.successful(instance.type.isSolid)
                 "isEmpty" -> OpenResult.successful(instance.isEmpty)
-                "isPassable" -> OpenResult.successful(instance.isPassable)
+                "isPassable" -> OpenResult.successful(
+                    if (MinecraftVersion.isHigher(MinecraftVersion.V1_12)) instance.isPassable else false
+                )
                 else -> OpenResult.failed()
             }
         }
