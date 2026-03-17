@@ -52,3 +52,7 @@ LarkSuite:
 OpenAI:
   ApiKey: ""
   BaseUrl: ""
+# 编辑器
+Editor:
+  # 购买时获得的 license，填写后自动连接编辑器中心服务器
+  License: ""

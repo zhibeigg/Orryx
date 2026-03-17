@@ -257,6 +257,140 @@ sendPluginMessage(player, "orryxmod:main", out.toByteArray());
 
 ---
 
+## 碰撞箱渲染系统
+
+### 概述
+
+碰撞箱渲染系统允许服务端将碰撞体（Hitbox）信息同步到客户端，客户端根据几何数据渲染线框。支持球体、AABB、OBB、胶囊体、射线和复合体六种碰撞体类型。
+
+### 碰撞体类型枚举
+
+| 值 | 类型 | 说明 |
+|---|---|---|
+| 0 | SPHERE | 球体 |
+| 1 | AABB | 轴对齐包围盒 |
+| 2 | OBB | 有向包围盒 |
+| 3 | CAPSULE | 胶囊体 |
+| 4 | RAY | 射线 |
+| 5 | COMPOSITE | 复合体（包含多个子碰撞体） |
+
+### 数据包类型
+
+#### ColliderShow (ID: 18) - 创建碰撞箱
+
+创建并显示一个碰撞箱渲染。
+
+**格式：**
+```
+[18: Int] [id: String] [type: Int] [r: Int] [g: Int] [b: Int] [a: Int] [payload: ...]
+```
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| id | String | 碰撞箱唯一标识 |
+| type | Int | 碰撞体类型枚举值 |
+| r,g,b,a | Int | RGBA 颜色值 (0-255) |
+| payload | ... | 碰撞体几何数据，按 type 不同 |
+
+**payload 按 type：**
+
+SPHERE (0):
+```
+[cx: Double] [cy: Double] [cz: Double] [radius: Double]
+```
+
+AABB (1):
+```
+[cx: Double] [cy: Double] [cz: Double] [hx: Double] [hy: Double] [hz: Double]
+```
+其中 hx/hy/hz 为三轴半长。
+
+OBB (2):
+```
+[cx: Double] [cy: Double] [cz: Double] [hx: Double] [hy: Double] [hz: Double] [qx: Double] [qy: Double] [qz: Double] [qw: Double]
+```
+其中 qx/qy/qz/qw 为旋转四元数。
+
+CAPSULE (3):
+```
+[cx: Double] [cy: Double] [cz: Double] [radius: Double] [height: Double] [qx: Double] [qy: Double] [qz: Double] [qw: Double]
+```
+
+RAY (4):
+```
+[ox: Double] [oy: Double] [oz: Double] [dx: Double] [dy: Double] [dz: Double] [length: Double]
+```
+其中 ox/oy/oz 为起点，dx/dy/dz 为方向。
+
+COMPOSITE (5):
+```
+[count: Int] [子碰撞体...]
+```
+每个子碰撞体递归写入 `[type: Int] [payload: ...]`（不含 id 和颜色，继承父级）。
+
+**示例（Java/Kotlin）：**
+```java
+ByteArrayDataOutput out = ByteStreams.newDataOutput();
+out.writeInt(18);                  // packetId: ColliderShow
+out.writeUTF("my_hitbox_1");      // id
+out.writeInt(0);                   // type: SPHERE
+out.writeInt(255);                 // r
+out.writeInt(0);                   // g
+out.writeInt(0);                   // b
+out.writeInt(255);                 // a
+out.writeDouble(100.0);            // cx
+out.writeDouble(65.0);             // cy
+out.writeDouble(200.0);            // cz
+out.writeDouble(2.0);              // radius
+
+sendPluginMessage(player, "orryxmod:main", out.toByteArray());
+```
+
+#### ColliderUpdate (ID: 19) - 更新碰撞箱
+
+更新已有碰撞箱的几何数据（不含颜色）。
+
+**格式：**
+```
+[19: Int] [id: String] [type: Int] [payload: ...]
+```
+
+payload 格式与 ColliderShow 相同（不含颜色字段），客户端根据 id 找到已有碰撞箱并更新几何数据。
+
+**示例：**
+```java
+ByteArrayDataOutput out = ByteStreams.newDataOutput();
+out.writeInt(19);                  // packetId: ColliderUpdate
+out.writeUTF("my_hitbox_1");      // id
+out.writeInt(0);                   // type: SPHERE
+out.writeDouble(105.0);            // cx (新位置)
+out.writeDouble(65.0);             // cy
+out.writeDouble(200.0);            // cz
+out.writeDouble(2.0);              // radius
+
+sendPluginMessage(player, "orryxmod:main", out.toByteArray());
+```
+
+#### ColliderRemove (ID: 20) - 移除碰撞箱
+
+移除指定的碰撞箱渲染。
+
+**格式：**
+```
+[20: Int] [id: String]
+```
+
+**示例：**
+```java
+ByteArrayDataOutput out = ByteStreams.newDataOutput();
+out.writeInt(20);                  // packetId: ColliderRemove
+out.writeUTF("my_hitbox_1");      // id
+
+sendPluginMessage(player, "orryxmod:main", out.toByteArray());
+```
+
+---
+
 ## Bukkit/Spigot 插件示例
 
 ```java

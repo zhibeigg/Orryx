@@ -45,6 +45,12 @@ import kotlin.time.Duration.Companion.seconds
         test = "!org.gitee.orryx.serialization.json.Json",
         relocate = ["!kotlin.", "!kotlin2120.", "!kotlinx.serialization.", "!org.gitee.orryx.serialization."],
         transitive = false
+    ),
+    RuntimeDependency(
+        "!org.java-websocket:Java-WebSocket:1.5.7",
+        test = "!org.gitee.orryx.java_websocket.client.WebSocketClient",
+        relocate = ["!org.java_websocket.", "!org.gitee.orryx.java_websocket."],
+        transitive = false
     )
 )
 class OrryxAPI: IOrryxAPI {

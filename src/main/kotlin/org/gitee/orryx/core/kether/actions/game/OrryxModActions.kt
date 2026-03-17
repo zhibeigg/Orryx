@@ -1,5 +1,6 @@
 package org.gitee.orryx.core.kether.actions.game
 
+import org.gitee.orryx.api.collider.ICollider
 import org.gitee.orryx.core.message.PluginMessageHandler
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.core.targets.ITargetLocation
@@ -260,6 +261,79 @@ object OrryxModActions {
                 viewer.orElse(world()).forEachInstance<PlayerTarget> { player ->
                     locs.forEach { loc ->
                         PluginMessageHandler.sendSectorShockwave(player.getSource(), loc.location.x, loc.location.y - 0.2, loc.location.z, r, loc.location.yaw.toDouble(), angle)
+                    }
+                }
+            }
+        }
+    }
+
+    @KetherParser(["colliderShow"], namespace = ORRYX_NAMESPACE, shared = true)
+    private fun actionColliderShow() = scriptParser(
+        Action.new("Orryx Mod额外功能", "发送碰撞箱显示到客户端", "colliderShow", true)
+            .description("将碰撞箱渲染信息发送到客户端显示")
+            .addEntry("碰撞箱唯一标识", Type.STRING, false)
+            .addEntry("碰撞箱", Type.HITBOX, false)
+            .addEntry("颜色", Type.STRING, true, default = "255,255,255,255", head = "color")
+            .addContainerEntry(optional = true, default = "@self", head = "viewers", description = "可视玩家")
+    ) {
+        val id = it.nextParsedAction()
+        val hitbox = it.nextParsedAction()
+        val color = it.nextHeadAction("color", def = "255,255,255,255")
+        val viewers = it.nextHeadActionOrNull("viewers")
+        actionNow {
+            run(id).str { id ->
+                run(hitbox).collider { collider ->
+                    run(color).str { color ->
+                        containerOrSelf(viewers) { viewerContainer ->
+                            val (r, g, b, a) = color.split(",").map { it.trim().toInt() }
+                            viewerContainer.forEachInstance<PlayerTarget> { viewer ->
+                                PluginMessageHandler.sendColliderShow(viewer.getSource(), id, collider, r, g, b, a)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @KetherParser(["colliderUpdate"], namespace = ORRYX_NAMESPACE, shared = true)
+    private fun actionColliderUpdate() = scriptParser(
+        Action.new("Orryx Mod额外功能", "更新客户端碰撞箱渲染", "colliderUpdate", true)
+            .description("更新已有碰撞箱的位置/旋转等几何数据")
+            .addEntry("碰撞箱唯一标识", Type.STRING, false)
+            .addEntry("碰撞箱", Type.HITBOX, false)
+            .addContainerEntry(optional = true, default = "@self", head = "viewers", description = "可视玩家")
+    ) {
+        val id = it.nextParsedAction()
+        val hitbox = it.nextParsedAction()
+        val viewers = it.nextHeadActionOrNull("viewers")
+        actionNow {
+            run(id).str { id ->
+                run(hitbox).collider { collider ->
+                    containerOrSelf(viewers) { viewerContainer ->
+                        viewerContainer.forEachInstance<PlayerTarget> { viewer ->
+                            PluginMessageHandler.sendColliderUpdate(viewer.getSource(), id, collider)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @KetherParser(["colliderRemove"], namespace = ORRYX_NAMESPACE, shared = true)
+    private fun actionColliderRemove() = scriptParser(
+        Action.new("Orryx Mod额外功能", "移除客户端碰撞箱渲染", "colliderRemove", true)
+            .description("移除客户端已有的碰撞箱渲染")
+            .addEntry("碰撞箱唯一标识", Type.STRING, false)
+            .addContainerEntry(optional = true, default = "@self", head = "viewers", description = "可视玩家")
+    ) {
+        val id = it.nextParsedAction()
+        val viewers = it.nextHeadActionOrNull("viewers")
+        actionNow {
+            run(id).str { id ->
+                containerOrSelf(viewers) { viewerContainer ->
+                    viewerContainer.forEachInstance<PlayerTarget> { viewer ->
+                        PluginMessageHandler.sendColliderRemove(viewer.getSource(), id)
                     }
                 }
             }

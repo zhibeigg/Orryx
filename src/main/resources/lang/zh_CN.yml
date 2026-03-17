@@ -95,3 +95,13 @@ info-skill:
 
 in-unlimit-mode: "&a| &6[test] &f进入&a无限模式"
 out-unlimit-mode: "&a| &6[test] &f退出&4无限模式"
+
+editor-not-connected: "&c| &7[Editor] 编辑器未连接中心服务器，请检查 config.yml 中的 Editor.License 配置"
+editor-open:
+  - ==: JSON
+    text:
+      - '&a| &c&lOrryx &e编辑器'
+      - '&a| &7[&b[&n点击打开编辑器]&7]'
+    args:
+      - url: '{0}'
+        hover: '点击打开 Orryx 编辑器'

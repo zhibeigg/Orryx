@@ -6,6 +6,7 @@ import com.germ.germplugin.api.event.GermKeyDownEvent
 import com.google.common.io.ByteArrayDataInput
 import com.google.common.io.ByteArrayDataOutput
 import com.google.common.io.ByteStreams
+import org.gitee.orryx.api.collider.*
 import eos.moe.dragoncore.api.event.KeyPressEvent
 import org.bukkit.Bukkit
 import org.bukkit.Location
@@ -59,6 +60,9 @@ object PluginMessageHandler {
         data object BloomConfigSync : PacketType(15)
         data object BloomConfigUpdate : PacketType(16)
         data object BloomConfigRemove : PacketType(17)
+        data object ColliderShow : PacketType(18)
+        data object ColliderUpdate : PacketType(19)
+        data object ColliderRemove : PacketType(20)
     }
 
     @Awake(LifeCycle.ENABLE)
@@ -482,6 +486,124 @@ object PluginMessageHandler {
     fun sendBloomConfigRemove(player: Player, id: String) {
         sendDataPacket(player, PacketType.BloomConfigRemove) {
             writeUTF(id)
+        }
+    }
+
+    /**
+     * 发送碰撞箱创建/显示数据包
+     * @param viewer 可视玩家
+     * @param id 碰撞箱唯一标识
+     * @param collider 碰撞体
+     * @param r 红色通道 (0-255)
+     * @param g 绿色通道 (0-255)
+     * @param b 蓝色通道 (0-255)
+     * @param a 透明度通道 (0-255)
+     */
+    fun sendColliderShow(viewer: Player, id: String, collider: ICollider<*>, r: Int, g: Int, b: Int, a: Int) {
+        sendDataPacket(viewer, PacketType.ColliderShow) {
+            writeUTF(id)
+            writeInt(colliderTypeToInt(collider))
+            writeInt(r)
+            writeInt(g)
+            writeInt(b)
+            writeInt(a)
+            writeColliderPayload(this, collider)
+        }
+    }
+
+    /**
+     * 发送碰撞箱更新数据包
+     * @param viewer 可视玩家
+     * @param id 碰撞箱唯一标识
+     * @param collider 碰撞体
+     */
+    fun sendColliderUpdate(viewer: Player, id: String, collider: ICollider<*>) {
+        sendDataPacket(viewer, PacketType.ColliderUpdate) {
+            writeUTF(id)
+            writeInt(colliderTypeToInt(collider))
+            writeColliderPayload(this, collider)
+        }
+    }
+
+    /**
+     * 发送碰撞箱移除数据包
+     * @param viewer 可视玩家
+     * @param id 碰撞箱唯一标识
+     */
+    fun sendColliderRemove(viewer: Player, id: String) {
+        sendDataPacket(viewer, PacketType.ColliderRemove) {
+            writeUTF(id)
+        }
+    }
+
+    private fun colliderTypeToInt(collider: ICollider<*>): Int {
+        return when (collider.type) {
+            ColliderType.SPHERE -> 0
+            ColliderType.AABB -> 1
+            ColliderType.OBB -> 2
+            ColliderType.CAPSULE -> 3
+            ColliderType.RAY -> 4
+            ColliderType.COMPOSITE -> 5
+            else -> -1
+        }
+    }
+
+    private fun writeColliderPayload(output: ByteArrayDataOutput, collider: ICollider<*>) {
+        when (collider) {
+            is ISphere<*> -> {
+                output.writeDouble(collider.center.x)
+                output.writeDouble(collider.center.y)
+                output.writeDouble(collider.center.z)
+                output.writeDouble(collider.radius)
+            }
+            is IAABB<*> -> {
+                output.writeDouble(collider.center.x)
+                output.writeDouble(collider.center.y)
+                output.writeDouble(collider.center.z)
+                output.writeDouble(collider.halfExtents.x)
+                output.writeDouble(collider.halfExtents.y)
+                output.writeDouble(collider.halfExtents.z)
+            }
+            is IOBB<*> -> {
+                output.writeDouble(collider.center.x)
+                output.writeDouble(collider.center.y)
+                output.writeDouble(collider.center.z)
+                output.writeDouble(collider.halfExtents.x)
+                output.writeDouble(collider.halfExtents.y)
+                output.writeDouble(collider.halfExtents.z)
+                output.writeDouble(collider.rotation.x)
+                output.writeDouble(collider.rotation.y)
+                output.writeDouble(collider.rotation.z)
+                output.writeDouble(collider.rotation.w)
+            }
+            is ICapsule<*> -> {
+                output.writeDouble(collider.center.x)
+                output.writeDouble(collider.center.y)
+                output.writeDouble(collider.center.z)
+                output.writeDouble(collider.radius)
+                output.writeDouble(collider.height)
+                output.writeDouble(collider.rotation.x)
+                output.writeDouble(collider.rotation.y)
+                output.writeDouble(collider.rotation.z)
+                output.writeDouble(collider.rotation.w)
+            }
+            is IRay<*> -> {
+                output.writeDouble(collider.origin.x)
+                output.writeDouble(collider.origin.y)
+                output.writeDouble(collider.origin.z)
+                output.writeDouble(collider.direction.x)
+                output.writeDouble(collider.direction.y)
+                output.writeDouble(collider.direction.z)
+                output.writeDouble(collider.length)
+            }
+            is IComposite<*, *> -> {
+                output.writeInt(collider.collidersCount)
+                for (i in 0 until collider.collidersCount) {
+                    val child = collider.getCollider(i)
+                    output.writeInt(colliderTypeToInt(child))
+                    writeColliderPayload(output, child)
+                }
+            }
         }
     }
 

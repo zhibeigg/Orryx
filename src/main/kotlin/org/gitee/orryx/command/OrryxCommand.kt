@@ -160,6 +160,9 @@ object OrryxCommand {
     }
 
     @CommandBody
+    val editor = OrryxEditorCommand
+
+    @CommandBody
     val printStats = subCommandExec<ProxyCommandSender> {
         MemoryCache.printStats()
     }
