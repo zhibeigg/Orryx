@@ -1,5 +1,7 @@
 package org.gitee.orryx.core.parser
 
+import org.bukkit.Color
+import org.bukkit.Particle
 import org.gitee.orryx.core.container.Container
 import org.gitee.orryx.core.container.IContainer
 import org.gitee.orryx.core.selector.ISelectorGeometry
@@ -103,7 +105,7 @@ class StringParser(val value: String) {
             when(val selector = SelectorInit.getSelector(entry.head.uppercase())) {
                 is ISelectorGeometry -> {
                     selector.aFrameShowLocations(context, entry).forEach {
-                        adaptPlayer(context.bukkitPlayer()).sendParticle(XParticle.DUST.name, it, Vector(), 1, 0.0, null)
+                        adaptPlayer(context.bukkitPlayer()).sendParticle(XParticle.DUST.name, it, Vector(), 1, 0.0, Particle.DustOptions(Color.RED, 1.0f))
                     }
                 }
                 null -> {
