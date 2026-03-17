@@ -11,7 +11,7 @@ import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common5.cint
 
-object OrryxPlayerExpDownTrigger: AbstractPropertyEventTrigger<OrryxPlayerJobExperienceEvents.Down>("Orryx Player Exp Down") {
+object OrryxPlayerExpDownTrigger: AbstractPropertyEventTrigger<OrryxPlayerJobExperienceEvents.Down.Pre>("Orryx Player Exp Down") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.ORRYX, event)
@@ -19,24 +19,24 @@ object OrryxPlayerExpDownTrigger: AbstractPropertyEventTrigger<OrryxPlayerJobExp
             .description("玩家经验下降事件")
 
     override val clazz
-        get() = OrryxPlayerJobExperienceEvents.Down::class.java
+        get() = OrryxPlayerJobExperienceEvents.Down.Pre::class.java
 
-    override fun onJoin(event: OrryxPlayerJobExperienceEvents.Down, map: Map<String, Any?>): ProxyCommandSender {
+    override fun onJoin(event: OrryxPlayerJobExperienceEvents.Down.Pre, map: Map<String, Any?>): ProxyCommandSender {
         return adaptPlayer(event.player)
     }
 
-    override fun onCheck(pipeTask: IPipeTask, event: OrryxPlayerJobExperienceEvents.Down, map: Map<String, Any?>): Boolean {
+    override fun onCheck(pipeTask: IPipeTask, event: OrryxPlayerJobExperienceEvents.Down.Pre, map: Map<String, Any?>): Boolean {
         return pipeTask.scriptContext?.sender?.origin == event.player
     }
 
-    override fun read(instance: OrryxPlayerJobExperienceEvents.Down, key: String): OpenResult {
+    override fun read(instance: OrryxPlayerJobExperienceEvents.Down.Pre, key: String): OpenResult {
         return when (key) {
             "exp", "experience" -> OpenResult.successful(instance.downExperience)
             else -> OpenResult.failed()
         }
     }
 
-    override fun write(instance: OrryxPlayerJobExperienceEvents.Down, key: String, value: Any?): OpenResult {
+    override fun write(instance: OrryxPlayerJobExperienceEvents.Down.Pre, key: String, value: Any?): OpenResult {
         return when (key) {
             "exp", "experience" -> {
                 instance.downExperience = value.cint

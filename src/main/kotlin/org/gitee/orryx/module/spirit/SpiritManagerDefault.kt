@@ -52,11 +52,12 @@ class SpiritManagerDefault: ISpiritManager {
         val future = CompletableFuture<SpiritResult>()
         player.orryxProfile { profile ->
             player.job { job ->
-                val event = OrryxPlayerSpiritEvents.Up(player, profile, spirit)
+                val event = OrryxPlayerSpiritEvents.Up.Pre(player, profile, spirit)
                 if (event.call()) {
                     spiritMap.compute(player.uniqueId) { _, old ->
                         ((old ?: 0.0) + event.spirit).coerceIn(0.0, job.getMaxSpirit())
                     }
+                    OrryxPlayerSpiritEvents.Up.Post(player, profile, event.spirit).call()
                     future.complete(SpiritResult.SUCCESS)
                 } else {
                     future.complete(SpiritResult.CANCELLED)
@@ -73,13 +74,14 @@ class SpiritManagerDefault: ISpiritManager {
         val future = CompletableFuture<SpiritResult>()
         player.orryxProfile { profile ->
             player.job { job ->
-                val event = OrryxPlayerSpiritEvents.Down(player, profile, spirit)
+                val event = OrryxPlayerSpiritEvents.Down.Pre(player, profile, spirit)
                 if (event.call()) {
                     var less = 0.0
                     spiritMap.compute(player.uniqueId) { _, old ->
                         less = (old ?: 0.0) - event.spirit
                         less.coerceIn(0.0, job.getMaxSpirit())
                     }
+                    OrryxPlayerSpiritEvents.Down.Post(player, profile, event.spirit).call()
                     future.complete(
                         if (less >= 0) {
                             SpiritResult.SUCCESS
@@ -109,9 +111,10 @@ class SpiritManagerDefault: ISpiritManager {
                 val maxSpirit = job.getMaxSpirit()
                 val current = spiritMap.getOrDefault(player.uniqueId, 0.0)
                 val add = maxSpirit - current
-                val event = OrryxPlayerSpiritEvents.Heal(player, profile, add)
+                val event = OrryxPlayerSpiritEvents.Heal.Pre(player, profile, add)
                 if (event.call()) {
                     spiritMap[player.uniqueId] = maxSpirit
+                    OrryxPlayerSpiritEvents.Heal.Post(player, profile, add).call()
                     future.complete(add)
                 } else {
                     future.complete(0.0)
@@ -128,11 +131,12 @@ class SpiritManagerDefault: ISpiritManager {
         player.orryxProfile { profile ->
             player.job { job ->
                 val spirit = job.getRegainSpirit()
-                val event = OrryxPlayerSpiritEvents.Regain(player, profile, spirit)
+                val event = OrryxPlayerSpiritEvents.Regain.Pre(player, profile, spirit)
                 if (event.call()) {
                     spiritMap.compute(player.uniqueId) { _, old ->
                         ((old ?: 0.0) + event.regainSpirit).coerceAtMost(job.getMaxSpirit())
                     }
+                    OrryxPlayerSpiritEvents.Regain.Post(player, profile, event.regainSpirit).call()
                     future.complete(event.regainSpirit)
                 } else {
                     future.complete(0.0)

@@ -11,7 +11,7 @@ import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common5.cdouble
 
-object OrryxPlayerSpiritRegainTrigger: AbstractPropertyEventTrigger<OrryxPlayerSpiritEvents.Regain>("Orryx Player Spirit Regain") {
+object OrryxPlayerSpiritRegainTrigger: AbstractPropertyEventTrigger<OrryxPlayerSpiritEvents.Regain.Pre>("Orryx Player Spirit Regain") {
 
     override val wiki: Trigger
         get() = Trigger.Companion.new(TriggerGroup.ORRYX, event)
@@ -19,17 +19,17 @@ object OrryxPlayerSpiritRegainTrigger: AbstractPropertyEventTrigger<OrryxPlayerS
             .description("玩家精力值上升事件")
 
     override val clazz
-        get() = OrryxPlayerSpiritEvents.Regain::class.java
+        get() = OrryxPlayerSpiritEvents.Regain.Pre::class.java
 
-    override fun onJoin(event: OrryxPlayerSpiritEvents.Regain, map: Map<String, Any?>): ProxyCommandSender {
+    override fun onJoin(event: OrryxPlayerSpiritEvents.Regain.Pre, map: Map<String, Any?>): ProxyCommandSender {
         return adaptPlayer(event.player)
     }
 
-    override fun onCheck(pipeTask: IPipeTask, event: OrryxPlayerSpiritEvents.Regain, map: Map<String, Any?>): Boolean {
+    override fun onCheck(pipeTask: IPipeTask, event: OrryxPlayerSpiritEvents.Regain.Pre, map: Map<String, Any?>): Boolean {
         return pipeTask.scriptContext?.sender?.origin == event.player
     }
 
-    override fun read(instance: OrryxPlayerSpiritEvents.Regain, key: String): OpenResult {
+    override fun read(instance: OrryxPlayerSpiritEvents.Regain.Pre, key: String): OpenResult {
         return when (key) {
             "spirit" -> OpenResult.successful(instance.regainSpirit)
             "profile" -> OpenResult.successful(instance.profile)
@@ -37,7 +37,7 @@ object OrryxPlayerSpiritRegainTrigger: AbstractPropertyEventTrigger<OrryxPlayerS
         }
     }
 
-    override fun write(instance: OrryxPlayerSpiritEvents.Regain, key: String, value: Any?): OpenResult {
+    override fun write(instance: OrryxPlayerSpiritEvents.Regain.Pre, key: String, value: Any?): OpenResult {
         return when (key) {
             "spirit" -> {
                 instance.regainSpirit = value.cdouble

@@ -48,15 +48,15 @@ object ExperienceLoaderManager {
         }
     }
 
-    @SubscribeEvent(priority = EventPriority.MONITOR)
-    private fun orExpUp(e: OrryxPlayerJobExperienceEvents.Up) {
+    @SubscribeEvent
+    private fun orExpUp(e: OrryxPlayerJobExperienceEvents.Up.Post) {
         submit {
             sync(e.player, e.job)
         }
     }
 
-    @SubscribeEvent(priority = EventPriority.MONITOR)
-    private fun orExpDown(e: OrryxPlayerJobExperienceEvents.Down) {
+    @SubscribeEvent
+    private fun orExpDown(e: OrryxPlayerJobExperienceEvents.Down.Post) {
         submit {
             sync(e.player, e.job)
         }

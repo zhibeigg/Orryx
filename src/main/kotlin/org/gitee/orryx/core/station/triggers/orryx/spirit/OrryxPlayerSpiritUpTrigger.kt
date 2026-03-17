@@ -11,7 +11,7 @@ import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common5.cdouble
 
-object OrryxPlayerSpiritUpTrigger: AbstractPropertyEventTrigger<OrryxPlayerSpiritEvents.Up>("Orryx Player Spirit Up") {
+object OrryxPlayerSpiritUpTrigger: AbstractPropertyEventTrigger<OrryxPlayerSpiritEvents.Up.Pre>("Orryx Player Spirit Up") {
 
     override val wiki: Trigger
         get() = Trigger.Companion.new(TriggerGroup.ORRYX, event)
@@ -19,17 +19,17 @@ object OrryxPlayerSpiritUpTrigger: AbstractPropertyEventTrigger<OrryxPlayerSpiri
             .description("玩家精力值上升事件")
 
     override val clazz
-        get() = OrryxPlayerSpiritEvents.Up::class.java
+        get() = OrryxPlayerSpiritEvents.Up.Pre::class.java
 
-    override fun onJoin(event: OrryxPlayerSpiritEvents.Up, map: Map<String, Any?>): ProxyCommandSender {
+    override fun onJoin(event: OrryxPlayerSpiritEvents.Up.Pre, map: Map<String, Any?>): ProxyCommandSender {
         return adaptPlayer(event.player)
     }
 
-    override fun onCheck(pipeTask: IPipeTask, event: OrryxPlayerSpiritEvents.Up, map: Map<String, Any?>): Boolean {
+    override fun onCheck(pipeTask: IPipeTask, event: OrryxPlayerSpiritEvents.Up.Pre, map: Map<String, Any?>): Boolean {
         return pipeTask.scriptContext?.sender?.origin == event.player
     }
 
-    override fun read(instance: OrryxPlayerSpiritEvents.Up, key: String): OpenResult {
+    override fun read(instance: OrryxPlayerSpiritEvents.Up.Pre, key: String): OpenResult {
         return when (key) {
             "spirit" -> OpenResult.successful(instance.spirit)
             "profile" -> OpenResult.successful(instance.profile)
@@ -37,7 +37,7 @@ object OrryxPlayerSpiritUpTrigger: AbstractPropertyEventTrigger<OrryxPlayerSpiri
         }
     }
 
-    override fun write(instance: OrryxPlayerSpiritEvents.Up, key: String, value: Any?): OpenResult {
+    override fun write(instance: OrryxPlayerSpiritEvents.Up.Pre, key: String, value: Any?): OpenResult {
         return when (key) {
             "spirit" -> {
                 instance.spirit = value.cdouble

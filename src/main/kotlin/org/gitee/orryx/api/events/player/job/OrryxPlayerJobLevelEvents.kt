@@ -6,15 +6,23 @@ import taboolib.platform.type.BukkitProxyEvent
 
 class OrryxPlayerJobLevelEvents {
 
-    class Up(val player: Player, val job: IPlayerJob, val upLevel: Int): BukkitProxyEvent() {
+    class Up {
 
-        override val allowCancelled: Boolean
-            get() = false
+        class Pre(val player: Player, val job: IPlayerJob, var upLevel: Int): BukkitProxyEvent()
+
+        class Post(val player: Player, val job: IPlayerJob, val upLevel: Int): BukkitProxyEvent() {
+            override val allowCancelled: Boolean
+                get() = false
+        }
     }
 
-    class Down(val player: Player, val job: IPlayerJob, val downLevel: Int): BukkitProxyEvent() {
+    class Down {
 
-        override val allowCancelled: Boolean
-            get() = false
+        class Pre(val player: Player, val job: IPlayerJob, var downLevel: Int): BukkitProxyEvent()
+
+        class Post(val player: Player, val job: IPlayerJob, val downLevel: Int): BukkitProxyEvent() {
+            override val allowCancelled: Boolean
+                get() = false
+        }
     }
 }

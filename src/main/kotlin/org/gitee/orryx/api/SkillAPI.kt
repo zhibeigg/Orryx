@@ -5,7 +5,10 @@ import org.gitee.orryx.api.interfaces.ISkillAPI
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.kether.parameter.SkillTrigger
-import org.gitee.orryx.core.skill.*
+import org.gitee.orryx.core.skill.CastResult
+import org.gitee.orryx.core.skill.IPlayerSkill
+import org.gitee.orryx.core.skill.ISkill
+import org.gitee.orryx.core.skill.SkillLoaderManager
 import org.gitee.orryx.utils.castSkill
 import org.gitee.orryx.utils.getSkill
 import org.gitee.orryx.utils.skill
@@ -34,10 +37,12 @@ class SkillAPI: ISkillAPI {
     }
 
     override fun castSkill(player: Player, skill: String, level: Int) {
+        val loader = SkillLoaderManager.getSkillLoader(skill)
+            ?: error("未找到技能 $skill")
         val parameter = SkillParameter(skill, player, level).apply {
             trigger = SkillTrigger.Api("SkillAPI")
         }
-        (SkillLoaderManager.getSkillLoader(skill) as ICastSkill).castSkill(player, parameter, false)
+        loader.castSkill(player, parameter, false)
     }
 
     override fun tryCastSkill(player: Player, skill: String): CompletableFuture<CastResult?> {

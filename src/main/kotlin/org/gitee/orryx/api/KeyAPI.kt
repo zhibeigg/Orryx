@@ -1,10 +1,8 @@
 package org.gitee.orryx.api
 
-import com.germ.germplugin.api.GermPacketAPI
-import com.germ.germplugin.api.KeyType
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.interfaces.IKeyAPI
-import org.gitee.orryx.compat.dragoncore.DragonCoreCustomPacketSender
+import org.gitee.orryx.compat.KeyRegisterSenderManager
 import org.gitee.orryx.core.common.keyregister.IKeyRegister
 import org.gitee.orryx.core.common.keyregister.KeyRegisterManager
 import org.gitee.orryx.core.common.keyregister.PlayerKeySetting
@@ -13,11 +11,9 @@ import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.key.IGroup
 import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.utils.*
-import priv.seventeen.artist.arcartx.internal.network.NetworkMessageSender
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.PlatformFactory
-import taboolib.common.platform.function.warning
 import java.util.concurrent.CompletableFuture
 import java.util.function.Function
 
@@ -29,13 +25,26 @@ class KeyAPI: IKeyAPI {
 
     override fun bindSkillKeyOfGroup(player: Player, job: String, skill: String, group: String, bindKey: String): CompletableFuture<Boolean> {
         val future = CompletableFuture<Boolean>()
-        player.getSkill(job, skill).thenAccept { sk ->
-            sk ?: error("玩家${player.name}在职业${job}无技能$skill")
-            player.job(sk.id, job) { jb ->
-                jb.setBindKey(sk, getGroup(group), getBindKey(bindKey)).thenAccept {
-                    future.complete(it)
+        try {
+            player.getSkill(job, skill).thenAccept { sk ->
+                if (sk == null) {
+                    future.complete(false)
+                    return@thenAccept
                 }
+                player.job(sk.id, job) { jb ->
+                    jb.setBindKey(sk, getGroupOrThrow(group), getBindKeyOrThrow(bindKey)).thenAccept {
+                        future.complete(it)
+                    }.exceptionally { ex ->
+                        future.completeExceptionally(ex)
+                        null
+                    }
+                }
+            }.exceptionally { ex ->
+                future.completeExceptionally(ex)
+                null
             }
+        } catch (e: Exception) {
+            future.completeExceptionally(e)
         }
         return future
     }
@@ -46,42 +55,13 @@ class KeyAPI: IKeyAPI {
         }
     }
 
-    override fun getGroup(key: String): IGroup = BindKeyLoaderManager.getGroup(key) ?: error("未找到组 $key 请在 config.yml 中配置")
+    override fun getGroup(key: String): IGroup? = BindKeyLoaderManager.getGroup(key)
 
-    override fun getBindKey(key: String): IBindKey = BindKeyLoaderManager.getBindKey(key) ?: error("未找到绑定按键 $key 请在 keys.yml 中配置")
+    override fun getBindKey(key: String): IBindKey? = BindKeyLoaderManager.getBindKey(key)
 
     override fun updateKeyRegister(player: Player): CompletableFuture<Unit> {
         return player.keySetting { keySetting ->
-            when {
-                GermPluginPlugin.isEnabled -> {
-                    keySetting.keySettingSet().forEach {
-                        val key = when (it) {
-                            MOUSE_LEFT -> "MLEFT"
-                            MOUSE_RIGHT -> "MRIGHT"
-                            else -> it
-                        }
-                        try {
-                            GermPacketAPI.sendKeyRegister(player, KeyType.valueOf("KEY_${key}").keyId)
-                        } catch (ex: Throwable) {
-                            warning("GermPlugin 按键注册失败: ${ex.message}")
-                        }
-                    }
-                }
-                DragonCorePlugin.isEnabled -> {
-                    try {
-                        DragonCoreCustomPacketSender.sendKeyRegister(player, keySetting.keySettingSet())
-                    } catch (ex: Throwable) {
-                        warning("DragonCore按键注册失败: ${ex.message}")
-                    }
-                }
-                ArcartXPlugin.isEnabled -> {
-                    try {
-                        NetworkMessageSender.sendPlayerJoinPacket(player)
-                    } catch (ex: Throwable) {
-                        warning("ArcartX按键同步失败: ${ex.message}")
-                    }
-                }
-            }
+            KeyRegisterSenderManager.getSender()?.sendKeyRegister(player, keySetting.keySettingSet())
         }
     }
 

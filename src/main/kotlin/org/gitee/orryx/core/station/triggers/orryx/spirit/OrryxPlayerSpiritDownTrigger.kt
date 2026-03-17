@@ -11,7 +11,7 @@ import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common5.cdouble
 
-object OrryxPlayerSpiritDownTrigger: AbstractPropertyEventTrigger<OrryxPlayerSpiritEvents.Down>("Orryx Player Spirit Down") {
+object OrryxPlayerSpiritDownTrigger: AbstractPropertyEventTrigger<OrryxPlayerSpiritEvents.Down.Pre>("Orryx Player Spirit Down") {
 
     override val wiki: Trigger
         get() = Trigger.Companion.new(TriggerGroup.ORRYX, event)
@@ -19,17 +19,17 @@ object OrryxPlayerSpiritDownTrigger: AbstractPropertyEventTrigger<OrryxPlayerSpi
             .description("玩家精力值下降事件")
 
     override val clazz
-        get() = OrryxPlayerSpiritEvents.Down::class.java
+        get() = OrryxPlayerSpiritEvents.Down.Pre::class.java
 
-    override fun onJoin(event: OrryxPlayerSpiritEvents.Down, map: Map<String, Any?>): ProxyCommandSender {
+    override fun onJoin(event: OrryxPlayerSpiritEvents.Down.Pre, map: Map<String, Any?>): ProxyCommandSender {
         return adaptPlayer(event.player)
     }
 
-    override fun onCheck(pipeTask: IPipeTask, event: OrryxPlayerSpiritEvents.Down, map: Map<String, Any?>): Boolean {
+    override fun onCheck(pipeTask: IPipeTask, event: OrryxPlayerSpiritEvents.Down.Pre, map: Map<String, Any?>): Boolean {
         return pipeTask.scriptContext?.sender?.origin == event.player
     }
 
-    override fun read(instance: OrryxPlayerSpiritEvents.Down, key: String): OpenResult {
+    override fun read(instance: OrryxPlayerSpiritEvents.Down.Pre, key: String): OpenResult {
         return when (key) {
             "spirit" -> OpenResult.successful(instance.spirit)
             "profile" -> OpenResult.successful(instance.profile)
@@ -37,7 +37,7 @@ object OrryxPlayerSpiritDownTrigger: AbstractPropertyEventTrigger<OrryxPlayerSpi
         }
     }
 
-    override fun write(instance: OrryxPlayerSpiritEvents.Down, key: String, value: Any?): OpenResult {
+    override fun write(instance: OrryxPlayerSpiritEvents.Down.Pre, key: String, value: Any?): OpenResult {
         return when (key) {
             "spirit" -> {
                 instance.spirit = value.cdouble

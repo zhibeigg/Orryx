@@ -10,7 +10,7 @@ import taboolib.common.OpenResult
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
 
-object OrryxPlayerSpiritHealTrigger: AbstractPropertyEventTrigger<OrryxPlayerSpiritEvents.Heal>("Orryx Player Spirit Heal") {
+object OrryxPlayerSpiritHealTrigger: AbstractPropertyEventTrigger<OrryxPlayerSpiritEvents.Heal.Pre>("Orryx Player Spirit Heal") {
 
     override val wiki: Trigger
         get() = Trigger.Companion.new(TriggerGroup.ORRYX, event)
@@ -18,17 +18,17 @@ object OrryxPlayerSpiritHealTrigger: AbstractPropertyEventTrigger<OrryxPlayerSpi
             .description("玩家精力值上升事件")
 
     override val clazz
-        get() = OrryxPlayerSpiritEvents.Heal::class.java
+        get() = OrryxPlayerSpiritEvents.Heal.Pre::class.java
 
-    override fun onJoin(event: OrryxPlayerSpiritEvents.Heal, map: Map<String, Any?>): ProxyCommandSender {
+    override fun onJoin(event: OrryxPlayerSpiritEvents.Heal.Pre, map: Map<String, Any?>): ProxyCommandSender {
         return adaptPlayer(event.player)
     }
 
-    override fun onCheck(pipeTask: IPipeTask, event: OrryxPlayerSpiritEvents.Heal, map: Map<String, Any?>): Boolean {
+    override fun onCheck(pipeTask: IPipeTask, event: OrryxPlayerSpiritEvents.Heal.Pre, map: Map<String, Any?>): Boolean {
         return pipeTask.scriptContext?.sender?.origin == event.player
     }
 
-    override fun read(instance: OrryxPlayerSpiritEvents.Heal, key: String): OpenResult {
+    override fun read(instance: OrryxPlayerSpiritEvents.Heal.Pre, key: String): OpenResult {
         return when (key) {
             "spirit" -> OpenResult.successful(instance.healSpirit)
             "profile" -> OpenResult.successful(instance.profile)
@@ -36,7 +36,7 @@ object OrryxPlayerSpiritHealTrigger: AbstractPropertyEventTrigger<OrryxPlayerSpi
         }
     }
 
-    override fun write(instance: OrryxPlayerSpiritEvents.Heal, key: String, value: Any?): OpenResult {
+    override fun write(instance: OrryxPlayerSpiritEvents.Heal.Pre, key: String, value: Any?): OpenResult {
         return OpenResult.failed()
     }
 }

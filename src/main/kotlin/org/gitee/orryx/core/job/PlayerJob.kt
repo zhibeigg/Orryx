@@ -106,15 +106,19 @@ class PlayerJob(
 
     override fun giveExperience(experience: Int): CompletableFuture<ExperienceResult> {
         if (experience < 0) return takeExperience(-experience)
-        val event = OrryxPlayerJobExperienceEvents.Up(player, this, experience)
+        val event = OrryxPlayerJobExperienceEvents.Up.Pre(player, this, experience)
         val future = CompletableFuture<ExperienceResult>()
         if (event.call()) {
             val before = level
             privateExperience = (privateExperience + event.upExperience.coerceAtLeast(0)).coerceAtMost(getExperience().maxExp(player))
             save(isPrimaryThread) {
+                OrryxPlayerJobExperienceEvents.Up.Post(player, this, event.upExperience).call()
                 val changeLevel = level - before
                 if (changeLevel > 0) {
-                    OrryxPlayerJobLevelEvents.Up(player, this, changeLevel).call()
+                    val levelEvent = OrryxPlayerJobLevelEvents.Up.Pre(player, this, changeLevel)
+                    if (levelEvent.call()) {
+                        OrryxPlayerJobLevelEvents.Up.Post(player, this, levelEvent.upLevel).call()
+                    }
                 }
                 future.complete(SUCCESS)
             }
@@ -126,15 +130,19 @@ class PlayerJob(
 
     override fun takeExperience(experience: Int): CompletableFuture<ExperienceResult> {
         if (experience < 0) return giveExperience(-experience)
-        val event = OrryxPlayerJobExperienceEvents.Down(player, this, experience)
+        val event = OrryxPlayerJobExperienceEvents.Down.Pre(player, this, experience)
         val future = CompletableFuture<ExperienceResult>()
         if (event.call()) {
             val before = level
             privateExperience = (privateExperience - event.downExperience.coerceAtLeast(0)).coerceAtLeast(0)
             save(isPrimaryThread) {
+                OrryxPlayerJobExperienceEvents.Down.Post(player, this, event.downExperience).call()
                 val changeLevel = before - level
                 if (changeLevel > 0) {
-                    OrryxPlayerJobLevelEvents.Down(player, this, changeLevel).call()
+                    val levelEvent = OrryxPlayerJobLevelEvents.Down.Pre(player, this, changeLevel)
+                    if (levelEvent.call()) {
+                        OrryxPlayerJobLevelEvents.Down.Post(player, this, levelEvent.downLevel).call()
+                    }
                 }
                 future.complete(SUCCESS)
             }

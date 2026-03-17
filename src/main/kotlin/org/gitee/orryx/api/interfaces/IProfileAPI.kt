@@ -29,251 +29,215 @@ interface IProfileAPI {
     fun <T> modifyProfile(player: Player, function: Function<IPlayerProfile, T>) : CompletableFuture<T?>
 
     /**
-     * 是否在霸体状态
-     *
-     * @param player 玩家
-     * @return 是否在霸体状态
+     * 霸体状态管理
      */
-    fun isSuperBody(player: Player): Boolean
+    fun superBody(): ITimedStatus
+
+    /**
+     * 无敌状态管理
+     */
+    fun invincible(): ITimedStatus
+
+    /**
+     * 免疫摔伤状态管理
+     */
+    fun superFoot(): ITimedStatus
+
+    /**
+     * 沉默状态管理
+     */
+    fun silence(): ITimedStatus
+
+    /**
+     * 格挡状态管理
+     */
+    fun block(): IBlockStatus
+
+    // ==================== 以下旧方法标记 @Deprecated，保留一个大版本 ====================
+
+    /**
+     * 是否在霸体状态
+     */
+    @Deprecated("使用 superBody().isActive(player)", ReplaceWith("superBody().isActive(player)"))
+    fun isSuperBody(player: Player): Boolean = superBody().isActive(player)
 
     /**
      * 获取霸体状态的倒计时
-     *
-     * @param player 玩家
-     * @return 剩余时间（毫秒）
      */
-    fun superBodyCountdown(player: Player): Long
+    @Deprecated("使用 superBody().countdown(player)", ReplaceWith("superBody().countdown(player)"))
+    fun superBodyCountdown(player: Player): Long = superBody().countdown(player)
 
     /**
      * 设置霸体时间
-     *
-     * @param player 玩家
-     * @param timeout 霸体时长（毫秒）
      */
-    fun setSuperBody(player: Player, timeout: Long)
+    @Deprecated("使用 superBody().set(player, timeout)", ReplaceWith("superBody().set(player, timeout)"))
+    fun setSuperBody(player: Player, timeout: Long) = superBody().set(player, timeout)
 
     /**
      * 取消霸体
-     *
-     * @param player 玩家
      */
-    fun cancelSuperBody(player: Player)
+    @Deprecated("使用 superBody().cancel(player)", ReplaceWith("superBody().cancel(player)"))
+    fun cancelSuperBody(player: Player) = superBody().cancel(player)
 
     /**
      * 延长霸体时间
-     *
-     * @param player 玩家
-     * @param timeout 延长的霸体时长（毫秒）
      */
-    fun addSuperBody(player: Player, timeout: Long)
+    @Deprecated("使用 superBody().add(player, timeout)", ReplaceWith("superBody().add(player, timeout)"))
+    fun addSuperBody(player: Player, timeout: Long) = superBody().add(player, timeout)
 
     /**
      * 减少霸体时间
-     *
-     * @param player 玩家
-     * @param timeout 减少的霸体时长（毫秒）
      */
-    fun reduceSuperBody(player: Player, timeout: Long)
+    @Deprecated("使用 superBody().reduce(player, timeout)", ReplaceWith("superBody().reduce(player, timeout)"))
+    fun reduceSuperBody(player: Player, timeout: Long) = superBody().reduce(player, timeout)
 
     /**
      * 是否在无敌状态
-     *
-     * @param player 玩家
-     * @return 是否在无敌状态
      */
-    fun isInvincible(player: Player): Boolean
+    @Deprecated("使用 invincible().isActive(player)", ReplaceWith("invincible().isActive(player)"))
+    fun isInvincible(player: Player): Boolean = invincible().isActive(player)
 
     /**
      * 获取无敌状态的倒计时
-     *
-     * @param player 玩家
-     * @return 剩余时间（毫秒）
      */
-    fun invincibleCountdown(player: Player): Long
+    @Deprecated("使用 invincible().countdown(player)", ReplaceWith("invincible().countdown(player)"))
+    fun invincibleCountdown(player: Player): Long = invincible().countdown(player)
 
     /**
      * 设置无敌时间
-     *
-     * @param player 玩家
-     * @param timeout 无敌时长（毫秒）
      */
-    fun setInvincible(player: Player, timeout: Long)
+    @Deprecated("使用 invincible().set(player, timeout)", ReplaceWith("invincible().set(player, timeout)"))
+    fun setInvincible(player: Player, timeout: Long) = invincible().set(player, timeout)
 
     /**
      * 取消无敌
-     *
-     * @param player 玩家
      */
-    fun cancelInvincible(player: Player)
+    @Deprecated("使用 invincible().cancel(player)", ReplaceWith("invincible().cancel(player)"))
+    fun cancelInvincible(player: Player) = invincible().cancel(player)
 
     /**
      * 延长无敌时间
-     *
-     * @param player 玩家
-     * @param timeout 延长的无敌时长（毫秒）
      */
-    fun addInvincible(player: Player, timeout: Long)
+    @Deprecated("使用 invincible().add(player, timeout)", ReplaceWith("invincible().add(player, timeout)"))
+    fun addInvincible(player: Player, timeout: Long) = invincible().add(player, timeout)
 
     /**
      * 减少无敌时间
-     *
-     * @param player 玩家
-     * @param timeout 减少的无敌时长（毫秒）
      */
-    fun reduceInvincible(player: Player, timeout: Long)
+    @Deprecated("使用 invincible().reduce(player, timeout)", ReplaceWith("invincible().reduce(player, timeout)"))
+    fun reduceInvincible(player: Player, timeout: Long) = invincible().reduce(player, timeout)
 
     /**
      * 是否在免疫摔伤状态
-     *
-     * @param player 玩家
-     * @return 是否在免疫摔伤状态
      */
-    fun isSuperFoot(player: Player): Boolean
+    @Deprecated("使用 superFoot().isActive(player)", ReplaceWith("superFoot().isActive(player)"))
+    fun isSuperFoot(player: Player): Boolean = superFoot().isActive(player)
 
     /**
      * 获取免疫摔伤状态的倒计时
-     *
-     * @param player 玩家
-     * @return 剩余时间（毫秒）
      */
-    fun superFootCountdown(player: Player): Long
+    @Deprecated("使用 superFoot().countdown(player)", ReplaceWith("superFoot().countdown(player)"))
+    fun superFootCountdown(player: Player): Long = superFoot().countdown(player)
 
     /**
      * 设置免疫摔伤时间
-     *
-     * @param player 玩家
-     * @param timeout 免疫摔伤时长（毫秒）
      */
-    fun setSuperFoot(player: Player, timeout: Long)
+    @Deprecated("使用 superFoot().set(player, timeout)", ReplaceWith("superFoot().set(player, timeout)"))
+    fun setSuperFoot(player: Player, timeout: Long) = superFoot().set(player, timeout)
 
     /**
      * 取消免疫摔伤
-     *
-     * @param player 玩家
      */
-    fun cancelSuperFoot(player: Player)
+    @Deprecated("使用 superFoot().cancel(player)", ReplaceWith("superFoot().cancel(player)"))
+    fun cancelSuperFoot(player: Player) = superFoot().cancel(player)
 
     /**
      * 延长免疫摔伤时间
-     *
-     * @param player 玩家
-     * @param timeout 延长的免疫摔伤时长（毫秒）
      */
-    fun addSuperFoot(player: Player, timeout: Long)
+    @Deprecated("使用 superFoot().add(player, timeout)", ReplaceWith("superFoot().add(player, timeout)"))
+    fun addSuperFoot(player: Player, timeout: Long) = superFoot().add(player, timeout)
 
     /**
      * 减少免疫摔伤时间
-     *
-     * @param player 玩家
-     * @param timeout 减少的免疫摔伤时长（毫秒）
      */
-    fun reduceSuperFoot(player: Player, timeout: Long)
+    @Deprecated("使用 superFoot().reduce(player, timeout)", ReplaceWith("superFoot().reduce(player, timeout)"))
+    fun reduceSuperFoot(player: Player, timeout: Long) = superFoot().reduce(player, timeout)
 
     /**
      * 是否在格挡状态
-     *
-     * @param player 玩家
-     * @param blockType 格挡的伤害类型
-     * @return 是否在格挡状态
      */
-    fun isBlock(player: Player, blockType: DamageType): Boolean
+    @Deprecated("使用 block().isActive(player, blockType)", ReplaceWith("block().isActive(player, blockType)"))
+    fun isBlock(player: Player, blockType: DamageType): Boolean = block().isActive(player, blockType)
 
     /**
      * 获取格挡状态的倒计时
-     *
-     * @param player 玩家
-     * @param blockType 格挡的伤害类型
-     * @return 剩余时间（毫秒）
      */
-    fun blockCountdown(player: Player, blockType: DamageType): Long
+    @Deprecated("使用 block().countdown(player, blockType)", ReplaceWith("block().countdown(player, blockType)"))
+    fun blockCountdown(player: Player, blockType: DamageType): Long = block().countdown(player, blockType)
 
     /**
      * 设置格挡时间
-     *
-     * @param player 玩家
-     * @param blockType 格挡的伤害类型
-     * @param timeout 格挡时长（毫秒）
-     * @param success 格挡成功时执行的回调
      */
-    fun setBlock(player: Player, blockType: DamageType, timeout: Long, success: Consumer<OrryxDamageEvents.Pre>)
+    @Deprecated("使用 block().set(player, blockType, timeout, success)", ReplaceWith("block().set(player, blockType, timeout, success)"))
+    fun setBlock(player: Player, blockType: DamageType, timeout: Long, success: Consumer<OrryxDamageEvents.Pre>) = block().set(player, blockType, timeout, success)
 
     /**
      * 取消指定类型的格挡
-     *
-     * @param player 玩家
-     * @param blockType 格挡的伤害类型
      */
-    fun cancelBlock(player: Player, blockType: DamageType)
+    @Deprecated("使用 block().cancel(player, blockType)", ReplaceWith("block().cancel(player, blockType)"))
+    fun cancelBlock(player: Player, blockType: DamageType) = block().cancel(player, blockType)
 
     /**
      * 取消所有格挡
-     *
-     * @param player 玩家
      */
-    fun cancelBlock(player: Player)
+    @Deprecated("使用 block().cancelAll(player)", ReplaceWith("block().cancelAll(player)"))
+    fun cancelBlock(player: Player) = block().cancelAll(player)
 
     /**
      * 延长格挡时间
-     *
-     * @param player 玩家
-     * @param blockType 格挡的伤害类型
-     * @param timeout 延长的格挡时长（毫秒）
      */
-    fun addBlock(player: Player, blockType: DamageType, timeout: Long)
+    @Deprecated("使用 block().add(player, blockType, timeout)", ReplaceWith("block().add(player, blockType, timeout)"))
+    fun addBlock(player: Player, blockType: DamageType, timeout: Long) = block().add(player, blockType, timeout)
 
     /**
      * 减少格挡时间
-     *
-     * @param player 玩家
-     * @param blockType 格挡的伤害类型
-     * @param timeout 减少的格挡时长（毫秒）
      */
-    fun reduceBlock(player: Player, blockType: DamageType, timeout: Long)
+    @Deprecated("使用 block().reduce(player, blockType, timeout)", ReplaceWith("block().reduce(player, blockType, timeout)"))
+    fun reduceBlock(player: Player, blockType: DamageType, timeout: Long) = block().reduce(player, blockType, timeout)
 
     /**
      * 是否在沉默状态
-     *
-     * @param player 玩家
-     * @return 是否在沉默状态
      */
-    fun isSilence(player: Player): Boolean
+    @Deprecated("使用 silence().isActive(player)", ReplaceWith("silence().isActive(player)"))
+    fun isSilence(player: Player): Boolean = silence().isActive(player)
 
     /**
      * 获取沉默状态的倒计时
-     *
-     * @param player 玩家
-     * @return 剩余时间（毫秒）
      */
-    fun silenceCountdown(player: Player): Long
+    @Deprecated("使用 silence().countdown(player)", ReplaceWith("silence().countdown(player)"))
+    fun silenceCountdown(player: Player): Long = silence().countdown(player)
 
     /**
      * 设置沉默时间
-     *
-     * @param player 玩家
-     * @param timeout 沉默时长（毫秒）
      */
-    fun setSilence(player: Player, timeout: Long)
+    @Deprecated("使用 silence().set(player, timeout)", ReplaceWith("silence().set(player, timeout)"))
+    fun setSilence(player: Player, timeout: Long) = silence().set(player, timeout)
 
     /**
      * 取消沉默
-     *
-     * @param player 玩家
      */
-    fun cancelSilence(player: Player)
+    @Deprecated("使用 silence().cancel(player)", ReplaceWith("silence().cancel(player)"))
+    fun cancelSilence(player: Player) = silence().cancel(player)
 
     /**
      * 延长沉默时间
-     *
-     * @param player 玩家
-     * @param timeout 延长的沉默时长（毫秒）
      */
-    fun addSilence(player: Player, timeout: Long)
+    @Deprecated("使用 silence().add(player, timeout)", ReplaceWith("silence().add(player, timeout)"))
+    fun addSilence(player: Player, timeout: Long) = silence().add(player, timeout)
 
     /**
      * 减少沉默时间
-     *
-     * @param player 玩家
-     * @param timeout 减少的沉默时长（毫秒）
      */
-    fun reduceSilence(player: Player, timeout: Long)
+    @Deprecated("使用 silence().reduce(player, timeout)", ReplaceWith("silence().reduce(player, timeout)"))
+    fun reduceSilence(player: Player, timeout: Long) = silence().reduce(player, timeout)
 }

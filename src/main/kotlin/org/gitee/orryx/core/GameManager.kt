@@ -75,12 +75,12 @@ object GameManager {
     }
 
     @SubscribeEvent
-    private fun onLevelUp(e: OrryxPlayerJobLevelEvents.Up) {
+    private fun onLevelUp(e: OrryxPlayerJobLevelEvents.Up.Post) {
         updateJobAttribute(e.player)
     }
 
     @SubscribeEvent
-    private fun onLevelDown(e: OrryxPlayerJobLevelEvents.Down) {
+    private fun onLevelDown(e: OrryxPlayerJobLevelEvents.Down.Post) {
         updateJobAttribute(e.player)
     }
 

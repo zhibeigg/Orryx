@@ -10,7 +10,7 @@ import taboolib.common.OpenResult
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
 
-object OrryxPlayerLevelUpTrigger: AbstractPropertyEventTrigger<OrryxPlayerJobLevelEvents.Up>("Orryx Player Level Up") {
+object OrryxPlayerLevelUpTrigger: AbstractPropertyEventTrigger<OrryxPlayerJobLevelEvents.Up.Post>("Orryx Player Level Up") {
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.ORRYX, event)
@@ -18,24 +18,24 @@ object OrryxPlayerLevelUpTrigger: AbstractPropertyEventTrigger<OrryxPlayerJobLev
             .description("玩家等级上升事件")
 
     override val clazz
-        get() = OrryxPlayerJobLevelEvents.Up::class.java
+        get() = OrryxPlayerJobLevelEvents.Up.Post::class.java
 
-    override fun onJoin(event: OrryxPlayerJobLevelEvents.Up, map: Map<String, Any?>): ProxyCommandSender {
+    override fun onJoin(event: OrryxPlayerJobLevelEvents.Up.Post, map: Map<String, Any?>): ProxyCommandSender {
         return adaptPlayer(event.player)
     }
 
-    override fun onCheck(pipeTask: IPipeTask, event: OrryxPlayerJobLevelEvents.Up, map: Map<String, Any?>): Boolean {
+    override fun onCheck(pipeTask: IPipeTask, event: OrryxPlayerJobLevelEvents.Up.Post, map: Map<String, Any?>): Boolean {
         return pipeTask.scriptContext?.sender?.origin == event.player
     }
 
-    override fun read(instance: OrryxPlayerJobLevelEvents.Up, key: String): OpenResult {
+    override fun read(instance: OrryxPlayerJobLevelEvents.Up.Post, key: String): OpenResult {
         return when (key) {
             "level" -> OpenResult.successful(instance.upLevel)
             else -> OpenResult.failed()
         }
     }
 
-    override fun write(instance: OrryxPlayerJobLevelEvents.Up, key: String, value: Any?): OpenResult {
+    override fun write(instance: OrryxPlayerJobLevelEvents.Up.Post, key: String, value: Any?): OpenResult {
         return OpenResult.failed()
     }
 }

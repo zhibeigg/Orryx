@@ -57,19 +57,35 @@ interface IKeyAPI {
      * 获得技能组
      *
      * @param key 技能组名
+     * @return 技能组对象，如果未找到则返回 null
+     * */
+    fun getGroup(key: String): IGroup?
+
+    /**
+     * 获得技能组，未找到时抛出异常
+     *
+     * @param key 技能组名
      * @return 技能组对象
      * @throws IllegalStateException 如果未找到指定的组
      * */
-    fun getGroup(key: String): IGroup
+    fun getGroupOrThrow(key: String): IGroup = getGroup(key) ?: error("未找到组 $key 请在 config.yml 中配置")
 
     /**
      * 获得技能绑定键
      *
      * @param key 绑定键名
+     * @return 绑定键对象，如果未找到则返回 null
+     * */
+    fun getBindKey(key: String): IBindKey?
+
+    /**
+     * 获得技能绑定键，未找到时抛出异常
+     *
+     * @param key 绑定键名
      * @return 绑定键对象
      * @throws IllegalStateException 如果未找到指定的绑定键
      * */
-    fun getBindKey(key: String): IBindKey
+    fun getBindKeyOrThrow(key: String): IBindKey = getBindKey(key) ?: error("未找到绑定按键 $key 请在 keys.yml 中配置")
 
     /**
      * 更新玩家的按键注册
