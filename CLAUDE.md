@@ -73,6 +73,10 @@ api.skillAPI.castSkill(player, "fireball", 5)
 - 包名以 `org.gitee.orryx` 开头
 - 提交信息格式：`type(scope): 摘要` 或 `type（scope）：摘要`
   - 类型：`feat`、`fix`、`refactor`、`chore`、`docs`
+- 版本号格式：`A.B.C`
+  - `A` — API 变动（公开接口不兼容变更时递增）
+  - `B` — 功能更新（新增功能时递增）
+  - `C` — 修复（Bug 修复、兼容性修复时递增）
 
 ## 代码规则
 
