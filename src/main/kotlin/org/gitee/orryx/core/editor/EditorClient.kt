@@ -7,6 +7,7 @@ import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.editor.handler.FileHandler
 import org.gitee.orryx.core.editor.handler.ReloadHandler
 import org.gitee.orryx.core.reload.Reload
+import org.gitee.orryx.module.wiki.ActionsSchemaGenerator
 import org.gitee.orryx.utils.consoleMessage
 import org.gitee.orryx.utils.debug
 import org.java_websocket.client.WebSocketClient
@@ -45,8 +46,8 @@ object EditorClient {
     private const val RECONNECT_BASE_DELAY = 1000L
     private const val MAX_RECONNECT_DELAY = 30000L
 
-    private const val SERVER_URL = "wss://editor.orryx.mcwar.cn/ws/server"
-    private const val EDITOR_URL = "https://editor.orryx.mcwar.cn"
+    private const val SERVER_URL = "wss://orryx.mcwar.cn/ws/server"
+    private const val EDITOR_URL = "https://orryx.mcwar.cn"
     private const val TOKEN_EXPIRES_SECONDS = 300
 
     internal fun getEditorUrl(): String = EDITOR_URL
@@ -196,6 +197,9 @@ object EditorClient {
                         "file.delete" -> FileHandler.handleDelete(id, data)
                         "file.rename" -> FileHandler.handleRename(id, data)
                         "reload" -> ReloadHandler.handle(id, data)
+                        "actions.schema" -> {
+                            sendMessage("actions.schema.result", id, ActionsSchemaGenerator.generateSchema())
+                        }
                         "log.subscribe" -> {
                             logSubscribed.set(true)
                             logKeywordFilter = data?.get("filters")?.jsonObject?.get("keyword")?.jsonPrimitive?.content

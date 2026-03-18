@@ -2,6 +2,7 @@ package org.gitee.orryx.command
 
 import org.gitee.orryx.module.wiki.LarkSuite
 import org.gitee.orryx.module.wiki.MarkdownGenerator
+import org.gitee.orryx.module.wiki.ActionsSchemaGenerator
 import org.gitee.orryx.utils.consoleMessage
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.command.CommandBody
@@ -31,6 +32,16 @@ object OrryxLarkSuiteCommand {
         MarkdownGenerator.generate(outputFile)
         consoleMessage("&e┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         consoleMessage("&e┣&7Markdown文档已生成 &a√")
+        consoleMessage("&e┣&7路径: &f${outputFile.absolutePath}")
+        consoleMessage("&e┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    }
+
+    @CommandBody
+    val schema = subCommandExec<ProxyCommandSender> {
+        val outputFile = File(getDataFolder(), "actions-schema.json")
+        ActionsSchemaGenerator.generate(outputFile)
+        consoleMessage("&e┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        consoleMessage("&e┣&7Actions Schema 已生成 &a√")
         consoleMessage("&e┣&7路径: &f${outputFile.absolutePath}")
         consoleMessage("&e┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
     }
