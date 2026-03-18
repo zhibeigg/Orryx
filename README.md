@@ -6,7 +6,7 @@
 
 **跨时代技能插件，支持实现复杂逻辑，为稳定高效而生**
 
-[![Version](https://img.shields.io/badge/version-2.37.96-blue?style=for-the-badge)](https://github.com/zhibeigg/Orryx/releases)
+[![Version](https://img.shields.io/badge/version-2.38.96-blue?style=for-the-badge)](https://github.com/zhibeigg/Orryx/releases)
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.12--1.21-green?style=for-the-badge&logo=minecraft)](https://www.minecraft.net/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.1.20-purple?style=for-the-badge&logo=kotlin)](https://kotlinlang.org/)
 [![TabooLib](https://img.shields.io/badge/TabooLib-6.2.4-orange?style=for-the-badge)](https://github.com/TabooLib/taboolib)
@@ -23,13 +23,13 @@
 
 ### 技能系统
 
-| 技能类型                     | 说明          |
-|--------------------------|-------------|
-| **被动技能 (Passive)**       | 自动触发，无需手动释放 |
-| **直接释放 (Direct)**        | 按键即释放       |
-| **直接指向性 (Direct Aim)**   | 带指示器的指向性技能  |
-| **蓄力释放 (Pressing)**      | 长按蓄力后释放     |
-| **蓄力指向性 (Pressing Aim)** | 蓄力型指向性技能    |
+| 技能类型 | 说明 |
+|---------|------|
+| **被动技能 (Passive)** | 自动触发，无需手动释放 |
+| **直接释放 (Direct)** | 按键即释放 |
+| **直接指向性 (Direct Aim)** | 带指示器的指向性技能 |
+| **蓄力释放 (Pressing)** | 长按蓄力后释放 |
+| **蓄力指向性 (Pressing Aim)** | 蓄力型指向性技能 |
 
 - 技能等级与经验管理
 - 技能点升级系统
@@ -47,11 +47,11 @@
 
 ### 资源管理
 
-| 资源类型             | 功能                 |
-|------------------|--------------------|
-| **法力值 (Mana)**   | 给予/消耗/设置、充足检查、自然恢复 |
+| 资源类型 | 功能 |
+|---------|------|
+| **法力值 (Mana)** | 给予/消耗/设置、充足检查、自然恢复 |
 | **精力值 (Spirit)** | 给予/消耗/设置、充足检查、自然恢复 |
-| **经验系统**         | 自定义经验算法、升级配置       |
+| **经验系统** | 自定义经验算法、升级配置 |
 
 ### 脚本引擎
 
@@ -114,24 +114,24 @@
 
 **几何体选择器 (16 种)**
 
-| 几何体            | 说明    |
-|----------------|-------|
-| Range          | 圆形范围  |
-| Sector         | 扇形范围  |
-| Annular        | 环形范围  |
-| Cone           | 锥形范围  |
-| Cylinder       | 圆柱范围  |
-| Ring           | 圆环范围  |
-| Line           | 线段范围  |
-| Floor          | 地面范围  |
-| Frustum        | 视锥体   |
-| OBB            | 有向包围盒 |
-| RayHit         | 射线击中  |
-| Scatter        | 散射范围  |
-| Nearest        | 最近目标  |
-| LookAt         | 朝向目标  |
-| Location       | 位置选择  |
-| VectorLocation | 向量位置  |
+| 几何体 | 说明 |
+|-------|------|
+| Range | 圆形范围 |
+| Sector | 扇形范围 |
+| Annular | 环形范围 |
+| Cone | 锥形范围 |
+| Cylinder | 圆柱范围 |
+| Ring | 圆环范围 |
+| Line | 线段范围 |
+| Floor | 地面范围 |
+| Frustum | 视锥体 |
+| OBB | 有向包围盒 |
+| RayHit | 射线击中 |
+| Scatter | 散射范围 |
+| Nearest | 最近目标 |
+| LookAt | 朝向目标 |
+| Location | 位置选择 |
+| VectorLocation | 向量位置 |
 
 **流式过滤器 (20 种)**
 
@@ -141,26 +141,26 @@ Self、Origin、Direct、Offset、Type、Teammate、Team、PVP、Amount、Server
 
 ### 碰撞系统
 
-| 碰撞体       | 说明     |
-|-----------|--------|
-| Sphere    | 球体碰撞   |
-| Capsule   | 胶囊体碰撞  |
-| AABB      | 轴对齐包围盒 |
-| OBB       | 有向包围盒  |
-| Ray       | 射线碰撞   |
-| Composite | 复合碰撞体  |
+| 碰撞体 | 说明 |
+|-------|------|
+| Sphere | 球体碰撞 |
+| Capsule | 胶囊体碰撞 |
+| AABB | 轴对齐包围盒 |
+| OBB | 有向包围盒 |
+| Ray | 射线碰撞 |
+| Composite | 复合碰撞体 |
 
 所有碰撞体均支持本地坐标系变体（Local），附带坐标转换器。
 
 ### 状态管理
 
-| 状态类型                    | 说明       |
-|-------------------------|----------|
-| VertigoState            | 眩晕状态     |
-| BlockState              | 格挡状态     |
-| DodgeState              | 闪避状态     |
-| SkillState              | 技能状态     |
-| GeneralAttackState      | 普通攻击状态   |
+| 状态类型 | 说明 |
+|---------|------|
+| VertigoState | 眩晕状态 |
+| BlockState | 格挡状态 |
+| DodgeState | 闪避状态 |
+| SkillState | 技能状态 |
+| GeneralAttackState | 普通攻击状态 |
 | PressGeneralAttackState | 蓄力普通攻击状态 |
 
 - 状态前置条件检查
@@ -168,29 +168,30 @@ Self、Origin、Direct、Offset、Type、Teammate、Team、PVP、Amount、Server
 
 ### 伤害系统
 
-| 伤害类型    | 说明    |
-|---------|-------|
-| PHYSICS | 物理伤害  |
-| MAGIC   | 魔法伤害  |
-| FIRE    | 火焰伤害  |
-| REAL    | 真实伤害  |
-| SELF    | 自身伤害  |
+| 伤害类型 | 说明 |
+|---------|------|
+| PHYSICS | 物理伤害 |
+| MAGIC | 魔法伤害 |
+| FIRE | 火焰伤害 |
+| REAL | 真实伤害 |
+| SELF | 自身伤害 |
 | CONSOLE | 控制台伤害 |
-| CUSTOM  | 自定义伤害 |
+| CUSTOM | 自定义伤害 |
 
 ### 多端 UI
 
-| 端              | 功能        |
-|----------------|-----------|
-| **Bukkit**     | 原生 UI 界面  |
+| 端 | 功能 |
+|---|------|
+| **Bukkit** | 原生 UI 界面 |
 | **GermPlugin** | HUD、动画、UI |
 | **DragonCore** | 自定义 UI、物品 |
-| **ArcartX**    | UI、脚本、变量  |
+| **ArcartX** | UI、脚本、变量 |
 
 ### 其他模块
 
 - **AI 集成**：OpenAI 接入
-- **Wiki 生成**：自动生成文档
+- **Wiki 生成**：自动生成飞书文档、Markdown 文档、Actions Schema JSON
+- **在线编辑器**：WebSocket 连接中心服务器，支持浏览器远程编辑配置文件、重载模块、查看日志
 - **Buff 系统**：Buff 配置与管理
 - **NPC 系统**：基于 Adyeshach 的虚拟实体
 - **Bloom 泛光**：泛光特效配置
@@ -376,7 +377,8 @@ Orryx/
 │   ├── spirit/            # 精力值
 │   ├── state/             # 状态管理 (6 种状态)
 │   ├── ui/                # UI 渲染 (Bukkit/Germ/Dragon/ArcartX)
-│   └── wiki/              # Wiki 文档生成
+│   ├── wiki/              # Wiki 文档生成 (飞书/Markdown/Actions Schema)
+│   └── editor/            # 在线编辑器 (WebSocket 客户端)
 ├── compat/                 # 第三方插件兼容 (14 个插件)
 ├── dao/                    # 数据层 (缓存、存储、序列化)
 ├── command/                # 命令系统
@@ -418,18 +420,18 @@ api.skillAPI.castSkill(player, "fireball", 5)
 
 ### 主要接口
 
-| 接口                     | 说明          |
-|------------------------|-------------|
-| `IOrryxAPI`            | 总 API 入口    |
-| `ISkillAPI`            | 技能操作        |
-| `IJobAPI`              | 职业操作        |
-| `IProfileAPI`          | 玩家档案        |
-| `IKeyAPI`              | 按键管理        |
-| `ITaskAPI`             | 任务管理        |
-| `ITimerAPI`            | 计时器管理       |
-| `IReloadAPI`           | 重载管理        |
+| 接口 | 说明 |
+|-----|------|
+| `IOrryxAPI` | 总 API 入口 |
+| `ISkillAPI` | 技能操作 |
+| `IJobAPI` | 职业操作 |
+| `IProfileAPI` | 玩家档案 |
+| `IKeyAPI` | 按键管理 |
+| `ITaskAPI` | 任务管理 |
+| `ITimerAPI` | 计时器管理 |
+| `IReloadAPI` | 重载管理 |
 | `IConsumptionValueAPI` | 消耗值 (法力/精力) |
-| `IMiscAPI`             | 杂项功能        |
+| `IMiscAPI` | 杂项功能 |
 
 ### Gradle (Kotlin DSL)
 
@@ -439,7 +441,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("org.gitee.orryx:orryx:2.37.96:api")
+    compileOnly("org.gitee.orryx:orryx:2.38.96:api")
 }
 ```
 
@@ -451,7 +453,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'org.gitee.orryx:orryx:2.37.96:api'
+    compileOnly 'org.gitee.orryx:orryx:2.38.96:api'
 }
 ```
 
@@ -476,11 +478,11 @@ dependencies {
 
 版本格式：`A.B.C`
 
-| 位   | 含义     | 递增时机         |
-|-----|--------|--------------|
-| `A` | API 变动 | 公开接口发生不兼容变更  |
-| `B` | 功能更新   | 新增功能         |
-| `C` | 修复     | Bug 修复、兼容性修复 |
+| 位 | 含义 | 递增时机 |
+|---|------|---------|
+| `A` | API 变动 | 公开接口发生不兼容变更 |
+| `B` | 功能更新 | 新增功能 |
+| `C` | 修复 | Bug 修复、兼容性修复 |
 
 ---
 
