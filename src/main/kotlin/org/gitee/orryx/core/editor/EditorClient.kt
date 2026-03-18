@@ -17,7 +17,6 @@ import taboolib.common.platform.Awake
 import java.io.File
 import java.net.URI
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * 编辑器 WebSocket 客户端
@@ -36,15 +35,12 @@ object EditorClient {
     private var client: WebSocketClient? = null
     private val connected = AtomicBoolean(false)
     private val reconnecting = AtomicBoolean(false)
-    private val reconnectAttempts = AtomicInteger(0)
     private val logSubscribed = AtomicBoolean(false)
 
     @Volatile
     private var logKeywordFilter: String? = null
 
-    private const val MAX_RECONNECT_ATTEMPTS = 10
-    private const val RECONNECT_BASE_DELAY = 1000L
-    private const val MAX_RECONNECT_DELAY = 30000L
+    private const val RECONNECT_INTERVAL = 30000L
 
     private const val SERVER_URL = "wss://orryx.mcwar.cn/ws/server"
     private const val EDITOR_URL = "https://orryx.mcwar.cn"
@@ -52,6 +48,8 @@ object EditorClient {
 
     internal fun getEditorUrl(): String = EDITOR_URL
     internal fun getTokenExpires(): Int = TOKEN_EXPIRES_SECONDS
+
+    private fun isEnabled(): Boolean = Orryx.config.getBoolean("Editor.Enable", false)
 
     /**
      * 从 config.yml 读取 license
@@ -84,10 +82,9 @@ object EditorClient {
 
     @Awake(LifeCycle.ENABLE)
     private fun onEnable() {
-        val license = getLicense()
-        if (license != null) {
-            connect(license)
-        }
+        if (!isEnabled()) return
+        val license = getLicense() ?: return
+        connect(license)
     }
 
     @Awake(LifeCycle.DISABLE)
@@ -97,10 +94,11 @@ object EditorClient {
 
     @Reload(99)
     private fun onReload() {
+        val enabled = isEnabled()
         val license = getLicense()
-        if (license != null && !connected.get()) {
+        if (enabled && license != null && !connected.get()) {
             connect(license)
-        } else if (license == null && connected.get()) {
+        } else if ((!enabled || license == null) && connected.get()) {
             disconnect()
         }
     }
@@ -112,12 +110,12 @@ object EditorClient {
             client?.connect()
         } catch (e: Exception) {
             consoleMessage("&c[Editor] 连接中心服务器失败: ${e.message}")
+            scheduleReconnect()
         }
     }
 
     private fun disconnect() {
         reconnecting.set(false)
-        reconnectAttempts.set(0)
         logSubscribed.set(false)
         logKeywordFilter = null
         try {
@@ -130,25 +128,17 @@ object EditorClient {
 
     private fun scheduleReconnect() {
         if (reconnecting.get()) return
-        if (reconnectAttempts.get() >= MAX_RECONNECT_ATTEMPTS) {
-            consoleMessage("&c[Editor] 已达最大重连次数($MAX_RECONNECT_ATTEMPTS)，停止重连")
-            reconnecting.set(false)
-            return
-        }
         reconnecting.set(true)
-        val attempt = reconnectAttempts.incrementAndGet()
-        val delay = (RECONNECT_BASE_DELAY * (1L shl (attempt - 1).coerceAtMost(14))).coerceAtMost(MAX_RECONNECT_DELAY)
-        consoleMessage("&e[Editor] 将在 ${delay}ms 后尝试第 $attempt 次重连...")
         OrryxAPI.ioScope.launch {
-            Thread.sleep(delay)
-            if (!connected.get()) {
+            Thread.sleep(RECONNECT_INTERVAL)
+            if (!connected.get() && isEnabled()) {
+                reconnecting.set(false)
                 try {
                     val license = getLicense() ?: return@launch
                     client = createClient(SERVER_URL, license)
                     client?.connect()
                 } catch (e: Exception) {
                     consoleMessage("&c[Editor] 重连失败: ${e.message}")
-                    reconnecting.set(false)
                     scheduleReconnect()
                 }
             }
@@ -160,7 +150,6 @@ object EditorClient {
             override fun onOpen(handshake: ServerHandshake) {
                 connected.set(true)
                 reconnecting.set(false)
-                reconnectAttempts.set(0)
                 consoleMessage("&e┣&7[Editor] 已连接中心服务器")
                 sendMessage("server.register", "reg_init", buildJsonObject {
                     put("license", license)

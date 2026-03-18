@@ -54,5 +54,7 @@ OpenAI:
   BaseUrl: ""
 # 编辑器
 Editor:
+  # 是否启用编辑器功能
+  Enable: false
   # 购买时获得的 license，填写后自动连接编辑器中心服务器
   License: ""
