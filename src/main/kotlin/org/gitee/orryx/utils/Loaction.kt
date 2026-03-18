@@ -59,11 +59,11 @@ fun floor(origin: Location, distance: Double): Pair<Location, Int> {
         }
     }
     var deep = 0
-    while (!isPassable(origin.block) && deep <= distance) {
+    while (isPassable(origin.block) && deep <= distance) {
         origin.add(0.0, -1.0, 0.0)
         deep++
     }
-    return origin.add(0.0, 1.0, 0.0) to deep - 1
+    return origin.add(0.0, 1.0, 0.0) to deep
 }
 
 /**

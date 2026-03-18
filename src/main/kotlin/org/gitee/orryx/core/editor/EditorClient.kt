@@ -35,6 +35,7 @@ object EditorClient {
     private var client: WebSocketClient? = null
     private val connected = AtomicBoolean(false)
     private val reconnecting = AtomicBoolean(false)
+    private val closing = AtomicBoolean(false)
     private val logSubscribed = AtomicBoolean(false)
 
     @Volatile
@@ -105,6 +106,7 @@ object EditorClient {
 
     private fun connect(license: String) {
         if (connected.get()) return
+        closing.set(false)
         try {
             client = createClient(SERVER_URL, license)
             client?.connect()
@@ -115,6 +117,7 @@ object EditorClient {
     }
 
     private fun disconnect() {
+        closing.set(true)
         reconnecting.set(false)
         logSubscribed.set(false)
         logKeywordFilter = null
@@ -129,18 +132,22 @@ object EditorClient {
     private fun scheduleReconnect() {
         if (reconnecting.get()) return
         reconnecting.set(true)
+        consoleMessage("&e[Editor] 将在 ${RECONNECT_INTERVAL / 1000}s 后尝试重连...")
         OrryxAPI.ioScope.launch {
             Thread.sleep(RECONNECT_INTERVAL)
-            if (!connected.get() && isEnabled()) {
-                reconnecting.set(false)
-                try {
-                    val license = getLicense() ?: return@launch
-                    client = createClient(SERVER_URL, license)
-                    client?.connect()
-                } catch (e: Exception) {
-                    consoleMessage("&c[Editor] 重连失败: ${e.message}")
-                    scheduleReconnect()
-                }
+            reconnecting.set(false)
+            if (connected.get() || !isEnabled()) return@launch
+            val license = getLicense()
+            if (license == null) {
+                consoleMessage("&c[Editor] License 未配置，停止重连")
+                return@launch
+            }
+            try {
+                client = createClient(SERVER_URL, license)
+                client?.connect()
+            } catch (e: Exception) {
+                consoleMessage("&c[Editor] 重连失败: ${e.message}")
+                scheduleReconnect()
             }
         }
     }
@@ -214,7 +221,7 @@ object EditorClient {
                 connected.set(false)
                 logSubscribed.set(false)
                 logKeywordFilter = null
-                if (remote) {
+                if (!closing.get()) {
                     consoleMessage("&e[Editor] 连接断开: $reason")
                     scheduleReconnect()
                 } else {

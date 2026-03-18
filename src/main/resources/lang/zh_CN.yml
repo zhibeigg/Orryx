@@ -102,6 +102,7 @@ editor-open:
     text:
       - '&a| &c&lOrryx &e编辑器'
       - '&a| &7[&b[&n点击打开编辑器]&7]'
+      - '&a| &7{0}'
     args:
       - url: '{0}'
         hover: '点击打开 Orryx 编辑器'

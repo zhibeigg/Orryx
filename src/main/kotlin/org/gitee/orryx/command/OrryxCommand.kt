@@ -7,6 +7,7 @@ import org.gitee.orryx.core.job.JobLoaderManager
 import org.gitee.orryx.core.reload.ReloadAPI
 import org.gitee.orryx.core.skill.SkillLoaderManager
 import org.gitee.orryx.dao.cache.MemoryCache
+import org.gitee.orryx.core.editor.EditorTokenManager
 import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.utils.*
 import taboolib.common.platform.ProxyCommandSender
@@ -159,8 +160,18 @@ object OrryxCommand {
         }
     }
 
-    @CommandBody
-    val editor = OrryxEditorCommand
+    @CommandBody(permission = "Orryx.Command.Editor")
+    val edit = subCommand {
+        exec<ProxyCommandSender> {
+            val name = sender.name.ifEmpty { "Console" }
+            val url = EditorTokenManager.generateEditorUrl(name)
+            if (url == null) {
+                sender.sendLang("editor-not-connected")
+                return@exec
+            }
+            sender.sendLang("editor-open", url)
+        }
+    }
 
     @CommandBody
     val printStats = subCommandExec<ProxyCommandSender> {
