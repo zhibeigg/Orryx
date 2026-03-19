@@ -41,7 +41,7 @@ class Description(val description: List<String>) {
                         set("level", skillParameter.level)
                     }.orNull()
                     val next = runScript(sender, levelUpParameter, str) {
-                        set("level", skillParameter.level)
+                        set("level", levelUpParameter.level)
                     }.orNull()
                     "$pre$descriptionSplit&r${getFormatAtPosition(it.colored(), startPos)}$next&r"
                 }

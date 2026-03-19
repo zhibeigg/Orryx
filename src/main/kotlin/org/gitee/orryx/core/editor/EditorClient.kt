@@ -155,9 +155,14 @@ object EditorClient {
     private fun createClient(url: String, license: String): WebSocketClient {
         return object : WebSocketClient(URI(url)) {
             override fun onOpen(handshake: ServerHandshake) {
+                val isReconnect = reconnecting.get()
                 connected.set(true)
                 reconnecting.set(false)
-                consoleMessage("&e┣&7[Editor] 已连接中心服务器")
+                if (isReconnect) {
+                    consoleMessage("&e┣&7[Editor] 重连成功")
+                } else {
+                    consoleMessage("&e┣&7[Editor] 已连接中心服务器")
+                }
                 sendMessage("server.register", "reg_init", buildJsonObject {
                     put("license", license)
                     put("serverName", getServerName())
