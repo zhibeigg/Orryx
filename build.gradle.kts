@@ -66,6 +66,7 @@ taboolib {
             name("DungeonPlus").optional(true)
             name("Nodens").optional(true)
             name("CloudPick").optional(true)
+            name("CraneAttribute").optional(true)
         }
     }
     relocate("com.github.benmanes.caffeine", "org.gitee.orryx.caffeine")
@@ -129,7 +130,7 @@ dependencies {
 
     compileOnly(kotlin("stdlib"))
     compileOnly(kotlin("reflect"))
-    compileOnly(fileTree("libs"))
+    compileOnly(fileTree("libs") { exclude("CraneAttribute-*.jar") })
 }
 
 tasks.withType<JavaCompile> {

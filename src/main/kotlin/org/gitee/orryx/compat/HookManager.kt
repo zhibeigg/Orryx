@@ -24,5 +24,6 @@ object HookManager {
         GlowAPIPlugin.load()
         DungeonPlusPlugin.load()
         ArcartXPlugin.load()
+        CraneAttributePlugin.load()
     }
 }

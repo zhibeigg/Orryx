@@ -55,3 +55,5 @@ val GlowAPIPlugin = Plugin("GlowAPI")
 val DungeonPlusPlugin = Plugin("DungeonPlus")
 
 val CloudPickPlugin = Plugin("CloudPick")
+
+val CraneAttributePlugin = Plugin("CraneAttribute")
