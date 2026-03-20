@@ -130,7 +130,11 @@ dependencies {
 
     compileOnly(kotlin("stdlib"))
     compileOnly(kotlin("reflect"))
-    compileOnly(fileTree("libs") { exclude("CraneAttribute-*.jar") })
+    compileOnly(fileTree("libs"))
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions.freeCompilerArgs += "-Xskip-metadata-version-check"
 }
 
 tasks.withType<JavaCompile> {

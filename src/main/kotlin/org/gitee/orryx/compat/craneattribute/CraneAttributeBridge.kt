@@ -1,5 +1,6 @@
 package org.gitee.orryx.compat.craneattribute
 
+import cn.org.bukkit.craneattribute.api.AttributeAPI
 import org.bukkit.entity.LivingEntity
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause
@@ -12,27 +13,10 @@ import taboolib.module.kether.ScriptContext
 
 class CraneAttributeBridge : IAttributeBridge {
 
-    private val apiClass = Class.forName("cn.org.bukkit.craneattribute.api.AttributeAPI")
-    private val apiInstance = apiClass.getField("INSTANCE").get(null)
-
-    private val getAttrDataMethod = apiClass.getMethod("getAttrData", LivingEntity::class.java)
-    private val addAttributeSourceMethod = apiClass.getMethod(
-        "addAttributeSource",
-        Class.forName("cn.org.bukkit.craneattribute.api.attribute.data.AttributeData"),
-        String::class.java,
-        List::class.java
-    )
-    private val removeAttributeSourceMethod = apiClass.getMethod(
-        "removeAttributeSource",
-        Class.forName("cn.org.bukkit.craneattribute.api.attribute.data.AttributeData"),
-        String::class.java
-    )
-    private val updateAttributeMethod = apiClass.getMethod("updateAttribute", LivingEntity::class.java)
-
     override fun addAttribute(entity: LivingEntity, key: String, value: List<String>, timeout: Long) {
-        val data = getAttrDataMethod.invoke(apiInstance, entity)
-        addAttributeSourceMethod.invoke(apiInstance, data, key, value)
-        updateAttributeMethod.invoke(apiInstance, entity)
+        val data = AttributeAPI.getAttrData(entity)
+        AttributeAPI.addAttributeSource(data, key, value)
+        AttributeAPI.updateAttribute(entity)
         if (timeout != -1L) {
             SimpleTimeoutTask.createSimpleTask(timeout) {
                 removeAttribute(entity, key)
@@ -41,9 +25,9 @@ class CraneAttributeBridge : IAttributeBridge {
     }
 
     override fun removeAttribute(entity: LivingEntity, key: String) {
-        val data = getAttrDataMethod.invoke(apiInstance, entity)
-        removeAttributeSourceMethod.invoke(apiInstance, data, key)
-        updateAttributeMethod.invoke(apiInstance, entity)
+        val data = AttributeAPI.getAttrData(entity)
+        AttributeAPI.removeAttributeSource(data, key)
+        AttributeAPI.updateAttribute(entity)
     }
 
     override fun damage(
@@ -62,6 +46,6 @@ class CraneAttributeBridge : IAttributeBridge {
     }
 
     override fun update(entity: LivingEntity) {
-        updateAttributeMethod.invoke(apiInstance, entity)
+        AttributeAPI.updateAttribute(entity)
     }
 }
