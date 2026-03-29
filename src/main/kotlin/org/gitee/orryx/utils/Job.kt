@@ -82,7 +82,7 @@ fun Player.job(): CompletableFuture<IPlayerJob?> {
     return orryxProfile { profile ->
         profile.job?.let {
             job(profile.id, it)
-        }
+        } ?: CompletableFuture.completedFuture(null)
     }
 }
 
