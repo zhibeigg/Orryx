@@ -18,6 +18,7 @@ import taboolib.module.ui.buildMenu
 import taboolib.module.ui.openMenu
 import taboolib.module.ui.type.impl.PageableChestImpl
 import taboolib.platform.util.buildItem
+import taboolib.platform.util.sendLang
 import kotlin.jvm.optionals.getOrNull
 import kotlin.math.ceil
 
@@ -87,6 +88,10 @@ open class BukkitSkillUI(override val viewer: Player, override val owner: Player
                     this.bindSkills = bindSkills.toMutableMap()
                     viewer.openMenu(build().also { inventory = it })
                 }
+            }
+        }.thenApply {
+            if (it == null) {
+                viewer.sendLang("info-no-job", owner.name)
             }
         }
     }

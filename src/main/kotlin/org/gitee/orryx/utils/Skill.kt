@@ -184,6 +184,11 @@ fun Player.getSkill(skill: String, create: Boolean = false): CompletableFuture<I
         getSkill(it.key, skill, create).thenApply { skill ->
             future.complete(skill)
         }
+    }.thenApply {
+        // 无职业时 job() 返回 null，确保 future 被 complete
+        if (it == null) {
+            future.complete(null)
+        }
     }
     return future
 }

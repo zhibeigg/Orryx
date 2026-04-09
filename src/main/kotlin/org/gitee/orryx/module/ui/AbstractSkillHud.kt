@@ -27,6 +27,10 @@ abstract class AbstractSkillHud(override val viewer: Player, override val owner:
             it.setGroup(group.key).thenApply { bool ->
                 future.complete(bool)
             }
+        }.thenApply {
+            if (it == null) {
+                future.complete(false)
+            }
         }
         return future
     }

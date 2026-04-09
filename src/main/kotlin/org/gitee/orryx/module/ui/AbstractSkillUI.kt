@@ -15,6 +15,10 @@ abstract class AbstractSkillUI(override val viewer: Player, override val owner: 
             it.clearLevelAndBackPoint().thenApply { bool ->
                 future.complete(bool)
             }
+        }.thenApply {
+            if (it == null) {
+                future.complete(false)
+            }
         }
         return future
     }
@@ -35,6 +39,10 @@ abstract class AbstractSkillUI(override val viewer: Player, override val owner: 
             job.clearAllLevelAndBackPoint().thenApply {
                 future.complete(it)
             }
+        }.thenApply {
+            if (it == null) {
+                future.complete(false)
+            }
         }
         return future
     }
@@ -47,6 +55,10 @@ abstract class AbstractSkillUI(override val viewer: Player, override val owner: 
                     future.complete(it)
                 }
             } ?: future.complete(false)
+        }.thenApply {
+            if (it == null) {
+                future.complete(false)
+            }
         }
         return future
     }
@@ -60,6 +72,10 @@ abstract class AbstractSkillUI(override val viewer: Player, override val owner: 
                         future.complete(it)
                     }
                 } ?: future.complete(false)
+            } ?: future.complete(false)
+        }.thenApply {
+            if (it == null) {
+                future.complete(false)
             }
         }
         return future

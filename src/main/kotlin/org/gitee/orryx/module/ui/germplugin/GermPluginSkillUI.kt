@@ -11,6 +11,7 @@ import org.gitee.orryx.module.ui.IUIManager
 import org.gitee.orryx.utils.*
 import taboolib.common.function.debounce
 import taboolib.common.platform.function.getDataFolder
+import taboolib.platform.util.sendLang
 import java.io.File
 
 open class GermPluginSkillUI(override val viewer: Player, override val owner: Player): AbstractSkillUI(viewer, owner) {
@@ -33,6 +34,10 @@ open class GermPluginSkillUI(override val viewer: Player, override val owner: Pl
     override fun open() {
         owner.job {
             open(it)
+        }.thenApply {
+            if (it == null) {
+                viewer.sendLang("info-no-job", owner.name)
+            }
         }
     }
 

@@ -22,6 +22,11 @@ fun IBindKey.getBindSkill(player: Player): CompletableFuture<IPlayerSkill?> {
         it.getBindSkills()[this]?.thenAccept { skill ->
             future.complete(skill)
         } ?: future.complete(null)
+    }.thenApply {
+        // 无职业时 job() 返回 null，确保 future 被 complete
+        if (it == null) {
+            future.complete(null)
+        }
     }
     return future
 }

@@ -80,21 +80,23 @@ class OrryxAPI: IOrryxAPI {
         /**
          * 协程异常处理器，捕获未处理的异常并记录日志
          */
-        private val exceptionHandler = CoroutineExceptionHandler { context, throwable ->
-            val coroutineName = context[CoroutineName]?.name ?: "unknown"
-            warning("[Orryx] 协程 '$coroutineName' 发生未捕获异常: ${throwable.message}")
-            if (throwable !is CancellationException) {
-                throwable.printStackTrace()
+        private val exceptionHandler by lazy {
+            CoroutineExceptionHandler { context, throwable ->
+                val coroutineName = context[CoroutineName]?.name ?: "unknown"
+                warning("[Orryx] 协程 '$coroutineName' 发生未捕获异常: ${throwable.message}")
+                if (throwable !is CancellationException) {
+                    throwable.printStackTrace()
+                }
             }
         }
 
-        private val ioJob = SupervisorJob()
-        private val effectJob = SupervisorJob()
-        private val pluginJob = SupervisorJob()
+        private val ioJob by lazy { SupervisorJob() }
+        private val effectJob by lazy { SupervisorJob() }
+        private val pluginJob by lazy { SupervisorJob() }
 
-        internal val ioScope = CoroutineScope(Dispatchers.IO + ioJob + exceptionHandler + CoroutineName("orryx-io"))
-        internal val effectScope = CoroutineScope(Dispatchers.Default + effectJob + exceptionHandler + CoroutineName("orryx-effect"))
-        internal val pluginScope = CoroutineScope(Dispatchers.Default + pluginJob + exceptionHandler + CoroutineName("orryx-plugin"))
+        internal val ioScope by lazy { CoroutineScope(Dispatchers.IO + ioJob + exceptionHandler + CoroutineName("orryx-io")) }
+        internal val effectScope by lazy { CoroutineScope(Dispatchers.Default + effectJob + exceptionHandler + CoroutineName("orryx-effect")) }
+        internal val pluginScope by lazy { CoroutineScope(Dispatchers.Default + pluginJob + exceptionHandler + CoroutineName("orryx-plugin")) }
 
         /**
          * 优雅关闭所有协程作用域
