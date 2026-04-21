@@ -74,9 +74,9 @@ Functions:
   height: "方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 1)*界面变量.界面大小"
   texture: |-
     if(界面变量.横纵 == 0) {
-      return "https://image.mcwar.cn/i/2025/12/25/694d3e3406793.png";
+      return "https://image.mcwar.cn/i/2026/04/22/69e7bea250cd8.png";
     } else {
-      return "https://image.mcwar.cn/i/2025/12/25/694d3e345603a.png";
+      return "https://image.mcwar.cn/i/2026/04/22/69e7bea383a4c.png";
     };
   alpha: "1"
   visible: true
@@ -107,9 +107,9 @@ Functions:
     };
   texture: |-
     if(界面变量.横纵 == 0) {
-      return "https://image.mcwar.cn/i/2025/12/25/694d3e34384b3.png";
+      return "https://image.mcwar.cn/i/2026/04/22/69e7bea297727.png";
     } else {
-      return "https://image.mcwar.cn/i/2025/12/25/694d3e34308c5.png";
+      return "https://image.mcwar.cn/i/2026/04/22/69e7bea2debd6.png";
     };
   alpha: 背景_up_texture.alpha
   visible: 背景_up_texture.visible
@@ -130,9 +130,9 @@ Functions:
   height: "方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 1)*界面变量.界面大小"
   texture: |-
     if(界面变量.横纵 == 0) {
-      return "https://image.mcwar.cn/i/2025/12/25/694d3e341614d.png";
+      return "https://image.mcwar.cn/i/2026/04/22/69e7bea332f13.png";
     } else {
-      return "https://image.mcwar.cn/i/2025/12/25/694d448b513a5.png";
+      return "https://image.mcwar.cn/i/2026/04/22/69e7bea3d654b.png";
     };
   alpha: 背景_up_texture.alpha
   visible: 背景_up_texture.visible
@@ -193,9 +193,9 @@ check_texture:
   height: "方法.取成员(方法.取图片宽高(局部变量.当前组件.texture), 1)*界面变量.界面大小"
   texture: |-
     if(界面变量.横纵 == 0) {
-      return "https://image.mcwar.cn/i/2025/12/25/694d3e34416d8.png";
+      return "https://image.mcwar.cn/i/2026/04/22/69e7bea20af8e.png";
     } else {
-      return "https://image.mcwar.cn/i/2025/12/25/694d3e34dd879.png";
+      return "https://image.mcwar.cn/i/2026/04/22/69e7bea1b3922.png";
     };
   alpha: "背景_up_texture.alpha"
   visible: "背景_up_texture.visible"

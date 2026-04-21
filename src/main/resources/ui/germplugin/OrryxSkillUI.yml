@@ -13,7 +13,7 @@ OrryxSkillUI:
         - "open<->null"
   background:
     type: texture
-    path: "textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e345fe3b.png"
+    path: "textures/orryx/url<->https://image.mcwar.cn/i/2026/04/22/69e7be3285d53.png"
     width: tw1
     height: th1
   cursor:
@@ -43,8 +43,8 @@ OrryxSkillUI:
   # 此处为技能绑定背景组件的基础模板，实际上在滚动组件的子画布中
   skillBindKeyBackground:
     type: button
-    defaultPath: "textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e34dd879.png"
-    hoverPath: 'textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e34dd879.png'
+    defaultPath: "textures/orryx/url<->https://image.mcwar.cn/i/2026/04/22/69e7bea1b3922.png"
+    hoverPath: 'textures/orryx/url<->https://image.mcwar.cn/i/2026/04/22/69e7bea1b3922.png'
     width: tw1
     height: th1
     swallow: false
@@ -70,8 +70,8 @@ OrryxSkillUI:
   # 此处为技能背景组件的基础模板，实际上在滚动组件的子画布中
   skillBackground:
     type: button
-    defaultPath: "textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e34aca6d.png"
-    hoverpath: "textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e34bac56.png"
+    defaultPath: "textures/orryx/url<->https://image.mcwar.cn/i/2026/04/22/69e7be4c9dfaa.png"
+    hoverpath: "textures/orryx/url<->https://image.mcwar.cn/i/2026/04/22/69e7be4ceacf1.png"
     width: tw1
     height: th1
     swallow: false
@@ -100,8 +100,8 @@ OrryxSkillUI:
     type: button
     locationX: "90"
     locationY: "10"
-    defaultPath: "textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e34c3357.png"
-    hoverpath: "textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e34d6066.png"
+    defaultPath: "textures/orryx/url<->https://image.mcwar.cn/i/2026/04/22/69e7be9fd93fa.png"
+    hoverpath: "textures/orryx/url<->https://image.mcwar.cn/i/2026/04/22/69e7bea03f2e4.png"
     width: tw1
     height: th1
     swallow: true
@@ -116,8 +116,8 @@ OrryxSkillUI:
     relative: true
     sliderV:
       type: button
-      defaultPath: 'textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e3468567.png'
-      hoverPath: 'textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e3484c5e.png'
+      defaultPath: 'textures/orryx/url<->https://image.mcwar.cn/i/2026/04/22/69e7bea08888e.png'
+      hoverPath: 'textures/orryx/url<->https://image.mcwar.cn/i/2026/04/22/69e7bea0ceb4d.png'
       width: "tw1"
       height: "th1"
     locationVX: '106.5'
@@ -143,8 +143,8 @@ OrryxSkillUI:
     invalidV: true
     sliderH:
       type: button
-      defaultPath: 'textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e348e1de.png'
-      hoverPath: 'textures/orryx/url<->https://image.mcwar.cn/i/2025/12/25/694d3e348e3a4.png'
+      defaultPath: 'textures/orryx/url<->https://image.mcwar.cn/i/2026/04/22/69e7bea121b7e.png'
+      hoverPath: 'textures/orryx/url<->https://image.mcwar.cn/i/2026/04/22/69e7bea1677c4.png'
       width: "tw1"
       height: "th1"
     locationHX: '5'
