@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'  # 当推送 v 开头的标签时触发，如 v1.35.91
+      - 'v*'
 
 jobs:
   release:
@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK 8
         uses: actions/setup-java@v3
@@ -29,37 +31,131 @@ jobs:
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
+      - name: Get previous tag
+        id: prev_tag
+        run: |
+          PREV_TAG=$(git tag --sort=-creatordate | grep '^v' | sed -n '2p')
+          if [ -z "$PREV_TAG" ]; then
+            echo "HAS_PREV=false" >> $GITHUB_OUTPUT
+          else
+            echo "PREV_TAG=$PREV_TAG" >> $GITHUB_OUTPUT
+            echo "HAS_PREV=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate changelog
+        run: |
+          if [ "${{ steps.prev_tag.outputs.HAS_PREV }}" = "true" ]; then
+            RANGE="${{ steps.prev_tag.outputs.PREV_TAG }}..${GITHUB_REF_NAME}"
+            DIFF_BASE="${{ steps.prev_tag.outputs.PREV_TAG }}"
+          else
+            RANGE="${GITHUB_REF_NAME}"
+            DIFF_BASE=$(git rev-list --max-parents=0 HEAD)
+          fi
+
+          # 将每条 commit message 按 conventional commit 拆分归类写入临时文件
+          > /tmp/cl_feat
+          > /tmp/cl_fix
+          > /tmp/cl_refactor
+          > /tmp/cl_test
+          > /tmp/cl_docs
+          > /tmp/cl_other
+
+          git log "$RANGE" --pretty=format:"%s" --no-merges | while IFS= read -r line; do
+            [ -z "$line" ] && continue
+            matched=false
+            # 支持中英文括号和冒号: feat(scope): msg / feat（scope）：msg
+            while read -r segment; do
+              [ -z "$segment" ] && continue
+              matched=true
+              type=$(echo "$segment" | grep -oP '^(feat|fix|refactor|test|docs|chore|perf|style|ci)')
+              msg=$(echo "$segment" | sed -E 's/^(feat|fix|refactor|test|docs|chore|perf|style|ci)[（(][^)）]*[）)][：:]\s*//')
+              case "$type" in
+                feat)     echo "$msg" >> /tmp/cl_feat ;;
+                fix)      echo "$msg" >> /tmp/cl_fix ;;
+                refactor) echo "$msg" >> /tmp/cl_refactor ;;
+                test)     echo "$msg" >> /tmp/cl_test ;;
+                docs)     echo "$msg" >> /tmp/cl_docs ;;
+                *)        echo "$msg" >> /tmp/cl_other ;;
+              esac
+            done < <(echo "$line" | grep -oP '(feat|fix|refactor|test|docs|chore|perf|style|ci)[（(][^)）]*[）)][：:]\s*[^$]*?(?=\s+(feat|fix|refactor|test|docs|chore|perf|style|ci)[（(]|$)')
+            # 不匹配 conventional commit 格式的整行归入其他
+            if [ "$matched" = false ]; then
+              echo "$line" >> /tmp/cl_other
+            fi
+          done
+
+          # 构建 changelog markdown
+          {
+            write_section() {
+              local title="$1" emoji="$2" file="$3"
+              if [ -s "$file" ]; then
+                echo "### ${emoji} ${title}"
+                sort -u "$file" | while IFS= read -r item; do
+                  echo "- ${item}"
+                done
+                echo ""
+              fi
+            }
+
+            write_section "新功能"   "🚀" /tmp/cl_feat
+            write_section "问题修复" "🐛" /tmp/cl_fix
+            write_section "重构"     "♻️"  /tmp/cl_refactor
+            write_section "测试"     "🧪" /tmp/cl_test
+            write_section "文档"     "📝" /tmp/cl_docs
+            write_section "其他"     "📦" /tmp/cl_other
+
+            # 统计信息
+            TOTAL=$(git rev-list --count "$RANGE" --no-merges 2>/dev/null || echo "0")
+            AUTHORS=$(git log "$RANGE" --pretty=format:"%an" --no-merges | sort -u | paste -sd '、')
+            STAT=$(git diff --shortstat "$DIFF_BASE" "${GITHUB_REF_NAME}" 2>/dev/null || echo "")
+
+            echo "### 📊 统计"
+            echo "- 提交数：${TOTAL}"
+            [ -n "$AUTHORS" ] && echo "- 贡献者：${AUTHORS}"
+            [ -n "$STAT" ] && echo "- 变更：${STAT}"
+          } > /tmp/changelog_body.md
+
       - name: Build API
         run: ./gradlew taboolibBuildApi -Pbuild=./build -PpublishUsername=${{ secrets.PUBLISH_USERNAME }} -PpublishPassword=${{ secrets.PUBLISH_PASSWORD }} -Ptoken=${{ secrets.TOKEN }}
 
       - name: Build and Publish
         run: ./gradlew build publishGprPublicationToMavenRepository -Pbuild=./build -PpublishUsername=${{ secrets.PUBLISH_USERNAME }} -PpublishPassword=${{ secrets.PUBLISH_PASSWORD }} -Ptoken=${{ secrets.TOKEN }}
 
+      - name: Assemble release body
+        run: |
+          VERSION="${{ steps.get_version.outputs.VERSION }}"
+          {
+            echo "## Orryx v${VERSION}"
+            echo ""
+            cat /tmp/changelog_body.md
+            echo ""
+            echo "---"
+            echo ""
+            echo "### 📥 下载"
+            echo "- \`Orryx-${VERSION}.jar\` — 完整插件"
+            echo "- \`Orryx-${VERSION}-api.jar\` — API 依赖"
+            echo ""
+            echo "### 🔧 Maven"
+            echo '```xml'
+            echo "<dependency>"
+            echo "    <groupId>org.gitee.orryx</groupId>"
+            echo "    <artifactId>orryx</artifactId>"
+            echo "    <version>${VERSION}</version>"
+            echo "    <classifier>api</classifier>"
+            echo "</dependency>"
+            echo '```'
+            echo ""
+            echo "### 🔧 Gradle"
+            echo '```kotlin'
+            echo "compileOnly(\"org.gitee.orryx:orryx:${VERSION}:api\")"
+            echo '```'
+          } > /tmp/release_body.md
+
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
           name: Orryx v${{ steps.get_version.outputs.VERSION }}
-          body: |
-            ## Orryx v${{ steps.get_version.outputs.VERSION }}
-
-            ### 下载
-            - `Orryx-${{ steps.get_version.outputs.VERSION }}.jar` - 完整插件
-            - `Orryx-${{ steps.get_version.outputs.VERSION }}-api.jar` - API 依赖
-
-            ### Maven 依赖
-            ```xml
-            <dependency>
-                <groupId>org.gitee.orryx</groupId>
-                <artifactId>orryx</artifactId>
-                <version>${{ steps.get_version.outputs.VERSION }}</version>
-                <classifier>api</classifier>
-            </dependency>
-            ```
-
-            ### Gradle 依赖
-            ```kotlin
-            compileOnly("org.gitee.orryx:orryx:${{ steps.get_version.outputs.VERSION }}:api")
-            ```
+          bodyFile: /tmp/release_body.md
           allowUpdates: true
           artifacts: "build/*.jar"
           token: ${{ secrets.TOKEN }}
