@@ -2,7 +2,7 @@
 
 # Orryx
 
-![orryx.png](https://image.mcwar.cn/i/2026/04/22/69e7bc04cc04a.png)
+![orryx.png](https://image.mcwar.cn/i/2026/04/22/69e7bc7a1dd16.png)
 
 **跨时代技能插件，支持实现复杂逻辑，为稳定高效而生**
 
