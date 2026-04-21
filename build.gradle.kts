@@ -93,7 +93,7 @@ dependencies {
     compileOnly("ink.ptms.core:v11200:11200")
     compileOnly("ink.ptms:nms-all:1.0.0")
 
-    compileOnly("org.gitee.nodens:Nodens:1.22.39:api")
+    compileOnly("org.gitee.nodens:Nodens:1.23.40:api")
     compileOnly("com.gitee.redischannel:RedisChannel:1.14.11:api")
     compileOnly("ink.ptms.adyeshach:api:2.1.28")
     compileOnly("com.github.retrooper:packetevents-spigot:2.7.0")
@@ -127,6 +127,10 @@ dependencies {
     testImplementation("org.joml:joml:1.10.7")
     testImplementation("ink.ptms.core:v12004:12004:mapped")
     testImplementation("ink.ptms.core:v12004:12004:universal")
+
+    testImplementation("io.mockk:mockk:1.13.16")
+    testImplementation("org.mockito:mockito-core:4.11.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
 
     compileOnly(kotlin("stdlib"))
     compileOnly(kotlin("reflect"))
