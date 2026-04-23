@@ -54,7 +54,7 @@ open class GermPluginSkillUI(override val viewer: Player, override val owner: Pl
                         .pickPart<GermGuiCanvas>("skillBindKey-canvas-${entry.key.key}")
                         .pickPart<GermGuiTexture>("skillBindKey-icon-${entry.key.key}")
                     if (entry.value != null) {
-                        bindKeyIcon.path = path.replace("{skill}", entry.value!!.key)
+                        bindKeyIcon.path = path.replace("{skill}", entry.value!!.getIcon())
                         bindKeyIcon.enable = true
                     } else {
                         bindKeyIcon.enable = false
@@ -102,11 +102,12 @@ open class GermPluginSkillUI(override val viewer: Player, override val owner: Pl
                     }
                     background.enable = true
 
-                    skillIcon.defaultPath = skillIcon.defaultPath.replace("{skill}", skill.key)
-                    skillIcon.hoverPath = skillIcon.hoverPath.replace("{skill}", skill.key)
+                    val skillIcon_ = skill.getIcon()
+                    skillIcon.defaultPath = skillIcon.defaultPath.replace("{skill}", skillIcon_)
+                    skillIcon.hoverPath = skillIcon.hoverPath.replace("{skill}", skillIcon_)
                     skillIcon.callback(GermGuiButton.EventType.LEFT_CLICK, GermGuiButton.EventType.RIGHT_CLICK) { _, _ ->
                         cursorSkill = skill
-                        cursor.setPath(path.replace("{skill}", skill.key))
+                        cursor.setPath(path.replace("{skill}", skillIcon_))
                         cursor.enable = true
                     }
                     skillIcon.enable = true
@@ -191,7 +192,7 @@ open class GermPluginSkillUI(override val viewer: Player, override val owner: Pl
 
                         val skill = bind[it]
                         if (bind[it] != null) {
-                            bindKeyIcon.path = bindKeyIcon.path.replace("{skill}", skill!!.key)
+                            bindKeyIcon.path = bindKeyIcon.path.replace("{skill}", skill!!.getIcon())
                             bindKeyIcon.enable = true
                         }
 

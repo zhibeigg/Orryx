@@ -61,7 +61,11 @@ class DragonCoreSkillUI(override val viewer: Player, override val owner: Player)
                                             "Orryx_bind_skills_ui" to keys.joinToString("<br>") {
                                                 bindSkills[it]?.key ?: "none"
                                             },
+                                            "Orryx_bind_skills_icon_ui" to keys.joinToString("<br>") {
+                                                bindSkills[it]?.getIcon() ?: "none"
+                                            },
                                             "Orryx_skills" to skills.joinToString("<br>") { it.key },
+                                            "Orryx_skills_icon" to skills.joinToString("<br>") { it.getIcon() },
                                             "Orryx_skills_name" to skills.joinToString("<br>") { it.skill.name },
                                             "Orryx_skills_canBind" to skills.joinToString("<br>") { (it.skill is ICastSkill).toString() },
                                             "Orryx_skills_level" to skills.joinToString("<br>") { it.level.toString() },
