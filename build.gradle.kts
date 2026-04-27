@@ -10,7 +10,7 @@ plugins {
     `maven-publish`
     kotlin("jvm") version "2.1.20"
     kotlin("plugin.serialization") version "2.1.20"
-    id("io.izzel.taboolib") version "2.0.30"
+    id("io.izzel.taboolib") version "2.0.37"
     id("org.jetbrains.dokka") version "2.0.0"
 }
 
@@ -76,7 +76,7 @@ taboolib {
     relocate("kotlinx.serialization", "org.gitee.orryx.serialization")
     relocate("org.java_websocket", "org.gitee.orryx.java_websocket")
     version {
-        taboolib = "6.2.4-99fb800"
+        taboolib = "6.3.0-932e79c"
         coroutines = "1.10.1"
     }
 }
