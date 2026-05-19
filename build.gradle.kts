@@ -46,7 +46,7 @@ taboolib {
             name("zhibei")
         }
         links {
-            name("homepage").url("https://orryx.mcwar.cn/")
+            name("homepage").url = "https://orryx.mcwar.cn/"
         }
         dependencies {
             name("Adyeshach").optional(true)
@@ -121,6 +121,7 @@ dependencies {
     testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
     testImplementation("com.github.ben-manes.caffeine:caffeine:2.9.3")
     testImplementation("com.eatthepath:fast-uuid:0.2.0")
+    testImplementation(kotlin("reflect"))
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -137,8 +138,10 @@ dependencies {
     compileOnly(fileTree("libs"))
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions.freeCompilerArgs += "-Xskip-metadata-version-check"
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    compilerOptions {
+        freeCompilerArgs.add("-Xskip-metadata-version-check")
+    }
 }
 
 tasks.withType<JavaCompile> {
@@ -216,34 +219,49 @@ publishing {
     }
 }
 
-tasks.dokkaHtml {
-    // 配置输出目录
-    outputDirectory.set(file("${build}/${rootProject.name}-${version}-doc"))
-    // 配置模块名称
+tasks.register("dokkaHtml") {
+    group = "documentation"
+    description = "Generates HTML API documentation."
+    dependsOn(tasks.named("dokkaGeneratePublicationHtml"))
+}
+
+dokka {
     moduleName.set("Orryx")
-    // 禁用自动生成文档链接
-    suppressObviousFunctions.set(false)
+
+    dokkaPublications.html {
+        outputDirectory.set(file("${build}/${rootProject.name}-${version}-doc"))
+        suppressObviousFunctions.set(false)
+    }
+
     dokkaSourceSets {
         named("main") {
             // 配置源代码链接（GitHub）
             sourceLink {
                 localDirectory.set(file("src/main/kotlin"))
-                remoteUrl.set(uri("https://github.com/zhibeigg/Orryx/tree/master/src/main/kotlin").toURL())
+                remoteUrl("https://github.com/zhibeigg/Orryx/tree/master/src/main/kotlin")
                 remoteLineSuffix.set("#L")
             }
             // 添加外部文档链接（如 JDK）
-            externalDocumentationLink {
-                url.set(uri("https://docs.oracle.com/javase/8/docs/api/").toURL())
-                packageListUrl.set(uri("https://docs.oracle.com/javase/8/docs/api/package-list").toURL())
+            externalDocumentationLinks.register("jdk8") {
+                url("https://docs.oracle.com/javase/8/docs/api/")
+                packageListUrl("https://docs.oracle.com/javase/8/docs/api/package-list")
             }
         }
         configureEach {
             // 包含/排除包
-            includeNonPublic.set(true)
+            documentedVisibilities.set(
+                setOf(
+                    org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier.Public,
+                    org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier.Protected,
+                    org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier.Internal,
+                    org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier.Private,
+                    org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier.Package
+                )
+            )
             skipDeprecated.set(true)
-            reportUndocumented.set(true)
+            reportUndocumented.set(false)
 
-            platform.set(org.jetbrains.dokka.Platform.jvm)
+            analysisPlatform.set(org.jetbrains.dokka.gradle.engine.parameters.KotlinPlatform.JVM)
             jdkVersion.set(8)
 
             perPackageOption {

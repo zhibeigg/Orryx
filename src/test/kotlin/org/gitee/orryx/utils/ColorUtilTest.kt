@@ -59,13 +59,9 @@ class ColorUtilTest {
     @Nested
     inner class ReaderInstance {
         @Test
-        fun `reader is initialized`() {
-            assertNotNull(reader)
-        }
-
-        @Test
-        fun `reader is a VariableReader`() {
-            assertTrue(reader is VariableReader)
+        fun `reader uses default delimiters`() {
+            assertEquals("{{", reader.start)
+            assertEquals("}}", reader.end)
         }
     }
 }

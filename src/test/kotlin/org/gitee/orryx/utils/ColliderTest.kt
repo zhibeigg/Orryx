@@ -20,7 +20,7 @@ private class MockSphere(
 ) : ISphere<MockTarget>, MockTarget {
     private var disabled = false
     override val fastCollider: IAABB<MockTarget>? = null
-    override fun setDisable(d: Boolean) { disabled = d }
+    override fun setDisable(disable: Boolean) { disabled = disable }
     override fun disable() = disabled
 }
 
@@ -31,7 +31,7 @@ private class MockAABB(
     override val min get() = Vector3d(center).sub(halfExtents)
     override val max get() = Vector3d(center).add(halfExtents)
     override val fastCollider: IAABB<MockTarget>? = null
-    override fun setDisable(d: Boolean) { disabled = d }
+    override fun setDisable(disable: Boolean) { disabled = disable }
     override fun disable() = disabled
 }
 
@@ -63,7 +63,7 @@ private class MockOBB(
         a[2] = rotation.transform(Vector3d(0.0, 0.0, 1.0))
         return a
     }
-    override fun setDisable(d: Boolean) { disabled = d }
+    override fun setDisable(disable: Boolean) { disabled = disable }
     override fun disable() = disabled
 }
 
@@ -74,7 +74,7 @@ private class MockRay(
     override val origin get() = Vector3d(_origin)
     override val end get() = Vector3d(_origin).add(Vector3d(direction).mul(length))
     override val fastCollider: IAABB<MockTarget>? = null
-    override fun setDisable(d: Boolean) { disabled = d }
+    override fun setDisable(disable: Boolean) { disabled = disable }
     override fun disable() = disabled
 }
 
@@ -85,7 +85,7 @@ private class MockCapsule(
     private var disabled = false
     override val direction: Vector3d get() = rotation.transform(Vector3d(0.0, 1.0, 0.0))
     override val fastCollider: IAABB<MockTarget>? = null
-    override fun setDisable(d: Boolean) { disabled = d }
+    override fun setDisable(disable: Boolean) { disabled = disable }
     override fun disable() = disabled
 }
 

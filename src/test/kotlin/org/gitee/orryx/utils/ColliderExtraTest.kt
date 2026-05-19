@@ -20,7 +20,7 @@ private class MockSphere2(
 ) : ISphere<MockTarget2>, MockTarget2 {
     private var disabled = false
     override val fastCollider: IAABB<MockTarget2>? = null
-    override fun setDisable(d: Boolean) { disabled = d }
+    override fun setDisable(disable: Boolean) { disabled = disable }
     override fun disable() = disabled
 }
 
@@ -31,7 +31,7 @@ private class MockAABB2(
     override val min get() = Vector3d(center).sub(halfExtents)
     override val max get() = Vector3d(center).add(halfExtents)
     override val fastCollider: IAABB<MockTarget2>? = null
-    override fun setDisable(d: Boolean) { disabled = d }
+    override fun setDisable(disable: Boolean) { disabled = disable }
     override fun disable() = disabled
 }
 
@@ -42,7 +42,7 @@ private class MockRay2(
     override val origin get() = Vector3d(_origin)
     override val end get() = Vector3d(_origin).add(Vector3d(direction).mul(length))
     override val fastCollider: IAABB<MockTarget2>? = null
-    override fun setDisable(d: Boolean) { disabled = d }
+    override fun setDisable(disable: Boolean) { disabled = disable }
     override fun disable() = disabled
 }
 
@@ -67,7 +67,7 @@ private class MockOBB2(
         rotation.transform(Vector3d(0.0, 1.0, 0.0)),
         rotation.transform(Vector3d(0.0, 0.0, 1.0))
     )
-    override fun setDisable(d: Boolean) { disabled = d }
+    override fun setDisable(disable: Boolean) { disabled = disable }
     override fun disable() = disabled
 }
 
@@ -81,7 +81,7 @@ private class MockComposite(
     override fun addCollider(collider: ICollider<MockTarget2>) { colliders.add(collider) }
     override fun removeCollider(index: Int) { colliders.removeAt(index) }
     override val fastCollider: IAABB<MockTarget2>? = null
-    override fun setDisable(d: Boolean) { disabled = d }
+    override fun setDisable(disable: Boolean) { disabled = disable }
     override fun disable() = disabled
 }
 
@@ -195,7 +195,7 @@ class ColliderExtraTest {
                 override val type = ColliderType.NONE
                 override val fastCollider: IAABB<MockTarget2>? = null
                 private var disabled = false
-                override fun setDisable(d: Boolean) { disabled = d }
+                override fun setDisable(disable: Boolean) { disabled = disable }
                 override fun disable() = disabled
             }
             val sphere: ICollider<MockTarget2> = MockSphere2(Vector3d(0.0, 0.0, 0.0), 1.0)
