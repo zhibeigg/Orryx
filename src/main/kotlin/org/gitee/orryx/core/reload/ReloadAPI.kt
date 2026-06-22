@@ -68,7 +68,9 @@ object ReloadAPI: IReloadAPI, ClassVisitor(3) {
     @Ghost
     @SubscribeEvent
     private fun reload(e: GermReloadEvent) {
-        reload()
+        submit(delay = 1) {
+            reload()
+        }
     }
 
     @SubscribeEvent
