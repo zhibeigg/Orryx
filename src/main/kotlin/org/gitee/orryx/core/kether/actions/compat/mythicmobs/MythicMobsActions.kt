@@ -54,7 +54,12 @@ object MythicMobsActions {
             .addEntry("技能名", Type.STRING, optional = false)
             .addEntry("技能强度", Type.FLOAT, optional = false)
             .addContainerEntry("释放者", true, "@self")
-            .addContainerEntry("触发者", true, "@self", "trigger")
+            .addContainerEntry("触发者", true, "@self", "trigger"),
+        Action.new("MythicMobs附属语句", "读取怪物架势", "mythicmobs", true)
+            .description("读取MythicMobs怪物当前架势(stance)，目标非MM怪物时返回null")
+            .addEntry("架势标识符", Type.SYMBOL, false, head = "stance")
+            .addContainerEntry("怪物", true, "@self")
+            .result("架势名", Type.STRING)
     ) {
         it.switch {
             case("taunt") { taunt(it) }
@@ -68,6 +73,7 @@ object MythicMobsActions {
             }
             case("signal") { signal(it) }
             case("cast") { castSkill(it) }
+            case("stance") { stance(it) }
         }
     }
 
@@ -244,5 +250,31 @@ object MythicMobsActions {
                 }
             }
         }
+    }
+
+    /**
+     * 读取 MythicMobs 怪物当前架势(stance)。
+     *
+     * 语法：mm stance [they "<选择器>"]
+     * 返回容器中第一个 MM 怪物的 stance 字符串；目标非 MM 怪物时返回 null。
+     * 典型用法（严格判定"滞空=被击飞"）：
+     *   removeIf they &命中 { check mm stance they &@Target != "被击飞" }
+     */
+    private fun stance(reader: QuestReader): ScriptAction<Any?> {
+        val they = reader.nextTheyContainerOrNull()
+
+        return actionFuture { future ->
+            containerOrSelf(they) { container ->
+                val entity = container.firstInstanceOrNull<ITargetEntity<Entity>>()?.getSource()
+                future.complete(entity?.let { getStance(it) })
+            }
+        }
+    }
+
+    private fun getStance(mob: Entity): String? {
+        if (!MythicMobs.inst().mobManager.isActiveMob(mob.uniqueId)) {
+            return null
+        }
+        return MythicMobs.inst().mobManager.getMythicMobInstance(mob).stance
     }
 }
