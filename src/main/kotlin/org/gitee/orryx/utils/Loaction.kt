@@ -64,8 +64,8 @@ fun floor(origin: Location, distance: Double): Pair<Location, Int> {
         origin.add(0.0, -1.0, 0.0)
         deep++
     }
-    // 循环停在第一个非穿透块（地面）上，origin 已落在地面块，无需再上抬一格，否则落点会高一格
-    return origin to deep
+    // 循环停在第一个实体方块（地面）上，上抬一格回到地面方块上方的站立面
+    return origin.add(0.0, 1.0, 0.0) to deep
 }
 
 /**
