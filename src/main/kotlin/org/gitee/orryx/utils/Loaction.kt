@@ -63,7 +63,8 @@ fun floor(origin: Location, distance: Double): Pair<Location, Int> {
         origin.add(0.0, -1.0, 0.0)
         deep++
     }
-    return origin.add(0.0, 1.0, 0.0) to deep
+    // 循环停在第一个非穿透块（地面）上，origin 已落在地面块，无需再上抬一格，否则落点会高一格
+    return origin to deep
 }
 
 /**
@@ -94,11 +95,14 @@ private object LegacyNmsReflection {
     fun getBlockDataBoundingBoxMethod(blockDataClass: Class<*>, blockPositionClass: Class<*>): Method? {
         return try {
             // IBlockData.d(IBlockAccess, BlockPosition) 在 1.12 中返回碰撞箱
+            // BlockStateList$BlockData 类非 public，public 方法反射调用须 setAccessible 否则 IllegalAccessException
             blockDataClass.getMethod("d", Class.forName(blockDataClass.getPackage().name + ".IBlockAccess"), blockPositionClass)
+                .apply { isAccessible = true }
         } catch (e: Exception) {
             // 尝试其他方法名
             try {
                 blockDataClass.getMethod("c", Class.forName(blockDataClass.getPackage().name + ".IBlockAccess"), blockPositionClass)
+                    .apply { isAccessible = true }
             } catch (_: Exception) {
                 null
             }
