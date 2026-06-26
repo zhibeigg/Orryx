@@ -51,7 +51,8 @@ fun floor(origin: Location, distance: Double): Pair<Location, Int> {
 
                 val dMethod = LegacyNmsReflection.getBlockDataBoundingBoxMethod(blockData.javaClass, blockPositionClass)
                 val box = dMethod?.invoke(blockData, nmsWorld, pos)
-                box != null
+                // 空气等可穿透方块无碰撞箱（box 为 null），实体方块有碰撞箱；可穿透 = box == null
+                box == null
             } catch (e: Exception) {
                 e.printStackTrace()
                 true
