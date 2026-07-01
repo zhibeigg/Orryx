@@ -1,32 +1,23 @@
 package org.gitee.orryx.module.spirit
 
+import kotlinx.coroutines.launch
 import org.bukkit.entity.Player
-import org.bukkit.event.player.PlayerQuitEvent
+import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.api.events.player.OrryxPlayerSpiritEvents
+import org.gitee.orryx.core.GameManager
 import org.gitee.orryx.core.job.IJob
 import org.gitee.orryx.core.job.JobLoaderManager
-import org.gitee.orryx.utils.eval
-import org.gitee.orryx.utils.job
-import org.gitee.orryx.utils.orryxProfile
+import org.gitee.orryx.core.profile.IPlayerProfile
+import org.gitee.orryx.dao.cache.ISyncCacheManager
+import org.gitee.orryx.dao.cache.MemoryCache
+import org.gitee.orryx.utils.*
 import taboolib.common.platform.ProxyCommandSender
-import taboolib.common.platform.event.SubscribeEvent
+import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common5.cdouble
 import taboolib.module.kether.orNull
-import java.util.*
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ConcurrentHashMap
 
 class SpiritManagerDefault: ISpiritManager {
-
-    companion object {
-
-        val spiritMap = ConcurrentHashMap<UUID, Double>()
-
-        @SubscribeEvent
-        private fun quit(e: PlayerQuitEvent) {
-            spiritMap.remove(e.player.uniqueId)
-        }
-    }
 
     override fun getMaxSpirit(player: Player): CompletableFuture<Double> {
         return player.job().thenApply {
@@ -44,7 +35,9 @@ class SpiritManagerDefault: ISpiritManager {
     }
 
     override fun getSpirit(player: Player): Double {
-        return spiritMap.getOrPut(player.uniqueId) { 0.0 }
+        // 在线玩家的 Profile 已在 MemoryCache 中，同步取已完成的 future，未加载时兜底 0.0，不阻塞线程
+        val profile = MemoryCache.getPlayerProfile(player.uniqueId).getNow(null) ?: return 0.0
+        return profile.getFlag(SPIRIT_FLAG)?.value.cdouble
     }
 
     override fun giveSpirit(player: Player, spirit: Double): CompletableFuture<SpiritResult> {
@@ -54,11 +47,11 @@ class SpiritManagerDefault: ISpiritManager {
             player.job { job ->
                 val event = OrryxPlayerSpiritEvents.Up.Pre(player, profile, spirit)
                 if (event.call()) {
-                    spiritMap.compute(player.uniqueId) { _, old ->
-                        ((old ?: 0.0) + event.spirit).coerceIn(0.0, job.getMaxSpirit())
+                    profile.setFlag(SPIRIT_FLAG, (profile.getFlag(SPIRIT_FLAG)?.value.cdouble + event.spirit).coerceIn(0.0, job.getMaxSpirit()).flag(true), false)
+                    save(player, profile) {
+                        future.complete(SpiritResult.SUCCESS)
+                        OrryxPlayerSpiritEvents.Up.Post(player, profile, event.spirit).call()
                     }
-                    OrryxPlayerSpiritEvents.Up.Post(player, profile, event.spirit).call()
-                    future.complete(SpiritResult.SUCCESS)
                 } else {
                     future.complete(SpiritResult.CANCELLED)
                 }
@@ -76,19 +69,18 @@ class SpiritManagerDefault: ISpiritManager {
             player.job { job ->
                 val event = OrryxPlayerSpiritEvents.Down.Pre(player, profile, spirit)
                 if (event.call()) {
-                    var less = 0.0
-                    spiritMap.compute(player.uniqueId) { _, old ->
-                        less = (old ?: 0.0) - event.spirit
-                        less.coerceIn(0.0, job.getMaxSpirit())
+                    val less = profile.getFlag(SPIRIT_FLAG)?.value.cdouble - event.spirit
+                    profile.setFlag(SPIRIT_FLAG, less.coerceIn(0.0, job.getMaxSpirit()).flag(true), false)
+                    save(player, profile) {
+                        future.complete(
+                            if (less >= 0) {
+                                SpiritResult.SUCCESS
+                            } else {
+                                SpiritResult.NOT_ENOUGH
+                            }
+                        )
+                        OrryxPlayerSpiritEvents.Down.Post(player, profile, event.spirit).call()
                     }
-                    OrryxPlayerSpiritEvents.Down.Post(player, profile, event.spirit).call()
-                    future.complete(
-                        if (less >= 0) {
-                            SpiritResult.SUCCESS
-                        } else {
-                            SpiritResult.NOT_ENOUGH
-                        }
-                    )
                 } else {
                     future.complete(SpiritResult.CANCELLED)
                 }
@@ -100,8 +92,7 @@ class SpiritManagerDefault: ISpiritManager {
     }
 
     override fun haveSpirit(player: Player, spirit: Double): Boolean {
-        val less = spiritMap.getOrPut(player.uniqueId) { 0.0 } - spirit
-        return less >= 0
+        return getSpirit(player) - spirit >= 0
     }
 
     override fun healSpirit(player: Player): CompletableFuture<Double> {
@@ -109,13 +100,14 @@ class SpiritManagerDefault: ISpiritManager {
         player.orryxProfile { profile ->
             player.job { job ->
                 val maxSpirit = job.getMaxSpirit()
-                val current = spiritMap.getOrDefault(player.uniqueId, 0.0)
-                val add = maxSpirit - current
+                val add = maxSpirit - profile.getFlag(SPIRIT_FLAG)?.value.cdouble
                 val event = OrryxPlayerSpiritEvents.Heal.Pre(player, profile, add)
                 if (event.call()) {
-                    spiritMap[player.uniqueId] = maxSpirit
-                    OrryxPlayerSpiritEvents.Heal.Post(player, profile, add).call()
-                    future.complete(add)
+                    profile.setFlag(SPIRIT_FLAG, maxSpirit.flag(true), false)
+                    save(player, profile) {
+                        future.complete(add)
+                        OrryxPlayerSpiritEvents.Heal.Post(player, profile, add).call()
+                    }
                 } else {
                     future.complete(0.0)
                 }
@@ -133,11 +125,11 @@ class SpiritManagerDefault: ISpiritManager {
                 val spirit = job.getRegainSpirit()
                 val event = OrryxPlayerSpiritEvents.Regain.Pre(player, profile, spirit)
                 if (event.call()) {
-                    spiritMap.compute(player.uniqueId) { _, old ->
-                        ((old ?: 0.0) + event.regainSpirit).coerceAtMost(job.getMaxSpirit())
+                    profile.setFlag(SPIRIT_FLAG, (profile.getFlag(SPIRIT_FLAG)?.value.cdouble + event.regainSpirit).coerceAtMost(job.getMaxSpirit()).flag(true), false)
+                    save(player, profile) {
+                        future.complete(event.regainSpirit)
+                        OrryxPlayerSpiritEvents.Regain.Post(player, profile, event.regainSpirit).call()
                     }
-                    OrryxPlayerSpiritEvents.Regain.Post(player, profile, event.regainSpirit).call()
-                    future.complete(event.regainSpirit)
                 } else {
                     future.complete(0.0)
                 }
@@ -154,6 +146,21 @@ class SpiritManagerDefault: ISpiritManager {
             spirit > currentSpirit -> giveSpirit(player, spirit - currentSpirit)
             spirit < currentSpirit -> takeSpirit(player, currentSpirit - spirit)
             else -> CompletableFuture.completedFuture(SpiritResult.SAME)
+        }
+    }
+
+    private fun save(player: Player, profile: IPlayerProfile, callback: () -> Unit) {
+        if (isPrimaryThread && !GameManager.shutdown) {
+            OrryxAPI.ioScope.launch {
+                ISyncCacheManager.INSTANCE.savePlayerProfile(player.uniqueId, profile.createPO())
+                MemoryCache.savePlayerProfile(profile)
+            }.invokeOnCompletion {
+                callback()
+            }
+        } else {
+            ISyncCacheManager.INSTANCE.savePlayerProfile(player.uniqueId, profile.createPO())
+            MemoryCache.savePlayerProfile(profile)
+            callback()
         }
     }
 }
