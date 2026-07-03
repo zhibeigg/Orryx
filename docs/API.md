@@ -728,11 +728,14 @@ fun onDamagePre(event: OrryxDamageEvents.Pre) {
     event.damage = damage * 1.2
 
     // 根据伤害类型处理
+    // DamageType 可选值：PHYSICS 物理 / MAGIC 魔法 / FIRE 火焰 / REAL 真实
+    //                    MONSTER 怪物攻击 / SELF 自身 / CONSOLE 控制台 / CUSTOM 自定义
     when (damageType) {
-        DamageType.PHYSICAL -> { /* 物理伤害 */ }
-        DamageType.MAGICAL -> { /* 魔法伤害 */ }
+        DamageType.PHYSICS -> { /* 物理伤害 */ }
+        DamageType.MAGIC -> { /* 魔法伤害 */ }
         DamageType.FIRE -> { /* 火焰伤害 */ }
-        DamageType.TRUE -> { /* 真实伤害 */ }
+        DamageType.REAL -> { /* 真实伤害 */ }
+        DamageType.MONSTER -> { /* 怪物攻击伤害（如 MythicMobs no-damage type=monster） */ }
         else -> { /* 其他类型 */ }
     }
 
@@ -882,9 +885,16 @@ api.profileAPI.setSuperBody(player, 5000)
 api.profileAPI.setInvincible(player, 3000)
 
 // 设置格挡物理伤害 2 秒
-api.profileAPI.setBlock(player, DamageType.PHYSICAL, 2000) { damageEvent ->
+api.profileAPI.setBlock(player, DamageType.PHYSICS, 2000) { damageEvent ->
     // 格挡成功时的回调
     player.sendMessage("成功格挡了 ${damageEvent.damage} 点物理伤害！")
+}
+
+// 同时格挡多种伤害类型（如物理与怪物攻击），分别注册即可
+listOf(DamageType.PHYSICS, DamageType.MONSTER).forEach { type ->
+    api.profileAPI.setBlock(player, type, 2000) { damageEvent ->
+        player.sendMessage("成功格挡了 ${damageEvent.damage} 点伤害！")
+    }
 }
 
 // 沉默玩家 10 秒（无法释放技能）

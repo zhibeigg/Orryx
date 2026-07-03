@@ -6,6 +6,7 @@ enum class DamageType {
     MAGIC,
     FIRE,
     REAL,
+    MONSTER,
     SELF,
     CONSOLE,
     CUSTOM;

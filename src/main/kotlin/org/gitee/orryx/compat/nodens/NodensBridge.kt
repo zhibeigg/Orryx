@@ -30,6 +30,7 @@ class NodensBridge: IAttributeBridge {
             PHYSICS -> processor.addDamageSource("Orryx", Damage.Physics, damage)
             FIRE -> processor.addDamageSource("Orryx", Damage.Magic, damage)
             REAL -> processor.addDamageSource("Orryx", Damage.Real, damage)
+            MONSTER -> processor.addDamageSource("Orryx", Damage.MonsterAttack, damage)
             SELF -> processor.addDamageSource("Orryx", Damage.Real, damage)
             CONSOLE -> processor.addDamageSource("Orryx", Damage.Real, damage)
             CUSTOM -> processor.addDamageSource("Orryx", Damage.Real, damage)

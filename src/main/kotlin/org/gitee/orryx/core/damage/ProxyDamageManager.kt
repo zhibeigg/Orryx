@@ -63,6 +63,7 @@ object ProxyDamageManager {
             Damage.Magic.name.uppercase() -> DamageType.MAGIC
             Damage.Real.name.uppercase() -> DamageType.REAL
             Damage.Fire.name.uppercase() -> DamageType.FIRE
+            Damage.Monster.name.uppercase() -> DamageType.MONSTER
             else -> DamageType.CUSTOM
         }
         val event = OrryxDamageEvents.Pre(e.processor.attacker, e.processor.defender, e.processor.getFinalDamage(), null, type)
@@ -80,6 +81,7 @@ object ProxyDamageManager {
             Damage.Magic.name.uppercase() -> DamageType.MAGIC
             Damage.Real.name.uppercase() -> DamageType.REAL
             Damage.Fire.name.uppercase() -> DamageType.FIRE
+            Damage.Monster.name.uppercase() -> DamageType.MONSTER
             else -> DamageType.CUSTOM
         }
         OrryxDamageEvents.Post(e.processor.attacker, e.processor.defender, e.processor.getFinalDamage(), null, type, e.processor.crit).call()

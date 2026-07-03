@@ -67,7 +67,12 @@ States:
     Check: "4-16"
     # 格挡成功后的无敌时间
     Invincible: "4"
-    DamageType: PHYSICS
+    # 可格挡的伤害类型，支持单个或列表写法
+    # 单个：DamageType: PHYSICS
+    # 列表：DamageType: [PHYSICS, MAGIC, MONSTER]
+    # 可选值：PHYSICS 物理 / MAGIC 魔法 / FIRE 火焰 / REAL 真实 / MONSTER 怪物攻击
+    # 不填默认 PHYSICS
+    DamageType: [PHYSICS, MONSTER]
     Animation:
       # 动作名
       Key: "长剑招架"

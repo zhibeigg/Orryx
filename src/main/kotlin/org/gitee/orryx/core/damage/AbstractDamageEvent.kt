@@ -65,6 +65,7 @@ abstract class AbstractDamageEvent(
                     PHYSICS -> noEvent()!!.processor.addDamageSource("Orryx@${NanoId.generate()}", Damage.Physics, damage)
                     MAGIC -> noEvent()!!.processor.addDamageSource("Orryx@${NanoId.generate()}", Damage.Magic, damage)
                     REAL -> noEvent()!!.processor.addDamageSource("Orryx@${NanoId.generate()}", Damage.Real, damage)
+                    MONSTER -> noEvent()!!.processor.addDamageSource("Orryx@${NanoId.generate()}", Damage.MonsterAttack, damage)
                     else -> error("unsupported $type")
                 }
             }
@@ -80,7 +81,8 @@ abstract class AbstractDamageEvent(
             isNodens() -> {
                 when(type) {
                     PHYSICS -> noEvent()!!.processor.addDefenceSource("Orryx@${NanoId.generate()}", Defence.Physics, damage)
-                    MAGIC -> noEvent()!!.processor.addDamageSource("Orryx@${NanoId.generate()}", Defence.Magic, damage)
+                    MAGIC -> noEvent()!!.processor.addDefenceSource("Orryx@${NanoId.generate()}", Defence.Magic, damage)
+                    MONSTER -> noEvent()!!.processor.addDefenceSource("Orryx@${NanoId.generate()}", Defence.MonsterDefence, damage)
                     else -> error("unsupported $type")
                 }
             }

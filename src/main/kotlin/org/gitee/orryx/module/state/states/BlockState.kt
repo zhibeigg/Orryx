@@ -24,8 +24,31 @@ class BlockState(override val key: String, configurationSection: ConfigurationSe
 
     val check = configurationSection.getString("Check").toLongPair("-")
     val invincible = configurationSection.getLong("Invincible")
-    val blockType = configurationSection.getEnum("DamageType", DamageType::class.java) ?: DamageType.PHYSICS
+
+    /**
+     * 可格挡的伤害类型列表。
+     *
+     * 支持两种写法：
+     * - 单个：`DamageType: PHYSICS`
+     * - 列表：`DamageType: [PHYSICS, MAGIC, MONSTER]`
+     *
+     * 未配置或解析全部失败时默认 [DamageType.PHYSICS]。
+     */
+    val blockTypes: List<DamageType> = parseBlockTypes(configurationSection)
+
     override val spirit = configurationSection.getDouble("Spirit", 0.0)
+
+    private fun parseBlockTypes(configurationSection: ConfigurationSection): List<DamageType> {
+        val raw = configurationSection.get("DamageType") ?: return listOf(DamageType.PHYSICS)
+        val names = when (raw) {
+            is Collection<*> -> raw.mapNotNull { it?.toString() }
+            else -> listOf(raw.toString())
+        }
+        val types = names.mapNotNull { name ->
+            runCatching { DamageType.valueOf(name.trim().uppercase()) }.getOrNull()
+        }.distinct()
+        return types.ifEmpty { listOf(DamageType.PHYSICS) }
+    }
 
     class Animation(configurationSection: ConfigurationSection) {
         val key = configurationSection.getString("Key")!!
@@ -69,8 +92,10 @@ class BlockState(override val key: String, configurationSection: ConfigurationSe
             ISpiritManager.INSTANCE.takeSpirit(data.player, state.spirit)
             state.runScript(data) { context = this }
             task = submit(delay = state.check.first) {
-                Orryx.api().profileAPI.setBlock(data.player, state.blockType, (state.check.second - state.check.first) * 50) {
-                    success(it)
+                state.blockTypes.forEach { blockType ->
+                    Orryx.api().profileAPI.setBlock(data.player, blockType, (state.check.second - state.check.first) * 50) {
+                        success(it)
+                    }
                 }
                 task = submit(delay = max(state.animation.duration - state.check.first + 1, state.check.second - state.check.first + 1)) {
                     stop = true
