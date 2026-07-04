@@ -5,6 +5,7 @@ import org.gitee.nodens.api.events.entity.NodensEntityDamageEvents
 import org.gitee.nodens.core.attribute.Damage
 import org.gitee.orryx.api.events.damage.DamageType
 import org.gitee.orryx.api.events.damage.OrryxDamageEvents
+import org.gitee.orryx.compat.nodens.NodensBridge
 import org.gitee.orryx.utils.AstraXHeroPlugin
 import org.gitee.orryx.utils.AttributePlusPlugin
 import org.gitee.orryx.utils.NodensPlugin
@@ -66,10 +67,11 @@ object ProxyDamageManager {
             Damage.Monster.name.uppercase() -> DamageType.MONSTER
             else -> DamageType.CUSTOM
         }
-        val event = OrryxDamageEvents.Pre(e.processor.attacker, e.processor.defender, e.processor.getFinalDamage(), null, type)
+        val event = OrryxDamageEvents.Pre(e.processor.attacker, e.processor.defender, e.processor.getFinalDamage(), null, type, NodensBridge.contextOf(e.processor))
         event.origin = e
         if (!event.call()) {
             e.isCancelled = true
+            NodensBridge.removeContext(e.processor)
         }
     }
 
@@ -84,6 +86,7 @@ object ProxyDamageManager {
             Damage.Monster.name.uppercase() -> DamageType.MONSTER
             else -> DamageType.CUSTOM
         }
-        OrryxDamageEvents.Post(e.processor.attacker, e.processor.defender, e.processor.getFinalDamage(), null, type, e.processor.crit).call()
+        OrryxDamageEvents.Post(e.processor.attacker, e.processor.defender, e.processor.getFinalDamage(), null, type, e.processor.crit, NodensBridge.contextOf(e.processor)).call()
+        NodensBridge.removeContext(e.processor)
     }
 }

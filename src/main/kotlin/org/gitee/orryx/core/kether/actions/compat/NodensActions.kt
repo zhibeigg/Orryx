@@ -4,6 +4,7 @@ import org.bukkit.entity.LivingEntity
 import org.gitee.nodens.common.DamageProcessor
 import org.gitee.nodens.common.RegainProcessor
 import org.gitee.nodens.util.NODENS_NAMESPACE
+import org.gitee.orryx.compat.nodens.NodensBridge
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
@@ -12,6 +13,7 @@ import org.gitee.orryx.utils.combinationParser
 import org.gitee.orryx.utils.mapInstance
 import org.gitee.orryx.utils.theyContainer
 import taboolib.module.kether.KetherParser
+import taboolib.module.kether.script
 
 object NodensActions {
 
@@ -29,8 +31,11 @@ object NodensActions {
         ).apply(it) { type, they ->
             now {
                 val attacker = bukkitPlayer()
+                val context = script()
                 they!!.mapInstance<ITargetEntity<LivingEntity>, DamageProcessor> { entity ->
-                    DamageProcessor(type, attacker, entity.getSource())
+                    DamageProcessor(type, attacker, entity.getSource()).also { processor ->
+                        NodensBridge.bindContext(processor, context)
+                    }
                 }
             }
         }

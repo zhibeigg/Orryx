@@ -9,9 +9,30 @@ import org.gitee.orryx.api.events.damage.DamageType
 import org.gitee.orryx.api.events.damage.DamageType.*
 import org.gitee.orryx.compat.IAttributeBridge
 import taboolib.module.kether.ScriptContext
+import java.lang.ref.WeakReference
+import java.util.Collections
+import java.util.WeakHashMap
 
 class NodensBridge: IAttributeBridge {
 
+    companion object {
+
+        private val damageContexts = Collections.synchronizedMap(WeakHashMap<DamageProcessor, WeakReference<ScriptContext>>())
+
+        fun bindContext(processor: DamageProcessor, context: ScriptContext?) {
+            if (context != null) {
+                damageContexts[processor] = WeakReference(context)
+            }
+        }
+
+        fun contextOf(processor: DamageProcessor): ScriptContext? {
+            return damageContexts[processor]?.get()
+        }
+
+        fun removeContext(processor: DamageProcessor) {
+            damageContexts.remove(processor)
+        }
+    }
 
     override fun addAttribute(entity: LivingEntity, key: String, value: List<String>, timeout: Long) {
         Nodens.api().addTempAttribute(entity, key, TempAttributeData(timeout, Nodens.api().matchAttributes(value), false))
@@ -35,8 +56,13 @@ class NodensBridge: IAttributeBridge {
             CONSOLE -> processor.addDamageSource("Orryx", Damage.Real, damage)
             CUSTOM -> processor.addDamageSource("Orryx", Damage.Real, damage)
         }
-        processor.handleDefender()
-        processor.callDamage()
+        bindContext(processor, context)
+        try {
+            processor.handleDefender()
+            processor.callDamage()
+        } finally {
+            removeContext(processor)
+        }
     }
 
     override fun removeAttribute(entity: LivingEntity, key: String) {
