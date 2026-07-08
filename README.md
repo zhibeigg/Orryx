@@ -17,6 +17,22 @@
 
 </div>
 
+## 特别鸣谢
+
+<table>
+  <tr>
+    <td width="220" align="center">
+      <a href="https://www.pokeapi.top">
+        <img src="docs/assets/pokeapi-promo.png" alt="Poke API" width="200" />
+      </a>
+    </td>
+    <td>
+      <strong>Poke API - 高效稳定的 API 服务平台</strong><br />
+      感谢 <a href="https://www.pokeapi.top">Poke API</a> 对本项目的支持。Poke API 为开发者提供便捷可靠的 API 服务，帮助团队更轻松地接入能力、提升开发效率。欢迎访问 <a href="https://www.pokeapi.top">www.pokeapi.top</a> 了解更多。
+    </td>
+  </tr>
+</table>
+
 ---
 
 ## 特色功能
