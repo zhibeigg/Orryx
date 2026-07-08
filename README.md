@@ -27,8 +27,8 @@
       </a>
     </td>
     <td>
-      <strong>Poke API - 高效稳定的 API 服务平台</strong><br />
-      感谢 <a href="https://www.pokeapi.top">Poke API</a> 对本项目的支持。Poke API 为开发者提供便捷可靠的 API 服务，帮助团队更轻松地接入能力、提升开发效率。欢迎访问 <a href="https://www.pokeapi.top">www.pokeapi.top</a> 了解更多。
+      <strong>Poke API - 高效可靠的 AI API 中继服务平台</strong><br />
+      感谢 <a href="https://www.pokeapi.top">Poke API</a> 对本项目的支持。Poke API 开发者平台是一家稳定高效的 API 中继服务提供商，提供对 Claude Code、Codex、Gemini 等主流 AI 模型与开发工具生态的访问，帮助开发者和团队更轻松地集成 AI 能力、优化工作流并提升生产力。无论是日常开发辅助、代码生成、问题排查，还是团队级 AI 能力接入，Poke API 都能提供便捷可靠的服务支持。欢迎访问 <a href="https://www.pokeapi.top">www.pokeapi.top</a> 了解更多。
     </td>
   </tr>
 </table>
