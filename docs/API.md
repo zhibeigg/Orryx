@@ -1,6 +1,6 @@
 # Orryx API
 
-> 2.45.119：Editor 请求按连接代际串行处理并执行 revision、真实路径与资源配额校验；OpenAI 会话按玩家/NPC 隔离，deadline 覆盖排队与 HTTP 且生命周期可取消；瞄准响应使用一次性 wire token 防重放；可选兼容桥接在 LinkageError 时一次性降级并卸载监听器。 开发文档
+> 2.45.120：选择器预览、Projectile 与 Effect 收敛 Bukkit 主线程及可取消生命周期；修复局部碰撞索引、缓存与胶囊体盒体几何；HUD 使用 owner/viewer 双向索引并清理离线与迟到回调；MemoryCache 支持过期策略热更新、负缓存及关联失效。 开发文档
 
 > 本文档面向 Kotlin/Java 开发者，帮助您使用 Orryx API 进行二次开发。
 
@@ -1257,5 +1257,5 @@ A: 对于可取消的事件，设置 `event.isCancelled = true`。
 
 ---
 
-*文档版本: 2.45.119*
+*文档版本: 2.45.120*
 *最后更新: 2026-07-14*

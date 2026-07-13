@@ -103,7 +103,7 @@ open class BukkitSkillHud(override val viewer: Player, override val owner: Playe
             refreshBindings()
         }
         if (bindingsLoaded) {
-            refreshSlots(onlyDirty = false)
+            refreshCooldowns()
         }
     }
 
@@ -190,6 +190,24 @@ open class BukkitSkillHud(override val viewer: Player, override val owner: Playe
         }
     }
 
+    private fun refreshCooldowns() {
+        slotIndex.forEach { index ->
+            if (!activeSlots[index]) return@forEach
+            val snapshot = snapshots[index] ?: run {
+                dirtySlots[index] = true
+                return@forEach
+            }
+            val damage = slotSkills[index]?.let { cooldownDamage(it, snapshot.material) }
+            if (snapshot.damage != damage) applySnapshot(index, snapshot.copy(damage = damage))
+        }
+    }
+
+    private fun cooldownDamage(skill: IPlayerSkill, material: XMaterial): Int? {
+        val maxDurability = material.get()?.maxDurability ?: return null
+        val percent = skillCooldownMap[owner.uniqueId]?.get(skill.key)?.percent(owner) ?: 1.0
+        return if (percent < 1) (maxDurability.cdouble * percent).cint else null
+    }
+
     private fun createSnapshot(index: Int, skill: IPlayerSkill?): SlotSnapshot {
         if (skill == null) {
             return SlotSnapshot(
@@ -202,10 +220,7 @@ open class BukkitSkillHud(override val viewer: Player, override val owner: Playe
             )
         }
         val material = XMaterial.matchXMaterial(skill.skill.xMaterial).orElse(XMaterial.BLAZE_ROD)
-        val damage = material.get()?.maxDurability?.let { maxDurability ->
-            val percent = skillCooldownMap[owner.uniqueId]?.get(skill.key)?.percent(owner) ?: 1.0
-            if (percent < 1) (maxDurability.cdouble * percent).cint else null
-        }
+        val damage = cooldownDamage(skill, material)
         return SlotSnapshot(
             skillKey = skill.key,
             material = material,

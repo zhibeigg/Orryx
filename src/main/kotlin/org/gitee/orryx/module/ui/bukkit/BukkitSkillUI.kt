@@ -10,6 +10,7 @@ import org.gitee.orryx.module.ui.AbstractSkillUI
 import org.gitee.orryx.module.ui.IUIManager
 import org.gitee.orryx.utils.*
 import taboolib.common.function.debounce
+import taboolib.common.platform.function.submit
 import taboolib.common5.cdouble
 import taboolib.common5.cint
 import taboolib.library.configuration.ConfigurationSection
@@ -25,7 +26,7 @@ import kotlin.math.ceil
 open class BukkitSkillUI(override val viewer: Player, override val owner: Player): AbstractSkillUI(viewer, owner) {
 
     private val debouncedUpdate = debounce(50L) {
-        updateNow()
+        submit { updateNow() }
     }
 
     companion object {
@@ -243,35 +244,40 @@ open class BukkitSkillUI(override val viewer: Player, override val owner: Player
     }
 
     private fun updateNow() {
-        owner.job {
-            it.getBindSkills()
-        }
-        bindKeys().forEachIndexed { index, iBindKey ->
-            bindSkills[iBindKey]?.apply {
-                inventory.setItem(
-                    ui.bindSkills.slots[index],
-                    buildItem(XMaterial.matchXMaterial(skill.xMaterial).orElse(XMaterial.BLAZE_ROD)) {
-                        name = getIcon()
-                        lore += getDescriptionComparison()
-                        lore += ""
-                        lore += "&a| &c左键&f将技能绑定在此格子"
-                        lore += "&a| &c右键&f将此格技能解绑"
-                        amount = index + 1
-                        hideAll()
-                        colored()
+        if (!::inventory.isInitialized || viewer.openInventory.topInventory !== inventory) return
+        owner.job { currentJob ->
+            currentJob.bindSkills { latestBindings ->
+                if (!::inventory.isInitialized || viewer.openInventory.topInventory !== inventory) return@bindSkills
+                job = currentJob
+                bindSkills = latestBindings.toMutableMap()
+                bindKeys().forEachIndexed { index, bindKey ->
+                    bindSkills[bindKey]?.apply {
+                        inventory.setItem(
+                            ui.bindSkills.slots[index],
+                            buildItem(XMaterial.matchXMaterial(skill.xMaterial).orElse(XMaterial.BLAZE_ROD)) {
+                                name = getIcon()
+                                lore += getDescriptionComparison()
+                                lore += ""
+                                lore += "&a| &c左键&f将技能绑定在此格子"
+                                lore += "&a| &c右键&f将此格技能解绑"
+                                amount = index + 1
+                                hideAll()
+                                colored()
+                            }
+                        )
+                    } ?: run {
+                        inventory.setItem(
+                            ui.bindSkills.slots[index],
+                            buildItem(XMaterial.BARRIER) {
+                                name = "空技能槽"
+                                lore += "&a| &c左键&f将技能绑定在此格子"
+                                amount = index + 1
+                                hideAll()
+                                colored()
+                            }
+                        )
                     }
-                )
-            } ?: run {
-                inventory.setItem(
-                    ui.bindSkills.slots[index],
-                    buildItem(XMaterial.BARRIER) {
-                        name = "空技能槽"
-                        lore += "&a| &c左键&f将技能绑定在此格子"
-                        amount = index + 1
-                        hideAll()
-                        colored()
-                    }
-                )
+                }
             }
         }
     }

@@ -102,16 +102,18 @@ class StringParser(val value: String) {
 
     fun showAFrame(context: ScriptContext): IContainer {
         val container = Container()
+        val viewer = adaptPlayer(context.bukkitPlayer())
+        val offset = Vector()
+        val data = if (MinecraftVersion.isHigher(MinecraftVersion.V1_12)) {
+            Particle.DustOptions(Color.RED, 1.0f)
+        } else {
+            null
+        }
         entries.forEach { entry ->
             when(val selector = SelectorInit.getSelector(entry.head.uppercase())) {
                 is ISelectorGeometry -> {
                     selector.aFrameShowLocations(context, entry).forEach {
-                        val data = if (MinecraftVersion.isHigher(MinecraftVersion.V1_12)) {
-                            Particle.DustOptions(Color.RED, 1.0f)
-                        } else {
-                            null
-                        }
-                        adaptPlayer(context.bukkitPlayer()).sendParticle(XParticle.DUST.name, it, Vector(), 1, 0.0, data)
+                        viewer.sendParticle(XParticle.DUST.name, it, offset, 1, 0.0, data)
                     }
                 }
                 null -> {

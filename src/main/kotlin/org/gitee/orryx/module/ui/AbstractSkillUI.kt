@@ -10,74 +10,35 @@ import java.util.concurrent.CompletableFuture
 abstract class AbstractSkillUI(override val viewer: Player, override val owner: Player): ISkillUI {
 
     override fun clearAndBackPoint(skill: String): CompletableFuture<Boolean> {
-        val future = CompletableFuture<Boolean>()
-        owner.skill(skill) {
-            it.clearLevelAndBackPoint().thenApply { bool ->
-                future.complete(bool)
-            }
-        }.thenApply {
-            if (it == null) {
-                future.complete(false)
-            }
+        return owner.getSkill(skill).thenComposeMain { playerSkill ->
+            playerSkill?.clearLevelAndBackPoint() ?: CompletableFuture.completedFuture(false)
         }
-        return future
     }
 
     override fun upgrade(skill: String): CompletableFuture<SkillLevelResult> {
-        val future = CompletableFuture<SkillLevelResult>()
-        owner.getSkill(skill).thenApply {
-            it?.up()?.thenApply {
-                future.complete(it)
-            } ?: future.complete(SkillLevelResult.NONE)
+        return owner.getSkill(skill).thenComposeMain { playerSkill ->
+            playerSkill?.up() ?: CompletableFuture.completedFuture(SkillLevelResult.NONE)
         }
-        return future
     }
 
     override fun clearAllAndBackPoint(): CompletableFuture<Boolean> {
-        val future = CompletableFuture<Boolean>()
-        owner.job { job ->
-            job.clearAllLevelAndBackPoint().thenApply {
-                future.complete(it)
-            }
-        }.thenApply {
-            if (it == null) {
-                future.complete(false)
-            }
+        return owner.job().thenComposeMain { job ->
+            job?.clearAllLevelAndBackPoint() ?: CompletableFuture.completedFuture(false)
         }
-        return future
     }
 
     override fun unBindSkill(job: IPlayerJob, skill: String, group: String): CompletableFuture<Boolean> {
-        val future = CompletableFuture<Boolean>()
-        owner.skill(skill) { s ->
-            BindKeyLoaderManager.getGroup(group)?.let { group ->
-                job.unBindKey(s, group).thenApply {
-                    future.complete(it)
-                }
-            } ?: future.complete(false)
-        }.thenApply {
-            if (it == null) {
-                future.complete(false)
-            }
+        val bindGroup = BindKeyLoaderManager.getGroup(group) ?: return CompletableFuture.completedFuture(false)
+        return owner.getSkill(skill).thenComposeMain { playerSkill ->
+            playerSkill?.let { job.unBindKey(it, bindGroup) } ?: CompletableFuture.completedFuture(false)
         }
-        return future
     }
 
     override fun bindSkill(job: IPlayerJob, skill: String, group: String, bindKey: String): CompletableFuture<Boolean> {
-        val future = CompletableFuture<Boolean>()
-        owner.skill(skill) { s ->
-            BindKeyLoaderManager.getGroup(group)?.let { group ->
-                BindKeyLoaderManager.getBindKey(bindKey)?.let { bindKey ->
-                    job.setBindKey(s, group, bindKey).thenApply {
-                        future.complete(it)
-                    }
-                } ?: future.complete(false)
-            } ?: future.complete(false)
-        }.thenApply {
-            if (it == null) {
-                future.complete(false)
-            }
+        val bindGroup = BindKeyLoaderManager.getGroup(group) ?: return CompletableFuture.completedFuture(false)
+        val key = BindKeyLoaderManager.getBindKey(bindKey) ?: return CompletableFuture.completedFuture(false)
+        return owner.getSkill(skill).thenComposeMain { playerSkill ->
+            playerSkill?.let { job.setBindKey(it, bindGroup, key) } ?: CompletableFuture.completedFuture(false)
         }
-        return future
     }
 }

@@ -30,21 +30,25 @@ object Nearest: ISelectorGeometry {
 
         val amount = parameter.read<Int>(0, 1)
         val radius = parameter.read<Double>(1, 32.0)
+        if (amount <= 0 || !radius.isFinite() || radius < 0.0) return emptyList()
 
         val originLoc = origin.location
-        val entities = origin.world.getNearbyEntities(originLoc, radius, radius, radius)
-
-        return entities
-            .filter { it.location != originLoc }
+        val originVector = originLoc.toVector()
+        return origin.world.getNearbyEntities(originLoc, radius, radius, radius)
+            .asSequence()
+            .filter { it != origin.getSource() }
+            .filter { it.location.toVector().distanceSquared(originVector) <= radius * radius + 1e-9 }
             .sortedBy { it.location.distanceSquared(originLoc) }
             .take(amount)
             .map { it.toTarget() }
+            .toList()
     }
 
     override fun aFrameShowLocations(context: ScriptContext, parameter: StringParser.Entry): List<Location> {
         val origin = context.getParameter().origin ?: return emptyList()
 
         val radius = parameter.read<Double>(1, 32.0)
+        if (!radius.isFinite() || radius < 0.0) return emptyList()
 
         return createSphere(adaptLocation(origin.eyeLocation), radius = radius).calculateLocations().map { it }
     }

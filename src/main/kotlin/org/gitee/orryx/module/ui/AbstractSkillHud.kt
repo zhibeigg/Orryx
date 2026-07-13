@@ -7,6 +7,7 @@ import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.key.IGroup
 import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.utils.job
+import org.gitee.orryx.utils.thenComposeMain
 import java.util.concurrent.CompletableFuture
 
 abstract class AbstractSkillHud(override val viewer: Player, override val owner: Player): ISkillHud {
@@ -22,16 +23,8 @@ abstract class AbstractSkillHud(override val viewer: Player, override val owner:
     }
 
     override fun setGroup(group: IGroup): CompletableFuture<Boolean> {
-        val future = CompletableFuture<Boolean>()
-        owner.job {
-            it.setGroup(group.key).thenApply { bool ->
-                future.complete(bool)
-            }
-        }.thenApply {
-            if (it == null) {
-                future.complete(false)
-            }
+        return owner.job().thenComposeMain { job ->
+            job?.setGroup(group.key) ?: CompletableFuture.completedFuture(false)
         }
-        return future
     }
 }

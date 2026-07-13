@@ -7,11 +7,12 @@ import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.module.ui.AbstractSkillHud
 import org.gitee.orryx.module.ui.IUIManager
+import org.gitee.orryx.module.ui.OwnerViewerIndex
 import org.gitee.orryx.module.ui.IUIManager.Companion.skillCooldownMap
 import org.gitee.orryx.utils.*
 import taboolib.common.function.debounce
 import taboolib.common.platform.function.getDataFolder
-import taboolib.common.platform.function.submitAsync
+import taboolib.common.platform.function.submit
 import java.io.File
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -19,31 +20,25 @@ import java.util.concurrent.ConcurrentHashMap
 open class GermPluginSkillHud(override val viewer: Player, override val owner: Player): AbstractSkillHud(viewer, owner) {
 
     private val debouncedUpdate = debounce(50L) {
-        updateNow()
+        submit { if (active) updateNow() }
     }
 
     companion object {
 
-        /**
-         * owner, viewer, [GermPluginSkillHud]
-         */
-        internal val germSkillHudMap = ConcurrentHashMap<UUID, MutableMap<UUID, GermPluginSkillHud>>()
+        private val index = OwnerViewerIndex<GermPluginSkillHud>({ it.owner.uniqueId }, { it.viewer.uniqueId })
+        internal val germSkillHudMap = index.byOwner
 
-        fun getViewerHud(player: Player): GermPluginSkillHud? {
-            return germSkillHudMap.firstNotNullOfOrNull {
-                it.value[player.uniqueId]
-            }
+        fun getViewerHud(player: Player): GermPluginSkillHud? = index.getViewer(player.uniqueId)
+
+        fun closeForPlayer(player: Player) {
+            index.removePlayer(player.uniqueId).forEach { it.deactivate(true) }
         }
 
         @Reload(2)
         private fun reload() {
             if (IUIManager.INSTANCE !is GermPluginUIManager) return
             skillHUDConfiguration = YamlConfiguration.loadConfiguration(File(getDataFolder(), "ui/germplugin/OrryxSkillHUD.yml"))
-            germSkillHudMap.forEach {
-                it.value.forEach { map ->
-                    map.value.update()
-                }
-            }
+            germSkillHudMap.values.flatMap { it.values }.toSet().forEach { it.open() }
         }
 
         internal lateinit var skillHUDConfiguration: YamlConfiguration
@@ -51,24 +46,32 @@ open class GermPluginSkillHud(override val viewer: Player, override val owner: P
 
     protected open lateinit var screen: GermGuiScreen
     protected open var isH = true
+    private var active = false
+    private var generation = 0L
+
+    private fun isCurrent(expectedGeneration: Long): Boolean {
+        return active && generation == expectedGeneration && getViewerHud(viewer) === this
+    }
 
     override fun update(skill: IPlayerSkill?) {
-        debouncedUpdate()
+        if (active) debouncedUpdate()
     }
 
     private fun updateNow() {
+        val expectedGeneration = generation
+        if (!isCurrent(expectedGeneration)) return
         if (isH) {
             screen.pickPart<GermGuiCanvas>("skillBindCanvasV").enable = false
             screen.pickPart<GermGuiCanvas>("canvasV").enable = false
-            updateH()
+            updateH(expectedGeneration)
         } else {
             screen.pickPart<GermGuiCanvas>("skillBindCanvasH").enable = false
             screen.pickPart<GermGuiCanvas>("canvasH").enable = false
-            updateV()
+            updateV(expectedGeneration)
         }
     }
 
-    private fun updateH() {
+    private fun updateH(expectedGeneration: Long) {
         val skillBindCanvas = screen.pickPart<GermGuiCanvas>("skillBindCanvasH")
         val bindKeyBackgroundBase = screen.pickPart<GermGuiTexture>("skillBindKeyBackgroundH")
         val bindKeyLabelBase = screen.pickPart<GermGuiLabel>("skillBindKeyH")
@@ -145,7 +148,9 @@ open class GermPluginSkillHud(override val viewer: Player, override val owner: P
 
                 canvas.pickPart<GermGuiTexture>("background-center").width = width.toString()
                 canvas.enable = true
-                submitAsync {
+                if (!isCurrent(expectedGeneration)) return@bindSkills
+                submit {
+                    if (!isCurrent(expectedGeneration)) return@submit
                     screen.sendDos(listOf(
                         "updateOption<->OrryxSkillHUD@dragWidth@%OrryxSkillHUD_canvasH\$background-left_width%+%OrryxSkillHUD_canvasH\$background-center_width%+%OrryxSkillHUD_canvasH\$background-right_width%",
                         "updateOption<->OrryxSkillHUD@dragHeight@%OrryxSkillHUD_canvasH\$background-left_height%"
@@ -155,7 +160,7 @@ open class GermPluginSkillHud(override val viewer: Player, override val owner: P
         }
     }
 
-    private fun updateV() {
+    private fun updateV(expectedGeneration: Long) {
         val skillBindCanvas = screen.pickPart<GermGuiCanvas>("skillBindCanvasV")
         val bindKeyBackgroundBase = screen.pickPart<GermGuiTexture>("skillBindKeyBackgroundV")
         val bindKeyLabelBase = screen.pickPart<GermGuiLabel>("skillBindKeyV")
@@ -241,7 +246,9 @@ open class GermPluginSkillHud(override val viewer: Player, override val owner: P
 
                 canvas.pickPart<GermGuiTexture>("background-center").height = height.toString()
                 canvas.enable = true
-                submitAsync {
+                if (!isCurrent(expectedGeneration)) return@bindSkills
+                submit {
+                    if (!isCurrent(expectedGeneration)) return@submit
                     screen.sendDos(
                         listOf(
                             "updateOption<->OrryxSkillHUD@dragWidth@%OrryxSkillHUD_canvasV\$background-up_width%",
@@ -255,30 +262,32 @@ open class GermPluginSkillHud(override val viewer: Player, override val owner: P
 
     override fun open() {
         remove(true)
-        screen = GermGuiScreen.getGermGuiScreen("OrryxSkillHUD",
-            skillHUDConfiguration
-        )
-        update()
+        screen = GermGuiScreen.getGermGuiScreen("OrryxSkillHUD", skillHUDConfiguration)
+        generation++
+        active = true
+        index.register(this)
         screen.openHud(viewer)
-        germSkillHudMap.getOrPut(owner.uniqueId) { ConcurrentHashMap() }[viewer.uniqueId] = this
+        update()
     }
 
     override fun close() {
         remove(true)
     }
 
+    private fun deactivate(close: Boolean) {
+        generation++
+        active = false
+        if (close && ::screen.isInitialized) screen.close()
+    }
+
     protected open fun remove(close: Boolean = true) {
-        germSkillHudMap.forEach {
-            val iterator = it.value.iterator()
-            while (iterator.hasNext()) {
-                val next = iterator.next()
-                if (next.key == viewer.uniqueId) {
-                    iterator.remove()
-                    if (close) {
-                        next.value.screen.close()
-                    }
-                }
-            }
+        val indexed = index.getViewer(viewer.uniqueId)
+        linkedSetOf<GermPluginSkillHud>().apply {
+            indexed?.let(::add)
+            add(this@GermPluginSkillHud)
+        }.forEach { hud ->
+            index.remove(hud)
+            hud.deactivate(close)
         }
     }
 }

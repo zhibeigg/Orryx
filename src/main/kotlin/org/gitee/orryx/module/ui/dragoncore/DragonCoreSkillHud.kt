@@ -7,10 +7,12 @@ import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.module.ui.AbstractSkillHud
 import org.gitee.orryx.module.ui.IUIManager
+import org.gitee.orryx.module.ui.OwnerViewerIndex
 import org.gitee.orryx.module.ui.IUIManager.Companion.skillCooldownMap
 import org.gitee.orryx.utils.*
 import taboolib.common.function.debounce
 import taboolib.common.platform.function.getDataFolder
+import taboolib.common.platform.function.submit
 import taboolib.platform.util.onlinePlayers
 import java.io.File
 import java.util.*
@@ -19,15 +21,13 @@ import java.util.concurrent.ConcurrentHashMap
 open class DragonCoreSkillHud(override val viewer: Player, override val owner: Player): AbstractSkillHud(viewer, owner) {
 
     private val debouncedUpdate = debounce(50L) { r: Result<IPlayerSkill?> ->
-        updateNow(r.getOrNull())
+        submit { if (active) updateNow(r.getOrNull()) }
     }
 
     companion object {
 
-        /**
-         * owner, viewer, [DragonSkillHud]
-         */
-        internal val dragonSkillHudMap = ConcurrentHashMap<UUID, MutableMap<UUID, DragonCoreSkillHud>>()
+        private val index = OwnerViewerIndex<DragonCoreSkillHud>({ it.owner.uniqueId }, { it.viewer.uniqueId })
+        internal val dragonSkillHudMap = index.byOwner
         internal lateinit var skillHudConfiguration: YamlConfiguration
 
         @Reload(2)
@@ -44,18 +44,27 @@ open class DragonCoreSkillHud(override val viewer: Player, override val owner: P
             }
         }
 
-        fun getViewerHud(player: Player): DragonCoreSkillHud? {
-            return dragonSkillHudMap.firstNotNullOfOrNull {
-                it.value[player.uniqueId]
-            }
+        fun getViewerHud(player: Player): DragonCoreSkillHud? = index.getViewer(player.uniqueId)
+
+        fun closeForPlayer(player: Player) {
+            index.removePlayer(player.uniqueId).forEach { it.deactivate(true) }
         }
     }
 
+    private var active = false
+    private var generation = 0L
+
+    private fun isCurrent(expectedGeneration: Long): Boolean {
+        return active && generation == expectedGeneration && getViewerHud(viewer) === this
+    }
+
     override fun update(skill: IPlayerSkill?) {
-        debouncedUpdate(Result.success(skill))
+        if (active) debouncedUpdate(Result.success(skill))
     }
 
     private fun updateNow(skill: IPlayerSkill?) {
+        val expectedGeneration = generation
+        if (!isCurrent(expectedGeneration)) return
         if (skill != null) {
             PacketSender.sendSyncPlaceholder(viewer, mapOf(
                 "Orryx_bind_cooldown_${skill.key}" to skillCooldownMap[owner.uniqueId]?.get(skill.key)?.getCountdown(owner).toString()
@@ -64,6 +73,7 @@ open class DragonCoreSkillHud(override val viewer: Player, override val owner: P
             owner.keySetting { keySetting ->
                 owner.job { job ->
                     job.bindSkills { bindSkills ->
+                        if (!isCurrent(expectedGeneration)) return@bindSkills
                         val keys = bindKeys()
                         PacketSender.sendSyncPlaceholder(viewer, mapOf(
                             "Orryx_bind_keys" to keys.joinToString("<br>") { it.key },
@@ -81,30 +91,31 @@ open class DragonCoreSkillHud(override val viewer: Player, override val owner: P
 
     override fun open() {
         remove(true)
+        generation++
+        active = true
+        index.register(this)
         PacketSender.sendOpenHud(viewer, "OrryxSkillHUD")
         update()
-        dragonSkillHudMap.getOrPut(owner.uniqueId) { ConcurrentHashMap() }[viewer.uniqueId] = this
     }
 
     override fun close() {
         remove(true)
     }
 
+    private fun deactivate(close: Boolean) {
+        generation++
+        active = false
+        if (close) PacketSender.sendRunFunction(viewer, "OrryxSkillHUD", "方法.关闭界面;", false)
+    }
+
     protected open fun remove(close: Boolean = true) {
-        dragonSkillHudMap.forEach {
-            val iterator = it.value.iterator()
-            while (iterator.hasNext()) {
-                val next = iterator.next()
-                if (next.key == viewer.uniqueId) {
-                    iterator.remove()
-                    if (close) {
-                        PacketSender.sendRunFunction(next.value.viewer, "OrryxSkillHUD", "方法.关闭界面;", false)
-                    }
-                }
-            }
-        }
-        if (dragonSkillHudMap[owner.uniqueId]?.isEmpty() == true) {
-            dragonSkillHudMap.remove(owner.uniqueId)
+        val indexed = index.getViewer(viewer.uniqueId)
+        linkedSetOf<DragonCoreSkillHud>().apply {
+            indexed?.let(::add)
+            add(this@DragonCoreSkillHud)
+        }.forEach { hud ->
+            index.remove(hud)
+            hud.deactivate(close)
         }
     }
 }

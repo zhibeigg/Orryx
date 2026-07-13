@@ -5,11 +5,9 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.gitee.orryx.api.adapters.IEntity
 import org.gitee.orryx.api.adapters.IVector
-import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
 import org.gitee.orryx.api.collider.local.ILocalCollider
 import org.gitee.orryx.core.kether.actions.game.projectile.Projectile.ProjectileType.*
 import org.gitee.orryx.core.kether.actions.math.hitbox.collider.basic.AABBPlus
-import org.gitee.orryx.core.kether.actions.math.hitbox.collider.local.LocalAABB
 import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.utils.*
 import org.joml.Vector3d
@@ -19,8 +17,11 @@ import taboolib.common.platform.service.PlatformExecutor
 import taboolib.library.kether.ParsedAction
 import taboolib.library.kether.QuestContext
 import taboolib.module.kether.run
-import java.util.*
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionStage
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
 
 class Projectile<T: ITargetLocation<*>>(
     val type: ProjectileType,
@@ -42,18 +43,31 @@ class Projectile<T: ITargetLocation<*>>(
 
     val removed = CompletableFuture<Boolean>()
 
+    private val lifecycle = SingleFlightLifecycle()
+    private val started = AtomicBoolean(false)
+    private val lifetime = ProjectileLifetime(period, timeout)
     private var task: PlatformExecutor.PlatformTask? = null
-    private var ticked = -period
+    private var currentCycle: CompletableFuture<*>? = null
+    private val activeActions = ConcurrentHashMap.newKeySet<CompletableFuture<*>>()
+    private val ticked: Long
+        get() = lifetime.ticked
     private var hitCount = 0
     private val hitCountMap = HashMap<UUID, Int>()
+    private val entityBoundsCenter = Vector3d()
+    private val entityBoundsExtents = Vector3d()
+    private val entityBounds = AABBPlus<ITargetLocation<*>>(entityBoundsExtents, entityBoundsCenter)
+    private var warnedUnsupportedBlockCollision = false
 
     fun start(frame: QuestContext.Frame) {
+        if (!started.compareAndSet(false, true)) return
         ensureSync {
+            if (!lifecycle.isActive) return@ensureSync
             source.getBukkitLivingEntity()?.let { entity ->
                 entity.setGravity(true)
-                entity.addPotionEffect(PotionEffect(PotionEffectType.LEVITATION, timeout.toInt(), -1, false, false))
+                val potionDuration = timeout.coerceIn(1L, Int.MAX_VALUE.toLong()).toInt()
+                entity.addPotionEffect(PotionEffect(PotionEffectType.LEVITATION, potionDuration, -1, false, false))
             }
-            task = submit(delay = period, period = period) {
+            task = submit(delay = lifetime.period, period = lifetime.period) {
                 nextTick(frame)
             }
             nextTick(frame)
@@ -61,136 +75,151 @@ class Projectile<T: ITargetLocation<*>>(
     }
 
     fun validCheck() {
-        if (!source.isValid) {
-            remove()
-            return
-        }
+        if (!source.isValid) remove()
     }
 
     fun nextTick(frame: QuestContext.Frame) {
-        ticked += period
-        validCheck()
-
-        val hitBlockFuture = CompletableFuture<Block>()
-        val hitEntityFuture = CompletableFuture<IEntity>()
-
-        hitBlockFuture.thenAccept { block ->
-            hitCount ++
-            if (!source.isValid) return@thenAccept
-            onHit?.also {
-                frame.variables().set("@hitBlock", block)
-                frame.variables().set("hitCount", hitCount)
-                frame.run(it)
-            }
+        if (!lifecycle.isActive) return
+        if (!source.isValid || !lifetime.advance()) {
+            remove()
+            return
         }
-
-        hitEntityFuture.thenAccept { entity ->
-            hitCount ++
-            val entityHitCount = hitCountMap.getOrElse(entity.uniqueId) { 0 } + 1
-            hitCountMap[entity.uniqueId] = entityHitCount
-            if (!source.isValid) return@thenAccept
-            onHit?.also {
-                frame.variables().set("@hitEntity", entity)
-                frame.variables().set("hitCount", hitCount)
-                frame.variables().set("entityHitCount", entityHitCount)
-                frame.run(it)
-            }
-        }
-
-        fun onPeriod(): CompletableFuture<Any?> {
-            if (isSyncClient) syncClient()
-            return onPeriod?.let { frame.run(it) } ?: CompletableFuture.completedFuture(null)
-        }
+        if (!lifecycle.tryStart()) return
 
         frame.variables().set("@ticked", ticked)
-        frame.run(vector).vector { vector ->
-            when (type) {
-                BUKKIT_ENTITY, BUKKIT_PROJECTILE -> ensureSync {
-                    lookAndMove(vector)
-                    hitbox.update()
-                    onPeriod().whenComplete { _, _ ->
-                        if (!checkHitBlock { hitBlockFuture.complete(it) }) {
-                            hitBlockFuture.cancel(true)
-                        }
-                        if (!checkHitEntity { hitEntityFuture.complete(it) }) {
-                            hitEntityFuture.cancel(true)
-                        }
-                    }
+        currentCycle = invokeAction(frame, vector).vector { it }
+            .thenApplyMain { nextVector ->
+                if (!lifecycle.isActive || !source.isValid) return@thenApplyMain false
+                lookAndMove(nextVector)
+                hitbox.update()
+                if (isSyncClient) syncClient()
+                true
+            }.thenCompose { moved ->
+                if (!moved || !lifecycle.isActive) {
+                    CompletableFuture.completedFuture(null)
+                } else {
+                    onPeriod?.let { invokeAction(frame, it) } ?: CompletableFuture.completedFuture(null)
                 }
-                ADY_ENTITY, NONE -> {
-                    lookAndMove(vector)
-                    hitbox.update()
-                    onPeriod().whenComplete { _, _ ->
-                        ensureSync {
-                            if (!checkHitBlock { hitBlockFuture.complete(it) }) {
-                                hitBlockFuture.cancel(true)
+            }.handle { _, throwable ->
+                throwable?.printStackTrace()
+                Unit
+            }.thenApplyMain {
+                if (!lifecycle.isActive || !source.isValid) return@thenApplyMain null
+                checkHitBlock {}
+                findHitEntity()
+            }.thenComposeMain { entity ->
+                if (entity == null || !lifecycle.isActive) {
+                    CompletableFuture.completedFuture(null)
+                } else {
+                    recordHit(frame, entity)
+                    onHit?.let { invokeAction(frame, it) } ?: CompletableFuture.completedFuture(null)
+                }
+            }.whenComplete { _, throwable ->
+                try {
+                    runOnMainThread {
+                        try {
+                            if (throwable != null) {
+                                throwable.printStackTrace()
+                                remove()
+                            } else if (lifecycle.isActive && !source.isValid) {
+                                remove()
                             }
-                            if (!checkHitEntity { hitEntityFuture.complete(it) }) {
-                                hitEntityFuture.cancel(true)
-                            }
+                        } finally {
+                            lifecycle.finish()
                         }
                     }
+                } catch (scheduleFailure: Throwable) {
+                    lifecycle.finish()
+                    scheduleFailure.printStackTrace()
+                    remove()
                 }
             }
-        }
+    }
 
-        if (ticked >= timeout) {
-            remove()
+    private fun invokeAction(frame: QuestContext.Frame, action: ParsedAction<*>): CompletableFuture<Any?> {
+        val actionFuture = invokeFuture { frame.run(action) }
+        if (!lifecycle.isActive) {
+            actionFuture.cancel(true)
+            return actionFuture
+        }
+        activeActions += actionFuture
+        actionFuture.whenComplete { _, _ -> activeActions.remove(actionFuture) }
+        return actionFuture
+    }
+
+    private fun <R> invokeFuture(block: () -> CompletionStage<R>): CompletableFuture<R> {
+        return try {
+            block().toCompletableFuture()
+        } catch (throwable: Throwable) {
+            CompletableFuture<R>().also { it.completeExceptionally(throwable) }
         }
     }
 
     fun lookAndMove(vector: IVector) {
-        val face = vector.normalize(Vector3d()).bukkit()
+        if (!lifecycle.isActive || !source.isValid) return
+        val movement = vector.bukkit()
+        val current = source.location
+        val face = if (movement.lengthSquared() > 1e-12) movement.clone().normalize() else current.direction
         if (through) {
-            source.teleport(source.location.clone().add(vector.bukkit()).setDirection(face))
+            source.teleport(current.clone().add(movement).setDirection(face))
         } else {
-            source.teleport(source.location.clone().setDirection(face))
-            source.velocity = vector.bukkit()
+            source.teleport(current.clone().setDirection(face))
+            source.velocity = movement
         }
     }
 
     fun checkHitBlock(onHit: (Block) -> Unit): Boolean {
-        if (hitBlock) warning("暂不支持与方块碰撞")
-        return false
-    }
-
-    fun checkHitEntity(onHit: (IEntity) -> Unit): Boolean {
-        if (hitEntity) {
-            val broadPhase = hitbox.fastCollider ?: return false
-            val center = broadPhase.center
-            val halfExtents = broadPhase.halfExtents
-            val queryCenter = source.location.clone().apply {
-                x = center.x
-                y = center.y
-                z = center.z
-            }
-            val entities = source.world.getNearbyEntities(
-                queryCenter,
-                halfExtents.x.coerceAtLeast(0.0),
-                halfExtents.y.coerceAtLeast(0.0),
-                halfExtents.z.coerceAtLeast(0.0),
-            )
-            entities.forEach {
-                if (it.uniqueId == source.uniqueId) return@forEach
-                val abstract = it.abstract()
-                val hitbox = LocalAABB<AbstractBukkitEntity>(
-                    Vector3d(0.0, it.height/2, 0.0),
-                    Vector3d(it.width/2, it.height/2,it.width/2),
-                    abstract.coordinateConverter()
-                    )
-                hitbox.update()
-                if (colliding(this.hitbox, hitbox)) {
-                    onHit(abstract)
-                    return true
-                }
-            }
+        if (hitBlock && !warnedUnsupportedBlockCollision) {
+            warnedUnsupportedBlockCollision = true
+            warning("暂不支持与方块碰撞")
         }
         return false
     }
 
+    fun checkHitEntity(onHit: (IEntity) -> Unit): Boolean {
+        val entity = findHitEntity() ?: return false
+        onHit(entity)
+        return true
+    }
+
+    private fun findHitEntity(): IEntity? {
+        if (!hitEntity || !lifecycle.isActive || !source.isValid) return null
+        val broadPhase = hitbox.fastCollider ?: return null
+        val center = broadPhase.center
+        val halfExtents = broadPhase.halfExtents
+        val queryCenter = source.location.clone().apply {
+            x = center.x
+            y = center.y
+            z = center.z
+        }
+        return source.world.getNearbyEntities(
+            queryCenter,
+            halfExtents.x.coerceAtLeast(0.0),
+            halfExtents.y.coerceAtLeast(0.0),
+            halfExtents.z.coerceAtLeast(0.0),
+        ).firstNotNullOfOrNull { entity ->
+            if (entity.uniqueId == source.uniqueId || !entity.isValid || entity.isDead) return@firstNotNullOfOrNull null
+            val entityLocation = entity.location
+            entityBoundsCenter.set(entityLocation.x, entityLocation.y + entity.height / 2.0, entityLocation.z)
+            entityBoundsExtents.set(entity.width / 2.0, entity.height / 2.0, entity.width / 2.0)
+            if (colliding(hitbox, entityBounds)) entity.abstract() else null
+        }
+    }
+
+    private fun recordHit(frame: QuestContext.Frame, entity: IEntity) {
+        hitCount++
+        val entityHitCount = hitCountMap.getOrElse(entity.uniqueId) { 0 } + 1
+        hitCountMap[entity.uniqueId] = entityHitCount
+        frame.variables().set("@hitEntity", entity)
+        frame.variables().set("hitCount", hitCount)
+        frame.variables().set("entityHitCount", entityHitCount)
+    }
+
     fun hit(frame: QuestContext.Frame) {
-        hitCount ++
-        onHit?.also { frame.run(it) }
+        if (!lifecycle.isActive) return
+        hitCount++
+        frame.variables().set("hitCount", hitCount)
+        onHit?.also { invokeAction(frame, it) }
     }
 
     fun syncClient() {
@@ -198,13 +227,15 @@ class Projectile<T: ITargetLocation<*>>(
     }
 
     fun remove() {
-        if (removed.isDone) return
+        if (!lifecycle.close()) return
         removed.complete(true)
         task?.cancel()
+        currentCycle?.cancel(true)
+        currentCycle = null
+        activeActions.toList().forEach { it.cancel(true) }
+        activeActions.clear()
         ensureSync {
-            if (source.isValid) {
-                source.remove()
-            }
+            if (source.isValid) source.remove()
         }
     }
 

@@ -19,8 +19,18 @@ open class LocalOBB<T : ITargetLocation<*>>(
     private val globalCenter = Vector3d()
     private val globalRotation = Quaterniond()
 
-    override val vertices = Array(8) { Vector3d() }
-    override val axes = Array(3) { Vector3d() }
+    private val globalVertices = Array(8) { Vector3d() }
+    private val globalAxes = Array(3) { Vector3d() }
+    override val vertices: Array<Vector3d>
+        get() {
+            update()
+            return globalVertices
+        }
+    override val axes: Array<Vector3d>
+        get() {
+            update()
+            return globalAxes
+        }
     private val fastExtents = Vector3d()
     private val fastBounds = AABBPlus<T>(fastExtents, globalCenter)
 
@@ -55,24 +65,30 @@ open class LocalOBB<T : ITargetLocation<*>>(
         }
 
     override var center: Vector3d
-        get() = globalCenter
+        get() {
+            update()
+            return globalCenter
+        }
         set(center) {
-            dirty[0] = true
-            version[0] = parent.positionVersion()
-            version[1] = parent.rotationVersion()
-            val position: Vector3d? = parent.position
-            val rotation: Quaterniond? = parent.rotation.conjugate(Quaterniond())
-            localCenter.set(center).sub(position).rotate(rotation)
+            parent.update()
+            parent.rotation.conjugate(Quaterniond()).transform(
+                Vector3d(center).sub(parent.position),
+                localCenter
+            )
             globalCenter.set(center)
+            dirty[0] = true
         }
 
     override var rotation: Quaterniond
-        get() = globalRotation
+        get() {
+            update()
+            return globalRotation
+        }
         set(rotation) {
-            dirty[1] = true
-            version[1] = parent.rotationVersion()
-            localRotation.set(rotation).mul(parent.rotation.conjugate(Quaterniond()))
+            parent.update()
+            parent.rotation.conjugate(Quaterniond()).mul(rotation, localRotation)
             globalRotation.set(rotation)
+            dirty[1] = true
         }
 
     override fun setDisable(disable: Boolean) {
@@ -106,7 +122,7 @@ open class LocalOBB<T : ITargetLocation<*>>(
             val offset = center.sub(globalCenter, Vector3d())
             globalCenter.set(center)
 
-            for (vertex in vertices) {
+            for (vertex in globalVertices) {
                 vertex.add(offset)
             }
 
@@ -122,30 +138,31 @@ open class LocalOBB<T : ITargetLocation<*>>(
         version[1] = parent.rotationVersion()
         val position = parent.position
         val rotation = parent.rotation
-        val center = rotation.transform(this.localCenter, globalCenter).add(position)
+        rotation.transform(this.localCenter, globalCenter).add(position)
         rotation.mul(this.localRotation, globalRotation)
+        val center = globalCenter
 
         // 旋转轴向
-        axes[0] = globalRotation.transform(Vector3d(1.0, 0.0, 0.0))
-        axes[1] = globalRotation.transform(Vector3d(0.0, 1.0, 0.0))
-        axes[2] = globalRotation.transform(Vector3d(0.0, 0.0, 1.0))
+        globalRotation.transform(Vector3d(1.0, 0.0, 0.0), globalAxes[0])
+        globalRotation.transform(Vector3d(0.0, 1.0, 0.0), globalAxes[1])
+        globalRotation.transform(Vector3d(0.0, 0.0, 1.0), globalAxes[2])
         fastExtents.set(
-            abs(axes[0].x) * halfExtents.x + abs(axes[1].x) * halfExtents.y + abs(axes[2].x) * halfExtents.z,
-            abs(axes[0].y) * halfExtents.x + abs(axes[1].y) * halfExtents.y + abs(axes[2].y) * halfExtents.z,
-            abs(axes[0].z) * halfExtents.x + abs(axes[1].z) * halfExtents.y + abs(axes[2].z) * halfExtents.z
+            abs(globalAxes[0].x) * halfExtents.x + abs(globalAxes[1].x) * halfExtents.y + abs(globalAxes[2].x) * halfExtents.z,
+            abs(globalAxes[0].y) * halfExtents.x + abs(globalAxes[1].y) * halfExtents.y + abs(globalAxes[2].y) * halfExtents.z,
+            abs(globalAxes[0].z) * halfExtents.x + abs(globalAxes[1].z) * halfExtents.y + abs(globalAxes[2].z) * halfExtents.z
         )
 
         val v = Vector3d()
 
         // 计算顶点
-        vertices[0] = Vector3d().set(center).add(axes[0].mul(halfExtents.x, v)).add(axes[1].mul(halfExtents.y, v)).add(axes[2].mul(halfExtents.z, v))
-        vertices[1] = Vector3d().set(center).add(axes[0].mul(halfExtents.x, v)).add(axes[1].mul(halfExtents.y, v)).sub(axes[2].mul(halfExtents.z, v))
-        vertices[2] = Vector3d().set(center).add(axes[0].mul(halfExtents.x, v)).sub(axes[1].mul(halfExtents.y, v)).add(axes[2].mul(halfExtents.z, v))
-        vertices[3] = Vector3d().set(center).add(axes[0].mul(halfExtents.x, v)).sub(axes[1].mul(halfExtents.y, v)).sub(axes[2].mul(halfExtents.z, v))
-        vertices[4] = Vector3d().set(center).sub(axes[0].mul(halfExtents.x, v)).add(axes[1].mul(halfExtents.y, v)).add(axes[2].mul(halfExtents.z, v))
-        vertices[5] = Vector3d().set(center).sub(axes[0].mul(halfExtents.x, v)).add(axes[1].mul(halfExtents.y, v)).sub(axes[2].mul(halfExtents.z, v))
-        vertices[6] = Vector3d().set(center).sub(axes[0].mul(halfExtents.x, v)).sub(axes[1].mul(halfExtents.y, v)).add(axes[2].mul(halfExtents.z, v))
-        vertices[7] = Vector3d().set(center).sub(axes[0].mul(halfExtents.x, v)).sub(axes[1].mul(halfExtents.y, v)).sub(axes[2].mul(halfExtents.z, v))
+        globalVertices[0].set(center).add(globalAxes[0].mul(halfExtents.x, v)).add(globalAxes[1].mul(halfExtents.y, v)).add(globalAxes[2].mul(halfExtents.z, v))
+        globalVertices[1].set(center).add(globalAxes[0].mul(halfExtents.x, v)).add(globalAxes[1].mul(halfExtents.y, v)).sub(globalAxes[2].mul(halfExtents.z, v))
+        globalVertices[2].set(center).add(globalAxes[0].mul(halfExtents.x, v)).sub(globalAxes[1].mul(halfExtents.y, v)).add(globalAxes[2].mul(halfExtents.z, v))
+        globalVertices[3].set(center).add(globalAxes[0].mul(halfExtents.x, v)).sub(globalAxes[1].mul(halfExtents.y, v)).sub(globalAxes[2].mul(halfExtents.z, v))
+        globalVertices[4].set(center).sub(globalAxes[0].mul(halfExtents.x, v)).add(globalAxes[1].mul(halfExtents.y, v)).add(globalAxes[2].mul(halfExtents.z, v))
+        globalVertices[5].set(center).sub(globalAxes[0].mul(halfExtents.x, v)).add(globalAxes[1].mul(halfExtents.y, v)).sub(globalAxes[2].mul(halfExtents.z, v))
+        globalVertices[6].set(center).sub(globalAxes[0].mul(halfExtents.x, v)).sub(globalAxes[1].mul(halfExtents.y, v)).add(globalAxes[2].mul(halfExtents.z, v))
+        globalVertices[7].set(center).sub(globalAxes[0].mul(halfExtents.x, v)).sub(globalAxes[1].mul(halfExtents.y, v)).sub(globalAxes[2].mul(halfExtents.z, v))
     }
 
     override val fastCollider: IAABB<T>

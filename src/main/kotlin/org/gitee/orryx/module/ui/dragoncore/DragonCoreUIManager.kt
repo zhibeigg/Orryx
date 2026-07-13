@@ -55,7 +55,7 @@ class DragonCoreUIManager: IUIManager {
                         PacketSender.sendYaml(e.player, "gui/OrryxSkillHUD.yml", DragonCoreSkillHud.skillHudConfiguration)
                         if (setting.joinOpenHud) {
                             e.player.orryxProfileTo {
-                                if (it.job != null) createSkillHUD(e.player, e.player).open()
+                                if (e.player.isOnline && it.job != null) createSkillHUD(e.player, e.player).open()
                             }
                         }
                     }
@@ -106,7 +106,7 @@ class DragonCoreUIManager: IUIManager {
         }
 
         registerBukkitListener(PlayerQuitEvent::class.java) { e ->
-            DragonCoreSkillHud.getViewerHud(e.player)?.close()
+            DragonCoreSkillHud.closeForPlayer(e.player)
         }
     }
 

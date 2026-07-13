@@ -43,20 +43,22 @@ open class LocalCapsule<T : ITargetLocation<*>>(
     override var center: Vector3d
         get() { update(); return globalCenter }
         set(center) {
-            dirty[0] = true
-            version[0] = parent.positionVersion()
-            version[1] = parent.rotationVersion()
-            localCenter.set(center).sub(parent.position).rotate(parent.rotation.conjugate(Quaterniond()))
+            parent.update()
+            parent.rotation.conjugate(Quaterniond()).transform(
+                Vector3d(center).sub(parent.position),
+                localCenter
+            )
             globalCenter.set(center)
+            dirty[0] = true
         }
 
     override var rotation: Quaterniond
         get() { update(); return globalRotation }
         set(rotation) {
-            dirty[1] = true
-            version[1] = parent.rotationVersion()
-            localRotation.set(rotation).mul(parent.rotation.conjugate(Quaterniond()))
+            parent.update()
+            parent.rotation.conjugate(Quaterniond()).mul(rotation, localRotation)
             globalRotation.set(rotation)
+            dirty[1] = true
         }
 
     override val direction: Vector3d get() { update(); return globalDirection }

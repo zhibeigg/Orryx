@@ -9,7 +9,7 @@ import org.gitee.orryx.utils.ORRYX_NAMESPACE
 import org.gitee.orryx.utils.readContainer
 import org.gitee.orryx.utils.runSubScript
 import org.gitee.orryx.utils.scriptParser
-import taboolib.common.platform.function.submitAsync
+import taboolib.common.platform.function.submit
 import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*
 
@@ -61,13 +61,15 @@ object SelectorActions {
         return actionFuture { future ->
             run(timeout).long { timeout ->
                 run(they).str { they ->
-                    var time = 0
-                    val task = submitAsync(period = 5) {
+                    var time = 0L
+                    val parser = StringParser(they)
+                    val task = submit(period = 5) {
                         if (time * 5 >= timeout) {
                             future.complete(null)
                             cancel()
+                            return@submit
                         }
-                        StringParser(they).showAFrame(script())
+                        parser.showAFrame(script())
                         time++
                     }
                     addOrryxCloseable(future) { task.cancel() }

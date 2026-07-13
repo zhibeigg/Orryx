@@ -17,7 +17,7 @@ class TargetCoordinateConverter(private val target: ITargetLocation<*>) : ICoord
 
     private var yRot: Double = target.location.yaw.toDouble()
 
-    override val rotation: Quaterniond = Quaterniond().setAngleAxis(Math.toDegrees(yRot), 0.0, 1.0, 0.0)
+    override val rotation: Quaterniond = Quaterniond().setAngleAxis(Math.toRadians(yRot), 0.0, 1.0, 0.0)
 
     override fun positionVersion(): Short {
         return version[0]
@@ -37,7 +37,7 @@ class TargetCoordinateConverter(private val target: ITargetLocation<*>) : ICoord
 
         if (yRot != target.location.yaw.toDouble()) {
             yRot = target.location.yaw.toDouble()
-            rotation.setAngleAxis(Math.toDegrees(yRot), 0.0, 1.0, 0.0)
+            rotation.setAngleAxis(Math.toRadians(yRot), 0.0, 1.0, 0.0)
             version[1]++
         }
     }

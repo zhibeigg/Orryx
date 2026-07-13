@@ -55,7 +55,7 @@ class GermPluginUIManager: IUIManager {
             if (setting.joinOpenHud) {
                 onlinePlayers.forEach { player ->
                     player.orryxProfileTo {
-                        if (it.job != null) createSkillHUD(player, player).open()
+                        if (player.isOnline && it.job != null) createSkillHUD(player, player).open()
                     }
                 }
             }
@@ -64,13 +64,13 @@ class GermPluginUIManager: IUIManager {
         registerBukkitListener(GermClientLinkedEvent::class.java) { e ->
             if (setting.joinOpenHud) {
                 e.player.orryxProfileTo {
-                    if (it.job != null) createSkillHUD(e.player, e.player).open()
+                    if (e.player.isOnline && it.job != null) createSkillHUD(e.player, e.player).open()
                 }
             }
         }
 
         registerBukkitListener(PlayerQuitEvent::class.java) { e ->
-            GermPluginSkillHud.getViewerHud(e.player)?.close()
+            GermPluginSkillHud.closeForPlayer(e.player)
         }
     }
 

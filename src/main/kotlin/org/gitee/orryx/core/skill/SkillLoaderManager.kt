@@ -4,6 +4,7 @@ import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.api.events.OrryxSkillReloadEvent
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.core.skill.skills.*
+import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.module.state.StateManager
 import org.gitee.orryx.utils.*
 import taboolib.common.LifeCycle
@@ -46,6 +47,7 @@ object SkillLoaderManager {
                 skillMap[skill.key] = skill
                 if (skill is ICastSkill) castSkillMap[skill.key] = skill
             }
+            MemoryCache.invalidatePlayerSkills()
             consoleMessage("&e┣&7Skills loaded &e${skillMap.size} &a√")
             StateManager.reload(castSkillMap)
         }

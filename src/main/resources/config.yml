@@ -10,7 +10,7 @@ Group:
 # ！修改后需要重启
 # 多服同步缓存：redis/broker/disable
 CacheManager: "disable"
-# 本服玩家数据缓存。容量可热重载，过期时间在启动时生效
+# 本服玩家数据缓存。容量与访问过期时间均支持热重载
 MemoryCache:
   Profile:
     MaximumSize: 1000
@@ -24,6 +24,9 @@ MemoryCache:
   Key:
     MaximumSize: 1000
     ExpireAfterAccessMinutes: 30
+# 所有粒子效果每 Tick 最多发送的数据包数，超过预算的本帧粒子不发送
+Effect:
+  MaxPacketsPerTick: 20000
 # 多少Tick自然恢复法力值一次
 ManaRegainTick: 20
 # 多少Tick自然恢复精力值一次

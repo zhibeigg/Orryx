@@ -26,6 +26,17 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
+internal fun resizeCachePolicy(
+    cache: AsyncLoadingCache<*, *>,
+    maximum: Long,
+    expireAfterAccessMinutes: Long
+) {
+    cache.synchronous().policy().eviction().ifPresent { it.maximum = maximum.coerceAtLeast(1L) }
+    cache.synchronous().policy().expireAfterAccess().ifPresent {
+        it.setExpiresAfter(expireAfterAccessMinutes.coerceAtLeast(1L), TimeUnit.MINUTES)
+    }
+}
+
 /**
  * 本服缓存，用于快速读取数据
  * */
@@ -56,7 +67,7 @@ object MemoryCache {
             }
         }
 
-    private val playerJobCache: AsyncLoadingCache<String, IPlayerJob?> = Caffeine.newBuilder()
+    private val playerJobCache: AsyncLoadingCache<String, Optional<IPlayerJob>> = Caffeine.newBuilder()
         .initialCapacity(60)
         .maximumSize(maximum("Job", 1_000))
         .expireAfterAccess(expireMinutes("Job", 30), TimeUnit.MINUTES)
@@ -67,7 +78,7 @@ object MemoryCache {
             OrryxAPI.ioScope.future {
                 val info = reversePlayerJobDataTag(tag)
                 val po = ISyncCacheManager.INSTANCE.getPlayerJob(info.second, info.third, info.first)
-                po.await()?.let { p ->
+                Optional.ofNullable(po.await()?.let { p ->
                     PlayerJob(
                         p.id,
                         info.second,
@@ -76,11 +87,11 @@ object MemoryCache {
                         p.group,
                         bindKeyOfGroupToMutableMap(p.bindKeyOfGroup)
                     )
-                }
+                })
             }
         }
 
-    private val playerSkillCache: AsyncLoadingCache<String, IPlayerSkill?> = Caffeine.newBuilder()
+    private val playerSkillCache: AsyncLoadingCache<String, Optional<IPlayerSkill>> = Caffeine.newBuilder()
         .initialCapacity(300)
         .maximumSize(maximum("Skill", 5_000))
         .expireAfterAccess(expireMinutes("Skill", 20), TimeUnit.MINUTES)
@@ -91,7 +102,7 @@ object MemoryCache {
             OrryxAPI.ioScope.future {
                 val info = reversePlayerJobSkillDataTag(tag)
                 val po = ISyncCacheManager.INSTANCE.getPlayerSkill(info.player, info.id, info.job, info.skill).await()
-                po?.let { p ->
+                Optional.ofNullable(po?.let { p ->
                     val skillLoader = SkillLoaderManager.getSkillLoader(p.skill) ?: return@let null
                     PlayerSkill(
                         p.id,
@@ -101,7 +112,7 @@ object MemoryCache {
                         p.level,
                         if (p.locked && !skillLoader.isLocked) false else p.locked
                     )
-                }
+                })
             }
         }
 
@@ -123,10 +134,13 @@ object MemoryCache {
 
     @Reload(1)
     private fun resize() {
-        playerProfileCache.synchronous().policy().eviction().ifPresent { it.maximum = maximum("Profile", 1_000) }
-        playerJobCache.synchronous().policy().eviction().ifPresent { it.maximum = maximum("Job", 1_000) }
-        playerSkillCache.synchronous().policy().eviction().ifPresent { it.maximum = maximum("Skill", 5_000) }
-        playerKeyCache.synchronous().policy().eviction().ifPresent { it.maximum = maximum("Key", 1_000) }
+        fun resize(cache: AsyncLoadingCache<*, *>, key: String, defaultMaximum: Long, defaultExpiry: Long) {
+            resizeCachePolicy(cache, maximum(key, defaultMaximum), expireMinutes(key, defaultExpiry))
+        }
+        resize(playerProfileCache, "Profile", 1_000, 30)
+        resize(playerJobCache, "Job", 1_000, 30)
+        resize(playerSkillCache, "Skill", 5_000, 20)
+        resize(playerKeyCache, "Key", 1_000, 30)
     }
 
     fun printStats() {
@@ -137,12 +151,10 @@ object MemoryCache {
         printStats("职业", playerJobCache.synchronous().estimatedSize(), playerJobCache.synchronous().stats())
         printStats("技能", playerSkillCache.synchronous().estimatedSize(), playerSkillCache.synchronous().stats())
         printStats("按键", playerKeyCache.synchronous().estimatedSize(), playerKeyCache.synchronous().stats())
+    }
 
-        // 清理所有缓存，释放内存
-        playerProfileCache.synchronous().invalidateAll()
-        playerJobCache.synchronous().invalidateAll()
+    fun invalidatePlayerSkills() {
         playerSkillCache.synchronous().invalidateAll()
-        playerKeyCache.synchronous().invalidateAll()
     }
 
     fun getPlayerProfile(player: UUID): CompletableFuture<IPlayerProfile> {
@@ -150,11 +162,11 @@ object MemoryCache {
     }
 
     fun getPlayerJob(player: UUID, id: Int, job: String): CompletableFuture<IPlayerJob?> {
-        return playerJobCache.get(playerJobDataTag(player, id, job))
+        return playerJobCache.get(playerJobDataTag(player, id, job)).thenApply { it.orElse(null) }
     }
 
     fun getPlayerSkill(player: UUID, id: Int, job: String, skill: String): CompletableFuture<IPlayerSkill?> {
-        return playerSkillCache.get(playerJobSkillDataTag(player, id, job, skill))
+        return playerSkillCache.get(playerJobSkillDataTag(player, id, job, skill)).thenApply { it.orElse(null) }
     }
 
     fun getPlayerKey(player: UUID): CompletableFuture<PlayerKeySetting> {
@@ -163,17 +175,21 @@ object MemoryCache {
 
     fun savePlayerProfile(playerProfile: IPlayerProfile) {
         debug { "Cache 保存玩家 Profile" }
+        val previous = playerProfileCache.synchronous().getIfPresent(playerProfile.uuid)
+        if (previous == null || previous.id != playerProfile.id) {
+            invalidatePlayerAssociations(playerProfile.uuid)
+        }
         playerProfileCache.put(playerProfile.uuid, CompletableFuture.completedFuture(playerProfile))
     }
 
     fun savePlayerJob(playerJob: IPlayerJob) {
         debug { "Cache 保存玩家 Job" }
-        playerJobCache.put(playerJobDataTag(playerJob.uuid, playerJob.id, playerJob.key), CompletableFuture.completedFuture(playerJob))
+        playerJobCache.put(playerJobDataTag(playerJob.uuid, playerJob.id, playerJob.key), CompletableFuture.completedFuture(Optional.of(playerJob)))
     }
 
     fun savePlayerSkill(playerSkill: IPlayerSkill) {
         debug { "Cache 保存玩家 Skill" }
-        playerSkillCache.put(playerJobSkillDataTag(playerSkill.uuid, playerSkill.id, playerSkill.job, playerSkill.key), CompletableFuture.completedFuture(playerSkill))
+        playerSkillCache.put(playerJobSkillDataTag(playerSkill.uuid, playerSkill.id, playerSkill.job, playerSkill.key), CompletableFuture.completedFuture(Optional.of(playerSkill)))
     }
 
     fun savePlayerKeySetting(player: UUID, setting: PlayerKeySetting) {
@@ -184,6 +200,18 @@ object MemoryCache {
     fun removePlayerProfile(player: UUID) {
         debug { "Cache 移除玩家 Profile" }
         playerProfileCache.synchronous().invalidate(player)
+        invalidatePlayerAssociations(player)
+    }
+
+    private fun invalidatePlayerAssociations(player: UUID) {
+        val prefix = playerDataTag(player).removeSuffix(":profile")
+        playerKeyCache.synchronous().invalidate(player)
+        playerJobCache.synchronous().invalidateAll(
+            playerJobCache.synchronous().asMap().keys.filter { it.startsWith("$prefix:job:") }
+        )
+        playerSkillCache.synchronous().invalidateAll(
+            playerSkillCache.synchronous().asMap().keys.filter { it.startsWith("$prefix:skill:") }
+        )
     }
 
     fun removePlayerJob(player: UUID, id: Int, job: String) {

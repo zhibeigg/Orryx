@@ -228,6 +228,18 @@ class ColliderTest {
         @Test fun `capsule vs AABB separated`() {
             assertFalse(isColliding(MockCapsule(Vector3d(0.0,0.0,0.0),0.5,2.0), MockAABB(Vector3d(5.0,0.0,0.0),Vector3d(1.0,1.0,1.0))))
         }
+        @Test fun `capsule axis crossing AABB corner collides`() {
+            val direction = Vector3d(2.0, 4.0, 0.0).normalize()
+            val rotation = Quaterniond().rotationTo(Vector3d(0.0, 1.0, 0.0), direction)
+            val capsule = MockCapsule(Vector3d(-1.0, 1.0, 0.0), 1e-6, kotlin.math.sqrt(20.0), rotation)
+            assertTrue(isColliding(capsule, MockAABB(Vector3d(), Vector3d(1.0, 1.0, 1.0))))
+        }
+        @Test fun `capsule axis crossing OBB corner collides`() {
+            val direction = Vector3d(2.0, 4.0, 0.0).normalize()
+            val rotation = Quaterniond().rotationTo(Vector3d(0.0, 1.0, 0.0), direction)
+            val capsule = MockCapsule(Vector3d(-1.0, 1.0, 0.0), 1e-6, kotlin.math.sqrt(20.0), rotation)
+            assertTrue(isColliding(capsule, MockOBB(Vector3d(), Vector3d(1.0, 1.0, 1.0))))
+        }
         @Test fun `ray vs capsule hit`() {
             assertTrue(isColliding(MockRay(Vector3d(-5.0,0.0,0.0),Vector3d(1.0,0.0,0.0),10.0), MockCapsule(Vector3d(0.0,0.0,0.0),1.0,4.0)))
         }
@@ -264,6 +276,15 @@ class ColliderTest {
             assertEquals(9.0, getClosestDistanceBetweenSegmentsSqr(
                 Vector3d(0.0,0.0,0.0), Vector3d(10.0,0.0,0.0),
                 Vector3d(5.0,0.0,3.0), Vector3d(5.0,10.0,3.0)), 1e-6)
+        }
+        @Test fun `segment distance - both degenerate`() {
+            assertEquals(25.0, getClosestDistanceBetweenSegmentsSqr(
+                Vector3d(0.0,0.0,0.0), Vector3d(0.0,0.0,0.0),
+                Vector3d(3.0,4.0,0.0), Vector3d(3.0,4.0,0.0)), 1e-9)
+        }
+        @Test fun `closest point - degenerate segment`() {
+            assertEquals(Vector3d(2.0, 3.0, 4.0), getClosestPointOnSegment(
+                Vector3d(2.0,3.0,4.0), Vector3d(2.0,3.0,4.0), Vector3d(100.0,100.0,100.0)))
         }
     }
 

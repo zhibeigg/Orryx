@@ -54,7 +54,7 @@ class ArcartXUIManager: IUIManager {
         registerBukkitListener(ClientChannelEvent::class.java) { e ->
             if (setting.joinOpenHud) {
                 e.player.orryxProfileTo {
-                    if (it.job != null) createSkillHUD(e.player, e.player).open()
+                    if (e.player.isOnline && it.job != null) createSkillHUD(e.player, e.player).open()
                 }
             }
         }
@@ -122,7 +122,7 @@ class ArcartXUIManager: IUIManager {
         }
 
         registerBukkitListener(PlayerQuitEvent::class.java) { e ->
-            ArcartXSkillHud.getViewerHud(e.player)?.close()
+            ArcartXSkillHud.closeForPlayer(e.player)
         }
     }
 

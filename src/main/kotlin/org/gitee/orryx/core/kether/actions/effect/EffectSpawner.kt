@@ -1,14 +1,10 @@
 package org.gitee.orryx.core.kether.actions.effect
 
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.future.await
-import kotlinx.coroutines.launch
 import org.bukkit.*
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.material.MaterialData
-import org.gitee.orryx.api.OrryxAPI.Companion.effectScope
+import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.core.container.IContainer
 import org.gitee.orryx.core.kether.actions.effect.EffectType.*
 import org.gitee.orryx.core.targets.ITargetEntity
@@ -17,7 +13,7 @@ import org.gitee.orryx.utils.*
 import org.joml.Matrix3d
 import org.joml.Vector3d
 import taboolib.common.platform.function.adaptPlayer
-import taboolib.common.platform.function.submitAsync
+import taboolib.common.platform.function.submit
 import taboolib.common.platform.service.PlatformExecutor
 import taboolib.common.util.Location
 import taboolib.common5.cdouble
@@ -29,6 +25,28 @@ import taboolib.module.effect.shape.Ray.RayStopType
 import taboolib.platform.util.toBukkitLocation
 import taboolib.module.nms.MinecraftVersion
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.atomic.AtomicBoolean
+
+private object EffectPacketBudget {
+    private var resetTask: PlatformExecutor.PlatformTask? = null
+    private var remaining = 0
+
+    fun ensureStarted() {
+        if (resetTask != null) return
+        remaining = configuredLimit()
+        resetTask = submit(period = 1) { remaining = configuredLimit() }
+    }
+
+    fun tryConsume(): Boolean {
+        if (remaining <= 0) return false
+        remaining--
+        return true
+    }
+
+    private fun configuredLimit(): Int {
+        return Orryx.config.getInt("Effect.MaxPacketsPerTick", 20000).coerceAtLeast(0)
+    }
+}
 
 class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick: Long = 1, val mode: SpawnerType = SpawnerType.PLAY, val origins: IContainer, val viewers: IContainer): ParticleSpawner {
 
@@ -36,61 +54,73 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
 
     private val particleName = builder.particle.name
     private val particleOffset = taboolib.common.util.Vector(builder.offset.x(), builder.offset.y(), builder.offset.z())
-    private val particleData = createParticleData()
+    private var particleData: Any? = null
     internal val matrix = builder.matrix?.taboo()
 
-    private val effects =
-        origins.mapInstance<ITargetLocation<*>, OrryxParticleObj> {
-            build(EffectOrigin(it))
-        }
-
+    private val effects = mutableListOf<OrryxParticleObj>()
+    private val started = AtomicBoolean(false)
+    private val stopped = AtomicBoolean(false)
     private var updateTask: PlatformExecutor.PlatformTask? = null
+    private var renderViewers = emptyList<Player>()
 
     fun start() {
-        effectScope.launch {
+        if (stopped.get() || !started.compareAndSet(false, true)) return
+        runOnMainThread {
+            if (stopped.get()) return@runOnMainThread
             try {
-                effects.forEach { it.startManaged() }
-                if (duration > 1L && effects.isNotEmpty()) {
-                    startUpdateTask()
+                EffectPacketBudget.ensureStarted()
+                particleData = createParticleData()
+                effects += origins.mapInstance<ITargetLocation<*>, OrryxParticleObj> { build(EffectOrigin(it)) }
+                effects.forEach { it.initialize() }
+                if (stopped.get()) return@runOnMainThread
+                if (effects.isEmpty()) {
+                    stop()
+                    return@runOnMainThread
                 }
-                effects.map { effect ->
-                    async {
-                        effect.future.await()
+                var elapsed = 0L
+                updateTask = submit(period = 1) {
+                    try {
+                        if (stopped.get()) {
+                            cancel()
+                            return@submit
+                        }
+                        renderViewers = viewers.mapInstance<ITargetEntity<Player>, Player> { it.getSource() }
+                            .filter { it.isOnline }
+                        if (elapsed % tick.coerceAtLeast(1L) == 0L) effects.forEach { it.sync() }
+                        if (elapsed % builder.period.coerceAtLeast(1L) == 0L) effects.forEach { it.renderFrame() }
+                        elapsed++
+                        if (elapsed >= duration.coerceAtLeast(1L)) stop()
+                    } catch (throwable: Throwable) {
+                        stop(throwable)
                     }
-                }.awaitAll()
-                future.complete(null)
-            } catch (e: Exception) {
-                future.completeExceptionally(e)
+                }
+            } catch (throwable: Throwable) {
+                stop(throwable)
             }
-        }
-    }
-
-    private fun startUpdateTask() {
-        var delay = 0L
-        updateTask = submitAsync(period = 1) {
-            if (delay >= duration) {
-                stop()
-            }
-            if (delay % tick.coerceAtLeast(1L) == 0L) {
-                effects.forEach { it.sync() }
-            }
-            delay++
         }
     }
 
     fun stop() {
-        updateTask?.cancel()
-        updateTask = null
-        effects.forEach {
-            it.stop()
+        stop(null)
+    }
+
+    private fun stop(throwable: Throwable?) {
+        if (!stopped.compareAndSet(false, true)) return
+        runOnMainThread {
+            updateTask?.cancel()
+            updateTask = null
+            effects.forEach { it.stop() }
+            renderViewers = emptyList()
+            if (throwable == null) future.complete(null) else future.completeExceptionally(throwable)
         }
     }
 
     override fun spawn(location: Location) {
         val count = builder.count
         val speed = builder.speed
-        viewers.forEachInstance<ITargetEntity<Player>> { target ->
-            adaptPlayer(target.getSource()).sendParticle(
+        for (viewer in renderViewers) {
+            if (!EffectPacketBudget.tryConsume()) break
+            adaptPlayer(viewer).sendParticle(
                 particleName,
                 location,
                 particleOffset,
@@ -161,7 +191,8 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
                                 Vibration.Destination.BlockDestination(destination.location.toBukkitLocation())
                             }
                             is ParticleData.VibrationData.EntityDestination -> {
-                                Vibration.Destination.EntityDestination(Bukkit.getEntity(destination.entity)!!)
+                                val entity = Bukkit.getEntity(destination.entity) ?: return null
+                                Vibration.Destination.EntityDestination(entity)
                             }
                         },
                         data.arrivalTime

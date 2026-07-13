@@ -5,59 +5,47 @@ import org.gitee.orryx.utils.taboo
 import org.gitee.orryx.utils.toLocation
 import org.joml.Matrix3d
 import org.joml.Vector3d
-import taboolib.common.platform.function.submit
-import taboolib.common.platform.function.submitAsync
-import taboolib.common.platform.service.PlatformExecutor
 import taboolib.common.util.Location
 import taboolib.common5.cdouble
 import taboolib.module.effect.ParticleObj
 import taboolib.module.effect.Playable
 import taboolib.module.effect.shape.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.atomic.AtomicBoolean
 
 class OrryxParticleObj(var effectOrigin: EffectOrigin, val obj: ParticleObj, val spawner: EffectSpawner) {
 
-    var task: PlatformExecutor.PlatformTask? = null
     val future = CompletableFuture<Void>()
+    private val active = AtomicBoolean(false)
 
     fun start() {
-        start(sharedTicker = false)
+        initialize()
+        renderFrame()
+        stop()
     }
 
-    internal fun startManaged() {
-        start(sharedTicker = true)
-    }
-
-    private fun start(sharedTicker: Boolean) {
+    internal fun initialize() {
+        if (!active.compareAndSet(false, true)) return
         obj.spawner = spawner
         spawner.matrix?.let { obj.addMatrix(it) }
-        if (spawner.duration <= 1L) {
-            obj.show()
-            future.complete(null)
-        } else {
-            if (obj is Playable && spawner.mode == SpawnerType.PLAY) {
-                obj.alwaysPlayAsync()
-            } else {
-                obj.alwaysShowAsync()
-            }
-            if (!sharedTicker) {
-                createTask()
-            }
-        }
+        sync()
     }
 
-    private fun createTask() {
-        var delay = 0L
-        task = submitAsync(period = 1) {
-            if (delay >= spawner.duration) stop()
-            if (delay % spawner.tick.coerceAtLeast(1L) == 0L) {
-                sync()
-            }
-            delay++
+    internal fun renderFrame() {
+        if (!active.get()) return
+        if (obj is Playable && spawner.mode == SpawnerType.PLAY) {
+            obj.playNextPoint()
+        } else {
+            obj.show()
         }
     }
 
     internal fun sync() {
+        if (!active.get()) return
+        if (!effectOrigin.isValid()) {
+            stop()
+            return
+        }
         when(obj) {
             is Arc -> syncArc()
             is Astroid -> syncAstroid()
@@ -78,12 +66,9 @@ class OrryxParticleObj(var effectOrigin: EffectOrigin, val obj: ParticleObj, val
     }
 
     fun stop() {
-        task?.cancel()
-        task = null
+        if (!active.getAndSet(false)) return
         obj.turnOffTask()
-        submit(delay = 1) {
-            future.complete(null)
-        }
+        future.complete(null)
     }
 
     private fun syncArc() {

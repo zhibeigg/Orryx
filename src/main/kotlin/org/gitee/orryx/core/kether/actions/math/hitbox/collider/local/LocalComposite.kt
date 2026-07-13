@@ -33,6 +33,19 @@ open class LocalComposite<T : ITargetLocation<*>, C : ILocalCollider<T>>(
 
     private var disable: Boolean = false
 
+    private fun reindexFrom(startIndex: Int) {
+        for (index in startIndex.coerceAtLeast(0)..<colliderNames.size) {
+            val name = colliderNames[index]
+            colliderMap[name] = index paired colliders[index]
+        }
+    }
+
+    private fun nextDefaultName(): String {
+        var index = colliders.size + 1
+        while (colliderMap.containsKey(index.toString())) index++
+        return index.toString()
+    }
+
     init {
         version[0] = (parent.positionVersion() - 1).toShort()
         version[1] = (parent.rotationVersion() - 1).toShort()
@@ -90,9 +103,12 @@ open class LocalComposite<T : ITargetLocation<*>, C : ILocalCollider<T>>(
     }
 
     fun setCollider(name: String, collider: C) {
-        val old = colliderMap[name]
-        val index: Int = old!!.first
-        colliderMap.replace(name, index paired collider)
+        val index = colliderMap[name]?.first
+        if (index == null) {
+            addCollider(name, collider)
+            return
+        }
+        colliderMap[name] = index paired collider
         colliders[index] = collider
         colliderNames[index] = name
     }
@@ -114,10 +130,10 @@ open class LocalComposite<T : ITargetLocation<*>, C : ILocalCollider<T>>(
      * @see LocalComposite.addCollider
      */
     override fun addCollider(collider: C) {
+        val name = nextDefaultName()
         colliders.add(collider)
-        val name = colliders.size.toString()
         colliderNames.add(name)
-        colliderMap.put(name, colliders.size - 1 paired collider)
+        colliderMap[name] = colliders.lastIndex paired collider
     }
 
     /** 添加碰撞箱 */
@@ -127,9 +143,9 @@ open class LocalComposite<T : ITargetLocation<*>, C : ILocalCollider<T>>(
             return
         }
 
-        colliderMap.put(name, colliders.size - 1 paired collider)
         colliders.add(collider)
         colliderNames.add(name)
+        colliderMap[name] = colliders.lastIndex paired collider
     }
 
     /** 添加碰撞箱
@@ -138,45 +154,34 @@ open class LocalComposite<T : ITargetLocation<*>, C : ILocalCollider<T>>(
      *
      * 尽量避免使用这个方法，因为需要对所有指定索引之后的缓存进行修改 */
     fun addCollider(index: Int, name: String, collider: C) {
-        colliders.add(index, collider)
-        colliderNames.add(index, name)
-
-        for (i in index..<colliderNames.size) {
-            val key = colliderNames[i]
-            val pair = colliderMap[key]!!
-            colliderMap.replace(key, pair.first + 1 paired pair.second)
+        if (contains(name)) {
+            setCollider(name, collider)
+            return
         }
+        val insertionIndex = index.coerceIn(0, colliders.size)
+        colliders.add(insertionIndex, collider)
+        colliderNames.add(insertionIndex, name)
+        reindexFrom(insertionIndex)
     }
 
     /** 移除指定索引碰撞箱
      *
      * 尽量避免使用这个方法，因为需要对所有指定索引之后的缓存进行修改 */
     override fun removeCollider(index: Int) {
+        if (index !in colliders.indices) return
         val name = colliderNames[index]
         colliders.removeAt(index)
         colliderNames.removeAt(index)
         colliderMap.remove(name)
-
-        for (i in index..<colliderNames.size) {
-            val key = colliderNames[i]
-            val pair = colliderMap[key]!!
-            colliderMap.replace(key, pair.first - 1 paired pair.second)
-        }
+        reindexFrom(index)
     }
 
     /** 移除名称碰撞箱
      *
      * 尽量避免使用这个方法，因为需要对所有名称索引之后的缓存进行修改 */
     open fun removeCollider(name: String?) {
-        val pair = colliderMap.remove(name)!!
-        colliders.removeAt(pair.first)
-        colliderNames.remove(name)
-
-        for (i in pair.first..<colliderNames.size) {
-            val key = colliderNames[i]
-            val p = colliderMap[key]!!
-            colliderMap.replace(key, p.first - 1 paired p.second)
-        }
+        val pair = colliderMap[name] ?: return
+        removeCollider(pair.first)
     }
 
     fun getColliderName(index: Int): String {

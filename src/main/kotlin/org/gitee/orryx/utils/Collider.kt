@@ -2,6 +2,8 @@ package org.gitee.orryx.utils
 
 import org.gitee.orryx.api.collider.*
 import org.gitee.orryx.api.collider.local.ICoordinateConverter
+import org.gitee.orryx.core.kether.actions.math.hitbox.collider.basic.closestPointsOnSegments
+import org.gitee.orryx.core.kether.actions.math.hitbox.collider.basic.closestPointsSegmentAabb
 import org.gitee.orryx.core.kether.actions.math.hitbox.collider.local.TargetCoordinateConverter
 import org.gitee.orryx.core.targets.ITargetLocation
 import org.joml.Intersectiond
@@ -146,18 +148,29 @@ fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(capsule: ICapsu
  * @return 有碰撞返回true
  */
 fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(capsule: ICapsule<T1>, obb: IOBB<T2>): Boolean {
-    // 计算头尾点最值
-    val height = capsule.height / 2
-    val point1 = capsule.direction.mul(height, Vector3d()).add(capsule.center)
-    val point2 = capsule.direction.mul(-height, Vector3d()).add(capsule.center)
-    val closest1 = getClosestPointOnSegment(point1, point2, obb.center)
-    val closest2 = getClosestPointOBB(closest1, obb)
-    // 求胶囊体半径平方
-    val totalRadius = square(capsule.radius)
-    // 求两个点之间的距离
-    val distance = (closest1.sub(closest2)).lengthSquared()
-    // 距离小于等于半径平方则碰撞
-    return distance <= totalRadius
+    val halfHeight = capsule.height / 2.0
+    val point1 = capsule.direction.mul(halfHeight, Vector3d()).add(capsule.center)
+    val point2 = capsule.direction.mul(-halfHeight, Vector3d()).add(capsule.center)
+    val axes = obb.axes
+    val center = obb.center
+
+    fun toLocal(point: Vector3d): Vector3d {
+        val offset = point.sub(center, Vector3d())
+        return Vector3d(offset.dot(axes[0]), offset.dot(axes[1]), offset.dot(axes[2]))
+    }
+
+    val localPoint1 = toLocal(point1)
+    val localPoint2 = toLocal(point2)
+    val halfExtents = obb.halfExtents
+    val distanceSquared = closestPointsSegmentAabb(
+        localPoint1,
+        localPoint2,
+        Vector3d(-halfExtents.x, -halfExtents.y, -halfExtents.z),
+        halfExtents,
+        Vector3d(),
+        Vector3d()
+    )
+    return distanceSquared <= square(capsule.radius)
 }
 
 /**
@@ -230,18 +243,18 @@ fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(sphere: ISphere
  * @return 有碰撞返回true
  */
 fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(capsule: ICapsule<T1>, aabb: IAABB<T2>): Boolean {
-    // 计算头尾点最值
-    val height = capsule.height / 2
-    val pointA1 = capsule.direction.mul(height, Vector3d()).add(capsule.center)
-    val pointA2 = capsule.direction.mul(-height, Vector3d()).add(capsule.center)
-    val closest1 = getClosestPointOnSegment(pointA1, pointA2, aabb.center)
-    val closest2 = getClosestPointAABB(closest1, aabb)
-    // 求胶囊体半径平方
-    val totalRadius = square(capsule.radius)
-    // 求两个点之间的距离
-    val distance = closest1.sub(closest2).lengthSquared()
-    // 距离小于等于半径平方则碰撞
-    return distance <= totalRadius
+    val halfHeight = capsule.height / 2.0
+    val pointA1 = capsule.direction.mul(halfHeight, Vector3d()).add(capsule.center)
+    val pointA2 = capsule.direction.mul(-halfHeight, Vector3d()).add(capsule.center)
+    val distanceSquared = closestPointsSegmentAabb(
+        pointA1,
+        pointA2,
+        aabb.min,
+        aabb.max,
+        Vector3d(),
+        Vector3d()
+    )
+    return distanceSquared <= square(capsule.radius)
 }
 
 /**
@@ -423,11 +436,11 @@ fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(composite: ICom
  * @return 线段上最接近判定点的坐标
  */
 fun getClosestPointOnSegment(start: Vector3d, end: Vector3d, point: Vector3d): Vector3d {
-    val se = end.sub(start, Vector3d())
-    val sp = point.sub(start, Vector3d())
-    var f = se.dot(sp) / se.lengthSquared()
-    f = min(max(f, 0.0), 1.0)
-    return se.mul(f).add(start, sp)
+    val segment = end.sub(start, Vector3d())
+    val lengthSquared = segment.lengthSquared()
+    if (lengthSquared <= 1e-12) return Vector3d(start)
+    val parameter = segment.dot(point.sub(start, Vector3d())) / lengthSquared
+    return segment.mul(parameter.coerceIn(0.0, 1.0)).add(start)
 }
 
 /**
@@ -468,64 +481,10 @@ fun getClosestDistanceBetweenSegmentsSqr(
     start2: Vector3d,
     end2: Vector3d
 ): Double {
-    val u = Vector3d(end1).sub(start1)
-    val v = Vector3d(end2).sub(start2)
-    val w = Vector3d(start1).sub(start2)
-    val a = u.dot(u) // u*u
-    val b = u.dot(v) // u*v
-    val c = v.dot(v) // v*v
-    val d = u.dot(w) // u*w
-    val e = v.dot(w) // v*w
-    val dt = a * c - b * b
-    var sd = dt
-    var td = dt
-    var sn: Double // sn = be-cd
-    var tn: Double // tn = ae-bd
-    if (abs(dt - 0) < 1e-6) {
-        // 两直线平行
-        sn = 0.0 // 在 s 上指定取 s0
-        sd = 1.0 // 防止计算时除 0 错误
-        tn = e // 按 (公式3) 求 tc
-        td = c
-    } else {
-        sn = (b * e - c * d)
-        tn = (a * e - b * d)
-        if (sn < 0) {
-            // 最近点在 s 起点以外，同平行条件
-            sn = 0.0
-            tn = e
-            td = c
-        } else if (sn > sd) {
-            // 最近点在 s 终点以外( 即 sc > 1 , 则取 sc = 1 )
-            sn = sd
-            tn = e + b // 按 (公式3) 计算
-            td = c
-        }
-    }
-    if (tn < 0.0) {
-        // 最近点在t起点以外
-        tn = 0.0
-        if (-d < 0)  // 按 (公式2) 计算，如果等号右边小于 0 ，则 sc 也小于零，取 sc=0
-            sn = 0.0
-        else if (-d > a)  // 按 (公式2) 计算，如果 sc 大于 1 ，取 sc=1
-            sn = sd
-        else {
-            sn = -d
-            sd = a
-        }
-    } else if (tn > td) {
-        tn = td
-        if ((-d + b) < 0.0) sn = 0.0
-        else if ((-d + b) > a) sn = sd
-        else {
-            sn = (-d + b)
-            sd = a
-        }
-    }
-    val sc: Double = if (abs(sn - 0) < 1e-6) 0.0 else sn / sd
-    val tc: Double = if (abs(tn - 0) < 1e-6) 0.0 else tn / td
-    val dP = Vector3d(w).add(u.mul(sc)).sub(v.mul(tc))
-    return dP.dot(dP)
+    val closest1 = Vector3d()
+    val closest2 = Vector3d()
+    closestPointsOnSegments(start1, end1, start2, end2, closest1, closest2)
+    return closest1.distanceSquared(closest2)
 }
 
 /**

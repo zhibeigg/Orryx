@@ -123,6 +123,13 @@ internal object GeometryBroadPhase {
         )
     }
 
+    fun withinHorizontalRadius(origin: Vector, point: Vector, radius: Double): Boolean {
+        if (!origin.isFinite() || !point.isFinite() || !radius.isFinite() || radius < 0.0) return false
+        val deltaX = point.x - origin.x
+        val deltaZ = point.z - origin.z
+        return deltaX * deltaX + deltaZ * deltaZ <= radius * radius + EPSILON
+    }
+
     fun nearbyLivingEntities(world: World, bounds: Bounds): Sequence<LivingEntity> {
         return nearbyLivingEntities(world, bounds.center, bounds.halfExtents)
     }
