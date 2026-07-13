@@ -14,6 +14,7 @@ import org.gitee.orryx.core.profile.PlayerProfile
 import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.dao.persistence.PersistenceManager
 import org.gitee.orryx.dao.persistence.PersistenceWriteException
+import org.gitee.orryx.module.PlayerResourceCoordinator
 import org.gitee.orryx.utils.MANA_FLAG
 import org.gitee.orryx.utils.NodensPlugin
 import org.gitee.orryx.utils.eval
@@ -23,9 +24,11 @@ import org.gitee.orryx.utils.orryxProfile
 import org.gitee.orryx.utils.orryxProfileTo
 import org.gitee.orryx.utils.thenApplyMain
 import org.gitee.orryx.utils.thenComposeMain
+import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common5.cdouble
 import taboolib.module.kether.orNull
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionException
 
 class ManaMangerDefault : IManaManager {
 
@@ -34,11 +37,20 @@ class ManaMangerDefault : IManaManager {
     }
 
     override fun getMaxMana(player: Player): CompletableFuture<Double> {
-        return player.job().thenApplyMain { job -> job?.getMaxMana() ?: 0.0 }
+        return player.job().thenCompose { job ->
+            job?.getMaxManaAsync() ?: CompletableFuture.completedFuture(0.0)
+        }.thenApplyMain { it.finiteNonNegative() }
     }
 
     override fun getMaxMana(player: Player, job: IJob, level: Int): Double {
-        val mana = player.eval(job.maxManaActions, mapOf("level" to level)).orNull().cdouble
+        check(isPrimaryThread) { "同步 getMaxMana 必须在 Bukkit 主线程调用" }
+        val future = player.eval(job.maxManaActions, mapOf("level" to level))
+        check(future.isDone) { "职业 ${job.key} 的 MaxMana 不允许包含异步动作" }
+        val mana = try {
+            future.getNow(null).cdouble
+        } catch (throwable: CompletionException) {
+            throw throwable.cause ?: throwable
+        }
         var extend = 0.0
         if (NodensPlugin.isEnabled) {
             val valueMap = player.attributeMemory()?.mergedAttribute(Mana.Max)
@@ -59,58 +71,97 @@ class ManaMangerDefault : IManaManager {
 
     override fun giveMana(player: Player, mana: Double): CompletableFuture<ManaResult> {
         if (!mana.isFinite()) return failed(IllegalArgumentException("法力值必须是有限数字"))
-        if (mana < 0.0) return takeMana(player, -mana)
+        return PlayerResourceCoordinator.enqueue(player.uniqueId) {
+            if (mana < 0.0) {
+                takeManaTransactionDetailed(player, -mana).thenApply { it.result }
+            } else {
+                giveManaTransaction(player, mana)
+            }
+        }
+    }
+
+    private fun giveManaTransaction(player: Player, mana: Double): CompletableFuture<ManaResult> {
         return player.orryxProfile().thenComposeMain { profile ->
-            player.job().thenComposeMain { job ->
-                if (job == null) return@thenComposeMain CompletableFuture.completedFuture(ManaResult.NO_JOB)
-                val event = OrryxPlayerManaEvents.Up.Pre(player, profile, mana)
-                if (!event.call()) return@thenComposeMain CompletableFuture.completedFuture(ManaResult.CANCELLED)
-                val max = job.getMaxMana().finiteNonNegative()
-                val current = current(profile)
-                val next = (current + event.mana.finiteNonNegative()).coerceIn(0.0, max)
-                val previous = profile.getFlag(MANA_FLAG)
-                val attempted = next.flag(true)
-                replaceResourceFlag(profile, player, attempted)
-                commitResource(profile, player, previous, attempted) {
-                    OrryxPlayerManaEvents.Up.Post(player, profile, event.mana).call()
-                    ManaResult.SUCCESS
+            player.job().thenCompose { job ->
+                if (job == null) return@thenCompose CompletableFuture.completedFuture(ManaResult.NO_JOB)
+                job.getMaxManaAsync().thenComposeMain { configuredMax ->
+                    val event = OrryxPlayerManaEvents.Up.Pre(player, profile, mana)
+                    if (!event.call()) return@thenComposeMain CompletableFuture.completedFuture(ManaResult.CANCELLED)
+                    val amount = event.mana.requireNonNegative("事件修改后的法力增加值")
+                    val max = configuredMax.finiteNonNegative()
+                    val current = current(profile)
+                    val next = if (current >= max) current else (current + amount).coerceAtMost(max)
+                    val actual = next - current
+                    if (actual <= 0.0) return@thenComposeMain CompletableFuture.completedFuture(ManaResult.SAME)
+                    val previous = profile.getFlag(MANA_FLAG)
+                    val attempted = next.flag(true)
+                    replaceResourceFlag(profile, player, attempted)
+                    commitResource(profile, player, previous, attempted) {
+                        OrryxPlayerManaEvents.Up.Post(player, profile, actual).call()
+                        ManaResult.SUCCESS
+                    }
                 }
             }
         }
     }
 
     override fun takeMana(player: Player, mana: Double): CompletableFuture<ManaResult> {
+        return takeManaDetailed(player, mana).thenApply { it.result }
+    }
+
+    override fun takeManaDetailed(player: Player, mana: Double): CompletableFuture<ManaDebitResult> {
         if (!mana.isFinite()) return failed(IllegalArgumentException("法力值必须是有限数字"))
-        if (mana < 0.0) return giveMana(player, -mana)
+        return PlayerResourceCoordinator.enqueue(player.uniqueId) {
+            if (mana < 0.0) {
+                giveManaTransaction(player, -mana).thenApply { ManaDebitResult(it, 0.0) }
+            } else {
+                takeManaTransactionDetailed(player, mana)
+            }
+        }
+    }
+
+    private fun takeManaTransactionDetailed(player: Player, mana: Double): CompletableFuture<ManaDebitResult> {
         return player.orryxProfile().thenComposeMain { profile ->
-            player.job().thenComposeMain { job ->
-                if (job == null) return@thenComposeMain CompletableFuture.completedFuture(ManaResult.NO_JOB)
-                val event = OrryxPlayerManaEvents.Down.Pre(player, profile, mana)
-                if (!event.call()) return@thenComposeMain CompletableFuture.completedFuture(ManaResult.CANCELLED)
-                val cost = event.mana.finiteNonNegative()
-                val current = current(profile)
-                if (current < cost) {
-                    return@thenComposeMain CompletableFuture.completedFuture(ManaResult.NOT_ENOUGH)
-                }
-                val next = (current - cost).coerceIn(0.0, job.getMaxMana().finiteNonNegative())
-                val previous = profile.getFlag(MANA_FLAG)
-                val attempted = next.flag(true)
-                replaceResourceFlag(profile, player, attempted)
-                commitResource(profile, player, previous, attempted) {
-                    OrryxPlayerManaEvents.Down.Post(player, profile, cost).call()
-                    ManaResult.SUCCESS
+            player.job().thenCompose { job ->
+                if (job == null) return@thenCompose CompletableFuture.completedFuture(ManaDebitResult(ManaResult.NO_JOB, 0.0))
+                job.getMaxManaAsync().thenComposeMain { configuredMax ->
+                    val event = OrryxPlayerManaEvents.Down.Pre(player, profile, mana)
+                    if (!event.call()) {
+                        return@thenComposeMain CompletableFuture.completedFuture(ManaDebitResult(ManaResult.CANCELLED, 0.0))
+                    }
+                    val cost = event.mana.requireNonNegative("事件修改后的法力消耗值")
+                    val current = current(profile)
+                    if (current < cost) {
+                        return@thenComposeMain CompletableFuture.completedFuture(
+                            ManaDebitResult(ManaResult.NOT_ENOUGH, 0.0)
+                        )
+                    }
+                    val next = (current - cost).coerceAtLeast(0.0)
+                    val actual = current - next
+                    val previous = profile.getFlag(MANA_FLAG)
+                    val attempted = next.flag(true)
+                    replaceResourceFlag(profile, player, attempted)
+                    commitResource(profile, player, previous, attempted) {
+                        OrryxPlayerManaEvents.Down.Post(player, profile, actual).call()
+                        ManaDebitResult(ManaResult.SUCCESS, actual)
+                    }
                 }
             }
         }
     }
 
     override fun setMana(player: Player, mana: Double): CompletableFuture<ManaResult> {
-        if (!mana.isFinite()) return failed(IllegalArgumentException("法力值必须是有限数字"))
-        return getMana(player).thenCompose { current ->
-            when {
-                mana > current -> giveMana(player, mana - current)
-                mana < current -> takeMana(player, current - mana)
-                else -> CompletableFuture.completedFuture(ManaResult.SAME)
+        if (!mana.isFinite() || mana < 0.0) {
+            return failed(IllegalArgumentException("法力值必须是非负有限数字"))
+        }
+        return PlayerResourceCoordinator.enqueue(player.uniqueId) {
+            player.orryxProfile().thenCompose { profile ->
+                val current = current(profile)
+                when {
+                    mana > current -> giveManaTransaction(player, mana - current)
+                    mana < current -> takeManaTransactionDetailed(player, current - mana).thenApply { it.result }
+                    else -> CompletableFuture.completedFuture(ManaResult.SAME)
+                }
             }
         }
     }
@@ -122,47 +173,77 @@ class ManaMangerDefault : IManaManager {
     }
 
     override fun regainMana(player: Player): CompletableFuture<Double> {
+        return PlayerResourceCoordinator.enqueue(player.uniqueId) { regainManaTransaction(player) }
+    }
+
+    private fun regainManaTransaction(player: Player): CompletableFuture<Double> {
         return player.orryxProfile().thenComposeMain { profile ->
-            player.job().thenComposeMain { job ->
-                if (job == null) return@thenComposeMain CompletableFuture.completedFuture(0.0)
-                val max = job.getMaxMana().finiteNonNegative()
-                val current = current(profile).coerceAtMost(max)
-                if (current + EPSILON >= max) return@thenComposeMain CompletableFuture.completedFuture(0.0)
-                val configured = job.getRegainMana().finiteNonNegative()
-                if (configured <= 0.0) return@thenComposeMain CompletableFuture.completedFuture(0.0)
-                val event = OrryxPlayerManaEvents.Regain.Pre(player, profile, configured)
-                if (!event.call()) return@thenComposeMain CompletableFuture.completedFuture(0.0)
-                val added = event.regainMana.finiteNonNegative().coerceAtMost(max - current)
-                if (added <= 0.0) return@thenComposeMain CompletableFuture.completedFuture(0.0)
-                val previous = profile.getFlag(MANA_FLAG)
-                val attempted = (current + added).flag(true)
-                replaceResourceFlag(profile, player, attempted)
-                commitResource(profile, player, previous, attempted) {
-                    OrryxPlayerManaEvents.Regain.Post(player, profile, added).call()
-                    added
+            player.job().thenCompose { job ->
+                if (job == null) return@thenCompose CompletableFuture.completedFuture(0.0)
+                val maxFuture = job.getMaxManaAsync()
+                val regainFuture = job.getRegainManaAsync()
+                CompletableFuture.allOf(maxFuture, regainFuture).thenComposeMain {
+                    val max = maxFuture.getNow(0.0).finiteNonNegative()
+                    val current = current(profile)
+                    if (current + EPSILON >= max) return@thenComposeMain CompletableFuture.completedFuture(0.0)
+                    val configured = regainFuture.getNow(0.0).finiteNonNegative()
+                    if (configured <= 0.0) return@thenComposeMain CompletableFuture.completedFuture(0.0)
+                    val event = OrryxPlayerManaEvents.Regain.Pre(player, profile, configured)
+                    if (!event.call()) return@thenComposeMain CompletableFuture.completedFuture(0.0)
+                    val added = event.regainMana.requireNonNegative("事件修改后的法力恢复值").coerceAtMost(max - current)
+                    if (added <= 0.0) return@thenComposeMain CompletableFuture.completedFuture(0.0)
+                    val previous = profile.getFlag(MANA_FLAG)
+                    val attempted = (current + added).flag(true)
+                    replaceResourceFlag(profile, player, attempted)
+                    commitResource(profile, player, previous, attempted) {
+                        OrryxPlayerManaEvents.Regain.Post(player, profile, added).call()
+                        added
+                    }
                 }
             }
         }
     }
 
     override fun healMana(player: Player): CompletableFuture<Double> {
+        return PlayerResourceCoordinator.enqueue(player.uniqueId) { healManaTransaction(player) }
+    }
+
+    private fun healManaTransaction(player: Player): CompletableFuture<Double> {
         return player.orryxProfile().thenComposeMain { profile ->
-            player.job().thenComposeMain { job ->
-                if (job == null) return@thenComposeMain CompletableFuture.completedFuture(0.0)
-                val max = job.getMaxMana().finiteNonNegative()
-                val current = current(profile).coerceAtMost(max)
-                val requested = (max - current).coerceAtLeast(0.0)
-                if (requested <= 0.0) return@thenComposeMain CompletableFuture.completedFuture(0.0)
-                val event = OrryxPlayerManaEvents.Heal.Pre(player, profile, requested)
-                if (!event.call()) return@thenComposeMain CompletableFuture.completedFuture(0.0)
-                val added = event.healMana.finiteNonNegative().coerceAtMost(max - current)
-                val previous = profile.getFlag(MANA_FLAG)
-                val attempted = (current + added).flag(true)
-                replaceResourceFlag(profile, player, attempted)
-                commitResource(profile, player, previous, attempted) {
-                    OrryxPlayerManaEvents.Heal.Post(player, profile, added).call()
-                    added
+            player.job().thenCompose { job ->
+                if (job == null) return@thenCompose CompletableFuture.completedFuture(0.0)
+                job.getMaxManaAsync().thenComposeMain { configuredMax ->
+                    val max = configuredMax.finiteNonNegative()
+                    val current = current(profile)
+                    val requested = (max - current).coerceAtLeast(0.0)
+                    if (requested <= 0.0) return@thenComposeMain CompletableFuture.completedFuture(0.0)
+                    val event = OrryxPlayerManaEvents.Heal.Pre(player, profile, requested)
+                    if (!event.call()) return@thenComposeMain CompletableFuture.completedFuture(0.0)
+                    val added = event.healMana.requireNonNegative("事件修改后的法力治疗值").coerceAtMost(max - current)
+                    if (added <= 0.0) return@thenComposeMain CompletableFuture.completedFuture(0.0)
+                    val previous = profile.getFlag(MANA_FLAG)
+                    val attempted = (current + added).flag(true)
+                    replaceResourceFlag(profile, player, attempted)
+                    commitResource(profile, player, previous, attempted) {
+                        OrryxPlayerManaEvents.Heal.Post(player, profile, added).call()
+                        added
+                    }
                 }
+            }
+        }
+    }
+
+    internal fun refundManaExact(player: Player, mana: Double): CompletableFuture<Unit> {
+        if (!mana.isFinite() || mana < 0.0) return failed(IllegalArgumentException("法力补偿值非法"))
+        if (mana == 0.0) return CompletableFuture.completedFuture(Unit)
+        return PlayerResourceCoordinator.enqueue(player.uniqueId) {
+            player.orryxProfile().thenComposeMain { profile ->
+                val next = current(profile) + mana
+                require(next.isFinite()) { "法力补偿结果溢出" }
+                val previous = profile.getFlag(MANA_FLAG)
+                val attempted = next.flag(true)
+                replaceResourceFlag(profile, player, attempted)
+                commitResource(profile, player, previous, attempted) { Unit }
             }
         }
     }
@@ -180,8 +261,12 @@ class ManaMangerDefault : IManaManager {
         attempted: IFlag,
         committed: () -> T,
     ): CompletableFuture<T> {
-        return PersistenceManager.saveProfile(profile.createPO(), invalidate = false)
-            .handle { _, throwable -> throwable }
+        val persistence = try {
+            PersistenceManager.saveProfile(profile.createPO(), invalidate = false)
+        } catch (throwable: Throwable) {
+            failed<Unit>(throwable)
+        }
+        return persistence.handle { _, throwable -> throwable }
             .thenComposeMain { throwable ->
                 if (throwable == null || throwable.databaseCommitted()) {
                     if (throwable != null) throwable.printStackTrace()
@@ -212,6 +297,11 @@ class ManaMangerDefault : IManaManager {
 
     private fun Double.finiteNonNegative(): Double {
         return if (isFinite()) coerceAtLeast(0.0) else 0.0
+    }
+
+    private fun Double.requireNonNegative(label: String): Double {
+        require(isFinite() && this >= 0.0) { "$label 必须是非负有限数字" }
+        return this
     }
 
     private fun <T> failed(throwable: Throwable): CompletableFuture<T> {

@@ -1,6 +1,6 @@
 # Orryx API
 
-> 2.45.116：数据库与 Redis I/O 始终异步；Profile、Job、Skill、Key 的保存按玩家串行并通过 `CompletableFuture` 传播失败，Bukkit Post 事件与兼容 callback 会切回主线程。Mana/Spirit 不足时不会修改余额，技能消费、冷却与脚本启动按玩家串行。 开发文档
+> 2.45.118：数据库与 Redis I/O 始终异步；Profile 写入、Mana/Spirit、技能消费、状态、冷却与 Flag 使用可回滚串行事务，Pipe/Kether 生命周期会完整传播失败并清理资源。 开发文档
 
 > 本文档面向 Kotlin/Java 开发者，帮助您使用 Orryx API 进行二次开发。
 
@@ -1007,6 +1007,22 @@ val spiritManager = api.consumptionValueAPI.spiritInstance
 spiritManager.give(player, 50.0)
 spiritManager.take(player, 25.0)
 ```
+
+底层 `IManaManager` 与 `ISpiritManager` 还提供详细扣费接口：
+
+```kotlin
+IManaManager.INSTANCE.takeManaDetailed(player, 50.0).thenAccept { debit ->
+    // result 表示业务结果，amount 是事件修改和资源边界处理后的真实扣除量
+    if (debit.result == ManaResult.SUCCESS) {
+        logger.info("实际扣除 Mana: ${debit.amount}")
+    }
+}
+ISpiritManager.INSTANCE.takeSpiritDetailed(player, 25.0).thenAccept { debit ->
+    logger.info("实际扣除 Spirit: ${debit.amount}")
+}
+```
+
+异步业务代码应继续组合返回的 `CompletableFuture`，禁止在 Bukkit 主线程阻塞等待。
 
 ### 6.6 碰撞系统 API
 

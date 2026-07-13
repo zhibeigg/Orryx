@@ -89,7 +89,7 @@ class DodgeState(override val key: String, configurationSection: ConfigurationSe
             task1?.cancel()
             context?.apply {
                 terminate()
-                ScriptManager.cleanUp(id)
+                ScriptManager.cleanUp(this)
             }
             stop = true
         }

@@ -58,12 +58,16 @@ fun runOnMainThread(block: () -> Unit) {
  */
 fun <T> mainThreadFuture(block: () -> T): CompletableFuture<T> {
     val future = CompletableFuture<T>()
-    runOnMainThread {
-        try {
-            future.complete(block())
-        } catch (throwable: Throwable) {
-            future.completeExceptionally(throwable)
+    try {
+        runOnMainThread {
+            try {
+                future.complete(block())
+            } catch (throwable: Throwable) {
+                future.completeExceptionally(throwable)
+            }
         }
+    } catch (scheduleFailure: Throwable) {
+        future.completeExceptionally(scheduleFailure)
     }
     return future
 }
@@ -81,6 +85,31 @@ fun <T, R> CompletionStage<T>.thenApplyMain(block: (T) -> R): CompletableFuture<
 fun <T, R> CompletionStage<T>.thenComposeMain(block: (T) -> CompletionStage<R>): CompletableFuture<R> {
     return toCompletableFuture().thenCompose { value ->
         mainThreadFuture { block(value) }.thenCompose { it }
+    }
+}
+
+/** 在 Bukkit 主线程创建并组合一个异步阶段。 */
+fun <T> composeOnMainThread(block: () -> CompletionStage<T>): CompletableFuture<T> {
+    return mainThreadFuture(block).thenCompose { it }
+}
+
+/** 将完成值、异常或取消统一转发到目标 Future。 */
+fun <T> CompletionStage<T>.completeInto(target: CompletableFuture<in T>) {
+    whenComplete { value, throwable ->
+        if (throwable == null) target.complete(value) else target.completeExceptionally(throwable)
+    }
+}
+
+/** 在 Bukkit 主线程把完成值或异常转发到目标 Future。 */
+fun <T> CompletionStage<T>.completeIntoMain(target: CompletableFuture<in T>) {
+    whenComplete { value, throwable ->
+        try {
+            runOnMainThread {
+                if (throwable == null) target.complete(value) else target.completeExceptionally(throwable)
+            }
+        } catch (scheduleFailure: Throwable) {
+            target.completeExceptionally(scheduleFailure)
+        }
     }
 }
 

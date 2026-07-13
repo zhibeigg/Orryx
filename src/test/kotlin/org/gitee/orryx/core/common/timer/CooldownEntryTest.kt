@@ -5,6 +5,10 @@ import org.junit.jupiter.api.Test
 
 class CooldownEntryTest {
 
+    private fun fixedEntry(duration: Long): CooldownEntry {
+        return CooldownEntry("test", duration) { 0L }
+    }
+
     @Test
     fun `new entry has correct tag`() {
         val entry = CooldownEntry("test", 1000)
@@ -13,7 +17,7 @@ class CooldownEntryTest {
 
     @Test
     fun `new entry has correct remaining`() {
-        val entry = CooldownEntry("test", 500)
+        val entry = fixedEntry(500)
         assertEquals(500, entry.remaining)
     }
 
@@ -54,28 +58,28 @@ class CooldownEntryTest {
 
     @Test
     fun `addDuration increases remaining`() {
-        val entry = CooldownEntry("test", 100)
+        val entry = fixedEntry(100)
         entry.addDuration(200)
         assertEquals(300, entry.remaining)
     }
 
     @Test
     fun `addDuration with negative clamps to zero`() {
-        val entry = CooldownEntry("test", 100)
+        val entry = fixedEntry(100)
         entry.addDuration(-200)
         assertEquals(0, entry.remaining)
     }
 
     @Test
     fun `reduceDuration decreases remaining`() {
-        val entry = CooldownEntry("test", 500)
+        val entry = fixedEntry(500)
         entry.reduceDuration(200)
         assertEquals(300, entry.remaining)
     }
 
     @Test
     fun `reduceDuration clamps to zero`() {
-        val entry = CooldownEntry("test", 100)
+        val entry = fixedEntry(100)
         entry.reduceDuration(200)
         assertEquals(0, entry.remaining)
     }
@@ -98,7 +102,7 @@ class CooldownEntryTest {
 
     @Test
     fun `multiple addDuration calls accumulate`() {
-        val entry = CooldownEntry("test", 100)
+        val entry = fixedEntry(100)
         entry.addDuration(50)
         entry.addDuration(50)
         assertEquals(200, entry.remaining)
@@ -106,7 +110,7 @@ class CooldownEntryTest {
 
     @Test
     fun `multiple reduceDuration calls accumulate`() {
-        val entry = CooldownEntry("test", 300)
+        val entry = fixedEntry(300)
         entry.reduceDuration(100)
         entry.reduceDuration(100)
         assertEquals(100, entry.remaining)
@@ -114,7 +118,7 @@ class CooldownEntryTest {
 
     @Test
     fun `reduceDuration then addDuration works correctly`() {
-        val entry = CooldownEntry("test", 500)
+        val entry = fixedEntry(500)
         entry.reduceDuration(300)
         entry.addDuration(100)
         assertEquals(300, entry.remaining)

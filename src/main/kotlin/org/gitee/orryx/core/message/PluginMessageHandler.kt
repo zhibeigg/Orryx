@@ -617,15 +617,24 @@ object PluginMessageHandler {
         pendingRequests.put(player.uniqueId, request)?.future
             ?.completeExceptionally(AimSupersededException())
 
-        submit(delay = AIM_TIMEOUT_SECONDS * 20) {
-            if (pendingRequests.remove(player.uniqueId, request)) {
-                future.completeExceptionally(java.util.concurrent.TimeoutException("瞄准请求超时"))
-            }
-        }
         future.whenComplete { result, ex ->
             pendingRequests.remove(player.uniqueId, request)
-            submit {
-                callback(if (ex == null) Result.success(result) else Result.failure(ex))
+            val outcome = if (ex == null) Result.success(result) else Result.failure(ex)
+            try {
+                submit { callback(outcome) }
+            } catch (scheduleFailure: Throwable) {
+                callback(Result.failure(scheduleFailure))
+            }
+        }
+        try {
+            submit(delay = AIM_TIMEOUT_SECONDS * 20) {
+                if (pendingRequests.remove(player.uniqueId, request)) {
+                    future.completeExceptionally(java.util.concurrent.TimeoutException("瞄准请求超时"))
+                }
+            }
+        } catch (scheduleFailure: Throwable) {
+            if (pendingRequests.remove(player.uniqueId, request)) {
+                future.completeExceptionally(scheduleFailure)
             }
         }
         return request

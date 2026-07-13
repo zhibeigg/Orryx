@@ -13,7 +13,7 @@ import taboolib.common.platform.Ghost
 class MythicMobsSuperBodyMechanic(line: String, mlc: MythicLineConfig) : SkillMechanic(line, mlc), ITargetedEntitySkill {
 
     init {
-        isAsyncSafe = true
+        isAsyncSafe = false
     }
 
     private val duration = mlc.getPlaceholderInteger(arrayOf("duration", "d"), 1000)

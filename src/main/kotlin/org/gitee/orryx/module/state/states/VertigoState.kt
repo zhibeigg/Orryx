@@ -62,7 +62,7 @@ class VertigoState(override val key: String, configurationSection: Configuration
             task?.cancel()
             context?.apply {
                 terminate()
-                ScriptManager.cleanUp(id)
+                ScriptManager.cleanUp(this)
             }
             stop = true
         }

@@ -23,9 +23,8 @@ class RunningSpace(val tag: String) {
     fun terminate() {
         if (OrryxScriptTerminateEvent.Pre(this).call()) {
             runningScriptContexts.forEach {
-                val id = it.value.id
-                //此处顺序不可变
-                ScriptManager.cleanUp(id)
+                // 此处顺序不可变
+                ScriptManager.cleanUp(it.value)
                 it.value.terminate()
             }
             OrryxScriptTerminateEvent.Post(this).call()

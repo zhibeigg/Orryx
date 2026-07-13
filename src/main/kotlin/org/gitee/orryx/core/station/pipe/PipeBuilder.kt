@@ -19,7 +19,11 @@ class PipeBuilder {
     /**
      * 构建
      * */
-    fun build(): PipeTask {
+    fun build(): PipeTask = create(autoStart = true)
+
+    internal fun buildPaused(): PipeTask = create(autoStart = false)
+
+    private fun create(autoStart: Boolean): PipeTask {
         val timeout = timeout ?: error("创建PipeTask时未设置timeout")
         require(timeout >= 0L) { "PipeTask timeout 不能小于 0: $timeout" }
         return PipeTask(
@@ -29,7 +33,8 @@ class PipeBuilder {
             timeout,
             onBrock,
             onComplete,
-            periodTask
+            periodTask,
+            autoStart,
         )
     }
 
@@ -74,7 +79,15 @@ class PipeBuilder {
      * */
     fun periodTask(period: Long, func: Consumer<IPipeTask>): PipeBuilder = apply {
         require(period > 0L) { "PipeTask period 必须大于 0: $period" }
-        periodTask = PipePeriodTask(period) { func.accept(it) }
+        periodTask = PipePeriodTask(period, PipeTaskConsumer { func.accept(it) })
+    }
+
+    fun periodTaskAsync(
+        period: Long,
+        func: Function<IPipeTask, CompletableFuture<Any?>>,
+    ): PipeBuilder = apply {
+        require(period > 0L) { "PipeTask period 必须大于 0: $period" }
+        periodTask = PipePeriodTask(period, PipeTaskCallback { func.apply(it) })
     }
 }
 

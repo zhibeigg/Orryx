@@ -2,10 +2,12 @@ package org.gitee.orryx.core.kether.actions
 
 import org.gitee.orryx.core.targets.PlayerTarget
 import org.gitee.orryx.module.mana.IManaManager
+import org.gitee.orryx.module.mana.ManaResult
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
 import taboolib.module.kether.*
+import java.util.concurrent.CompletableFuture
 
 object ManaActions {
 
@@ -42,90 +44,82 @@ object ManaActions {
             case("has") {
                 val mana = it.nextParsedAction()
                 val container = it.nextTheyContainerOrNull()
-                actionFuture { complete ->
-                    run(mana).double { mana ->
-                        containerOrSelf(container) { container ->
-                            val player = container.firstInstanceOrNull<PlayerTarget>()?.getSource()
-                            if (player != null) {
-                                IManaManager.INSTANCE.haveMana(player, mana).thenAccept { result ->
-                                    complete.complete(result)
-                                }
-                            } else {
-                                complete.complete(false)
-                            }
+                actionFuture { future ->
+                    run(mana).double { it }.thenCompose { amount ->
+                        containerOrSelf(container) { targets ->
+                            targets.firstInstanceOrNull<PlayerTarget>()?.getSource()
+                        }.thenCompose { player ->
+                            player?.let { IManaManager.INSTANCE.haveMana(it, amount) }
+                                ?: CompletableFuture.completedFuture(false)
                         }
-                    }
+                    }.completeInto(future)
                 }
             }
             case("give") {
                 val mana = it.nextParsedAction()
                 val they = it.nextTheyContainerOrNull()
-                actionNow {
-                    run(mana).double { mana ->
+                actionFuture { future ->
+                    run(mana).double { it }.thenCompose { amount ->
                         containerOrSelf(they) { container ->
-                            container.forEachInstance<PlayerTarget> { target ->
-                                IManaManager.INSTANCE.giveMana(target.getSource(), mana)
+                            container.mapInstance<PlayerTarget, CompletableFuture<ManaResult>> { target ->
+                                IManaManager.INSTANCE.giveMana(target.getSource(), amount)
+                            }
+                        }.thenCompose { operations ->
+                            CompletableFuture.allOf(*operations.toTypedArray()).thenApply {
+                                operations.map { it.getNow(ManaResult.CANCELLED) }
                             }
                         }
-                    }
+                    }.completeInto(future)
                 }
             }
             case("take") {
                 val mana = it.nextParsedAction()
                 val they = it.nextTheyContainerOrNull()
-                actionNow {
-                    run(mana).double { mana ->
+                actionFuture { future ->
+                    run(mana).double { it }.thenCompose { amount ->
                         containerOrSelf(they) { container ->
-                            container.forEachInstance<PlayerTarget> { target ->
-                                IManaManager.INSTANCE.takeMana(target.getSource(), mana)
+                            container.mapInstance<PlayerTarget, CompletableFuture<ManaResult>> { target ->
+                                IManaManager.INSTANCE.takeMana(target.getSource(), amount)
+                            }
+                        }.thenCompose { operations ->
+                            CompletableFuture.allOf(*operations.toTypedArray()).thenApply {
+                                operations.map { it.getNow(ManaResult.CANCELLED) }
                             }
                         }
-                    }
+                    }.completeInto(future)
                 }
             }
             case("max") {
                 val they = it.nextTheyContainerOrNull()
                 actionFuture { future ->
                     containerOrSelf(they) { container ->
-                        val player = container.firstInstanceOrNull<PlayerTarget>()?.getSource()
-                        if (player != null) {
-                            IManaManager.INSTANCE.getMaxMana(player).thenAccept { mana ->
-                                future.complete(mana)
-                            }
-                        } else {
-                            future.complete(0.0)
-                        }
-                    }
+                        container.firstInstanceOrNull<PlayerTarget>()?.getSource()
+                    }.thenCompose { player ->
+                        player?.let { IManaManager.INSTANCE.getMaxMana(it) }
+                            ?: CompletableFuture.completedFuture(0.0)
+                    }.completeInto(future)
                 }
             }
             case("now") {
                 val they = it.nextTheyContainerOrNull()
                 actionFuture { future ->
                     containerOrSelf(they) { container ->
-                        val player = container.firstInstanceOrNull<PlayerTarget>()?.getSource()
-                        if (player != null) {
-                            IManaManager.INSTANCE.getMana(player).thenAccept { mana ->
-                                future.complete(mana)
-                            }
-                        } else {
-                            future.complete(0.0)
-                        }
-                    }
+                        container.firstInstanceOrNull<PlayerTarget>()?.getSource()
+                    }.thenCompose { player ->
+                        player?.let { IManaManager.INSTANCE.getMana(it) }
+                            ?: CompletableFuture.completedFuture(0.0)
+                    }.completeInto(future)
                 }
             }
             other {
                 val they = it.nextTheyContainerOrNull()
                 actionFuture { future ->
                     containerOrSelf(they) { container ->
-                        val player = container.firstInstanceOrNull<PlayerTarget>()?.getSource()
-                        if (player != null) {
-                            IManaManager.INSTANCE.getMana(player).thenAccept { mana ->
-                                future.complete(mana)
-                            }
-                        } else {
-                            future.complete(0.0)
-                        }
-                    }
+                        container.firstInstanceOrNull<PlayerTarget>()?.getSource()
+                    }.thenCompose { player ->
+                        player?.let { IManaManager.INSTANCE.getMana(it) }
+                            ?: CompletableFuture.completedFuture(0.0)
+                    }.completeInto(future)
                 }
             }
         }

@@ -9,6 +9,4 @@ abstract class AbstractPipeEventTrigger<E>: IPipeTrigger<E>, WikiTrigger {
 
     override var listener: ProxyListener? = null
 
-    override fun onEnd(context: ScriptContext, event: E, map: Map<String, Any?>) {
-    }
 }

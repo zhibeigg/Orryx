@@ -1,5 +1,7 @@
 package org.gitee.orryx.module.spirit
 
+data class SpiritDebitResult(val result: SpiritResult, val amount: Double)
+
 enum class SpiritResult {
     /**
      * 事件被取消

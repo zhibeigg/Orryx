@@ -13,7 +13,7 @@ import taboolib.common.platform.Ghost
 class MythicMobsGiveManaMechanic(line: String, mlc: MythicLineConfig) : SkillMechanic(line, mlc), ITargetedEntitySkill {
 
     init {
-        isAsyncSafe = true
+        isAsyncSafe = false
     }
 
     private val amount = mlc.getPlaceholderDouble(arrayOf("amount", "a"), 0.0)

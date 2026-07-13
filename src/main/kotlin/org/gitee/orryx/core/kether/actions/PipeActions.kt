@@ -6,9 +6,12 @@ import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.combinationParser
 import org.gitee.orryx.utils.parseUUID
+import taboolib.library.kether.ParsedAction
 import taboolib.module.kether.KetherParser
+import taboolib.module.kether.ScriptFrame
 import taboolib.module.kether.run
 import taboolib.module.kether.script
+import java.util.concurrent.CompletableFuture
 
 object PipeActions {
 
@@ -69,14 +72,39 @@ object PipeActions {
                     pipe.brokeTriggers(*triggers.uppercase().split(",").toTypedArray())
                 }
                 if (onPeriod != null) {
-                    pipe.periodTask(period ?: 1) {
-                        run(onPeriod)
+                    pipe.periodTaskAsync(period ?: 1) {
+                        runCancellable(onPeriod)
                     }
                 }
                 val task = pipe.build()
-                addOrryxCloseable(task.result) { task.broke() }
+                addOrryxCloseable(task.result) { task.abort() }
                 task.result
             }
         }
+    }
+
+    private fun ScriptFrame.runCancellable(action: ParsedAction<*>): CompletableFuture<Any?> {
+        val child = newFrame(action)
+        val execution = child.run<Any?>()
+        val result = CompletableFuture<Any?>()
+        result.whenComplete { _, _ ->
+            if (result.isCancelled) {
+                execution.cancel(false)
+                runCatching { child.close() }.onFailure(Throwable::printStackTrace)
+            }
+        }
+        execution.whenComplete { value, throwable ->
+            val closeFailure = runCatching { child.close() }.exceptionOrNull()
+            val failure = throwable ?: closeFailure
+            if (failure == null) {
+                result.complete(value)
+            } else {
+                if (throwable != null && closeFailure != null && throwable !== closeFailure) {
+                    throwable.addSuppressed(closeFailure)
+                }
+                result.completeExceptionally(failure)
+            }
+        }
+        return result
     }
 }

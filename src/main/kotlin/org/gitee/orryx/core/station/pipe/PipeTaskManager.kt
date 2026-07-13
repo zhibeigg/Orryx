@@ -41,23 +41,44 @@ object PipeTaskManager {
 
     private fun <E> registerBukkitListener(triggerKey: String, trigger: IPipeTrigger<E>): ProxyListener {
         return registerBukkitListener(trigger.clazz) { event ->
-            val taskUuids = triggerTaskIndex[triggerKey]?.toList() ?: return@registerBukkitListener
-            taskUuids.forEach { uuid ->
-                val pipeTask = pipeTaskMap[uuid] ?: return@forEach
-                val context = pipeTask.scriptContext
-                val variables = context?.rootFrame()?.variables()?.toMap() ?: emptyMap()
-                val shouldBreak = try {
-                    trigger.onCheck(pipeTask, event, variables)
-                } catch (ex: Throwable) {
-                    warning("PipeTrigger $triggerKey 检查 PipeTask $uuid 时发生异常: ${ex.message}")
-                    ex.printStackTrace()
-                    false
-                }
-                if (shouldBreak) {
-                    context?.let { trigger.onStart(it, event, variables) }
-                    pipeTask.broke().whenComplete { _, _ ->
+            runOnMainThread {
+                val taskUuids = triggerTaskIndex[triggerKey]?.toList() ?: return@runOnMainThread
+                taskUuids.forEach { uuid ->
+                    val pipeTask = pipeTaskMap[uuid] ?: return@forEach
+                    val context = pipeTask.scriptContext
+                    val variables = try {
+                        context?.rootFrame()?.variables()?.toMap() ?: emptyMap()
+                    } catch (throwable: Throwable) {
+                        warning("PipeTrigger $triggerKey 读取 PipeTask $uuid 上下文失败: ${throwable.message}")
+                        throwable.printStackTrace()
+                        return@forEach
+                    }
+                    val shouldBreak = try {
+                        trigger.onCheck(pipeTask, event, variables)
+                    } catch (throwable: Throwable) {
+                        warning("PipeTrigger $triggerKey 检查 PipeTask $uuid 时发生异常: ${throwable.message}")
+                        throwable.printStackTrace()
+                        false
+                    }
+                    if (!shouldBreak) return@forEach
+
+                    val completion = if (pipeTask is PipeTask) {
+                        pipeTask.breakFromTrigger {
+                            context?.let { trigger.onStart(it, event, variables) }
+                        }
+                    } else {
+                        context?.let { trigger.onStart(it, event, variables) }
+                        pipeTask.broke()
+                    } ?: return@forEach
+
+                    completion.whenComplete { _, _ ->
                         runOnMainThread {
-                            context?.let { trigger.onEnd(it, event, it.rootFrame().variables().toMap()) }
+                            try {
+                                context?.let { trigger.onEnd(it, event, it.rootFrame().variables().toMap()) }
+                            } catch (throwable: Throwable) {
+                                warning("PipeTrigger $triggerKey 清理 PipeTask $uuid 上下文失败: ${throwable.message}")
+                                throwable.printStackTrace()
+                            }
                         }
                     }
                 }

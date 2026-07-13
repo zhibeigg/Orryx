@@ -16,12 +16,19 @@ import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.PlatformFactory
 import taboolib.common.platform.event.SubscribeEvent
+import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common.platform.function.submit
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
 import java.util.function.Function
+
+internal data class TimedStatusApplication(
+    val previousExpiresAt: Long,
+    val appliedVersion: Long,
+)
 
 class ProfileAPI: IProfileAPI {
 
@@ -51,7 +58,13 @@ class ProfileAPI: IProfileAPI {
             private val onDeactivate: ((Player) -> Unit)? = null,
         ) : ITimedStatus {
 
-            class TimedInfo(var expiresAt: Long, var task: taboolib.common.platform.service.PlatformExecutor.PlatformTask? = null)
+            class TimedInfo(
+                @Volatile var expiresAt: Long,
+                @Volatile var task: taboolib.common.platform.service.PlatformExecutor.PlatformTask? = null,
+            )
+
+            private val versions = ConcurrentHashMap<UUID, Long>()
+            private val versionSequence = AtomicLong()
 
             override fun isActive(player: Player): Boolean {
                 return (map[player.uniqueId]?.expiresAt ?: return false) > System.currentTimeMillis()
@@ -62,28 +75,67 @@ class ProfileAPI: IProfileAPI {
             }
 
             override fun set(player: Player, timeout: Long) {
+                applyWithReceipt(player, timeout)
+            }
+
+            fun applyWithReceipt(player: Player, timeout: Long): TimedStatusApplication {
+                requireMainThread("TimedStatus.set")
+                val playerId = player.uniqueId
                 val now = System.currentTimeMillis()
-                val expiresAt = saturatedAdd(now, timeout.coerceAtLeast(0L))
+                val requestedExpiresAt = saturatedAdd(now, timeout.coerceAtLeast(0L))
+                val previousExpiresAt = map[playerId]?.expiresAt ?: 0L
+                val wasActive = previousExpiresAt > now
+                val expiresAt = maxOf(previousExpiresAt, requestedExpiresAt)
+                map.remove(playerId)?.task?.cancel()
+                if (expiresAt > now) {
+                    val info = TimedInfo(expiresAt)
+                    map[playerId] = info
+                    if (!wasActive) onActivate?.invoke(player)
+                    scheduleDeactivation(player, info)
+                } else if (wasActive) {
+                    onDeactivate?.invoke(player)
+                }
+                val version = markVersion(playerId)
+                return TimedStatusApplication(previousExpiresAt, version)
+            }
+
+            fun restore(player: Player, application: TimedStatusApplication) {
+                requireMainThread("TimedStatus.restore")
+                val playerId = player.uniqueId
+                if (versions[playerId] != application.appliedVersion) return
+                val now = System.currentTimeMillis()
                 val wasActive = isActive(player)
-                val info = map.compute(player.uniqueId) { _, previous ->
-                    (previous ?: TimedInfo(expiresAt)).also {
-                        it.expiresAt = maxOf(it.expiresAt, expiresAt)
-                        it.task?.cancel()
-                    }
-                } ?: return
-                if (!wasActive && info.expiresAt > now) onActivate?.invoke(player)
-                scheduleDeactivation(player, info)
+                map.remove(playerId)?.task?.cancel()
+                if (application.previousExpiresAt > now) {
+                    val info = TimedInfo(application.previousExpiresAt)
+                    map[playerId] = info
+                    if (!wasActive) onActivate?.invoke(player)
+                    scheduleDeactivation(player, info)
+                } else if (wasActive) {
+                    onDeactivate?.invoke(player)
+                }
+                markVersion(playerId)
             }
 
             override fun cancel(player: Player) {
-                map.remove(player.uniqueId)?.let {
+                cancelWithReceipt(player)
+            }
+
+            fun cancelWithReceipt(player: Player): TimedStatusApplication {
+                requireMainThread("TimedStatus.cancel")
+                val playerId = player.uniqueId
+                val previousExpiresAt = map[playerId]?.expiresAt ?: 0L
+                map.remove(playerId)?.let {
                     it.task?.cancel()
                     onDeactivate?.invoke(player)
                 }
+                return TimedStatusApplication(previousExpiresAt, markVersion(playerId))
             }
 
             override fun add(player: Player, timeout: Long) {
-                if (timeout <= 0L) return reduce(player, -timeout)
+                requireMainThread("TimedStatus.add")
+                if (timeout < 0L) return reduce(player, absoluteAmount(timeout))
+                if (timeout == 0L) return
                 val now = System.currentTimeMillis()
                 val wasActive = isActive(player)
                 val info = map.compute(player.uniqueId) { _, previous ->
@@ -94,10 +146,12 @@ class ProfileAPI: IProfileAPI {
                 } ?: return
                 if (!wasActive) onActivate?.invoke(player)
                 scheduleDeactivation(player, info)
+                markVersion(player.uniqueId)
             }
 
             override fun reduce(player: Player, timeout: Long) {
-                if (timeout < 0L) return add(player, if (timeout == Long.MIN_VALUE) Long.MAX_VALUE else -timeout)
+                requireMainThread("TimedStatus.reduce")
+                if (timeout < 0L) return add(player, absoluteAmount(timeout))
                 val info = map[player.uniqueId] ?: return
                 info.expiresAt = saturatedSubtract(info.expiresAt, timeout)
                 info.task?.cancel()
@@ -106,6 +160,7 @@ class ProfileAPI: IProfileAPI {
                 } else {
                     scheduleDeactivation(player, info)
                 }
+                markVersion(player.uniqueId)
             }
 
             private fun scheduleDeactivation(player: Player, info: TimedInfo) {
@@ -121,6 +176,13 @@ class ProfileAPI: IProfileAPI {
 
             fun cleanup(player: Player) {
                 map.remove(player.uniqueId)?.task?.cancel()
+                versions.remove(player.uniqueId)
+            }
+
+            private fun markVersion(player: UUID): Long {
+                val version = versionSequence.incrementAndGet()
+                versions[player] = version
+                return version
             }
 
             private fun saturatedAdd(value: Long, amount: Long): Long {
@@ -143,22 +205,24 @@ class ProfileAPI: IProfileAPI {
 
             class BlockInfo {
                 val map = ConcurrentHashMap<DamageType, Task>()
-                class Task(var timeout: Long, val function: (OrryxDamageEvents.Pre) -> Unit)
+                class Task(@Volatile var timeout: Long, val function: (OrryxDamageEvents.Pre) -> Unit)
             }
 
             val blockMap = ConcurrentHashMap<UUID, BlockInfo>()
 
             override fun isActive(player: Player, type: DamageType): Boolean {
                 val task = blockMap[player.uniqueId]?.map?.get(type) ?: return false
-                return task.timeout >= System.currentTimeMillis()
+                return task.timeout > System.currentTimeMillis()
             }
 
             override fun countdown(player: Player, type: DamageType): Long {
                 val task = blockMap[player.uniqueId]?.map?.get(type) ?: return 0
-                return (task.timeout - System.currentTimeMillis()).coerceAtLeast(0)
+                return positiveDifference(task.timeout, System.currentTimeMillis())
             }
 
             override fun set(player: Player, type: DamageType, timeout: Long, onSuccess: Consumer<OrryxDamageEvents.Pre>) {
+                requireMainThread("BlockStatus.set")
+                if (timeout <= 0L) return cancel(player, type)
                 val info = blockMap.getOrPut(player.uniqueId) { BlockInfo() }
                 val now = System.currentTimeMillis()
                 val currentTimeout = info.map[type]?.timeout ?: 0L
@@ -171,33 +235,38 @@ class ProfileAPI: IProfileAPI {
             }
 
             override fun cancel(player: Player, type: DamageType) {
-                blockMap[player.uniqueId]?.map?.remove(type)
+                requireMainThread("BlockStatus.cancel")
+                val info = blockMap[player.uniqueId] ?: return
+                info.map.remove(type)
+                if (info.map.isEmpty()) blockMap.remove(player.uniqueId, info)
             }
 
             override fun cancelAll(player: Player) {
+                requireMainThread("BlockStatus.cancelAll")
                 blockMap.remove(player.uniqueId)
             }
 
             override fun add(player: Player, type: DamageType, timeout: Long) {
+                requireMainThread("BlockStatus.add")
+                if (timeout < 0L) return reduce(player, type, absoluteAmount(timeout))
+                if (timeout == 0L) return
                 val info = blockMap.getOrPut(player.uniqueId) { BlockInfo() }
                 val task = info.map.getOrPut(type) { BlockInfo.Task(0) { } }
-                task.also {
-                    if (it.timeout >= System.currentTimeMillis()) {
-                        it.timeout += timeout
-                    } else {
-                        it.timeout = System.currentTimeMillis() + timeout
-                    }
-                }
+                val now = System.currentTimeMillis()
+                task.timeout = saturatedAdd(maxOf(task.timeout, now), timeout)
             }
 
             override fun reduce(player: Player, type: DamageType, timeout: Long) {
+                requireMainThread("BlockStatus.reduce")
+                if (timeout < 0L) return add(player, type, absoluteAmount(timeout))
+                if (timeout == 0L) return
                 val info = blockMap[player.uniqueId] ?: return
                 val task = info.map[type] ?: return
-                task.timeout -= timeout
-                if (task.timeout < System.currentTimeMillis()) {
-                    info.map.remove(type)
+                task.timeout = saturatedSubtract(task.timeout, timeout)
+                if (task.timeout <= System.currentTimeMillis()) {
+                    info.map.remove(type, task)
                     if (info.map.isEmpty()) {
-                        blockMap.remove(player.uniqueId)
+                        blockMap.remove(player.uniqueId, info)
                     }
                 }
             }
@@ -205,6 +274,27 @@ class ProfileAPI: IProfileAPI {
             fun cleanup(player: Player) {
                 blockMap.remove(player.uniqueId)
             }
+        }
+
+        private fun requireMainThread(operation: String) {
+            check(isPrimaryThread) { "$operation 必须在 Bukkit 主线程执行" }
+        }
+
+        private fun saturatedAdd(value: Long, amount: Long): Long {
+            return if (amount > 0L && value > Long.MAX_VALUE - amount) Long.MAX_VALUE else value + amount
+        }
+
+        private fun saturatedSubtract(value: Long, amount: Long): Long {
+            return if (amount > 0L && value < Long.MIN_VALUE + amount) Long.MIN_VALUE else value - amount
+        }
+
+        private fun positiveDifference(end: Long, start: Long): Long {
+            if (end <= start) return 0L
+            return if (start < 0L && end > Long.MAX_VALUE + start) Long.MAX_VALUE else end - start
+        }
+
+        private fun absoluteAmount(amount: Long): Long {
+            return if (amount == Long.MIN_VALUE) Long.MAX_VALUE else kotlin.math.abs(amount)
         }
 
         // ==================== 状态实例 ====================
@@ -225,6 +315,18 @@ class ProfileAPI: IProfileAPI {
         private val superFootStatus = TimedStatusImpl()
         private val silenceStatus = TimedStatusImpl()
         private val blockStatus = BlockStatusImpl()
+
+        internal fun applySilenceTransaction(player: Player, timeout: Long): TimedStatusApplication {
+            return silenceStatus.applyWithReceipt(player, timeout)
+        }
+
+        internal fun cancelSilenceTransaction(player: Player): TimedStatusApplication {
+            return silenceStatus.cancelWithReceipt(player)
+        }
+
+        internal fun restoreSilenceTransaction(player: Player, application: TimedStatusApplication) {
+            silenceStatus.restore(player, application)
+        }
 
         @Awake(LifeCycle.CONST)
         fun init() {

@@ -33,6 +33,7 @@ import taboolib.common5.cint
 import taboolib.module.kether.orNull
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionException
 
 class PlayerJob(
     override val id: Int,
@@ -89,19 +90,48 @@ class PlayerJob(
     }
 
     override fun getMaxMana(): Double {
-        return player.eval(job.maxManaActions, mapOf("level" to level)).orNull().cdouble
+        check(isPrimaryThread) { "同步 getMaxMana 必须在 Bukkit 主线程调用" }
+        return completedValue(getMaxManaAsync(), "MaxMana")
+    }
+
+    override fun getMaxManaAsync(): CompletableFuture<Double> {
+        return player.eval(job.maxManaActions, mapOf("level" to level)).thenApply { it.cdouble }
     }
 
     override fun getRegainMana(): Double {
-        return player.eval(job.regainManaActions, mapOf("level" to level)).orNull().cdouble
+        check(isPrimaryThread) { "同步 getRegainMana 必须在 Bukkit 主线程调用" }
+        return completedValue(getRegainManaAsync(), "RegainMana")
+    }
+
+    override fun getRegainManaAsync(): CompletableFuture<Double> {
+        return player.eval(job.regainManaActions, mapOf("level" to level)).thenApply { it.cdouble }
     }
 
     override fun getMaxSpirit(): Double {
-        return player.eval(job.maxSpiritActions, mapOf("level" to level)).orNull().cdouble
+        check(isPrimaryThread) { "同步 getMaxSpirit 必须在 Bukkit 主线程调用" }
+        return completedValue(getMaxSpiritAsync(), "MaxSpirit")
+    }
+
+    override fun getMaxSpiritAsync(): CompletableFuture<Double> {
+        return player.eval(job.maxSpiritActions, mapOf("level" to level)).thenApply { it.cdouble }
     }
 
     override fun getRegainSpirit(): Double {
-        return player.eval(job.regainSpiritActions, mapOf("level" to level)).orNull().cdouble
+        check(isPrimaryThread) { "同步 getRegainSpirit 必须在 Bukkit 主线程调用" }
+        return completedValue(getRegainSpiritAsync(), "RegainSpirit")
+    }
+
+    override fun getRegainSpiritAsync(): CompletableFuture<Double> {
+        return player.eval(job.regainSpiritActions, mapOf("level" to level)).thenApply { it.cdouble }
+    }
+
+    private fun completedValue(future: CompletableFuture<Double>, name: String): Double {
+        check(future.isDone) { "职业 $key 的 $name 不允许包含异步动作，请使用对应 Future API" }
+        return try {
+            future.getNow(0.0)
+        } catch (throwable: CompletionException) {
+            throw throwable.cause ?: throwable
+        }
     }
 
     override fun giveExperience(experience: Int): CompletableFuture<ExperienceResult> {

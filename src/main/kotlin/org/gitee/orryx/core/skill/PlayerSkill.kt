@@ -28,6 +28,7 @@ import org.gitee.orryx.utils.castSkillRawAsync
 import org.gitee.orryx.utils.finishSaveCallback
 import org.gitee.orryx.utils.mainThreadFuture
 import org.gitee.orryx.utils.thenApplyMain
+import org.gitee.orryx.utils.thenComposeMain
 import org.gitee.orryx.utils.orryxProfileTo
 import org.gitee.orryx.utils.runCustomAction
 import taboolib.common.platform.function.isPrimaryThread
@@ -62,26 +63,40 @@ class PlayerSkill(
 
     override fun cast(parameter: IParameter, consume: Boolean): CastResult {
         if (parameter !is SkillParameter) return CastResult.PARAMETER
-        if (!OrryxPlayerSkillCastEvents.Cast(player, this, parameter).call()) return CastResult.CANCELED
-        val shouldConsume = consume && !OrryxTestCommand.isUnlimited(player)
-        skill.castSkillAsync(player, parameter, shouldConsume).exceptionally {
-            it.printStackTrace()
-            null
+        val future = castAsync(parameter, consume)
+        future.exceptionally { it.printStackTrace(); null }
+        return if (future.isDone && !future.isCompletedExceptionally && !future.isCancelled) {
+            future.getNow(CastResult.CANCELED)
+        } else {
+            // 旧同步 API 只能表示请求已接收；真实业务结果请使用 castAsync。
+            CastResult.SUCCESS
         }
-        return CastResult.SUCCESS
     }
 
-    internal fun castAsync(parameter: SkillParameter, consume: Boolean): CompletableFuture<CastResult> {
-        return mainThreadFuture {
-            if (!OrryxPlayerSkillCastEvents.Cast(player, this, parameter).call()) {
-                return@mainThreadFuture false
+    override fun castAsync(parameter: IParameter, consume: Boolean): CompletableFuture<CastResult> {
+        val skillParameter = parameter as? SkillParameter
+            ?: return CompletableFuture.completedFuture(CastResult.PARAMETER)
+        val effectiveConsume = consume && !OrryxTestCommand.isUnlimited(player)
+        return if (effectiveConsume) {
+            SkillCastCoordinator.enqueue(player.uniqueId) {
+                castWithinTransactionAsync(skillParameter, true)
             }
-            true
+        } else {
+            castWithinTransactionAsync(skillParameter, false)
+        }
+    }
+
+    internal fun castWithinTransactionAsync(
+        parameter: SkillParameter,
+        consume: Boolean,
+    ): CompletableFuture<CastResult> {
+        return mainThreadFuture {
+            OrryxPlayerSkillCastEvents.Cast(player, this, parameter).call()
         }.thenCompose { allowed ->
             if (!allowed) {
                 CompletableFuture.completedFuture(CastResult.CANCELED)
             } else {
-                skill.castSkillRawAsync(player, parameter, consume && !OrryxTestCommand.isUnlimited(player))
+                skill.castSkillRawAsync(player, parameter, consume)
             }
         }
     }
@@ -100,13 +115,22 @@ class PlayerSkill(
         // 冷却
         if (!SkillTimer.hasNext(player, key)) return CompletableFuture.completedFuture(CastResult.COOLDOWN)
         // 法力
-        return IManaManager.INSTANCE.haveMana(player, parameter.manaValue()).thenApplyMain { mana ->
-            if (!mana) return@thenApplyMain CastResult.MANA_NOT_ENOUGH
-            // 脚本检测
-            if ((skill as? ICastSkill)?.castCheckAction?.let { parameter.runCustomAction(it, mapOf()).orNull().cbool } == false) return@thenApplyMain CastResult.CHECK_ACTION_FAILED
-            // 事件
-            if (!OrryxPlayerSkillCastEvents.Check(player, this, parameter).call()) return@thenApplyMain CastResult.CANCELED
-            return@thenApplyMain CastResult.SUCCESS
+        return parameter.manaValueFuture().thenCompose { mana ->
+            require(mana.isFinite() && mana >= 0.0) { "技能法力消耗必须是非负有限数字" }
+            IManaManager.INSTANCE.haveMana(player, mana)
+        }.thenComposeMain { hasMana ->
+            if (!hasMana) return@thenComposeMain CompletableFuture.completedFuture(CastResult.MANA_NOT_ENOUGH)
+            val check = (skill as? ICastSkill)?.castCheckAction?.let {
+                parameter.runCustomAction(it, mapOf()).thenApply { value -> value.cbool }
+            } ?: CompletableFuture.completedFuture(true)
+            check.thenApplyMain { allowed ->
+                if (!allowed) return@thenApplyMain CastResult.CHECK_ACTION_FAILED
+                if (!OrryxPlayerSkillCastEvents.Check(player, this, parameter).call()) {
+                    CastResult.CANCELED
+                } else {
+                    CastResult.SUCCESS
+                }
+            }
         }
     }
 

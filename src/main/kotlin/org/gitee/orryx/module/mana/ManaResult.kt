@@ -1,5 +1,7 @@
 package org.gitee.orryx.module.mana
 
+data class ManaDebitResult(val result: ManaResult, val amount: Double)
+
 enum class ManaResult {
     /**
      * 事件被取消

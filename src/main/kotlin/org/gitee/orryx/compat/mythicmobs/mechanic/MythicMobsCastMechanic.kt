@@ -16,7 +16,7 @@ import taboolib.common.platform.Ghost
 class MythicMobsCastMechanic(line: String, mlc: MythicLineConfig) : SkillMechanic(line, mlc), ITargetedEntitySkill {
 
     init {
-        isAsyncSafe = true
+        isAsyncSafe = false
     }
 
     private val skill = mlc.getPlaceholderString(arrayOf("s", "skill"), null)

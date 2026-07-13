@@ -13,7 +13,7 @@ class SkillState(val skill: ICastSkill): IActionState {
 
     override val script: Script? = null
 
-    class Running(override val data: PlayerData, override val state: SkillState, val duration: Long): AbstractRunningState(data) {
+    class Running(override val data: PlayerData, override val state: SkillState, var duration: Long): AbstractRunningState(data) {
 
         override var stop: Boolean = false
             private set

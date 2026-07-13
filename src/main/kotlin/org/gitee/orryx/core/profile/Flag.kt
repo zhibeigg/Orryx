@@ -26,13 +26,19 @@ open class Flag<T: Any>(
 
     override fun init(player: Player, key: String) {
         if (expiresAt == 0L) return
-        val remaining = (expiresAt - System.currentTimeMillis()).coerceAtLeast(0L)
+        val remaining = positiveDifference(expiresAt, System.currentTimeMillis())
         val tasks = taskMap.computeIfAbsent(player.uniqueId) { ConcurrentHashMap() }
-        val scheduled = submit(delay = remaining / 50L + 1L) {
-            tasks.remove(key)
-            if (player.isOnline) {
+        lateinit var scheduled: PlatformExecutor.PlatformTask
+        scheduled = submit(delay = remaining / 50L + 1L) {
+            if (!tasks.remove(key, scheduled)) return@submit
+            if (tasks.isEmpty()) taskMap.remove(player.uniqueId, tasks)
+            if (player.isOnline && isTimeout()) {
                 player.orryxProfileTo { profile ->
-                    if (profile.getFlag(key) === this@Flag && isTimeout()) profile.removeFlag(key)
+                    if (profile is PlayerProfile) {
+                        profile.removeFlagIfSameAsync(key, this@Flag).exceptionally { it.printStackTrace(); null }
+                    } else if (profile.getFlag(key) === this@Flag) {
+                        profile.removeFlag(key)
+                    }
                 }
             }
         }
@@ -53,6 +59,11 @@ open class Flag<T: Any>(
          * 使用伴生对象确保所有Flag实例共享同一个Map，便于统一清理
          */
         private val taskMap = ConcurrentHashMap<UUID, ConcurrentHashMap<String, PlatformExecutor.PlatformTask>>()
+
+        private fun positiveDifference(end: Long, start: Long): Long {
+            if (end <= start) return 0L
+            return if (start < 0L && end > Long.MAX_VALUE + start) Long.MAX_VALUE else end - start
+        }
 
         /**
          * 清理指定玩家的所有Flag任务

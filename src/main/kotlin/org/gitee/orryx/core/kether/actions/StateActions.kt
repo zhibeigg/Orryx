@@ -78,13 +78,13 @@ object StateActions {
     ) {
         it.switch {
             case("now") {
-                actionNow {
-                    script().bukkitPlayer().statusData().nowRunningState?.state?.key
+                actionTake {
+                    ensureSync { script().bukkitPlayer().statusData().nowRunningState?.state?.key }
                 }
             }
             case("move") {
-                actionNow {
-                    script().bukkitPlayer().statusData().moveState.name
+                actionTake {
+                    ensureSync { script().bukkitPlayer().statusData().moveState.name }
                 }
             }
             case("update") {
@@ -97,11 +97,11 @@ object StateActions {
             case("next") {
                 val state = nextParsedAction()
                 actionFuture { future ->
-                    run(state).str { state ->
+                    run(state).str { it }.thenCompose { stateName ->
                         ensureSync {
                             val data = script().bukkitPlayer().statusData()
-                            val status = data.status as? Status ?: return@ensureSync
-                            val actionState = status.privateStates[state] ?: StateManager.getGlobalState(state)
+                            val status = data.status as? Status ?: return@ensureSync null
+                            val actionState = status.privateStates[stateName] ?: StateManager.getGlobalState(stateName)
                             val running = when (actionState) {
                                 is BlockState -> BlockState.Running(data, actionState)
                                 is DodgeState -> DodgeState.Running(data, actionState)
@@ -110,15 +110,15 @@ object StateActions {
                                 is VertigoState -> VertigoState.Running(data, actionState)
                                 else -> null
                             }
-                            running?.let { it1 -> data.next(it1) }
-                            future.complete(running)
+                            running?.let(data::next)
+                            running
                         }
-                    }
+                    }.completeInto(future)
                 }
             }
             case("stop") {
-                actionNow {
-                    script().bukkitPlayer().statusData().nowRunningState?.stop()
+                actionTake {
+                    ensureSync { script().bukkitPlayer().statusData().nowRunningState?.stop() }
                 }
             }
         }

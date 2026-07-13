@@ -73,6 +73,7 @@ class KetherScript(val skill: String, override val script: Script): IKetherScrip
                     if (throwable == null) {
                         result.complete(value)
                     } else {
+                        started?.completeExceptionally(throwable)
                         result.completeExceptionally(throwable)
                         if (started != null) throwable.printStackTrace()
                     }

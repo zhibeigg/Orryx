@@ -2,6 +2,8 @@ package org.gitee.orryx.utils
 
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.Orryx
+import org.gitee.orryx.api.ProfileAPI
+import org.gitee.orryx.api.TimedStatusApplication
 import org.gitee.orryx.api.events.player.skill.OrryxClearSkillLevelAndBackPointEvent
 import org.gitee.orryx.api.events.player.state.OrryxPlayerStateSkillEvents
 import org.gitee.orryx.core.common.timer.SkillTimer
@@ -34,6 +36,12 @@ const val PASSIVE = "Passive"
 
 const val DEFAULT_PICTURE = "default"
 
+internal data class SkillSilenceApplication(
+    val timeout: Long,
+    val plannedState: SkillState.Running?,
+    val timedStatus: TimedStatusApplication?,
+)
+
 val silence: Boolean by ReloadAwareLazy(Orryx.config) { Orryx.config.getBoolean("Silence", false) }
 
 private val pendingSkillCreations = ConcurrentHashMap<String, CompletableFuture<IPlayerSkill?>>()
@@ -59,6 +67,36 @@ internal fun SkillParameter.startSkillAction(map: Map<String, Any?> = emptyMap()
     val combinedMap = buildTriggerVariables() + map
     return KetherScript(castSkill.key, castSkill.script ?: error("请修复技能配置中的错误${castSkill.key}"))
         .startActions(this, combinedMap)
+}
+
+internal fun SkillParameter.finishConsumption(
+    consumption: StartupConsumption,
+    startup: () -> CompletableFuture<Unit>,
+): CompletableFuture<CastResult> {
+    val result = CompletableFuture<CastResult>()
+    val started = try {
+        startup()
+    } catch (throwable: Throwable) {
+        SkillCastCoordinator.rollbackConsumption(consumption, throwable).completeInto(result)
+        return result
+    }
+    result.whenComplete { _, _ ->
+        if (result.isCancelled) started.cancel(false)
+    }
+    started.whenComplete { _, throwable ->
+        if (throwable == null) {
+            SkillCastCoordinator.commitConsumption(consumption).whenComplete { committed, commitFailure ->
+                if (commitFailure == null) {
+                    result.complete(committed)
+                } else {
+                    SkillCastCoordinator.rollbackConsumption(consumption, commitFailure).completeInto(result)
+                }
+            }
+        } else {
+            SkillCastCoordinator.rollbackConsumption(consumption, throwable).completeInto(result)
+        }
+    }
+    return result
 }
 
 internal fun SkillParameter.runSkillExtendAction(
@@ -246,6 +284,13 @@ fun ICastSkill.consume(player: Player, parameter: SkillParameter): CompletableFu
     return SkillCastCoordinator.consume(player, parameter)
 }
 
+internal fun ICastSkill.consumeForStartup(
+    player: Player,
+    parameter: SkillParameter,
+): CompletableFuture<StartupConsumption> {
+    return SkillCastCoordinator.consumeForStartup(player, parameter)
+}
+
 internal fun ISkill.castSkillRawAsync(
     player: Player,
     parameter: SkillParameter,
@@ -281,7 +326,7 @@ fun IPlayerSkill.tryCast(trigger: SkillTrigger = SkillTrigger.Unknown): Completa
             if (!checkResult.isSuccess()) {
                 CompletableFuture.completedFuture(checkResult)
             } else if (this is PlayerSkill) {
-                castAsync(parameter, true)
+                castWithinTransactionAsync(parameter, true)
             } else {
                 CompletableFuture.completedFuture(cast(parameter, true))
             }
@@ -322,20 +367,51 @@ fun IPlayerSkill.clearLevel(): CompletableFuture<SkillLevelResult> {
 }
 
 fun ICastSkill.silence(skillParameter: SkillParameter, player: Player): Long {
-    val timeout = skillParameter.silenceValue(true)
-    if (timeout >= 0) {
-        player.statusData().also {
-            val state = SkillState.Running(it, StateManager.getGlobalState(key)!! as SkillState, timeout / 50)
-            val event = OrryxPlayerStateSkillEvents.Pre(player, skillParameter, timeout, state)
-            if (event.call()) {
-                it.next(event.state)
-                Orryx.api().profileAPI.setSilence(player, event.silence)
-                OrryxPlayerStateSkillEvents.Post(player, skillParameter, event.silence, event.state).call()
-            }
-            return event.silence
+    return silence(skillParameter, player, skillParameter.silenceValue(true))
+}
+
+internal fun ICastSkill.silence(skillParameter: SkillParameter, player: Player, timeout: Long): Long {
+    val application = applySilence(skillParameter, player, timeout)
+    try {
+        commitSilenceState(player, skillParameter, application)
+    } catch (throwable: Throwable) {
+        application.timedStatus?.let { receipt ->
+            ProfileAPI.restoreSilenceTransaction(player, receipt)
         }
-    } else {
-        Orryx.api().profileAPI.cancelSilence(player)
-        return 0
+        throw throwable
     }
+    return application.timeout
+}
+
+internal fun ICastSkill.applySilence(
+    skillParameter: SkillParameter,
+    player: Player,
+    timeout: Long,
+): SkillSilenceApplication {
+    val data = player.statusData()
+    if (timeout >= 0) {
+        val configured = StateManager.getGlobalState(key) as? SkillState
+            ?: error("技能 $key 缺少对应的 SkillState")
+        val state = SkillState.Running(data, configured, timeout / 50)
+        val event = OrryxPlayerStateSkillEvents.Pre(player, skillParameter, timeout, state)
+        if (event.call()) {
+            event.state.duration = event.silence.coerceAtLeast(0L) / 50L
+            val timedStatus = ProfileAPI.applySilenceTransaction(player, event.silence)
+            return SkillSilenceApplication(event.silence, event.state, timedStatus)
+        }
+        return SkillSilenceApplication(event.silence, null, null)
+    }
+    return SkillSilenceApplication(0L, null, ProfileAPI.cancelSilenceTransaction(player))
+}
+
+internal fun commitSilenceState(
+    player: Player,
+    skillParameter: SkillParameter,
+    application: SkillSilenceApplication,
+) {
+    val state = application.plannedState ?: return
+    player.statusData().commitPreparedState(state)
+    runCatching {
+        OrryxPlayerStateSkillEvents.Post(player, skillParameter, application.timeout, state).call()
+    }.onFailure(Throwable::printStackTrace)
 }

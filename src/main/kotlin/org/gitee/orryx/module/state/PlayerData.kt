@@ -7,6 +7,8 @@ import org.bukkit.entity.Player
 import org.gitee.orryx.compat.dragoncore.DragonCoreCustomPacketSender
 import org.gitee.orryx.core.common.keyregister.KeyRegisterManager
 import org.gitee.orryx.module.spirit.ISpiritManager
+import org.gitee.orryx.module.spirit.SpiritDebitResult
+import org.gitee.orryx.module.spirit.SpiritManagerDefault
 import org.gitee.orryx.module.spirit.SpiritResult
 import org.gitee.orryx.utils.thenApplyMain
 import org.gitee.orryx.utils.thenComposeMain
@@ -46,6 +48,8 @@ class PlayerData(val player: Player) {
         private set
 
     private val transitionGeneration = AtomicLong()
+    private val transitionLock = Any()
+    private var transitionTail = CompletableFuture.completedFuture(Unit)
 
     fun firstCheck(@Suppress("UNUSED_PARAMETER") runningState: IRunningState): Boolean {
         if (nowRunningState != null) return false
@@ -58,8 +62,12 @@ class PlayerData(val player: Player) {
      * @return 过渡到的状态
      * */
     fun tryNext(input: String): CompletableFuture<IRunningState?>? {
+        if (status == null) return null
         val generation = transitionGeneration.incrementAndGet()
-        return status?.next(this, input)?.thenComposeMain { nextState ->
+        return enqueueTransition {
+            val currentStatus = status
+                ?: return@enqueueTransition CompletableFuture.completedFuture(null)
+            currentStatus.next(this, input).thenComposeMain { nextState ->
             if (generation != transitionGeneration.get()) {
                 return@thenComposeMain CompletableFuture.completedFuture(null)
             }
@@ -73,23 +81,65 @@ class PlayerData(val player: Player) {
                 nextInput = input
                 return@thenComposeMain CompletableFuture.completedFuture(null)
             }
-            val cost = (nextState.state as? ISpiritCost)?.spirit?.takeIf { it.isFinite() }?.coerceAtLeast(0.0) ?: 0.0
-            val consumption = if (cost <= 0.0) {
-                CompletableFuture.completedFuture(SpiritResult.SUCCESS)
+            val cost = (nextState.state as? ISpiritCost)?.spirit ?: 0.0
+            require(cost.isFinite() && cost >= 0.0) { "状态精力消耗必须是非负有限数字" }
+            val consumption = if (cost == 0.0) {
+                CompletableFuture.completedFuture(SpiritDebitResult(SpiritResult.SUCCESS, 0.0))
             } else {
-                ISpiritManager.INSTANCE.takeSpirit(player, cost)
+                ISpiritManager.INSTANCE.takeSpiritDetailed(player, cost)
             }
-            consumption.thenApplyMain { result ->
-                if (result != SpiritResult.SUCCESS || generation != transitionGeneration.get() || nowRunningState !== current) {
-                    nextInput = input
-                    return@thenApplyMain null
+            consumption.thenComposeMain { debit ->
+                val currentGeneration = generation == transitionGeneration.get()
+                val currentState = nowRunningState === current
+                if (debit.result != SpiritResult.SUCCESS) {
+                    if (currentGeneration) nextInput = input
+                    return@thenComposeMain CompletableFuture.completedFuture(null)
                 }
-                current?.stop()
-                nextInput = null
-                nowRunningState = nextState
-                nextState.start()
-                nextState
+                if (!currentGeneration || !currentState) {
+                    return@thenComposeMain refundSpirit(debit.amount, null).thenApply { null }
+                }
+                try {
+                    commitPreparedState(nextState, advanceGeneration = false)
+                    CompletableFuture.completedFuture(nextState)
+                } catch (throwable: Throwable) {
+                    if (generation == transitionGeneration.get()) nextInput = input
+                    refundSpirit(debit.amount, throwable).thenApply { null }
+                }
             }
+        }
+        }
+    }
+
+    private fun <T> enqueueTransition(operation: () -> CompletableFuture<T>): CompletableFuture<T> {
+        val result: CompletableFuture<T>
+        synchronized(transitionLock) {
+            val ready = transitionTail.handle { _, _ -> Unit }
+            result = ready.thenCompose {
+                try {
+                    operation()
+                } catch (throwable: Throwable) {
+                    CompletableFuture<T>().also { it.completeExceptionally(throwable) }
+                }
+            }
+            transitionTail = result.handle { _, _ -> Unit }
+        }
+        return result
+    }
+
+    private fun refundSpirit(amount: Double, originalFailure: Throwable?): CompletableFuture<Unit> {
+        if (amount <= 0.0) {
+            if (originalFailure == null) return CompletableFuture.completedFuture(Unit)
+            return CompletableFuture<Unit>().also { it.completeExceptionally(originalFailure) }
+        }
+        val refund = (ISpiritManager.INSTANCE as? SpiritManagerDefault)?.refundSpiritExact(player, amount)
+            ?: ISpiritManager.INSTANCE.giveSpirit(player, amount).thenApply { result ->
+                check(result == SpiritResult.SUCCESS) { "精力补偿失败: $result" }
+                Unit
+            }
+        if (originalFailure == null) return refund
+        return refund.handle { _, refundFailure ->
+            if (refundFailure != null) originalFailure.addSuppressed(refundFailure)
+            throw java.util.concurrent.CompletionException(originalFailure)
         }
     }
 
@@ -99,11 +149,26 @@ class PlayerData(val player: Player) {
      * @return 过渡到的状态
      * */
     fun next(running: IRunningState) {
-        transitionGeneration.incrementAndGet()
-        nowRunningState?.stop()
-        nextInput = null
+        commitPreparedState(running)
+    }
+
+    /** 技能启动提交专用：新状态成功启动前不停止旧状态。 */
+    internal fun commitPreparedState(running: IRunningState, advanceGeneration: Boolean = true) {
+        if (advanceGeneration) transitionGeneration.incrementAndGet()
+        val previous = nowRunningState
         nowRunningState = running
-        running.start()
+        try {
+            running.start()
+        } catch (throwable: Throwable) {
+            nowRunningState = previous
+            throw throwable
+        }
+        try {
+            previous?.stop()
+        } catch (throwable: Throwable) {
+            throwable.printStackTrace()
+        }
+        nextInput = null
     }
 
     fun clearRunningState() {

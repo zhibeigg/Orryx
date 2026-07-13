@@ -12,11 +12,13 @@ import org.gitee.orryx.api.events.player.job.OrryxPlayerJobChangeEvents
 import org.gitee.orryx.api.events.player.job.OrryxPlayerJobLevelEvents
 import org.gitee.orryx.compat.IAttributeBridge
 import org.gitee.orryx.core.kether.ScriptManager
+import org.gitee.orryx.core.kether.actions.GlobalActions
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.dao.cache.ISyncCacheManager
 import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.dao.persistence.PersistenceManager
 import org.gitee.orryx.dao.storage.IStorageManager
+import org.gitee.orryx.module.PlayerResourceCoordinator
 import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.module.spirit.ISpiritManager
 import org.gitee.orryx.utils.consoleMessage
@@ -123,7 +125,25 @@ object GameManager {
         consoleMessage("&e┣&7已停止技能与资源恢复任务 &a√")
 
         val shutdownFailures = mutableListOf<Throwable>()
-        PersistenceManager.shutdown()
+        GlobalActions.shutdown()
+            .handle { _, throwable ->
+                throwable?.let {
+                    shutdownFailures += it
+                    consoleMessage("&e┣&c全局 Flag 队列 flush 失败: ${it.message}")
+                    it.printStackTrace()
+                }
+                Unit
+            }
+            .thenCompose { PlayerResourceCoordinator.shutdown() }
+            .handle { _, throwable ->
+                throwable?.let {
+                    shutdownFailures += it
+                    consoleMessage("&e┣&c玩家资源事务 flush 失败: ${it.message}")
+                    it.printStackTrace()
+                }
+                Unit
+            }
+            .thenCompose { PersistenceManager.shutdown() }
             .handle { _, throwable ->
                 throwable?.let {
                     shutdownFailures += it

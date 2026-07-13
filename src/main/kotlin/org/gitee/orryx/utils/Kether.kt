@@ -297,13 +297,7 @@ fun ScriptFrame.skillCaster(func: Player.(parm: IParameter?) -> CompletableFutur
  * 确保[func]在主线程运行
  * */
 inline fun <T> ensureSync(crossinline func: () -> T): CompletableFuture<T> {
-    if (isPrimaryThread) {
-        return CompletableFuture.completedFuture(func())
-    } else {
-        val future = CompletableFuture<T>()
-        submit { future.complete(func()) }
-        return future
-    }
+    return mainThreadFuture { func() }
 }
 
 fun <T> scriptParser(vararg actions: org.gitee.orryx.module.wiki.Action, resolve: (QuestReader) -> QuestAction<T>): ScriptActionParser<T> {

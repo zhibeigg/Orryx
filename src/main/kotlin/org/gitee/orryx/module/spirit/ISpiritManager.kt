@@ -46,6 +46,12 @@ interface ISpiritManager {
      * */
     fun takeSpirit(player: Player, spirit: Double): CompletableFuture<SpiritResult>
 
+    fun takeSpiritDetailed(player: Player, spirit: Double): CompletableFuture<SpiritDebitResult> {
+        return takeSpirit(player, spirit).thenApply { result ->
+            SpiritDebitResult(result, if (result == SpiritResult.SUCCESS && spirit > 0.0) spirit else 0.0)
+        }
+    }
+
     /**
      * 设置玩家的精力值
      * @param player 玩家

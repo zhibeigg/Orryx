@@ -122,11 +122,15 @@ interface IPlayerJob: Saveable {
      * */
     fun getMaxMana(): Double
 
+    fun getMaxManaAsync(): CompletableFuture<Double> = CompletableFuture.completedFuture(getMaxMana())
+
     /**
      * 获得恢复法力值
      * @return 法力值
      * */
     fun getRegainMana(): Double
+
+    fun getRegainManaAsync(): CompletableFuture<Double> = CompletableFuture.completedFuture(getRegainMana())
 
     /**
      * 获得最大精力值
@@ -134,11 +138,15 @@ interface IPlayerJob: Saveable {
      * */
     fun getMaxSpirit(): Double
 
+    fun getMaxSpiritAsync(): CompletableFuture<Double> = CompletableFuture.completedFuture(getMaxSpirit())
+
     /**
      * 获得恢复精力值
      * @return 精力值
      * */
     fun getRegainSpirit(): Double
+
+    fun getRegainSpiritAsync(): CompletableFuture<Double> = CompletableFuture.completedFuture(getRegainSpirit())
 
 
     /**

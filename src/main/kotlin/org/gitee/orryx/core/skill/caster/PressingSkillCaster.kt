@@ -10,12 +10,13 @@ import org.gitee.orryx.core.skill.ISkill
 import org.gitee.orryx.core.skill.PressSkillManager
 import org.gitee.orryx.core.skill.skills.PressingSkill
 import org.gitee.orryx.core.station.pipe.PipeBuilder
-import org.gitee.orryx.utils.consume
+import org.gitee.orryx.utils.consumeForStartup
+import org.gitee.orryx.utils.finishConsumption
 import org.gitee.orryx.utils.runCustomAction
 import org.gitee.orryx.utils.startSkillAction
+import org.gitee.orryx.utils.thenApplyMain
 import org.gitee.orryx.utils.thenComposeMain
 import taboolib.common5.clong
-import taboolib.module.kether.orNull
 import taboolib.platform.util.sendLang
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
@@ -35,44 +36,67 @@ object PressingSkillCaster : ISkillCaster {
         if (PressSkillManager.pressTaskMap.containsKey(player.uniqueId)) {
             return CompletableFuture.completedFuture(CastResult.PRESSING)
         }
+        return parameter.runCustomAction(skill.maxPressTickAction).thenApply { value ->
+            value.clong.coerceAtLeast(0L)
+        }.thenComposeMain { maxPressTick ->
+            startPress(skill, player, parameter, consume, maxPressTick)
+        }
+    }
 
+    private fun startPress(
+        skill: PressingSkill,
+        player: Player,
+        parameter: SkillParameter,
+        consume: Boolean,
+        maxPressTick: Long,
+    ): CompletableFuture<CastResult> {
         val result = CompletableFuture<CastResult>()
-        val maxPressTick = parameter.runCustomAction(skill.maxPressTickAction).orNull().clong.coerceAtLeast(0L)
         val startedAt = System.currentTimeMillis()
         lateinit var taskId: UUID
         val task = PipeBuilder()
             .uuid(UUID.randomUUID().also { taskId = it })
             .timeout(maxPressTick)
             .brokeTriggers(*skill.pressBrockTriggers)
-            .periodTask(skill.period.coerceAtLeast(1L)) {
+            .periodTaskAsync(skill.period.coerceAtLeast(1L)) {
                 val pressTick = (System.currentTimeMillis() - startedAt) / 50L
                 parameter.runCustomAction(skill.pressPeriodAction, mapOf("pressTick" to pressTick))
-                OrryxPlayerPressTickEvent(player, skill, skill.period, pressTick, maxPressTick).call()
-            }.onComplete {
-                val consumption = if (consume) skill.consume(player, parameter) else CompletableFuture.completedFuture(CastResult.SUCCESS)
-                val startup = consumption.thenComposeMain { castResult ->
-                    if (castResult == CastResult.SUCCESS) {
-                        val pressTick = (System.currentTimeMillis() - startedAt) / 50L
-                        parameter.startSkillAction(mapOf("pressTick" to pressTick)).thenApply { castResult }
-                    } else {
-                        CompletableFuture.completedFuture(castResult)
+                    .thenApplyMain {
+                        OrryxPlayerPressTickEvent(player, skill, skill.period, pressTick, maxPressTick).call()
+                        it
                     }
+            }.onComplete {
+                val startup = if (consume) {
+                    skill.consumeForStartup(player, parameter).thenComposeMain { consumption ->
+                        if (consumption.result == CastResult.SUCCESS) {
+                            val pressTick = (System.currentTimeMillis() - startedAt) / 50L
+                            parameter.finishConsumption(consumption) {
+                                parameter.startSkillAction(mapOf("pressTick" to pressTick))
+                            }
+                        } else {
+                            CompletableFuture.completedFuture(consumption.result)
+                        }
+                    }
+                } else {
+                    val pressTick = (System.currentTimeMillis() - startedAt) / 50L
+                    parameter.startSkillAction(mapOf("pressTick" to pressTick)).thenApply { CastResult.SUCCESS }
                 }
                 startup.whenComplete { castResult, throwable ->
-                    org.gitee.orryx.utils.runOnMainThread {
-                        val pressTick = (System.currentTimeMillis() - startedAt) / 50L
-                        var failure = throwable
+                    try {
+                        org.gitee.orryx.utils.runOnMainThread {
+                            val pressTick = (System.currentTimeMillis() - startedAt) / 50L
+                            var failure = throwable
+                            PressSkillManager.remove(player.uniqueId, taskId)
+                            try {
+                                OrryxPlayerPressStopEvent(player, skill, pressTick, maxPressTick).call()
+                            } catch (ex: Throwable) {
+                                if (failure == null) failure = ex else if (failure !== ex) failure?.addSuppressed(ex)
+                            }
+                            if (failure == null) result.complete(castResult) else result.completeExceptionally(failure)
+                        }
+                    } catch (scheduleFailure: Throwable) {
                         PressSkillManager.remove(player.uniqueId, taskId)
-                        try {
-                            OrryxPlayerPressStopEvent(player, skill, pressTick, maxPressTick).call()
-                        } catch (ex: Throwable) {
-                            if (failure == null) failure = ex else failure?.addSuppressed(ex)
-                        }
-                        if (failure == null) {
-                            result.complete(castResult)
-                        } else {
-                            result.completeExceptionally(failure)
-                        }
+                        if (throwable != null && throwable !== scheduleFailure) throwable.addSuppressed(scheduleFailure)
+                        result.completeExceptionally(throwable ?: scheduleFailure)
                     }
                 }
                 result.thenApply<Any?> { it }
@@ -87,20 +111,25 @@ object PressingSkillCaster : ISkillCaster {
                 } finally {
                     PressSkillManager.remove(player.uniqueId, taskId)
                 }
-                if (failure == null) {
-                    result.complete(CastResult.CANCELED)
-                } else {
-                    result.completeExceptionally(failure)
-                }
+                if (failure == null) result.complete(CastResult.CANCELED) else result.completeExceptionally(failure)
                 result.thenApply { null }
-            }.build()
+            }.buildPaused()
 
         if (!PressSkillManager.register(player.uniqueId, skill.key, task)) {
             task.close { CompletableFuture.completedFuture(null) }
             result.complete(CastResult.PRESSING)
             return result
         }
-        OrryxPlayerPressStartEvent(player, skill, maxPressTick).call()
+        try {
+            task.start()
+            OrryxPlayerPressStartEvent(player, skill, maxPressTick).call()
+        } catch (throwable: Throwable) {
+            PressSkillManager.remove(player.uniqueId, taskId)
+            task.fail(throwable).whenComplete { _, closeFailure ->
+                if (closeFailure != null && closeFailure !== throwable) throwable.addSuppressed(closeFailure)
+                result.completeExceptionally(throwable)
+            }
+        }
         return result
     }
 }

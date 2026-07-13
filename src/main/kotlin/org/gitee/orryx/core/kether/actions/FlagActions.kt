@@ -1,5 +1,7 @@
 package org.gitee.orryx.core.kether.actions
 
+import org.bukkit.entity.Player
+import org.gitee.orryx.core.profile.IPlayerProfile
 import org.gitee.orryx.core.targets.PlayerTarget
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
@@ -8,6 +10,7 @@ import taboolib.library.kether.LocalizedException
 import taboolib.library.kether.ParsedAction
 import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*
+import java.util.concurrent.CompletableFuture
 
 object FlagActions {
 
@@ -52,19 +55,21 @@ object FlagActions {
     ) {
         try {
             it.mark()
-            when (it.expects("clear")) {
-                "clear" -> clear(it)
+            if (it.expects("clear") == "clear") {
+                @Suppress("UNCHECKED_CAST")
+                return@scriptParser clear(it) as taboolib.library.kether.QuestAction<Any?>
             }
         } catch (_: LocalizedException) {
             it.reset()
         }
         val key = it.nextParsedAction()
-        it.switch {
+        @Suppress("UNCHECKED_CAST")
+        (it.switch {
             case("remove", "delete") { remove(it, key) }
             case("survival") { survival(it, key) }
             case("countdown") { countdown(it, key) }
             other { setOrGet(it, key) }
-        }
+        } as taboolib.library.kether.QuestAction<Any?>)
     }
 
     private fun setOrGet(reader: QuestReader, key: ParsedAction<*>): ScriptAction<Any?> {
@@ -76,22 +81,21 @@ object FlagActions {
             val timeout = reader.nextHeadAction("timeout", def = 0)
             val they = reader.nextTheyContainerOrNull()
 
-            return actionNow {
-                run(key).str { key ->
-                    run(value).thenAccept { value ->
-                        run(persistence).bool { persistence ->
-                            run(timeout).long { timeout ->
-                                containerOrSelf(they) {
-                                    it.forEachInstance<PlayerTarget> { target ->
-                                        target.getSource().orryxProfileTo { profile ->
-                                            value?.flag(persistence, ticksToMillisSaturated(timeout))?.let { it1 -> profile.setFlag(key, it1) }
-                                        }
-                                    }
+            return actionFuture { future ->
+                run(key).str { it }.thenCompose { flagKey ->
+                    run(value).thenCompose { flagValue ->
+                        run(persistence).bool { it }.thenCompose { persistent ->
+                            run(timeout).long { it }.thenCompose { ticks ->
+                                val created = flagValue?.flag(persistent, ticksToMillisSaturated(ticks))
+                                    ?: return@thenCompose CompletableFuture.completedFuture(null)
+                                profiles(they).thenCompose { profiles ->
+                                    val operations = profiles.map { it.setFlagFuture(flagKey, created) }
+                                    CompletableFuture.allOf(*operations.toTypedArray()).thenApply { flagValue }
                                 }
                             }
                         }
                     }
-                }
+                }.completeInto(future)
             }
         } catch (_: LocalizedException) {
             reader.reset()
@@ -99,13 +103,9 @@ object FlagActions {
         val they = reader.nextTheyContainerOrNull()
 
         return actionFuture { future ->
-            run(key).str { key ->
-                containerOrSelf(they) {
-                    it.firstInstance<PlayerTarget>().getSource().orryxProfileTo { profile ->
-                        future.complete(profile.getFlag(key)?.value)
-                    }
-                }
-            }
+            run(key).str { it }.thenCompose { flagKey ->
+                profiles(they).thenApply { profiles -> profiles.firstOrNull()?.getFlag(flagKey)?.value }
+            }.completeInto(future)
         }
     }
 
@@ -113,27 +113,23 @@ object FlagActions {
         val they = reader.nextTheyContainerOrNull()
 
         return actionFuture { future ->
-            run(key).str { key ->
-                containerOrSelf(they) {
-                    it.firstInstance<PlayerTarget>().getSource().orryxProfileTo { profile ->
-                        future.complete(profile.removeFlag(key))
-                    }
+            run(key).str { it }.thenCompose { flagKey ->
+                profiles(they).thenCompose { profiles ->
+                    profiles.firstOrNull()?.removeFlagFuture(flagKey)
+                        ?: CompletableFuture.completedFuture(null)
                 }
-            }
+            }.completeInto(future)
         }
     }
 
     private fun clear(reader: QuestReader): ScriptAction<Any?> {
         val they = reader.nextTheyContainerOrNull()
 
-        return actionNow {
-            containerOrSelf(they) {
-                it.forEachInstance<PlayerTarget> { target ->
-                    target.getSource().orryxProfileTo { profile ->
-                        profile.clearFlags()
-                    }
-                }
-            }
+        return actionFuture { future ->
+            profiles(they).thenCompose { profiles ->
+                val operations = profiles.map { it.clearFlagsFuture() }
+                CompletableFuture.allOf(*operations.toTypedArray()).thenApply { Unit }
+            }.completeInto(future)
         }
     }
 
@@ -141,19 +137,13 @@ object FlagActions {
         val they = reader.nextTheyContainerOrNull()
 
         return actionFuture { future ->
-            run(key).str { key ->
-                containerOrSelf(they) {
-                    it.firstInstance<PlayerTarget>().getSource().orryxProfileTo { profile ->
-                        val flag = profile.getFlag(key)
-
-                        future.complete(
-                            flag?.let {
-                                (System.currentTimeMillis() - flag.timestamp) / 50
-                            } ?: 0
-                        )
-                    }
+            run(key).str { it }.thenCompose { flagKey ->
+                profiles(they).thenApply { profiles ->
+                    profiles.firstOrNull()?.getFlag(flagKey)?.let {
+                        (System.currentTimeMillis() - it.timestamp).coerceAtLeast(0L) / 50L
+                    } ?: 0L
                 }
-            }
+            }.completeInto(future)
         }
     }
 
@@ -161,23 +151,29 @@ object FlagActions {
         val they = reader.nextTheyContainerOrNull()
 
         return actionFuture { future ->
-            run(key).str { key ->
-                containerOrSelf(they) {
-                    it.firstInstance<PlayerTarget>().getSource().orryxProfileTo { profile ->
-                        val flag = profile.getFlag(key)
-
-                        future.complete(
-                            flag?.let {
-                                if (it.expiresAt == 0L) {
-                                    0L
-                                } else {
-                                    ((it.expiresAt - System.currentTimeMillis()).coerceAtLeast(0L)) / 50L
-                                }
-                            } ?: 0L
-                        )
-                    }
+            run(key).str { it }.thenCompose { flagKey ->
+                profiles(they).thenApply { profiles ->
+                    profiles.firstOrNull()?.getFlag(flagKey)?.let {
+                        if (it.expiresAt == 0L) 0L else positiveDifference(it.expiresAt, System.currentTimeMillis()) / 50L
+                    } ?: 0L
                 }
+            }.completeInto(future)
+        }
+    }
+
+    private fun ScriptFrame.profiles(container: ParsedAction<*>?): CompletableFuture<List<IPlayerProfile>> {
+        return containerOrSelf(container) { targets ->
+            targets.mapInstance<PlayerTarget, Player> { it.getSource() }
+        }.thenCompose { players ->
+            val loads = players.map { it.orryxProfile().thenApply<IPlayerProfile?> { profile -> profile } }
+            CompletableFuture.allOf(*loads.toTypedArray()).thenApply {
+                loads.mapNotNull { it.getNow(null) }
             }
         }
+    }
+
+    private fun positiveDifference(end: Long, start: Long): Long {
+        if (end <= start) return 0L
+        return if (start < 0L && end > Long.MAX_VALUE + start) Long.MAX_VALUE else end - start
     }
 }

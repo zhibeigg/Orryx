@@ -467,42 +467,62 @@ internal class JdbcStorageManager(
         }
     }
 
-    override fun saveGlobalFlagAsync(key: String, flag: IFlag?): CompletableFuture<Unit> = write {
+    override fun saveGlobalFlagAsync(key: String, flag: IFlag?): CompletableFuture<Unit> {
+        return saveGlobalFlagsAsync(mapOf(key to flag))
+    }
+
+    override fun saveGlobalFlagsAsync(
+        changes: Map<String, IFlag?>,
+        clearAll: Boolean,
+    ): CompletableFuture<Unit> = write {
         dataSource.connection.use { connection ->
             transaction(connection) {
-                val exists = exists(connection, "SELECT 1 FROM `orryx_global_flag` WHERE `key` = ?", key)
-                if (flag == null) {
-                    if (exists) {
-                        connection.prepareStatement(
-                            "UPDATE `orryx_global_flag` SET `deleted` = ? WHERE `key` = ?"
-                        ).use { statement ->
-                            statement.setBoolean(1, true)
-                            statement.setString(2, key)
-                            statement.executeUpdate()
-                        }
-                    }
-                } else {
-                    val json = Json.encodeToString(flag.toSerializable())
-                    if (exists) {
-                        connection.prepareStatement(
-                            "UPDATE `orryx_global_flag` SET `flag` = ?, `deleted` = ? WHERE `key` = ?"
-                        ).use { statement ->
-                            statement.setString(1, json)
-                            statement.setBoolean(2, false)
-                            statement.setString(3, key)
-                            statement.executeUpdate()
-                        }
-                    } else {
-                        connection.prepareStatement(
-                            "INSERT INTO `orryx_global_flag` (`key`, `flag`, `deleted`) VALUES (?, ?, ?)"
-                        ).use { statement ->
-                            statement.setString(1, key)
-                            statement.setString(2, json)
-                            statement.setBoolean(3, false)
-                            statement.executeUpdate()
-                        }
+                if (clearAll) {
+                    connection.prepareStatement(
+                        "UPDATE `orryx_global_flag` SET `deleted` = ? WHERE `deleted` = ?"
+                    ).use { statement ->
+                        statement.setBoolean(1, true)
+                        statement.setBoolean(2, false)
+                        statement.executeUpdate()
                     }
                 }
+                changes.forEach { (key, flag) -> writeGlobalFlag(connection, key, flag) }
+            }
+        }
+    }
+
+    private fun writeGlobalFlag(connection: Connection, key: String, flag: IFlag?) {
+        val exists = exists(connection, "SELECT 1 FROM `orryx_global_flag` WHERE `key` = ?", key)
+        if (flag == null) {
+            if (exists) {
+                connection.prepareStatement(
+                    "UPDATE `orryx_global_flag` SET `deleted` = ? WHERE `key` = ?"
+                ).use { statement ->
+                    statement.setBoolean(1, true)
+                    statement.setString(2, key)
+                    statement.executeUpdate()
+                }
+            }
+            return
+        }
+        val json = Json.encodeToString(flag.toSerializable())
+        if (exists) {
+            connection.prepareStatement(
+                "UPDATE `orryx_global_flag` SET `flag` = ?, `deleted` = ? WHERE `key` = ?"
+            ).use { statement ->
+                statement.setString(1, json)
+                statement.setBoolean(2, false)
+                statement.setString(3, key)
+                statement.executeUpdate()
+            }
+        } else {
+            connection.prepareStatement(
+                "INSERT INTO `orryx_global_flag` (`key`, `flag`, `deleted`) VALUES (?, ?, ?)"
+            ).use { statement ->
+                statement.setString(1, key)
+                statement.setString(2, json)
+                statement.setBoolean(3, false)
+                statement.executeUpdate()
             }
         }
     }

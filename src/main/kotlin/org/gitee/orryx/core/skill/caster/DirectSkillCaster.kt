@@ -5,7 +5,8 @@ import org.gitee.orryx.core.kether.parameter.SkillParameter
 import org.gitee.orryx.core.skill.CastResult
 import org.gitee.orryx.core.skill.ISkill
 import org.gitee.orryx.core.skill.skills.DirectSkill
-import org.gitee.orryx.utils.consume
+import org.gitee.orryx.utils.consumeForStartup
+import org.gitee.orryx.utils.finishConsumption
 import org.gitee.orryx.utils.startSkillAction
 import org.gitee.orryx.utils.thenComposeMain
 import java.util.concurrent.CompletableFuture
@@ -25,11 +26,11 @@ object DirectSkillCaster : ISkillCaster {
         if (!consume) {
             return parameter.startSkillAction().thenApply { CastResult.SUCCESS }
         }
-        return skill.consume(player, parameter).thenComposeMain { result ->
-            if (result == CastResult.SUCCESS) {
-                parameter.startSkillAction().thenApply { result }
+        return skill.consumeForStartup(player, parameter).thenComposeMain { consumption ->
+            if (consumption.result == CastResult.SUCCESS) {
+                parameter.finishConsumption(consumption) { parameter.startSkillAction() }
             } else {
-                CompletableFuture.completedFuture(result)
+                CompletableFuture.completedFuture(consumption.result)
             }
         }
     }

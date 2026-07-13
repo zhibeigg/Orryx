@@ -16,6 +16,7 @@ import taboolib.module.kether.Script
 import taboolib.module.kether.ScriptContext
 import taboolib.module.kether.orNull
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionException
 import java.util.concurrent.atomic.AtomicLong
 
 class Status(override val key: String, configuration: Configuration): IStatus {
@@ -64,7 +65,14 @@ class Status(override val key: String, configuration: Configuration): IStatus {
         }
 
         fun getAttackSpeed(player: Player): Float {
-            return player.eval(attackSpeedAction, emptyMap()).orNull()?.cfloat ?: 1.0f
+            val future = player.eval(attackSpeedAction, emptyMap())
+            check(future.isDone) { "Status $key 的 AttackSpeed 不允许包含异步动作" }
+            val value = try {
+                future.getNow(null)?.cfloat ?: return 1.0f
+            } catch (throwable: CompletionException) {
+                throw throwable.cause ?: throwable
+            }
+            return value.takeIf { it.isFinite() && it > 0.0f } ?: 1.0f
         }
 
         fun getCondition(player: Player): CompletableFuture<Any?> {

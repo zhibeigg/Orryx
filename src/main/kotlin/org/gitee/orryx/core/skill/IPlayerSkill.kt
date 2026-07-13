@@ -48,6 +48,11 @@ interface IPlayerSkill: Saveable {
      * */
     fun cast(parameter: IParameter, consume: Boolean = true): CastResult
 
+    /** 非阻塞释放技能并返回真实业务结果。 */
+    fun castAsync(parameter: IParameter, consume: Boolean = true): CompletableFuture<CastResult> {
+        return CompletableFuture.completedFuture(cast(parameter, consume))
+    }
+
     /**
      * 释放技能检测
      *

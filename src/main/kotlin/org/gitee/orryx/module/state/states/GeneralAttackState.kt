@@ -80,7 +80,7 @@ class GeneralAttackState(override val key: String, configurationSection: Configu
             task?.cancel()
             context?.apply {
                 terminate()
-                ScriptManager.cleanUp(id)
+                ScriptManager.cleanUp(this)
             }
             stop = true
         }

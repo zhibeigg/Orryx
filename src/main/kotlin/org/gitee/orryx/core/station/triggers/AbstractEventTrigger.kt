@@ -20,6 +20,4 @@ abstract class AbstractEventTrigger<E>: IStationTrigger<E>, IPipeTrigger<E>, Wik
         return station.event.equals(this.event, ignoreCase = true)
     }
 
-    override fun onEnd(context: ScriptContext, event: E, map: Map<String, Any?>) {
-    }
 }

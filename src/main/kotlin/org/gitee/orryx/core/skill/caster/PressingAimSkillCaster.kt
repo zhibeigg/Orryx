@@ -7,14 +7,14 @@ import org.gitee.orryx.core.skill.CastResult
 import org.gitee.orryx.core.skill.ISkill
 import org.gitee.orryx.core.skill.skills.PressingAimSkill
 import org.gitee.orryx.utils.DEFAULT_PICTURE
-import org.gitee.orryx.utils.consume
+import org.gitee.orryx.utils.consumeForStartup
+import org.gitee.orryx.utils.finishConsumption
 import org.gitee.orryx.utils.runCustomAction
 import org.gitee.orryx.utils.startSkillAction
 import org.gitee.orryx.utils.thenComposeMain
 import org.gitee.orryx.utils.toTarget
 import taboolib.common5.cdouble
 import taboolib.common5.clong
-import taboolib.module.kether.orNull
 import java.util.concurrent.CompletableFuture
 
 /** 蓄力指向性技能释放器。 */
@@ -29,13 +29,35 @@ object PressingAimSkillCaster : ISkillCaster {
         consume: Boolean,
     ): CompletableFuture<CastResult> {
         skill as PressingAimSkill
-        val result = CompletableFuture<CastResult>()
-        val aimRadius = parameter.runCustomAction(skill.aimRadiusAction).orNull().cdouble
-        val aimMin = parameter.runCustomAction(skill.aimMinAction).orNull().cdouble
-        val aimMax = parameter.runCustomAction(skill.aimMaxAction).orNull().cdouble
-        val maxTick = parameter.runCustomAction(skill.maxPressTickAction).orNull().clong.coerceAtLeast(0L)
-        val startedAt = System.currentTimeMillis()
+        val radius = parameter.runCustomAction(skill.aimRadiusAction).thenApply { it.cdouble }
+        val min = parameter.runCustomAction(skill.aimMinAction).thenApply { it.cdouble }
+        val max = parameter.runCustomAction(skill.aimMaxAction).thenApply { it.cdouble }
+        val maxTick = parameter.runCustomAction(skill.maxPressTickAction).thenApply { it.clong.coerceAtLeast(0L) }
+        return CompletableFuture.allOf(radius, min, max, maxTick).thenComposeMain {
+            val aimRadius = radius.getNow(Double.NaN)
+            val aimMin = min.getNow(Double.NaN)
+            val aimMax = max.getNow(Double.NaN)
+            val pressTicks = maxTick.getNow(0L)
+            require(aimRadius.isFinite() && aimRadius >= 0.0) { "技能瞄准半径必须是非负有限数字" }
+            require(aimMin.isFinite() && aimMax.isFinite() && aimMin >= 0.0 && aimMax >= aimMin) {
+                "技能瞄准范围必须满足 0 <= min <= max"
+            }
+            requestAim(skill, player, parameter, consume, aimRadius, aimMin, aimMax, pressTicks)
+        }
+    }
 
+    private fun requestAim(
+        skill: PressingAimSkill,
+        player: Player,
+        parameter: SkillParameter,
+        consume: Boolean,
+        aimRadius: Double,
+        aimMin: Double,
+        aimMax: Double,
+        maxTick: Long,
+    ): CompletableFuture<CastResult> {
+        val result = CompletableFuture<CastResult>()
+        val startedAt = System.currentTimeMillis()
         PluginMessageHandler.requestAiming(
             player,
             skill.key,
@@ -51,21 +73,24 @@ object PressingAimSkillCaster : ISkillCaster {
                     return@onSuccess
                 }
                 parameter.origin = info.location.toTarget()
-                val consumption = if (consume) skill.consume(player, parameter) else CompletableFuture.completedFuture(CastResult.SUCCESS)
-                consumption.thenComposeMain { castResult ->
-                    if (castResult == CastResult.SUCCESS) {
-                        parameter.startSkillAction(
-                            mapOf(
-                                "aimRadius" to aimRadius,
-                                "aimMin" to aimMin,
-                                "aimMax" to aimMax,
-                                "pressTick" to (info.timestamp - startedAt) / 50L,
-                            )
-                        ).thenApply { castResult }
-                    } else {
-                        CompletableFuture.completedFuture(castResult)
+                val variables = mapOf(
+                    "aimRadius" to aimRadius,
+                    "aimMin" to aimMin,
+                    "aimMax" to aimMax,
+                    "pressTick" to (info.timestamp - startedAt).coerceAtLeast(0L) / 50L,
+                )
+                val startup = if (consume) {
+                    skill.consumeForStartup(player, parameter).thenComposeMain { consumption ->
+                        if (consumption.result == CastResult.SUCCESS) {
+                            parameter.finishConsumption(consumption) { parameter.startSkillAction(variables) }
+                        } else {
+                            CompletableFuture.completedFuture(consumption.result)
+                        }
                     }
-                }.whenComplete { castResult, throwable ->
+                } else {
+                    parameter.startSkillAction(variables).thenApply { CastResult.SUCCESS }
+                }
+                startup.whenComplete { castResult, throwable ->
                     if (throwable == null) result.complete(castResult) else result.completeExceptionally(throwable)
                 }
             }.onFailure { result.completeExceptionally(it) }

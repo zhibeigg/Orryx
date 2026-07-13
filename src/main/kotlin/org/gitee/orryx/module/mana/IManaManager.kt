@@ -45,6 +45,12 @@ interface IManaManager {
      * */
     fun takeMana(player: Player, mana: Double): CompletableFuture<ManaResult>
 
+    fun takeManaDetailed(player: Player, mana: Double): CompletableFuture<ManaDebitResult> {
+        return takeMana(player, mana).thenApply { result ->
+            ManaDebitResult(result, if (result == ManaResult.SUCCESS) mana.coerceAtLeast(0.0) else 0.0)
+        }
+    }
+
     /**
      * 设置玩家的法力值
      * @param player 玩家

@@ -1,5 +1,6 @@
 package org.gitee.orryx.core.kether.actions
 
+import org.bukkit.entity.Player
 import org.gitee.orryx.core.common.timer.CooldownEntry
 import org.gitee.orryx.core.common.timer.SkillTimer
 import org.gitee.orryx.core.common.timer.StationTimer
@@ -9,7 +10,10 @@ import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Property
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.ORRYX_NAMESPACE
+import org.gitee.orryx.utils.completeInto
 import org.gitee.orryx.utils.getParameter
+import org.gitee.orryx.utils.getSkill
+import org.gitee.orryx.utils.mainThreadFuture
 import org.gitee.orryx.utils.nextHeadActionOrNull
 import org.gitee.orryx.utils.registerProperty
 import org.gitee.orryx.utils.scriptParser
@@ -79,11 +83,11 @@ object CooldownActions {
                 object : CooldownScriptAction(tag, type) {
 
                     override fun ScriptFrame.skill(future: CompletableFuture<Any?>, skill: String) {
-                        future.complete(!SkillTimer.hasNext(script().sender!!, skill))
+                        mainThreadFuture { !SkillTimer.hasNext(script().sender!!, skill) }.completeInto(future)
                     }
 
                     override fun ScriptFrame.station(future: CompletableFuture<Any?>, station: String) {
-                        future.complete(!StationTimer.hasNext(script().sender!!, station))
+                        mainThreadFuture { !StationTimer.hasNext(script().sender!!, station) }.completeInto(future)
                     }
                 }
             }
@@ -95,15 +99,17 @@ object CooldownActions {
                 object : CooldownScriptAction(tag, type) {
 
                     override fun ScriptFrame.skill(future: CompletableFuture<Any?>, skill: String) {
-                        run(cooldown).long { cooldown ->
-                            future.complete(SkillTimer.increase(script().sender!!, skill, ticksToMillisSaturated(cooldown)))
-                        }
+                        run(cooldown).long { it }.thenCompose { ticks ->
+                            SkillTimer.increaseAsync(script().sender!!, skill, ticksToMillisSaturated(ticks))
+                        }.completeInto(future)
                     }
 
                     override fun ScriptFrame.station(future: CompletableFuture<Any?>, station: String) {
-                        run(cooldown).long { cooldown ->
-                            future.complete(StationTimer.increase(script().sender!!, station, ticksToMillisSaturated(cooldown)))
-                        }
+                        run(cooldown).long { it }.thenCompose { ticks ->
+                            mainThreadFuture {
+                                StationTimer.increase(script().sender!!, station, ticksToMillisSaturated(ticks))
+                            }
+                        }.completeInto(future)
                     }
                 }
             }
@@ -115,15 +121,17 @@ object CooldownActions {
                 object : CooldownScriptAction(tag, type) {
 
                     override fun ScriptFrame.skill(future: CompletableFuture<Any?>, skill: String) {
-                        run(cooldown).long { cooldown ->
-                            future.complete(SkillTimer.reduce(script().sender!!, skill, ticksToMillisSaturated(cooldown)))
-                        }
+                        run(cooldown).long { it }.thenCompose { ticks ->
+                            SkillTimer.reduceAsync(script().sender!!, skill, ticksToMillisSaturated(ticks))
+                        }.completeInto(future)
                     }
 
                     override fun ScriptFrame.station(future: CompletableFuture<Any?>, station: String) {
-                        run(cooldown).long { cooldown ->
-                            future.complete(StationTimer.reduce(script().sender!!, station, ticksToMillisSaturated(cooldown)))
-                        }
+                        run(cooldown).long { it }.thenCompose { ticks ->
+                            mainThreadFuture {
+                                StationTimer.reduce(script().sender!!, station, ticksToMillisSaturated(ticks))
+                            }
+                        }.completeInto(future)
                     }
                 }
             }
@@ -135,31 +143,43 @@ object CooldownActions {
                 object : CooldownScriptAction(tag, type) {
 
                     override fun ScriptFrame.skill(future: CompletableFuture<Any?>, skill: String) {
-                        run(cooldown).long { cooldown ->
-                            future.complete(SkillTimer.set(script().sender!!, skill, ticksToMillisSaturated(cooldown)))
-                        }
+                        run(cooldown).long { it }.thenCompose { ticks ->
+                            SkillTimer.setAsync(script().sender!!, skill, ticksToMillisSaturated(ticks))
+                        }.completeInto(future)
                     }
 
                     override fun ScriptFrame.station(future: CompletableFuture<Any?>, station: String) {
-                        run(cooldown).long { cooldown ->
-                            future.complete(StationTimer.set(script().sender!!, station, ticksToMillisSaturated(cooldown)))
-                        }
+                        run(cooldown).long { it }.thenCompose { ticks ->
+                            mainThreadFuture {
+                                StationTimer.set(script().sender!!, station, ticksToMillisSaturated(ticks))
+                            }
+                        }.completeInto(future)
                     }
                 }
             }
             case("reset") {
                 actionFuture { future ->
-                    when (val parm = script().getParameter()) {
+                    val stage = when (val parm = script().getParameter()) {
                         is SkillParameter -> {
-                            future.complete(SkillTimer.reset(script().sender!!, parm) / 50L)
+                            val player = script().sender!!.castSafely<Player>()
+                            val skillKey = parm.skill
+                            if (player == null || skillKey == null) {
+                                failedFuture<Long>(IllegalArgumentException("技能冷却重置需要有效玩家与技能"))
+                            } else {
+                                player.getSkill(skillKey).thenCompose { skill ->
+                                    skill?.let { SkillTimer.resetAsync(it, parm) }
+                                        ?: failedFuture(IllegalArgumentException("未找到玩家技能 $skillKey"))
+                                }.thenApply { it / 50L }
+                            }
                         }
 
-                        is StationParameter<*> -> {
-                            future.complete(StationTimer.reset(script().sender!!, parm) / 50L)
+                        is StationParameter<*> -> mainThreadFuture {
+                            StationTimer.reset(script().sender!!, parm) / 50L
                         }
 
-                        else -> null
+                        else -> failedFuture(IllegalArgumentException("当前脚本环境没有技能或中转站参数"))
                     }
+                    stage.completeInto(future)
                 }
             }
             case("get", "countdown") { getCountDown(it) }
@@ -174,11 +194,11 @@ object CooldownActions {
         return object : CooldownScriptAction(tag, type) {
 
             override fun ScriptFrame.skill(future: CompletableFuture<Any?>, skill: String) {
-                future.complete(SkillTimer.getCountdown(script().sender!!, skill))
+                mainThreadFuture { SkillTimer.getCountdown(script().sender!!, skill) }.completeInto(future)
             }
 
             override fun ScriptFrame.station(future: CompletableFuture<Any?>, station: String) {
-                future.complete(StationTimer.getCountdown(script().sender!!, station))
+                mainThreadFuture { StationTimer.getCountdown(script().sender!!, station) }.completeInto(future)
             }
         }
     }
@@ -192,26 +212,37 @@ object CooldownActions {
 
         override fun run(frame: ScriptFrame): CompletableFuture<Any?> {
             val future = CompletableFuture<Any?>()
-            val type = type ?: literalAction(
+            val typeAction = type ?: literalAction(
                 when (frame.script().getParameter()) {
                     is SkillParameter -> CooldownType.SKILL
                     is StationParameter<*> -> CooldownType.STATION
-                    else -> "skill"
+                    else -> CooldownType.SKILL
                 }
             )
-            frame.run(type).str { type ->
-                when (type.uppercase()) {
+            frame.run(typeAction).str { it }.thenCompose { resolvedType ->
+                when (resolvedType.uppercase(java.util.Locale.ROOT)) {
                     CooldownType.SKILL.name -> {
-                        frame.run(tag ?: literalAction((frame.script().getParameter() as SkillParameter).skill!!)).str { skill ->
+                        val tagAction = tag ?: (frame.script().getParameter() as? SkillParameter)?.skill?.let(::literalAction)
+                            ?: return@thenCompose failedFuture<Unit>(IllegalArgumentException("缺少技能冷却 key"))
+                        frame.run(tagAction).str { it }.thenApply { skill ->
                             frame.skill(future, skill)
+                            Unit
                         }
                     }
+
                     CooldownType.STATION.name -> {
-                        frame.run(tag ?: literalAction((frame.script().getParameter() as StationParameter<*>).stationLoader)).str { station ->
+                        val tagAction = tag ?: (frame.script().getParameter() as? StationParameter<*>)?.stationLoader?.let(::literalAction)
+                            ?: return@thenCompose failedFuture<Unit>(IllegalArgumentException("缺少中转站冷却 key"))
+                        frame.run(tagAction).str { it }.thenApply { station ->
                             frame.station(future, station)
+                            Unit
                         }
                     }
+
+                    else -> failedFuture(IllegalArgumentException("未知冷却类型: $resolvedType"))
                 }
+            }.whenComplete { _, throwable ->
+                if (throwable != null) future.completeExceptionally(throwable)
             }
             return future
         }
@@ -219,6 +250,10 @@ object CooldownActions {
         abstract fun ScriptFrame.skill(future: CompletableFuture<Any?>, skill: String)
 
         abstract fun ScriptFrame.station(future: CompletableFuture<Any?>, station: String)
+    }
+
+    private fun <T> failedFuture(throwable: Throwable): CompletableFuture<T> {
+        return CompletableFuture<T>().also { it.completeExceptionally(throwable) }
     }
 
     private fun cooldownEntryProperty() = object : ScriptProperty<CooldownEntry>("orryx.cooldown.entry.operator") {

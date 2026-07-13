@@ -57,9 +57,12 @@ import java.util.concurrent.atomic.AtomicLong
 object StateManager {
 
     private val playerDataMap = ConcurrentHashMap<UUID, PlayerData>()
-    private val statusMap = ConcurrentHashMap<String, Status>()
-    private val controllerMap = ConcurrentHashMap<String, Configuration>()
-    private val globalState = ConcurrentHashMap<String, IActionState>()
+    @Volatile
+    private var statusMap: Map<String, Status> = emptyMap()
+    @Volatile
+    private var controllerMap: Map<String, Configuration> = emptyMap()
+    @Volatile
+    private var globalState: Map<String, IActionState> = emptyMap()
     private val statusCheckGeneration = ConcurrentHashMap<UUID, AtomicLong>()
 
     private val playerInvisibleHandTaskMap = ConcurrentHashMap<UUID, SimpleTimeoutTask>()
@@ -90,8 +93,7 @@ object StateManager {
             throwable.printStackTrace()
             return
         }
-        globalState.clear()
-        globalState.putAll(loaded)
+        globalState = loaded.toMap()
         consoleMessage("&e┣&7GlobalState loaded &e${globalState.size} &a√")
     }
 
@@ -112,10 +114,8 @@ object StateManager {
             throwable.printStackTrace()
             return
         }
-        controllerMap.clear()
-        controllerMap.putAll(loadedControllers)
-        statusMap.clear()
-        statusMap.putAll(loadedStatuses)
+        controllerMap = loadedControllers.toMap()
+        statusMap = loadedStatuses.toMap()
         keyPressThrottleMap.clear()
         consoleMessage("&e┣&7Controllers loaded &e${controllerMap.size} &a√")
         consoleMessage("&e┣&7Status loaded &e${statusMap.size} &a√")
@@ -407,34 +407,35 @@ object StateManager {
         CompletableFuture.allOf(*checks.toTypedArray()).whenComplete { _, _ ->
             ensureSync {
                 if (statusCheckGeneration[player.uniqueId]?.get() != generation || !player.isOnline) {
-                    future.complete(null)
-                    return@ensureSync
+                    null
+                } else {
+                    val selected = ordered.indices.firstOrNull { checks[it].getNow(false) }?.let(ordered::get)
+                    data.setStatus(selected)
+                    selected
                 }
-                val selected = ordered.indices.firstOrNull { checks[it].getNow(false) }?.let(ordered::get)
-                data.setStatus(selected)
-                future.complete(selected)
-            }
+            }.completeInto(future)
         }
         return future
     }
 
-    fun callNext(player: Player): CompletableFuture<IRunningState?>? {
+    fun callNext(player: Player): CompletableFuture<IRunningState?> {
         val data = playerDataMap.getOrPut(player.uniqueId) { PlayerData(player) }
-        return player.keySetting {
-            it.bindKeyMap.forEach { (keyBind, mapping) ->
-                if (mapping == data.nextInput) {
-                    val result = keyBind.tryCast(player).getNow(CastResult.CANCELED)
-                    if (result == CastResult.SUCCESS) {
-                        return@keySetting null
-                    }
+        return player.keySetting { it }.thenCompose { setting ->
+            fun fallback(): CompletableFuture<IRunningState?> {
+                val input = if (KeyRegisterManager.getKeyRegister(player.uniqueId)?.isKeyPress(setting.generalAttackKey) == true) {
+                    setting.generalAttackKey
+                } else {
+                    data.nextInput ?: return CompletableFuture.completedFuture(null)
                 }
+                return data.tryNext(input) ?: CompletableFuture.completedFuture(null)
             }
-            if (KeyRegisterManager.getKeyRegister(player.uniqueId)?.isKeyPress(it.generalAttackKey) == true) {
-                data.tryNext(it.generalAttackKey)
-            } else {
-                data.tryNext(data.nextInput ?: return@keySetting null)
+
+            val bound = setting.bindKeyMap.entries.firstOrNull { (_, mapping) -> mapping == data.nextInput }
+                ?: return@thenCompose fallback()
+            bound.key.tryCast(player).thenCompose { result ->
+                if (result == CastResult.SUCCESS) CompletableFuture.completedFuture(null) else fallback()
             }
-        }.orNull()
+        }
     }
 
     fun loadScript(state: IActionState, action: String): Script? {

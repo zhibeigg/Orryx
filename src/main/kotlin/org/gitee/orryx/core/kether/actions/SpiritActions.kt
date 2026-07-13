@@ -2,10 +2,12 @@ package org.gitee.orryx.core.kether.actions
 
 import org.gitee.orryx.core.targets.PlayerTarget
 import org.gitee.orryx.module.spirit.ISpiritManager
+import org.gitee.orryx.module.spirit.SpiritResult
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
 import taboolib.module.kether.*
+import java.util.concurrent.CompletableFuture
 
 object SpiritActions {
 
@@ -42,84 +44,79 @@ object SpiritActions {
             case("has") {
                 val spirit = it.nextParsedAction()
                 val container = it.nextTheyContainerOrNull()
-                actionFuture { complete ->
-                    run(spirit).double { spirit ->
-                        containerOrSelf(container) { container ->
-                            val player = container.firstInstanceOrNull<PlayerTarget>()?.getSource()
-                            if (player != null) {
-                                complete.complete(ISpiritManager.INSTANCE.haveSpirit(player, spirit))
-                            } else {
-                                complete.complete(false)
-                            }
+                actionFuture { future ->
+                    run(spirit).double { it }.thenCompose { amount ->
+                        containerOrSelf(container) { targets ->
+                            targets.firstInstanceOrNull<PlayerTarget>()?.getSource()?.let {
+                                ISpiritManager.INSTANCE.haveSpirit(it, amount)
+                            } ?: false
                         }
-                    }
+                    }.completeInto(future)
                 }
             }
             case("give") {
                 val spirit = it.nextParsedAction()
                 val they = it.nextTheyContainerOrNull()
-                actionNow {
-                    run(spirit).double { spirit ->
+                actionFuture { future ->
+                    run(spirit).double { it }.thenCompose { amount ->
                         containerOrSelf(they) { container ->
-                            container.forEachInstance<PlayerTarget> { target ->
-                                ISpiritManager.INSTANCE.giveSpirit(target.getSource(), spirit)
+                            container.mapInstance<PlayerTarget, CompletableFuture<SpiritResult>> { target ->
+                                ISpiritManager.INSTANCE.giveSpirit(target.getSource(), amount)
+                            }
+                        }.thenCompose { operations ->
+                            CompletableFuture.allOf(*operations.toTypedArray()).thenApply {
+                                operations.map { it.getNow(SpiritResult.CANCELLED) }
                             }
                         }
-                    }
+                    }.completeInto(future)
                 }
             }
             case("take") {
                 val spirit = it.nextParsedAction()
                 val they = it.nextTheyContainerOrNull()
-                actionNow {
-                    run(spirit).double { spirit ->
+                actionFuture { future ->
+                    run(spirit).double { it }.thenCompose { amount ->
                         containerOrSelf(they) { container ->
-                            container.forEachInstance<PlayerTarget> { target ->
-                                ISpiritManager.INSTANCE.takeSpirit(target.getSource(), spirit)
+                            container.mapInstance<PlayerTarget, CompletableFuture<SpiritResult>> { target ->
+                                ISpiritManager.INSTANCE.takeSpirit(target.getSource(), amount)
+                            }
+                        }.thenCompose { operations ->
+                            CompletableFuture.allOf(*operations.toTypedArray()).thenApply {
+                                operations.map { it.getNow(SpiritResult.CANCELLED) }
                             }
                         }
-                    }
+                    }.completeInto(future)
                 }
             }
             case("max") {
                 val they = it.nextTheyContainerOrNull()
                 actionFuture { future ->
                     containerOrSelf(they) { container ->
-                        val player = container.firstInstanceOrNull<PlayerTarget>()?.getSource()
-                        if (player != null) {
-                            ISpiritManager.INSTANCE.getMaxSpirit(player).thenAccept { spirit ->
-                                future.complete(spirit)
-                            }
-                        } else {
-                            future.complete(0.0)
-                        }
-                    }
+                        container.firstInstanceOrNull<PlayerTarget>()?.getSource()
+                    }.thenCompose { player ->
+                        player?.let { ISpiritManager.INSTANCE.getMaxSpirit(it) }
+                            ?: CompletableFuture.completedFuture(0.0)
+                    }.completeInto(future)
                 }
             }
             case("now") {
                 val they = it.nextTheyContainerOrNull()
                 actionFuture { future ->
                     containerOrSelf(they) { container ->
-                        val player = container.firstInstanceOrNull<PlayerTarget>()?.getSource()
-                        if (player != null) {
-                            future.complete(ISpiritManager.INSTANCE.getSpirit(player))
-                        } else {
-                            future.complete(0.0)
-                        }
-                    }
+                        container.firstInstanceOrNull<PlayerTarget>()?.getSource()?.let {
+                            ISpiritManager.INSTANCE.getSpirit(it)
+                        } ?: 0.0
+                    }.completeInto(future)
                 }
             }
             other {
                 val they = it.nextTheyContainerOrNull()
                 actionFuture { future ->
                     containerOrSelf(they) { container ->
-                        val player = container.firstInstanceOrNull<PlayerTarget>()?.getSource()
-                        if (player != null) {
-                            future.complete(ISpiritManager.INSTANCE.getSpirit(player))
-                        } else {
-                            future.complete(0.0)
-                        }
-                    }
+                        container.firstInstanceOrNull<PlayerTarget>()?.getSource()?.let {
+                            ISpiritManager.INSTANCE.getSpirit(it)
+                        } ?: 0.0
+                    }.completeInto(future)
                 }
             }
         }

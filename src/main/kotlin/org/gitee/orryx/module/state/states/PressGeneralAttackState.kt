@@ -107,7 +107,7 @@ class PressGeneralAttackState(override val key: String, configurationSection: Co
             task?.cancel()
             context?.apply {
                 terminate()
-                ScriptManager.cleanUp(id)
+                ScriptManager.cleanUp(this)
             }
             stop = true
         }

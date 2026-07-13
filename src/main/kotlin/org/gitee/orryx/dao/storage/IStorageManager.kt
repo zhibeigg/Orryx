@@ -241,6 +241,12 @@ interface IStorageManager {
      * */
     fun saveGlobalFlagAsync(key: String, flag: IFlag?): CompletableFuture<Unit>
 
+    /** 在单个数据库事务中清空并/或批量更新全局 Flag。 */
+    fun saveGlobalFlagsAsync(
+        changes: Map<String, IFlag?>,
+        clearAll: Boolean = false,
+    ): CompletableFuture<Unit>
+
     fun saveGlobalFlag(key: String, flag: IFlag?, onSuccess: Runnable) {
         completeStorageCallback(saveGlobalFlagAsync(key, flag), onSuccess)
     }

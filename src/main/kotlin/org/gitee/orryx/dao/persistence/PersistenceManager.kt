@@ -11,7 +11,6 @@ import org.gitee.orryx.dao.storage.IStorageManager
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ExecutionException
 
 /** 数据库已经提交、但后续缓存发布失败。 */
@@ -29,7 +28,7 @@ internal class PersistenceWriteException(
 object PersistenceManager {
 
     private val globalLock = Any()
-    private val globalTails = ConcurrentHashMap<String, CompletableFuture<Unit>>()
+    private var globalTail = CompletableFuture.completedFuture(Unit)
     private var acceptingGlobalWrites = true
     private var globalFailure: Throwable? = null
 
@@ -181,27 +180,31 @@ object PersistenceManager {
     }
 
     fun saveGlobalFlag(key: String, flag: IFlag?): CompletableFuture<Unit> {
-        val normalized = key.lowercase()
-        lateinit var result: CompletableFuture<Unit>
-        lateinit var tail: CompletableFuture<Unit>
+        return saveGlobalFlags(mapOf(key to flag))
+    }
+
+    fun saveGlobalFlags(
+        changes: Map<String, IFlag?>,
+        clearAll: Boolean = false,
+    ): CompletableFuture<Unit> {
+        val result: CompletableFuture<Unit>
         synchronized(globalLock) {
             if (!acceptingGlobalWrites) {
                 return CompletableFuture<Unit>().also {
                     it.completeExceptionally(IllegalStateException("Orryx 持久化服务正在关闭"))
                 }
             }
-            val ready = globalTails[normalized]?.handle { _, _ -> Unit }
-                ?: CompletableFuture.completedFuture(Unit)
-            result = ready.thenCompose { IStorageManager.INSTANCE.saveGlobalFlagAsync(key, flag) }
-            tail = result.handle { _, throwable ->
+            val ready = globalTail.handle { _, _ -> Unit }
+            result = ready.thenCompose {
+                IStorageManager.INSTANCE.saveGlobalFlagsAsync(changes, clearAll)
+            }
+            globalTail = result.handle { _, throwable ->
                 if (throwable != null) synchronized(globalLock) {
                     if (globalFailure == null) globalFailure = throwable
                 }
                 Unit
             }
-            globalTails[normalized] = tail
         }
-        tail.whenComplete { _, _ -> globalTails.remove(normalized, tail) }
         return result
     }
 
@@ -212,9 +215,9 @@ object PersistenceManager {
     fun shutdown(): CompletableFuture<Unit> {
         val globalWrites = synchronized(globalLock) {
             acceptingGlobalWrites = false
-            globalTails.values.toTypedArray()
+            globalTail
         }
-        val globalDrain = CompletableFuture.allOf(*globalWrites).thenCompose {
+        val globalDrain = globalWrites.thenCompose {
             val failure = synchronized(globalLock) { globalFailure }
             if (failure == null) {
                 CompletableFuture.completedFuture(Unit)

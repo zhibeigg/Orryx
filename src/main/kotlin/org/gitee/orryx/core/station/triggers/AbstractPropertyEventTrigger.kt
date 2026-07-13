@@ -29,6 +29,4 @@ abstract class AbstractPropertyEventTrigger<E>(override val event: String): ISta
         return station.event.equals(this.event, ignoreCase = true)
     }
 
-    override fun onEnd(context: ScriptContext, event: E, map: Map<String, Any?>) {
-    }
 }

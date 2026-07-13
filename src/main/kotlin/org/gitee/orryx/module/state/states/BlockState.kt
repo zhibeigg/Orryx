@@ -110,11 +110,11 @@ class BlockState(override val key: String, configurationSection: ConfigurationSe
             task?.cancel()
             context?.apply {
                 terminate()
-                ScriptManager.cleanUp(id)
+                ScriptManager.cleanUp(this)
             }
             successContext?.apply {
                 terminate()
-                ScriptManager.cleanUp(id)
+                ScriptManager.cleanUp(this)
             }
             stop = true
         }

@@ -1,5 +1,6 @@
 package org.gitee.orryx.core.kether.actions
 
+import org.bukkit.entity.Player
 import org.gitee.orryx.core.job.IJob
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.kether.ScriptManager.addOrryxCloseable
@@ -113,12 +114,21 @@ object Actions {
             .addEntry("tick", Type.LONG)
     ) {
         val ticks = it.nextParsedAction()
-        actionFuture { f ->
-            run(ticks).long { ticks ->
-                val task = submit(delay = ticks, async = !isPrimaryThread) {
-                    f.complete(null)
+        actionFuture { future ->
+            val resumeOnMain = isPrimaryThread
+            run(ticks).long { it }.whenComplete { delay, throwable ->
+                if (throwable != null) {
+                    future.completeExceptionally(throwable)
+                    return@whenComplete
                 }
-                addOrryxCloseable(f) { task.cancel() }
+                try {
+                    val task = submit(delay = delay.coerceAtLeast(0L), async = !resumeOnMain) {
+                        future.complete(null)
+                    }
+                    addOrryxCloseable(future) { task.cancel() }
+                } catch (scheduleFailure: Throwable) {
+                    future.completeExceptionally(scheduleFailure)
+                }
             }
         }
     }
@@ -131,11 +141,7 @@ object Actions {
     ) {
         val action = it.nextParsedAction()
         actionFuture { future ->
-            ensureSync {
-                run(action).thenAccept { value ->
-                    future.complete(value)
-                }
-            }
+            composeOnMainThread { run(action) }.completeIntoMain(future)
         }
     }
 
@@ -149,21 +155,18 @@ object Actions {
         val key = it.nextParsedAction()
         val origin = it.nextHeadActionOrNull(arrayOf("origin"))
         actionFuture { future ->
-            val skillParameter = script().getParameterOrNull() as? SkillParameter ?: return@actionFuture future.complete(null)
-            run(key).str { key ->
-                containerOrSelf(origin) { container ->
-                    val origin =  container.firstInstanceOrNull<ITargetLocation<*>>()
-                    val extendParameter = SkillParameter(skillParameter, origin)
-
-                    extendParameter.runSkillExtendAction(key, script().rootFrame().variables().toMap())?.whenComplete { value, ex ->
-                        if (ex != null) {
-                            future.completeExceptionally(ex)
-                        } else {
-                            future.complete(value)
-                        }
-                    } ?: future.complete(null)
+            val skillParameter = script().getParameterOrNull() as? SkillParameter
+                ?: return@actionFuture future.complete(null)
+            run(key).str { it }.thenCompose { extendKey ->
+                containerOrSelf(origin) { it }.thenCompose { container ->
+                    val targetOrigin = container.firstInstanceOrNull<ITargetLocation<*>>()
+                    val extendParameter = SkillParameter(skillParameter, targetOrigin)
+                    extendParameter.runSkillExtendAction(
+                        extendKey,
+                        script().rootFrame().variables().toMap(),
+                    ) ?: CompletableFuture.completedFuture(null)
                 }
-            }
+            }.completeInto(future)
         }
     }
 
@@ -180,22 +183,28 @@ object Actions {
         val level =  it.nextParsedAction()
         val consume =  it.nextParsedAction()
         val they = it.nextTheyContainerOrSelf()
-        actionNow {
-            run(key).str { key ->
-                run(level).int { level ->
-                    run(consume).bool { consume ->
+        actionFuture { future ->
+            run(key).str { it }.thenCompose { skillKey ->
+                run(level).int { it }.thenCompose { skillLevel ->
+                    run(consume).bool { it }.thenCompose { shouldConsume ->
                         containerOrSelf(they) { container ->
-                            val skill = SkillLoaderManager.getSkillLoader(key) as ICastSkill
-                            container.forEachInstance<PlayerTarget> { player ->
-                                val parameter = SkillParameter(skill.key, player.getSource(), level).apply {
+                            container.mapInstance<PlayerTarget, Player> { it.getSource() }
+                        }.thenCompose { players ->
+                            val skill = SkillLoaderManager.getSkillLoader(skillKey) as? ICastSkill
+                                ?: return@thenCompose CompletableFuture.completedFuture(listOf(CastResult.PARAMETER))
+                            val casts = players.map { player ->
+                                val parameter = SkillParameter(skill.key, player, skillLevel).apply {
                                     trigger = SkillTrigger.Script
                                 }
-                                skill.castSkill(player.getSource(), parameter, consume)
+                                skill.castSkillAsync(player, parameter, shouldConsume)
+                            }
+                            CompletableFuture.allOf(*casts.toTypedArray()).thenApply {
+                                casts.map { it.getNow(CastResult.CANCELED) }
                             }
                         }
                     }
                 }
-            }
+            }.completeInto(future)
         }
     }
 
@@ -208,17 +217,18 @@ object Actions {
     ) {
         val key = it.nextParsedAction()
         val they = it.nextTheyContainerOrSelf()
-        actionNow {
-            run(key).str { key ->
+        actionFuture { future ->
+            run(key).str { it }.thenCompose { skillKey ->
                 containerOrSelf(they) { container ->
-                    container.forEachInstance<PlayerTarget> { player ->
-                        val pressing = PressSkillManager.pressTaskMap[player.uniqueId] ?: return@forEachInstance
-                        if (pressing.first == key) {
-                            pressing.second.complete()
-                        }
+                    container.mapInstance<PlayerTarget, CompletableFuture<Any?>> { target ->
+                        val pressing = PressSkillManager.pressTaskMap[target.uniqueId]
+                        if (pressing?.first == skillKey) pressing.second.complete()
+                        else CompletableFuture.completedFuture(null)
                     }
+                }.thenCompose { releases ->
+                    CompletableFuture.allOf(*releases.toTypedArray()).thenApply { null }
                 }
-            }
+            }.completeInto(future)
         }
     }
 
@@ -231,20 +241,19 @@ object Actions {
     ) {
         val key = it.nextParsedAction()
         val they = it.nextTheyContainerOrSelf()
-        actionFuture { f ->
-            run(key).str { key ->
+        actionFuture { future ->
+            run(key).str { it }.thenCompose { skillKey ->
                 containerOrSelf(they) { container ->
-                    CompletableFuture.allOf(
-                        *container.mapInstance<PlayerTarget, CompletableFuture<Void>> { player ->
-                            player.getSource().getSkill(key).thenAccept { skill ->
-                                skill?.tryCast(SkillTrigger.Script)
-                            }
-                        }.toTypedArray()
-                    ).thenRun {
-                        f.complete(null)
+                    container.mapInstance<PlayerTarget, CompletableFuture<CastResult>> { target ->
+                        target.getSource().getSkill(skillKey).thenCompose { skill ->
+                            skill?.tryCast(SkillTrigger.Script)
+                                ?: CompletableFuture.completedFuture(CastResult.PARAMETER)
+                        }
                     }
+                }.thenCompose { casts ->
+                    CompletableFuture.allOf(*casts.toTypedArray()).thenApply { null }
                 }
-            }
+            }.completeInto(future)
         }
     }
 

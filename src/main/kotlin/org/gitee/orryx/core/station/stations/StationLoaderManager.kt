@@ -2,6 +2,7 @@ package org.gitee.orryx.core.station.stations
 
 import kotlinx.coroutines.launch
 import org.bukkit.entity.Player
+import org.bukkit.event.Cancellable
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.api.OrryxAPI.Companion.pluginScope
 import org.gitee.orryx.core.common.timer.StationTimer
@@ -90,6 +91,7 @@ object StationLoaderManager {
         }
         listenerList += registerBukkitListener(clazz, priority, false) { event ->
             stations.forEach { station ->
+                if (station.ignoreCancelled && event is Cancellable && event.isCancelled) return@forEach
                 if (onCheck(station, event, station.map)) {
                     val sender = onJoin(event, station.map)
                     if (StationTimer.hasNext(sender, station.key)) {
@@ -117,9 +119,20 @@ object StationLoaderManager {
                 context = this
                 onStart(this, event, map)
                 playerRunningSpace?.invoke(context, station.key)
-            }.whenComplete { _, _ ->
-                onEnd(context, event, map)
-                playerRunningSpace?.release(context, station.key)
+            }.whenComplete { _, scriptFailure ->
+                var failure = scriptFailure
+                try {
+                    onEnd(context, event, map)
+                } catch (throwable: Throwable) {
+                    if (failure == null) failure = throwable else if (failure !== throwable) failure?.addSuppressed(throwable)
+                } finally {
+                    try {
+                        playerRunningSpace?.release(context, station.key)
+                    } catch (throwable: Throwable) {
+                        if (failure == null) failure = throwable else if (failure !== throwable) failure?.addSuppressed(throwable)
+                    }
+                }
+                failure?.printStackTrace()
             }
         }
 

@@ -13,14 +13,25 @@ import taboolib.common.platform.function.adaptPlayer
 import taboolib.common.platform.function.warning
 import taboolib.common5.cdouble
 import taboolib.common5.clong
-import taboolib.module.kether.orNull
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionException
+import java.util.concurrent.ConcurrentHashMap
 
-class SkillParameter(val skill: String?, val player: Player, var level: Int = 1): IParameter {
+class SkillParameter(val skill: String?, val player: Player, level: Int = 1): IParameter {
 
     constructor(skillParameter: SkillParameter, origin: ITargetLocation<*>?): this(skillParameter.skill, skillParameter.player, skillParameter.level) {
         this.origin = origin ?: player.toTarget()
         this.trigger = skillParameter.trigger
     }
+
+    var level: Int = level
+        set(value) {
+            if (field == value) return
+            field = value
+            lazies.clear()
+            lazyFutures.values.forEach { it.cancel(false) }
+            lazyFutures.clear()
+        }
 
     override var origin: ITargetLocation<*>? = player.toTarget()
 
@@ -65,7 +76,10 @@ class SkillParameter(val skill: String?, val player: Player, var level: Int = 1)
 
     private val proxyCommandSender by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { adaptPlayer(player) }
 
-    private val lazies by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { hashMapOf<String, Any?>() }
+    private val lazies by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { ConcurrentHashMap<String, Any>() }
+    private val lazyFutures by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+        ConcurrentHashMap<String, CompletableFuture<Any?>>()
+    }
 
     fun getSkill(): ISkill? {
         return skill?.let { SkillLoaderManager.getSkillLoader(skill) }
@@ -75,42 +89,71 @@ class SkillParameter(val skill: String?, val player: Player, var level: Int = 1)
         return origin?.location ?: player.location
     }
 
-    override fun getVariable(key: String, lazy: Boolean): Any? {
-        fun getAndSetValue(): Any? {
-            val value = getSkill()?.variables?.get(key)?.let {
-                ScriptManager.runScript(proxyCommandSender, this, it) {
-                    set("level", level)
-                }.orNull()
-            }
-            if (value == null) {
+    fun getVariableFuture(key: String, lazy: Boolean): CompletableFuture<Any?> {
+        lazies[key]?.let { return CompletableFuture.completedFuture(it) }
+
+        fun load(): CompletableFuture<Any?> {
+            val action = getSkill()?.variables?.get(key)
+            if (action == null) {
                 warning("未找到技能 $skill 的变量 $key ")
-                return null
-            } else {
-                lazies[key] = value
-                return value
+                return CompletableFuture.completedFuture(null)
+            }
+            return ScriptManager.runScript(proxyCommandSender, this, action) {
+                set("level", level)
+            }.thenApply { value ->
+                if (value == null) {
+                    warning("未找到技能 $skill 的变量 $key ")
+                } else {
+                    lazies[key] = value
+                }
+                value
             }
         }
-        return if (lazy) {
-            lazies[key] ?: getAndSetValue()
-        } else {
-            getAndSetValue()
+
+        if (!lazy) return load()
+        val future = lazyFutures.computeIfAbsent(key) { load() }
+        future.whenComplete { _, throwable ->
+            if (throwable != null) lazyFutures.remove(key, future)
+        }
+        return future
+    }
+
+    override fun getVariable(key: String, lazy: Boolean): Any? {
+        val future = getVariableFuture(key, lazy)
+        check(future.isDone) { "技能变量 $key 包含异步动作，请使用 getVariableFuture" }
+        return try {
+            future.getNow(null)
+        } catch (throwable: CompletionException) {
+            throw throwable.cause ?: throwable
         }
     }
 
     override fun getVariable(key: String, default: Any): Any {
-        return lazies[key] ?: lazies.put(key, default) ?: default
+        return lazies[key] ?: lazies.putIfAbsent(key, default) ?: default
     }
 
     fun manaValue(lazy: Boolean = false): Double {
         return getVariable("MANA", lazy).cdouble
     }
 
+    fun manaValueFuture(lazy: Boolean = false): CompletableFuture<Double> {
+        return getVariableFuture("MANA", lazy).thenApply { it.cdouble }
+    }
+
     fun cooldownValue(lazy: Boolean = false): Long {
         return ticksToMillisSaturated(getVariable("COOLDOWN", lazy).clong)
     }
 
+    fun cooldownValueFuture(lazy: Boolean = false): CompletableFuture<Long> {
+        return getVariableFuture("COOLDOWN", lazy).thenApply { ticksToMillisSaturated(it.clong) }
+    }
+
     fun silenceValue(lazy: Boolean = false): Long {
         return ticksToMillisSaturated(getVariable("SILENCE", lazy).clong)
+    }
+
+    fun silenceValueFuture(lazy: Boolean = false): CompletableFuture<Long> {
+        return getVariableFuture("SILENCE", lazy).thenApply { ticksToMillisSaturated(it.clong) }
     }
 
     override fun toString(): String {
