@@ -1,6 +1,6 @@
 # Orryx API
 
-> 2.45.120：选择器预览、Projectile 与 Effect 收敛 Bukkit 主线程及可取消生命周期；修复局部碰撞索引、缓存与胶囊体盒体几何；HUD 使用 owner/viewer 双向索引并清理离线与迟到回调；MemoryCache 支持过期策略热更新、负缓存及关联失效。 开发文档
+> 2.45.121：统一 Kether 注释预处理；支持纯注释、行尾注释、单双引号内 `#`、转义及 LF/CRLF，并在去除注释后识别完整 `def` 脚本。 开发文档
 
 > 本文档面向 Kotlin/Java 开发者，帮助您使用 Orryx API 进行二次开发。
 
@@ -1069,6 +1069,22 @@ Kether 是 Orryx 的主要脚本引擎，提供 40+ 内置动作。
 - **选择器动作**：几何体范围选择、目标筛选
 - **射线动作**：光线追踪、碰撞检测
 
+#### Kether 注释与完整脚本识别
+
+所有 Orryx 管理的 Kether 脚本入口使用相同预处理规则：
+
+```yaml
+Actions: |-
+  # 纯注释行保留对应空行
+  tell "value#1" # 行尾注释
+  tell '#value'
+```
+
+- 仅单双引号外且未转义的 `#` 开始注释。
+- 转义引号不会提前结束字符串，转义 `#` 会原样保留。
+- LF 与 CRLF 均受支持，纯注释行不会被删除，从而保持后续源码行号。
+- 注释移除后，首个非空内容为完整 `def` 词元时按完整脚本加载；否则自动包装为 `def main`。因此文件开头可以先写注释再声明多个 `def` 函数。
+
 ### 7.2 Kotlin 脚本（热重载）
 
 Orryx 支持 Kotlin 脚本（.kts 文件），具有热重载能力。
@@ -1096,17 +1112,23 @@ fun execute(player: Player) {
 ### 7.3 脚本执行 API
 
 ```kotlin
-import org.gitee.orryx.api.OrryxAPI
-import org.gitee.orryx.core.kts.ScriptManager
+import org.gitee.orryx.core.kether.ScriptManager
+import taboolib.common.platform.function.adaptPlayer
 
-// 加载 Kether 脚本
-val script = OrryxAPI.ketherScriptLoader.load("""
-    delay 20
-    message "Hello World"
-""")
+// 字符串入口会自动执行统一的注释预处理与 def 识别
+val execution = ScriptManager.runScript(
+    adaptPlayer(player),
+    parameter,
+    """
+        # 该空行会保留
+        tell "Hello # World" # 行尾注释会移除
+    """.trimIndent()
+)
 
-// 执行脚本
-ScriptManager.runScript(player, parameter, script)
+// execution 为 CompletableFuture，不要阻塞等待；使用回调或协程衔接结果
+execution.whenComplete { result, throwable ->
+    // 处理结果或异常
+}
 ```
 
 ---
@@ -1257,5 +1279,5 @@ A: 对于可取消的事件，设置 `event.isCancelled = true`。
 
 ---
 
-*文档版本: 2.45.120*
+*文档版本: 2.45.121*
 *最后更新: 2026-07-14*

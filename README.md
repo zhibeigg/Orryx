@@ -6,7 +6,7 @@
 
 **跨时代技能插件，支持实现复杂逻辑，为稳定高效而生**
 
-[![Version](https://img.shields.io/badge/version-2.45.120-blue?style=for-the-badge)](https://github.com/zhibeigg/Orryx/releases)
+[![Version](https://img.shields.io/badge/version-2.45.121-blue?style=for-the-badge)](https://github.com/zhibeigg/Orryx/releases)
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.12--1.21-green?style=for-the-badge&logo=minecraft)](https://www.minecraft.net/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.1.20-purple?style=for-the-badge&logo=kotlin)](https://kotlinlang.org/)
 [![TabooLib](https://img.shields.io/badge/TabooLib-6.2.4-orange?style=for-the-badge)](https://github.com/TabooLib/taboolib)
@@ -80,6 +80,21 @@
 - 选择器：几何体范围选择、目标筛选
 - 射线：光线追踪、碰撞检测
 - 兼容：Nodens 属性、AstraXHero、AttributePlus、GDDTitle、MythicMobs 等
+
+#### Kether 注释
+
+Orryx 的技能、中转站、状态、占位符、临时脚本和表达式入口使用同一套注释预处理：
+
+```yaml
+Actions: |-
+  # 纯注释行会保留为空行，便于错误行号定位
+  tell "damage#fire" # 引号外的井号开始行尾注释
+  tell '#tag'        # 单双引号内的井号都会保留
+```
+
+- 仅引号外且未转义的 `#` 开始注释；单双引号、转义引号和转义 `#` 均会保留。
+- 同时支持 LF 与 CRLF，不会删除纯注释行对应的换行。
+- 预处理会先移除注释，再根据首个非空内容是否为完整 `def` 词元决定是否自动包装 `def main`。
 
 #### 自生成 Kether 文档
 

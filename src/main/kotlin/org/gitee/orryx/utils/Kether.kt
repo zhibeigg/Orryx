@@ -37,7 +37,6 @@ import taboolib.library.kether.QuestReader
 import taboolib.module.kether.*
 import taboolib.module.kether.ParserHolder.command
 import taboolib.module.kether.ParserHolder.option
-import java.nio.charset.StandardCharsets
 import java.util.concurrent.CompletableFuture
 
 const val ORRYX_NAMESPACE = "Orryx"
@@ -46,14 +45,6 @@ val orryxEnvironmentNamespaces = listOf(ORRYX_NAMESPACE, NODENS_NAMESPACE, "keth
 
 val EMPTY_FUNCTION = {}
 val EMPTY_RUNNABLE = Runnable {}
-
-internal fun getBytes(actions: String): ByteArray {
-    val s = if (actions.startsWith("def ")) actions else "def main = { $actions }"
-    val texts = s.split("\n")
-    return texts.mapNotNull { if (it.trim().startsWith("#")) null else it }.joinToString("\n").toByteArray(
-        StandardCharsets.UTF_8
-    )
-}
 
 internal fun ScriptFrame.bukkitPlayer(): Player {
     return script().sender?.castSafely<Player>() ?: error("Orryx脚本中Sender不是玩家")
@@ -246,7 +237,10 @@ internal fun Player.eval(action: String, map: Map<String, Any>): CompletableFutu
 }
 
 internal fun ProxyCommandSender.eval(action: String, map: Map<String, Any>): CompletableFuture<Any?> {
-    return KetherShell.eval(action, ScriptOptions.builder().sender(this@eval).sandbox(!debug).namespace(orryxEnvironmentNamespaces).vars(map).build())
+    return KetherShell.eval(
+        stripKetherComments(action),
+        ScriptOptions.builder().sender(this@eval).sandbox(!debug).namespace(orryxEnvironmentNamespaces).vars(map).build()
+    )
 }
 
 internal fun Player.parse(actions: List<String>, map: Map<String, Any>): List<String> {

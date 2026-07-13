@@ -19,6 +19,7 @@ Options:
     Fuck: 5
 # 执行语句
 Actions: |-
-  tell &message
+  # Kether 纯注释行会保留为空行
+  tell &message # 行尾注释会在编译前移除
   tell lazy fuck
   tell reinit fuck
