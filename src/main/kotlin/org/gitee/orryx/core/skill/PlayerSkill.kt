@@ -103,6 +103,7 @@ class PlayerSkill(
 
     override fun castCheck(parameter: IParameter): CompletableFuture<CastResult> {
         if (parameter !is SkillParameter) return CompletableFuture.completedFuture(CastResult.PARAMETER)
+        if (!player.isOnline || player.isDead || locked) return CompletableFuture.completedFuture(CastResult.CANCELED)
         val skill = skill
         // 被动技能
         if (skill is PassiveSkill) return CompletableFuture.completedFuture(CastResult.PASSIVE)

@@ -20,14 +20,24 @@ interface IAttributeBridge {
 
     companion object {
 
-        val INSTANCE by unsafeLazy {
-            CompatGuard.firstAvailable(
-                default = { DefaultAttributeBridge() },
+        private val bridge by unsafeLazy {
+            val fallback = DefaultAttributeBridge()
+            val initial = CompatGuard.firstAvailable(
+                default = { fallback },
                 { AttributePlusPlugin.isEnabled } to { AttributePlusBridge() },
                 { NodensPlugin.isEnabled } to { NodensBridge() },
                 { AstraXHeroPlugin.isEnabled } to { AstraXHeroBridge() },
                 { CraneAttributePlugin.isEnabled } to { CraneAttributeBridge() },
             )
+            CompatGuard.degradeOnce("属性桥接", initial, fallback)
+        }
+
+        val INSTANCE: IAttributeBridge by unsafeLazy { LinkageFallbackAttributeBridge(bridge) }
+
+        internal fun withAttributePlus(block: (AttributePlusBridge) -> Unit) {
+            bridge.invoke { active ->
+                (active as? AttributePlusBridge)?.let(block)
+            }
         }
     }
 
@@ -66,4 +76,31 @@ interface IAttributeBridge {
      * @param entity 需要更新的实体
      */
     fun update(entity: LivingEntity)
+}
+
+private class LinkageFallbackAttributeBridge(
+    private val bridge: OneTimeLinkageFallback<IAttributeBridge>,
+) : IAttributeBridge {
+
+    override fun addAttribute(entity: LivingEntity, key: String, value: List<String>, timeout: Long) {
+        bridge.invoke { it.addAttribute(entity, key, value, timeout) }
+    }
+
+    override fun removeAttribute(entity: LivingEntity, key: String) {
+        bridge.invoke { it.removeAttribute(entity, key) }
+    }
+
+    override fun damage(
+        attacker: LivingEntity,
+        target: LivingEntity,
+        damage: Double,
+        type: DamageType,
+        context: ScriptContext?,
+    ) {
+        bridge.invoke { it.damage(attacker, target, damage, type, context) }
+    }
+
+    override fun update(entity: LivingEntity) {
+        bridge.invoke { it.update(entity) }
+    }
 }

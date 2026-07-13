@@ -53,32 +53,44 @@ class AttributePlusBridge: IAttributeBridge {
             AttributeAPI.getAttrData(attacker)
         }
 
-        data.operationAttribute(
-            AttributeAPI.getAttributeSource(attributes),
-            AttributeSource.OperationType.ADD,
-            BRIDGE_TAG
-        )
+        return try {
+            data.operationAttribute(
+                AttributeAPI.getAttributeSource(attributes),
+                AttributeSource.OperationType.ADD,
+                BRIDGE_TAG
+            )
 
-        val event =
-            EntityDamageByEntityEvent(attacker, target, EntityDamageEvent.DamageCause.CUSTOM, 0.0)
+            val event = EntityDamageByEntityEvent(
+                attacker,
+                target,
+                EntityDamageEvent.DamageCause.CUSTOM,
+                0.0,
+            )
+            val handle = AttributeHandle(data, AttributeAPI.getAttrData(target))
+                .init(event, isProjectile = false, isSkillDamage = true)
+                .handleAttackOrDefenseAttribute()
 
-        val handle = AttributeHandle(data, AttributeAPI.getAttrData(target))
-            .init(event, isProjectile = false, isSkillDamage = true)
-            .handleAttackOrDefenseAttribute()
+            if (!event.isCancelled && !handle.isCancelled) {
+                val finalDamage = handle.getDamage(attacker)
+                val counterDamage = handle.getDamage(target)
 
-        if (!event.isCancelled && !handle.isCancelled) {
-            val finalDamage = handle.getDamage(attacker)
+                handle.sendAttributeMessage()
+                doDamage(attacker, target, event, finalDamage)
+                damage += finalDamage
 
-            handle.sendAttributeMessage()
-            doDamage(attacker, target, event, finalDamage)
-            damage += finalDamage
-
-            if (handle.getDamage(target) > 0.0) {
-                doDamage(target, attacker, event, finalDamage)
+                if (counterDamage > 0.0) {
+                    val counterEvent = EntityDamageByEntityEvent(
+                        target,
+                        attacker,
+                        EntityDamageEvent.DamageCause.CUSTOM,
+                        counterDamage,
+                    )
+                    doDamage(target, attacker, counterEvent, counterDamage)
+                }
             }
+            damage
+        } finally {
+            data.takeApiAttribute(BRIDGE_TAG)
         }
-
-        data.takeApiAttribute(BRIDGE_TAG)
-        return damage
     }
 }

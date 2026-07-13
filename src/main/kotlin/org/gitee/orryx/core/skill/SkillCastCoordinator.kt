@@ -1,6 +1,7 @@
 package org.gitee.orryx.core.skill
 
 import org.bukkit.entity.Player
+import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.api.ProfileAPI
 import org.gitee.orryx.core.common.timer.CooldownApplication
 import org.gitee.orryx.core.common.timer.SkillTimer
@@ -91,6 +92,12 @@ internal object SkillCastCoordinator {
             }
             val castSkill = playerSkill.skill as? ICastSkill
                 ?: return@thenComposeMain CompletableFuture.completedFuture(StartupConsumption(CastResult.PARAMETER, null))
+            if (!player.isOnline || player.isDead || playerSkill.locked || playerSkill.level != parameter.level) {
+                return@thenComposeMain CompletableFuture.completedFuture(StartupConsumption(CastResult.CANCELED, null))
+            }
+            if (!castSkill.ignoreSilence && Orryx.api().profileAPI.isSilence(player)) {
+                return@thenComposeMain CompletableFuture.completedFuture(StartupConsumption(CastResult.SILENCE, null))
+            }
             buildPlan(parameter).thenComposeMain { plan ->
                 require(plan.mana.isFinite() && plan.mana >= 0.0) { "技能法力消耗必须是非负有限数字" }
                 if (plan.silence >= 0L && StateManager.getGlobalState(skillKey) !is SkillState) {

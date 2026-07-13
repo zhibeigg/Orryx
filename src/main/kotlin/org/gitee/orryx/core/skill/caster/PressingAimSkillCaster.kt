@@ -73,11 +73,12 @@ object PressingAimSkillCaster : ISkillCaster {
                     return@onSuccess
                 }
                 parameter.origin = info.location.toTarget()
+                val pressTick = ((info.timestamp - startedAt).coerceAtLeast(0L) / 50L).coerceAtMost(maxTick)
                 val variables = mapOf(
                     "aimRadius" to aimRadius,
                     "aimMin" to aimMin,
                     "aimMax" to aimMax,
-                    "pressTick" to (info.timestamp - startedAt).coerceAtLeast(0L) / 50L,
+                    "pressTick" to pressTick,
                 )
                 val startup = if (consume) {
                     skill.consumeForStartup(player, parameter).thenComposeMain { consumption ->

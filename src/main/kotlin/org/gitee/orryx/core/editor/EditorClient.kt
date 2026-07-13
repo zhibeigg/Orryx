@@ -14,13 +14,21 @@ import kotlinx.serialization.json.put
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.common.task.SimpleTimeoutTask
+import org.gitee.orryx.core.editor.handler.EditorRequestQueue
 import org.gitee.orryx.core.editor.handler.FileHandler
 import org.gitee.orryx.core.editor.handler.ReloadHandler
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.module.wiki.ActionsSchemaGenerator
 import org.gitee.orryx.utils.consoleMessage
 import org.gitee.orryx.utils.debug
+import org.java_websocket.WebSocketImpl
 import org.java_websocket.client.WebSocketClient
+import org.java_websocket.drafts.Draft
+import org.java_websocket.drafts.Draft_6455
+import org.java_websocket.enums.Opcode
+import org.java_websocket.exceptions.LimitExceededException
+import org.java_websocket.extensions.DefaultExtension
+import org.java_websocket.framing.Framedata
 import org.java_websocket.handshake.ServerHandshake
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
@@ -30,6 +38,75 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
+
+private class BoundedEditorDraft(
+    private val maxMessageBytes: Int,
+    private val maxFragmentCount: Int,
+) : Draft_6455(listOf(DefaultExtension()), maxMessageBytes) {
+
+    private var fragmentedMessageBytes = 0L
+    private var fragmentedFrameCount = 0
+    private var fragmentedMessageOpen = false
+
+    @Synchronized
+    override fun processFrame(webSocketImpl: WebSocketImpl, frame: Framedata) {
+        val opcode = frame.opcode
+        val startsFragmentedMessage = !fragmentedMessageOpen && !frame.isFin &&
+            (opcode == Opcode.TEXT || opcode == Opcode.BINARY)
+        val continuesFragmentedMessage = fragmentedMessageOpen && opcode == Opcode.CONTINUOUS
+        val finishesFragmentedMessage = continuesFragmentedMessage && frame.isFin
+
+        try {
+            when {
+                startsFragmentedMessage -> {
+                    fragmentedMessageOpen = true
+                    fragmentedMessageBytes = frame.payloadData.remaining().toLong()
+                    fragmentedFrameCount = 1
+                    checkFragmentedMessageLimit()
+                }
+                continuesFragmentedMessage -> {
+                    val payloadBytes = frame.payloadData.remaining().toLong()
+                    if (payloadBytes > maxMessageBytes.toLong() - fragmentedMessageBytes) {
+                        throw messageLimitExceeded()
+                    }
+                    fragmentedMessageBytes += payloadBytes
+                    fragmentedFrameCount++
+                    checkFragmentedMessageLimit()
+                }
+            }
+            super.processFrame(webSocketImpl, frame)
+        } catch (throwable: Throwable) {
+            resetFragmentedMessage()
+            throw throwable
+        } finally {
+            if (finishesFragmentedMessage) resetFragmentedMessage()
+        }
+    }
+
+    @Synchronized
+    override fun reset() {
+        super.reset()
+        resetFragmentedMessage()
+    }
+
+    override fun copyInstance(): Draft = BoundedEditorDraft(maxMessageBytes, maxFragmentCount)
+
+    private fun checkFragmentedMessageLimit() {
+        if (fragmentedMessageBytes > maxMessageBytes || fragmentedFrameCount > maxFragmentCount) {
+            throw messageLimitExceeded()
+        }
+    }
+
+    private fun messageLimitExceeded(): LimitExceededException {
+        return LimitExceededException("Editor WebSocket 消息超过大小或分片数量限制", maxMessageBytes)
+    }
+
+    private fun resetFragmentedMessage() {
+        fragmentedMessageBytes = 0L
+        fragmentedFrameCount = 0
+        fragmentedMessageOpen = false
+    }
+}
 
 /**
  * 编辑器 WebSocket 客户端。
@@ -51,7 +128,12 @@ object EditorClient {
     private val stopping = AtomicBoolean(false)
     private val registrationRejected = AtomicBoolean(false)
     private val logSubscribed = AtomicBoolean(false)
-    private val pendingTokenRegistrations = ConcurrentHashMap<String, CompletableFuture<Boolean>>()
+    private val pendingTokenRegistrations = ConcurrentHashMap<String, PendingTokenRegistration>()
+
+    private data class PendingTokenRegistration(
+        val generation: Long,
+        val future: CompletableFuture<Boolean>,
+    )
 
     @Volatile
     private var client: WebSocketClient? = null
@@ -63,9 +145,16 @@ object EditorClient {
     private var reconnectJob: Job? = null
 
     @Volatile
+    private var registrationTimeoutJob: Job? = null
+
+    @Volatile
     private var logKeywordFilter: String? = null
 
     private const val RECONNECT_INTERVAL = 30_000L
+    private const val REGISTRATION_TIMEOUT = 15_000L
+    private const val MAX_INCOMING_MESSAGE_BYTES = 8 * 1024 * 1024
+    private const val MAX_INCOMING_MESSAGE_CHARS = MAX_INCOMING_MESSAGE_BYTES
+    private const val MAX_INCOMING_MESSAGE_FRAGMENTS = 2_048
     private const val SERVER_URL = "wss://orryx.mcwar.cn/ws/server"
     private const val EDITOR_URL = "https://orryx.mcwar.cn"
     private const val TOKEN_EXPIRES_SECONDS = 300
@@ -132,12 +221,14 @@ object EditorClient {
             registrationRejected.set(false)
             reconnectJob?.cancel()
             reconnectJob = null
+            registrationTimeoutJob?.cancel()
+            registrationTimeoutJob = null
             reconnectScheduled.set(false)
             connected.set(false)
             registered.set(false)
             logSubscribed.set(false)
             logKeywordFilter = null
-            pendingTokenRegistrations.values.forEach { it.complete(false) }
+            pendingTokenRegistrations.values.forEach { it.future.complete(false) }
             pendingTokenRegistrations.clear()
 
             attemptGeneration = generation.incrementAndGet()
@@ -167,13 +258,15 @@ object EditorClient {
             generation.incrementAndGet()
             reconnectJob?.cancel()
             reconnectJob = null
+            registrationTimeoutJob?.cancel()
+            registrationTimeoutJob = null
             reconnectScheduled.set(false)
             connected.set(false)
             registered.set(false)
             logSubscribed.set(false)
             logKeywordFilter = null
             activeLicense = null
-            pendingTokenRegistrations.values.forEach { it.complete(false) }
+            pendingTokenRegistrations.values.forEach { it.future.complete(false) }
             pendingTokenRegistrations.clear()
             previousClient = client
             client = null
@@ -192,11 +285,14 @@ object EditorClient {
             synchronized(stateLock) {
                 reconnectJob = null
             }
-            if (stopping.get() || connected.get()) return@launch
+            if (stopping.get() || connected.get() || generation.get() != expectedGeneration) return@launch
 
             val configuredLicense = getLicense().takeIf { isEnabled() }
             if (configuredLicense == null) {
-                disconnect()
+                if (generation.get() == expectedGeneration) disconnect()
+                return@launch
+            }
+            if (generation.get() != expectedGeneration || activeLicense != license || configuredLicense != license) {
                 return@launch
             }
             startConnection(configuredLicense, reconnect = true)
@@ -210,13 +306,41 @@ object EditorClient {
         }
     }
 
+    private fun scheduleRegistrationTimeout(expectedGeneration: Long, expectedClient: WebSocketClient) {
+        val job = OrryxAPI.ioScope.launch {
+            delay(REGISTRATION_TIMEOUT)
+            if (!isCurrent(expectedGeneration, expectedClient) || registered.get()) return@launch
+            consoleMessage("&c[Editor] 服务器注册超时，将关闭连接并重试")
+            connected.set(false)
+            closeQuietly(expectedClient)
+            scheduleReconnect(expectedGeneration)
+        }
+        synchronized(stateLock) {
+            if (isCurrent(expectedGeneration, expectedClient) && !registered.get()) {
+                registrationTimeoutJob?.cancel()
+                registrationTimeoutJob = job
+            } else {
+                job.cancel()
+            }
+        }
+    }
+
+    private fun cancelRegistrationTimeout(expectedGeneration: Long) {
+        synchronized(stateLock) {
+            if (generation.get() != expectedGeneration) return
+            registrationTimeoutJob?.cancel()
+            registrationTimeoutJob = null
+        }
+    }
+
     private fun createClient(
         url: String,
         license: String,
         attemptGeneration: Long,
         reconnect: Boolean,
     ): WebSocketClient {
-        return object : WebSocketClient(URI(url)) {
+        val draft = BoundedEditorDraft(MAX_INCOMING_MESSAGE_BYTES, MAX_INCOMING_MESSAGE_FRAGMENTS)
+        return object : WebSocketClient(URI(url), draft) {
             override fun onOpen(handshake: ServerHandshake) {
                 if (!isCurrent(attemptGeneration, this)) {
                     closeQuietly(this)
@@ -230,14 +354,26 @@ object EditorClient {
                 } else {
                     consoleMessage("&e┣&7[Editor] 已连接中心服务器，正在注册服务器")
                 }
-                sendMessageForGeneration(attemptGeneration, "server.register", "reg_init", buildJsonObject {
+                scheduleRegistrationTimeout(attemptGeneration, this)
+                val sent = sendMessageForGeneration(attemptGeneration, "server.register", "reg_init", buildJsonObject {
                     put("license", license)
                     put("serverName", getServerName())
                 })
+                if (!sent) {
+                    cancelRegistrationTimeout(attemptGeneration)
+                    connected.set(false)
+                    closeQuietly(this)
+                    scheduleReconnect(attemptGeneration)
+                }
             }
 
             override fun onMessage(message: String) {
-                if (!isCurrent(attemptGeneration, this)) return
+                if (!isCurrent(attemptGeneration, this) || !connected.get()) return
+                if (message.length > MAX_INCOMING_MESSAGE_CHARS) {
+                    consoleMessage("&c[Editor] 收到超限消息，已关闭连接: ${message.length} chars")
+                    close(1009, "消息超过大小限制")
+                    return
+                }
                 try {
                     val msg = json.parseToJsonElement(message).jsonObject
                     val type = msg["type"]?.jsonPrimitive?.contentOrNull ?: return
@@ -246,7 +382,7 @@ object EditorClient {
 
                     debug { "&e┣&7[Editor] 收到消息: type=$type, id=$id" }
                     if (type != "server.register.result" && !registered.get()) {
-                        sendError(id, "Editor 服务器尚未完成注册")
+                        sendError(attemptGeneration, id, "Editor 服务器尚未完成注册")
                         return
                     }
                     when (type) {
@@ -257,17 +393,39 @@ object EditorClient {
                         }
                         "token.register.result" -> {
                             val success = data?.get("success")?.jsonPrimitive?.booleanOrNull ?: false
-                            pendingTokenRegistrations.remove(id)?.complete(success)
+                            synchronized(stateLock) {
+                                val pending = pendingTokenRegistrations[id]
+                                if (
+                                    generation.get() == attemptGeneration &&
+                                    connected.get() &&
+                                    registered.get() &&
+                                    pending?.generation == attemptGeneration &&
+                                    pendingTokenRegistrations.remove(id, pending)
+                                ) {
+                                    pending.future.complete(success)
+                                }
+                            }
                             debug { "&e┣&7[Editor] Token 注册结果: $success" }
                         }
-                        "file.list" -> FileHandler.handleList(id, data)
-                        "file.read" -> FileHandler.handleRead(id, data)
-                        "file.write" -> FileHandler.handleWrite(id, data)
-                        "file.create" -> FileHandler.handleCreate(id, data)
-                        "file.delete" -> FileHandler.handleDelete(id, data)
-                        "file.rename" -> FileHandler.handleRename(id, data)
-                        "reload" -> ReloadHandler.handle(id, data)
-                        "actions.schema" -> sendMessage("actions.schema.result", id, ActionsSchemaGenerator.generateSchema())
+                        "file.list" -> FileHandler.handleList(attemptGeneration, id, data)
+                        "file.read" -> FileHandler.handleRead(attemptGeneration, id, data)
+                        "file.write" -> FileHandler.handleWrite(attemptGeneration, id, data)
+                        "file.create" -> FileHandler.handleCreate(attemptGeneration, id, data)
+                        "file.delete" -> FileHandler.handleDelete(attemptGeneration, id, data)
+                        "file.rename" -> FileHandler.handleRename(attemptGeneration, id, data)
+                        "reload" -> ReloadHandler.handle(attemptGeneration, id, data)
+                        "actions.schema" -> EditorRequestQueue.enqueue(
+                            attemptGeneration,
+                            id,
+                            "生成动作结构失败",
+                        ) { requestGeneration ->
+                            sendMessage(
+                                requestGeneration,
+                                "actions.schema.result",
+                                id,
+                                ActionsSchemaGenerator.generateSchema(),
+                            )
+                        }
                         "log.subscribe" -> {
                             logSubscribed.set(true)
                             logKeywordFilter = (data?.get("filters") as? JsonObject)
@@ -294,11 +452,13 @@ object EditorClient {
                 if (!isCurrent(attemptGeneration, this)) return
                 synchronized(stateLock) {
                     if (client === this) client = null
+                    registrationTimeoutJob?.cancel()
+                    registrationTimeoutJob = null
                     connected.set(false)
                     registered.set(false)
                     logSubscribed.set(false)
                     logKeywordFilter = null
-                    pendingTokenRegistrations.values.forEach { it.complete(false) }
+                    pendingTokenRegistrations.values.forEach { it.future.complete(false) }
                     pendingTokenRegistrations.clear()
                 }
                 if (!stopping.get()) {
@@ -315,6 +475,7 @@ object EditorClient {
             }
 
             private fun handleRegisterResult(data: JsonObject?) {
+                cancelRegistrationTimeout(attemptGeneration)
                 val success = data?.get("success")?.jsonPrimitive?.booleanOrNull ?: false
                 val resultMessage = data?.get("message")?.jsonPrimitive?.contentOrNull.orEmpty()
                 registered.set(success)
@@ -333,6 +494,15 @@ object EditorClient {
     /** 发送消息到当前连接；返回 false 表示没有可用连接或发送失败。 */
     fun sendMessage(type: String, id: String, data: JsonObject): Boolean {
         return sendMessageForGeneration(generation.get(), type, id, data)
+    }
+
+    internal fun sendMessage(
+        expectedGeneration: Long,
+        type: String,
+        id: String,
+        data: JsonObject,
+    ): Boolean {
+        return sendMessageForGeneration(expectedGeneration, type, id, data)
     }
 
     private fun sendMessageForGeneration(
@@ -361,6 +531,10 @@ object EditorClient {
         sendMessage("error", id, buildJsonObject { put("message", message) })
     }
 
+    internal fun sendError(expectedGeneration: Long, id: String, message: String) {
+        sendMessage(expectedGeneration, "error", id, buildJsonObject { put("message", message) })
+    }
+
     fun pushLog(level: String, message: String, source: String? = null) {
         if (!registered.get() || !logSubscribed.get()) return
         val keyword = logKeywordFilter
@@ -374,23 +548,32 @@ object EditorClient {
     }
 
     fun registerToken(token: String, playerName: String): CompletableFuture<Boolean> {
-        if (!registered.get()) return CompletableFuture.completedFuture(false)
-        val id = "tok_${generation.get()}_${System.nanoTime()}"
+        val expectedGeneration: Long
+        val id: String
         val future = CompletableFuture<Boolean>()
-        pendingTokenRegistrations[id] = future
+        val pending: PendingTokenRegistration
+        synchronized(stateLock) {
+            expectedGeneration = generation.get()
+            if (!registered.get() || !isGenerationCurrent(expectedGeneration)) {
+                return CompletableFuture.completedFuture(false)
+            }
+            id = "tok_${expectedGeneration}_${System.nanoTime()}"
+            pending = PendingTokenRegistration(expectedGeneration, future)
+            pendingTokenRegistrations[id] = pending
+        }
         val timeoutTask = SimpleTimeoutTask.createSimpleTask(100L) {
-            if (pendingTokenRegistrations.remove(id, future)) future.complete(false)
+            if (pendingTokenRegistrations.remove(id, pending)) future.complete(false)
         }
         future.whenComplete { _, _ ->
             SimpleTimeoutTask.cancel(timeoutTask, false)
-            pendingTokenRegistrations.remove(id, future)
+            pendingTokenRegistrations.remove(id, pending)
         }
-        val sent = sendMessage("token.register", id, buildJsonObject {
+        val sent = sendMessage(expectedGeneration, "token.register", id, buildJsonObject {
             put("token", token)
             put("playerName", playerName)
             put("expiresIn", TOKEN_EXPIRES_SECONDS * 1000L)
         })
-        if (!sent && pendingTokenRegistrations.remove(id, future)) future.complete(false)
+        if (!sent && pendingTokenRegistrations.remove(id, pending)) future.complete(false)
         return future
     }
 
@@ -399,6 +582,10 @@ object EditorClient {
     fun isRegistered(): Boolean = registered.get()
 
     internal fun currentGeneration(): Long = generation.get()
+
+    internal fun isGenerationCurrent(expectedGeneration: Long): Boolean {
+        return generation.get() == expectedGeneration && connected.get() && client != null
+    }
 
     internal fun redactToken(token: String?): String {
         if (token.isNullOrEmpty()) return "<missing>"

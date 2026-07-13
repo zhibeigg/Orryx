@@ -64,9 +64,9 @@ object MythicMobsActions {
         it.switch {
             case("taunt") { taunt(it) }
             case("threat") {
-                when (it.expects("add", "sub", "set", "+", "-", "=")) {
+                when (it.expects("add", "take", "sub", "set", "+", "-", "=")) {
                     "add", "+" -> addThreat(it)
-                    "take", "-" -> takeThreat(it)
+                    "take", "sub", "-" -> takeThreat(it)
                     "set", "=" -> setThreat(it)
                     else -> error("语句mythicmobs中threat书写错误")
                 }

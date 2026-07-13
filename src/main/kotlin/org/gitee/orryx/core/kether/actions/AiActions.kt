@@ -1,5 +1,6 @@
 package org.gitee.orryx.core.kether.actions
 
+import org.gitee.orryx.core.kether.ScriptManager.addOrryxCloseable
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.module.ai.OpenAI
 import org.gitee.orryx.module.wiki.Action
@@ -61,7 +62,20 @@ object AiActions {
         ).apply(it) { key, message ->
             future {
                 val npc = npcMap[key] ?: error("not found npc $key")
-                OpenAI.npcChat(bukkitPlayer().name, npc.name, npc.system, message, npc.model, npc.maxTokens, npc.temperature)
+                val player = bukkitPlayer()
+                val request = OpenAI.npcChat(
+                    playerId = player.uniqueId,
+                    playerName = player.name,
+                    npcKey = npc.key,
+                    npcName = npc.name,
+                    npcDescription = npc.system,
+                    message = message,
+                    model = npc.model,
+                    maxTokens = npc.maxTokens,
+                    temperature = npc.temperature,
+                )
+                addOrryxCloseable(request) { request.cancel(true) }
+                request
             }
         }
     }

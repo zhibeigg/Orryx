@@ -8,6 +8,7 @@ import java.nio.file.LinkOption
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
+import java.security.MessageDigest
 import java.util.Comparator
 import java.util.Locale
 
@@ -25,6 +26,7 @@ class EditorFilePolicy(
 ) {
 
     val root: Path = root.toAbsolutePath().normalize()
+    private val realRoot: Path
 
     init {
         require(maxFileBytes > 0) { "maxFileBytes 必须大于 0" }
@@ -34,6 +36,7 @@ class EditorFilePolicy(
         if (Files.isSymbolicLink(this.root)) {
             throw PolicyException("Editor 根目录不能是符号链接")
         }
+        realRoot = this.root.toRealPath()
     }
 
     data class TreeEntry(
@@ -43,7 +46,14 @@ class EditorFilePolicy(
         val children: List<TreeEntry> = emptyList(),
     )
 
-    class PolicyException(message: String) : IOException(message)
+    data class FileContent(
+        val content: String,
+        val revision: String,
+    )
+
+    open class PolicyException(message: String) : IOException(message)
+
+    class RevisionConflictException(message: String) : PolicyException(message)
 
     fun listTree(path: String?): List<TreeEntry> {
         val relativePath = path.orEmpty()
@@ -51,39 +61,51 @@ class EditorFilePolicy(
         if (!Files.isDirectory(directory, LinkOption.NOFOLLOW_LINKS)) {
             throw PolicyException("目录不存在: $relativePath")
         }
+        val directoryDepth = if (directory == root) 0 else root.relativize(directory).nameCount
+        ensureDepth(directoryDepth)
         val budget = TreeBudget()
-        return buildTree(directory, relativePath.replace('\\', '/').trim('/'), 0, budget)
+        return buildTree(directory, relativePath.replace('\\', '/').trim('/'), directoryDepth, budget)
     }
 
-    fun readText(path: String): String {
+    fun readText(path: String): String = readTextWithRevision(path).content
+
+    fun readTextWithRevision(path: String): FileContent {
         val file = resolve(path)
         if (!Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS)) {
             throw PolicyException("文件不存在: $path")
         }
-        val size = Files.size(file)
-        if (size > maxFileBytes) {
-            throw PolicyException("文件超过大小限制: $size > $maxFileBytes bytes")
-        }
-        val bytes = Files.readAllBytes(file)
-        if (bytes.size.toLong() > maxFileBytes) {
-            throw PolicyException("文件超过大小限制: ${bytes.size} > $maxFileBytes bytes")
-        }
-        return String(bytes, StandardCharsets.UTF_8)
+        val bytes = readBytesWithinLimit(file)
+        return FileContent(String(bytes, StandardCharsets.UTF_8), revisionOf(bytes))
     }
 
-    fun writeTextAtomic(path: String, content: String) {
+    /**
+     * 原子写入文件并返回新 revision。未传 [expectedRevision] 时保持旧协议的覆盖写入语义。
+     */
+    fun writeTextAtomic(path: String, content: String, expectedRevision: String? = null): String {
         val bytes = content.toByteArray(StandardCharsets.UTF_8)
         if (bytes.size.toLong() > maxFileBytes) {
             throw PolicyException("写入内容超过大小限制: ${bytes.size} > $maxFileBytes bytes")
         }
 
-        val file = resolve(path)
+        val file = resolveMutationPath(path)
         val fileExists = Files.exists(file, LinkOption.NOFOLLOW_LINKS)
         if (fileExists && !Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS)) {
             throw PolicyException("目标不是普通文件: $path")
         }
-        if (!fileExists) ensureEntryCapacity()
+        if (expectedRevision != null) {
+            if (!fileExists) {
+                throw RevisionConflictException("文件版本冲突: $path 已不存在")
+            }
+            val currentRevision = revisionOf(readBytesWithinLimit(file))
+            if (!currentRevision.equals(expectedRevision, ignoreCase = true)) {
+                throw RevisionConflictException("文件版本冲突: $path 已被修改")
+            }
+        }
+
         val parent = file.parent ?: throw PolicyException("目标路径缺少父目录")
+        if (!fileExists) {
+            ensureCapacityFor(countMissingDirectories(parent) + 1)
+        }
         createDirectories(parent)
         ensureNoSymbolicLinks(file)
 
@@ -103,15 +125,16 @@ class EditorFilePolicy(
         } finally {
             Files.deleteIfExists(temporary)
         }
+        return revisionOf(bytes)
     }
 
     fun create(path: String, directory: Boolean) {
-        ensureEntryCapacity()
-        val target = resolve(path)
+        val target = resolveMutationPath(path)
         if (Files.exists(target, LinkOption.NOFOLLOW_LINKS)) {
             throw PolicyException("文件已存在: $path")
         }
         val parent = target.parent ?: throw PolicyException("目标路径缺少父目录")
+        ensureCapacityFor(countMissingDirectories(parent) + 1)
         createDirectories(parent)
         ensureNoSymbolicLinks(target)
         if (directory) {
@@ -135,15 +158,21 @@ class EditorFilePolicy(
 
     fun rename(oldPath: String, newPath: String): Boolean {
         val source = resolve(oldPath)
-        val target = resolve(newPath)
+        val target = resolveMutationPath(newPath)
         if (!Files.exists(source, LinkOption.NOFOLLOW_LINKS)) {
             throw PolicyException("文件不存在: $oldPath")
         }
         if (Files.exists(target, LinkOption.NOFOLLOW_LINKS)) {
             throw PolicyException("目标已存在: $newPath")
         }
+        if (Files.isDirectory(source, LinkOption.NOFOLLOW_LINKS) && target.startsWith(source)) {
+            throw PolicyException("不能将目录移动到自身内部")
+        }
+
         ensureTreeHasNoSymbolicLinks(source)
+        ensureRenameDepth(source, target)
         val parent = target.parent ?: throw PolicyException("目标路径缺少父目录")
+        ensureCapacityFor(countMissingDirectories(parent))
         createDirectories(parent)
         ensureNoSymbolicLinks(target)
         try {
@@ -190,6 +219,30 @@ class EditorFilePolicy(
         return resolved
     }
 
+    private fun resolveMutationPath(path: String): Path {
+        val resolved = resolve(path)
+        ensureDepth(root.relativize(resolved).nameCount)
+        return resolved
+    }
+
+    private fun ensureDepth(depth: Int) {
+        if (depth > maxTreeDepth) {
+            throw PolicyException("目录深度超过限制: $maxTreeDepth")
+        }
+    }
+
+    private fun ensureRenameDepth(source: Path, target: Path) {
+        val targetDepth = root.relativize(target).nameCount
+        ensureDepth(targetDepth)
+        if (!Files.isDirectory(source, LinkOption.NOFOLLOW_LINKS)) return
+        Files.walk(source).use { stream ->
+            stream.forEach { child ->
+                val descendantDepth = if (child == source) 0 else source.relativize(child).nameCount
+                ensureDepth(targetDepth + descendantDepth)
+            }
+        }
+    }
+
     private fun isSafeComponent(component: String): Boolean {
         if (component.isEmpty() || component == "." || component == ".." || component.length > MAX_COMPONENT_LENGTH) {
             return false
@@ -224,6 +277,14 @@ class EditorFilePolicy(
             if (!Files.exists(current, LinkOption.NOFOLLOW_LINKS)) {
                 return
             }
+            ensureRealPathInsideRoot(current)
+        }
+    }
+
+    private fun ensureRealPathInsideRoot(path: Path) {
+        val realPath = path.toRealPath()
+        if (!realPath.startsWith(realRoot)) {
+            throw PolicyException("禁止访问指向 Editor 根目录外部的路径: ${displayPath(path)}")
         }
     }
 
@@ -235,8 +296,29 @@ class EditorFilePolicy(
                 if (Files.isSymbolicLink(it)) {
                     throw PolicyException("禁止访问符号链接: ${displayPath(it)}")
                 }
+                ensureRealPathInsideRoot(it)
             }
         }
+    }
+
+    private fun countMissingDirectories(directory: Path): Int {
+        if (!directory.startsWith(root)) {
+            throw PolicyException("路径越界")
+        }
+        var current = root
+        var missing = 0
+        root.relativize(directory).forEach { component ->
+            current = current.resolve(component)
+            if (Files.isSymbolicLink(current)) {
+                throw PolicyException("禁止访问符号链接: ${displayPath(current)}")
+            }
+            if (!Files.exists(current, LinkOption.NOFOLLOW_LINKS)) {
+                missing++
+            } else if (!Files.isDirectory(current, LinkOption.NOFOLLOW_LINKS)) {
+                throw PolicyException("父路径不是目录: ${displayPath(current)}")
+            }
+        }
+        return missing
     }
 
     private fun createDirectories(directory: Path) {
@@ -257,10 +339,12 @@ class EditorFilePolicy(
         }
     }
 
-    private fun buildTree(directory: Path, relativePath: String, depth: Int, budget: TreeBudget): List<TreeEntry> {
-        if (depth > maxTreeDepth) {
-            throw PolicyException("目录深度超过限制: $maxTreeDepth")
-        }
+    private fun buildTree(
+        directory: Path,
+        relativePath: String,
+        directoryDepth: Int,
+        budget: TreeBudget,
+    ): List<TreeEntry> {
         val children = Files.newDirectoryStream(directory).use { stream ->
             stream.iterator().asSequence()
                 .filter { child -> relativePath.isNotEmpty() || isAllowedTopLevel(child.fileName.toString()) }
@@ -271,6 +355,8 @@ class EditorFilePolicy(
             if (Files.isSymbolicLink(child)) {
                 throw PolicyException("禁止访问符号链接: ${displayPath(child)}")
             }
+            ensureRealPathInsideRoot(child)
+            ensureDepth(directoryDepth + 1)
             budget.consume()
             val name = child.fileName.toString()
             val childRelativePath = if (relativePath.isEmpty()) name else "$relativePath/$name"
@@ -279,23 +365,57 @@ class EditorFilePolicy(
                 name = name,
                 path = childRelativePath,
                 isDirectory = isDirectory,
-                children = if (isDirectory) buildTree(child, childRelativePath, depth + 1, budget) else emptyList(),
+                children = if (isDirectory) {
+                    buildTree(child, childRelativePath, directoryDepth + 1, budget)
+                } else {
+                    emptyList()
+                },
             )
         }
     }
 
-    private fun ensureEntryCapacity() {
-        val budget = TreeBudget()
+    private fun ensureCapacityFor(additionalEntries: Int) {
+        if (additionalEntries <= 0) return
+        var entries = 0
         Files.walk(root).use { stream ->
             stream.forEach {
-                if (it != root) budget.consume()
                 if (Files.isSymbolicLink(it)) {
                     throw PolicyException("禁止访问符号链接: ${displayPath(it)}")
                 }
+                ensureRealPathInsideRoot(it)
+                if (it != root) {
+                    entries++
+                    if (entries + additionalEntries > maxTreeEntries) {
+                        throw PolicyException("文件数量将超过限制: $maxTreeEntries")
+                    }
+                }
             }
         }
-        if (budget.entries >= maxTreeEntries) {
-            throw PolicyException("文件数量已达到限制: $maxTreeEntries")
+        if (entries + additionalEntries > maxTreeEntries) {
+            throw PolicyException("文件数量将超过限制: $maxTreeEntries")
+        }
+    }
+
+    private fun readBytesWithinLimit(file: Path): ByteArray {
+        val size = Files.size(file)
+        if (size > maxFileBytes) {
+            throw PolicyException("文件超过大小限制: $size > $maxFileBytes bytes")
+        }
+        val bytes = Files.readAllBytes(file)
+        if (bytes.size.toLong() > maxFileBytes) {
+            throw PolicyException("文件超过大小限制: ${bytes.size} > $maxFileBytes bytes")
+        }
+        return bytes
+    }
+
+    private fun revisionOf(bytes: ByteArray): String {
+        val digest = MessageDigest.getInstance("SHA-256").digest(bytes)
+        return buildString(digest.size * 2) {
+            digest.forEach { byte ->
+                val value = byte.toInt() and 0xff
+                append(HEX_DIGITS[value ushr 4])
+                append(HEX_DIGITS[value and 0x0f])
+            }
         }
     }
 
@@ -319,6 +439,7 @@ class EditorFilePolicy(
         internal const val DEFAULT_MAX_TREE_DEPTH = 32
         private const val MAX_PATH_LENGTH = 1024
         private const val MAX_COMPONENT_LENGTH = 255
+        private const val HEX_DIGITS = "0123456789abcdef"
         private val DRIVE_PREFIX = Regex("^[A-Za-z]:.*")
         private val ALLOWED_DIRECTORIES = setOf(
             "skills", "jobs", "stations", "controllers", "experiences", "status",

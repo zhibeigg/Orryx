@@ -23,13 +23,11 @@ class MythicMobsCastMechanic(line: String, mlc: MythicLineConfig) : SkillMechani
     private val level = mlc.getPlaceholderInteger(arrayOf("l", "level"), 1)
 
     override fun castAtEntity(data: SkillMetadata, target: AbstractEntity): Boolean {
-        return if (target.isPlayer) {
-            val player = BukkitAdapter.adapt(target.asPlayer()) ?: return false
-            val skill = SkillLoaderManager.getSkillLoader(skill.get(data)) as ICastSkill
-            skill.castSkill(player, SkillParameter(skill.key, player, level.get()), false)
-            true
-        } else {
-            false
-        }
+        if (!target.isPlayer) return false
+        val player = BukkitAdapter.adapt(target.asPlayer()) ?: return false
+        val skillKey = skill.get(data)?.takeIf { it.isNotBlank() } ?: return false
+        val castSkill = SkillLoaderManager.getSkillLoader(skillKey) as? ICastSkill ?: return false
+        castSkill.castSkill(player, SkillParameter(castSkill.key, player, level.get()), false)
+        return true
     }
 }

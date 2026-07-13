@@ -1,6 +1,6 @@
 # Orryx API
 
-> 2.45.118：数据库与 Redis I/O 始终异步；Profile 写入、Mana/Spirit、技能消费、状态、冷却与 Flag 使用可回滚串行事务，Pipe/Kether 生命周期会完整传播失败并清理资源。 开发文档
+> 2.45.119：Editor 请求按连接代际串行处理并执行 revision、真实路径与资源配额校验；OpenAI 会话按玩家/NPC 隔离，deadline 覆盖排队与 HTTP 且生命周期可取消；瞄准响应使用一次性 wire token 防重放；可选兼容桥接在 LinkageError 时一次性降级并卸载监听器。 开发文档
 
 > 本文档面向 Kotlin/Java 开发者，帮助您使用 Orryx API 进行二次开发。
 
@@ -1257,5 +1257,5 @@ A: 对于可取消的事件，设置 `event.isCancelled = true`。
 
 ---
 
-*文档版本: 1.34.88*
-*最后更新: 2026-01-27*
+*文档版本: 2.45.119*
+*最后更新: 2026-07-14*

@@ -1,5 +1,6 @@
 package org.gitee.orryx.compat.arcartx.glimmer
 
+import org.gitee.orryx.compat.CompatGuard
 import org.gitee.orryx.utils.ArcartXPlugin
 import priv.seventeen.artist.arcartx.glimmer.callable.CallableManager
 import taboolib.common.LifeCycle
@@ -12,12 +13,10 @@ object OrryxGlimmerRegister {
     @Awake(LifeCycle.ENABLE)
     private fun register() {
         if (!ArcartXPlugin.isEnabled) return
-        try {
+        CompatGuard.linkageFallback("ArcartX-Glimmer", {}) {
             CallableManager.INSTANCE.registerStaticFunction(OrryxGlimmerFunctions::class.java)
             CallableManager.INSTANCE.registerGlimmerObject(OrryxPlayerObject::class.java)
             console().sendLang("hook-true", "ArcartX-Glimmer")
-        } catch (e: Exception) {
-            e.printStackTrace()
         }
     }
 }

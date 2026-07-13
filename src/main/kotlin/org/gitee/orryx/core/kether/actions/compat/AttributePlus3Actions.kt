@@ -2,7 +2,6 @@ package org.gitee.orryx.core.kether.actions.compat
 
 import org.bukkit.entity.LivingEntity
 import org.gitee.orryx.compat.IAttributeBridge
-import org.gitee.orryx.compat.attributeplus.AttributePlusBridge
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
@@ -29,13 +28,14 @@ object AttributePlus3Actions {
             now {
                 val sources = source.orElse(self())
                 val attacker = sources.firstInstance<ITargetEntity<LivingEntity>>().getSource()
-                val instance = IAttributeBridge.INSTANCE as? AttributePlusBridge ?: return@now
                 val attributes = attributes?.split(",") ?: emptyList()
 
                 ensureSync {
                     they!!.forEachInstance<ITargetEntity<*>> { target ->
                         target.entity.getBukkitLivingEntity()?.let { entity ->
-                            instance.apAttack(attacker, entity, reset, attributes)
+                            IAttributeBridge.withAttributePlus { bridge ->
+                                bridge.apAttack(attacker, entity, reset, attributes)
+                            }
                         }
                     }
                 }

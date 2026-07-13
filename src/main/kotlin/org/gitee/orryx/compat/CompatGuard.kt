@@ -9,18 +9,76 @@ object CompatGuard {
         return try {
             block()
         } catch (error: LinkageError) {
-            warning("兼容模块 $name 加载失败，已降级: ${error.message ?: error.javaClass.simpleName}")
+            report(name, error)
             fallback()
         }
     }
 
-    inline fun <T> firstAvailable(default: () -> T, vararg candidates: Pair<() -> Boolean, () -> T>): T {
+    fun <T> firstAvailable(default: () -> T, vararg candidates: Pair<() -> Boolean, () -> T>): T {
+        return firstAvailable(default, candidates) { name, error -> report(name, error) }
+    }
+
+    internal fun <T> firstAvailable(
+        default: () -> T,
+        candidates: Array<out Pair<() -> Boolean, () -> T>>,
+        onLinkageError: (String, LinkageError) -> Unit,
+    ): T {
         candidates.forEach { (available, factory) ->
-            val enabled = linkageFallback("可选依赖检测", { false }, available)
-            if (enabled) {
-                return linkageFallback("可选依赖桥接", default, factory)
+            val enabled = try {
+                available()
+            } catch (error: LinkageError) {
+                onLinkageError("可选依赖检测", error)
+                false
+            }
+            if (!enabled) return@forEach
+
+            try {
+                return factory()
+            } catch (error: LinkageError) {
+                onLinkageError("可选依赖桥接", error)
             }
         }
         return default()
+    }
+
+    internal fun <T> degradeOnce(name: String, initial: T, fallback: T): OneTimeLinkageFallback<T> {
+        return OneTimeLinkageFallback(initial, fallback) { error -> report(name, error) }
+    }
+
+    @PublishedApi
+    internal fun report(name: String, error: LinkageError) {
+        warning("兼容模块 $name 加载失败，已降级: ${error.message ?: error.javaClass.simpleName}")
+    }
+}
+
+internal class OneTimeLinkageFallback<T>(
+    initial: T,
+    private val fallback: T,
+    private val onLinkageError: (LinkageError) -> Unit,
+) {
+
+    @Volatile
+    private var current = initial
+
+    fun current(): T = current
+
+    fun <R> invoke(block: (T) -> R): R {
+        val active = current
+        if (active === fallback) return block(active)
+
+        return try {
+            block(active)
+        } catch (error: LinkageError) {
+            val shouldReport = synchronized(this) {
+                if (current === fallback) {
+                    false
+                } else {
+                    current = fallback
+                    true
+                }
+            }
+            if (shouldReport) onLinkageError(error)
+            block(fallback)
+        }
     }
 }

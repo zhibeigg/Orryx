@@ -40,7 +40,8 @@ object PluginMessageHandler {
     internal val pendingRequests = ConcurrentHashMap<UUID, PendingAimRequest>()
     private val requestSequence = AtomicLong()
     private const val AIM_TIMEOUT_SECONDS = 30L
-    private const val MAX_SKILL_ID_LENGTH = 256
+    private const val AIM_RESPONSE_GRACE_TICKS = 40L
+    private const val MAX_AIM_PRESS_TICKS = 6_000L
     private const val MAX_PICTURE_LENGTH = 1024
     private const val MAX_PLUGIN_MESSAGE_BYTES = 32_766
 
@@ -80,9 +81,7 @@ object PluginMessageHandler {
 
     @Reload(1)
     private fun clean() {
-        pendingRequests.forEach {
-            it.value.future.cancel(false)
-        }
+        pendingRequests.values.forEach { it.fail(PlayerCancelledException()) }
         pendingRequests.clear()
     }
 
@@ -179,9 +178,15 @@ object PluginMessageHandler {
             return
         }
 
-        val request = registerPendingRequest(player, skillId, radius + size, callback)
+        val request = registerPendingRequest(
+            player = player,
+            skillId = skillId,
+            maxDistance = radius,
+            timeoutTicks = AIM_TIMEOUT_SECONDS * 20,
+            callback = callback,
+        )
         val sent = sendDataPacket(player, PacketType.AimRequest) {
-            writeUTF(skillId)
+            writeUTF(request.wireSkillId)
             writeUTF(picture)
             writeDouble(size)
             writeDouble(radius)
@@ -220,14 +225,20 @@ object PluginMessageHandler {
             callback(Result.failure(it))
             return
         }
-        if (max < min || maxTick <= 0L) {
-            callback(Result.failure(IllegalArgumentException("蓄力瞄准参数无效")))
+        if (max < min || maxTick <= 0L || maxTick > MAX_AIM_PRESS_TICKS) {
+            callback(Result.failure(IllegalArgumentException("蓄力瞄准参数无效，maxTick 必须在 1..$MAX_AIM_PRESS_TICKS 内")))
             return
         }
 
-        val request = registerPendingRequest(player, skillId, radius + max, callback)
+        val request = registerPendingRequest(
+            player = player,
+            skillId = skillId,
+            maxDistance = radius,
+            timeoutTicks = maxTick + AIM_RESPONSE_GRACE_TICKS,
+            callback = callback,
+        )
         val sent = sendDataPacket(player, PacketType.PressAimRequest) {
-            writeUTF(skillId)
+            writeUTF(request.wireSkillId)
             writeUTF(picture)
             writeDouble(min)
             writeDouble(max)
@@ -590,7 +601,7 @@ object PluginMessageHandler {
 
     /* 内部实现 */
     private fun validateAimRequest(skillId: String, picture: String, radius: Double, vararg sizes: Double): Throwable? {
-        if (skillId.isBlank() || skillId.length > MAX_SKILL_ID_LENGTH) {
+        if (skillId.isBlank() || skillId.length > AimRequestProtocol.MAX_SKILL_ID_LENGTH) {
             return IllegalArgumentException("技能标识无效")
         }
         if (picture.length > MAX_PICTURE_LENGTH) {
@@ -610,12 +621,19 @@ object PluginMessageHandler {
         player: Player,
         skillId: String,
         maxDistance: Double,
+        timeoutTicks: Long,
         callback: (Result<AimInfo>) -> Unit,
     ): PendingAimRequest {
         val future = CompletableFuture<AimInfo>()
-        val request = PendingAimRequest(requestSequence.incrementAndGet(), skillId, maxDistance, future)
-        pendingRequests.put(player.uniqueId, request)?.future
-            ?.completeExceptionally(AimSupersededException())
+        val requestId = requestSequence.incrementAndGet()
+        val request = PendingAimRequest(
+            requestId = requestId,
+            skillId = skillId,
+            wireSkillId = AimRequestProtocol.createWireSkillId(skillId, requestId),
+            maxDistance = maxDistance,
+            future = future,
+        )
+        pendingRequests.put(player.uniqueId, request)?.fail(AimSupersededException())
 
         future.whenComplete { result, ex ->
             pendingRequests.remove(player.uniqueId, request)
@@ -627,33 +645,39 @@ object PluginMessageHandler {
             }
         }
         try {
-            submit(delay = AIM_TIMEOUT_SECONDS * 20) {
-                if (pendingRequests.remove(player.uniqueId, request)) {
-                    future.completeExceptionally(java.util.concurrent.TimeoutException("瞄准请求超时"))
-                }
+            submit(delay = timeoutTicks) {
+                failPendingRequest(
+                    player.uniqueId,
+                    request,
+                    java.util.concurrent.TimeoutException("瞄准请求超时"),
+                )
             }
         } catch (scheduleFailure: Throwable) {
-            if (pendingRequests.remove(player.uniqueId, request)) {
-                future.completeExceptionally(scheduleFailure)
-            }
+            failPendingRequest(player.uniqueId, request, scheduleFailure)
         }
         return request
     }
 
     private fun failPendingRequest(playerId: UUID, request: PendingAimRequest, throwable: Throwable) {
         if (pendingRequests.remove(playerId, request)) {
-            request.future.completeExceptionally(throwable)
+            request.fail(throwable)
         }
     }
 
     private fun handleConfirmation(player: Player, isConfirmed: Boolean): Boolean {
         val request = pendingRequests[player.uniqueId] ?: return false
-        if (!sendDataPacket(player, PacketType.AimConfirm) { writeBoolean(isConfirmed) }) {
-            failPendingRequest(player.uniqueId, request, AimPacketException("瞄准确认发送失败"))
+        if (!isConfirmed) {
+            if (!sendDataPacket(player, PacketType.AimConfirm) { writeBoolean(false) }) {
+                failPendingRequest(player.uniqueId, request, AimPacketException("瞄准取消发送失败"))
+                return true
+            }
+            failPendingRequest(player.uniqueId, request, PlayerCancelledException())
             return true
         }
-        if (!isConfirmed) {
-            failPendingRequest(player.uniqueId, request, PlayerCancelledException())
+        if (request.lifecycle.isConfirmed()) return true
+        if (!request.lifecycle.confirm()) return true
+        if (!sendDataPacket(player, PacketType.AimConfirm) { writeBoolean(true) }) {
+            failPendingRequest(player.uniqueId, request, AimPacketException("瞄准确认发送失败"))
         }
         return true
     }
@@ -718,8 +742,12 @@ object PluginMessageHandler {
                 return
             }
 
-            if (payload.skillId != request.skillId) {
-                warning("忽略玩家 ${player.name} 的过期瞄准响应: ${payload.skillId}")
+            if (payload.skillId != request.wireSkillId) {
+                warning("忽略玩家 ${player.name} 的过期瞄准响应")
+                return
+            }
+            if (!request.lifecycle.isConfirmed()) {
+                warning("忽略玩家 ${player.name} 未经确认的瞄准响应")
                 return
             }
             if (!payload.isFinite()) {
@@ -736,14 +764,14 @@ object PluginMessageHandler {
             val distanceSquared = payload.distanceSquared(playerLocation)
             val allowedDistanceSquared = request.maxDistance * request.maxDistance
             if (!distanceSquared.isFinite() || distanceSquared > allowedDistanceSquared) {
-                warning("玩家 ${player.name} 向服务器发送了超远释放 ${payload.skillId} 技能数据包")
+                warning("玩家 ${player.name} 向服务器发送了超远释放 ${request.skillId} 技能数据包")
                 failPendingRequest(player.uniqueId, request, InvalidAimResponseException("瞄准位置超过允许距离"))
                 return
             }
 
             val location = payload.toLocation(player)
-            if (pendingRequests.remove(player.uniqueId, request)) {
-                request.future.complete(AimInfo(player, location, payload.skillId))
+            if (pendingRequests.remove(player.uniqueId, request) && request.lifecycle.complete()) {
+                request.future.complete(AimInfo(player, location, request.skillId))
             }
         }
     }
@@ -752,9 +780,17 @@ object PluginMessageHandler {
     internal data class PendingAimRequest(
         val requestId: Long,
         val skillId: String,
+        val wireSkillId: String,
         val maxDistance: Double,
         val future: CompletableFuture<AimInfo>,
-    )
+        val lifecycle: AimRequestLifecycle = AimRequestLifecycle(),
+    ) {
+        fun fail(throwable: Throwable) {
+            if (lifecycle.cancel()) {
+                future.completeExceptionally(throwable)
+            }
+        }
+    }
 
     internal data class AimResponsePayload(
         val skillId: String,
@@ -784,7 +820,7 @@ object PluginMessageHandler {
         /** 保持现有 header=4 的 legacy 载荷顺序不变。 */
         fun decodeLegacy(input: ByteArrayDataInput): AimResponsePayload {
             val skillId = input.readUTF()
-            if (skillId.isBlank() || skillId.length > MAX_SKILL_ID_LENGTH) {
+            if (skillId.isBlank() || skillId.length > AimRequestProtocol.MAX_SKILL_ID_LENGTH) {
                 throw AimPacketException("技能标识无效")
             }
             return AimResponsePayload(

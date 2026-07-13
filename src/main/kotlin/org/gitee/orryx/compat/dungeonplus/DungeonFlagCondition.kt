@@ -34,22 +34,19 @@ class DungeonFlagCondition : BasicActionScript(false) {
     private var message = "&4| &e%player_name% &f的职业不是 &c战士"
 
     override fun init(dungeon: Dungeon, parameter: Map<String, String>): DungeonActionScript {
-        flag = parameter["flag"].toString()
-        value = parameter["value"].toString()
-        message = parameter["message"].toString()
+        flag = parameter["flag"] ?: parameter["key"] ?: flag
+        value = parameter["value"] ?: value
+        message = parameter["message"] ?: message
         return this
     }
 
     override fun conditionScript(dungeon: Dungeon, scriptType: ScriptType): Boolean {
         var bypass = true
-        val players = dungeon.team.getPlayers(PlayerStateType.ONLINE)
-        players.forEach {
-            val flagValue = it.orryxProfile().orNull()?.flags?.get(flag)?.value.toString()
+        dungeon.team.getPlayers(PlayerStateType.ONLINE).forEach { player ->
+            val flagValue = player.orryxProfile().orNull()?.flags?.get(flag)?.value?.toString()
             if (flagValue != value) {
                 bypass = false
-                players.forEach { player ->
-                    player.sendLang(message.replacePlaceholder(it).colored(), flagValue)
-                }
+                player.sendLang(message.replacePlaceholder(player).colored(), flagValue.orEmpty())
             }
         }
         return bypass

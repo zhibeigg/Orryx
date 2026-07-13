@@ -16,13 +16,15 @@ interface IAnimationBridge {
 
     companion object {
 
-        val INSTANCE by unsafeLazy {
-            CompatGuard.firstAvailable(
-                default = { DefaultAnimationBridge() },
+        val INSTANCE: IAnimationBridge by unsafeLazy {
+            val fallback = DefaultAnimationBridge()
+            val initial = CompatGuard.firstAvailable(
+                default = { fallback },
                 { ArcartXPlugin.isEnabled } to { ArcartXAnimationBridge() },
                 { DragonCorePlugin.isEnabled } to { DragonCoreAnimationBridge() },
                 { GermPluginPlugin.isEnabled } to { GermPluginAnimationBridge() },
             )
+            LinkageFallbackAnimationBridge(CompatGuard.degradeOnce("动画桥接", initial, fallback))
         }
     }
 
@@ -52,4 +54,21 @@ interface IAnimationBridge {
      * @param player 目标玩家
      */
     fun clearPlayerAnimation(viewer: Player, player: Player)
+}
+
+private class LinkageFallbackAnimationBridge(
+    private val bridge: OneTimeLinkageFallback<IAnimationBridge>,
+) : IAnimationBridge {
+
+    override fun setPlayerAnimation(viewer: Player, player: Player, animation: String, speed: Float) {
+        bridge.invoke { it.setPlayerAnimation(viewer, player, animation, speed) }
+    }
+
+    override fun removePlayerAnimation(viewer: Player, player: Player, animation: String) {
+        bridge.invoke { it.removePlayerAnimation(viewer, player, animation) }
+    }
+
+    override fun clearPlayerAnimation(viewer: Player, player: Player) {
+        bridge.invoke { it.clearPlayerAnimation(viewer, player) }
+    }
 }

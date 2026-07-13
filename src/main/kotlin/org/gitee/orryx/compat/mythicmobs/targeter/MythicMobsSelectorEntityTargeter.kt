@@ -5,7 +5,9 @@ import io.lumine.xikage.mythicmobs.adapters.bukkit.BukkitAdapter
 import io.lumine.xikage.mythicmobs.io.MythicLineConfig
 import io.lumine.xikage.mythicmobs.skills.SkillMetadata
 import io.lumine.xikage.mythicmobs.skills.targeters.IEntitySelector
+import org.bukkit.Bukkit
 import org.bukkit.entity.Entity
+import org.bukkit.entity.Player
 import org.gitee.orryx.core.common.NanoId
 import org.gitee.orryx.core.kether.ScriptManager.runKether
 import org.gitee.orryx.core.kether.parameter.MythicMobsParameter
@@ -13,6 +15,7 @@ import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.utils.*
 import taboolib.common.platform.Ghost
+import taboolib.common.platform.function.adaptCommandSender
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.library.kether.BlockReader
 import taboolib.module.kether.ScriptContext
@@ -30,7 +33,11 @@ class MythicMobsSelectorEntityTargeter(mlc: MythicLineConfig): IEntitySelector(m
             val targets = hashSetOf<AbstractEntity?>()
 
             val context = ScriptContext.create(BlockReader(null, ScriptService, orryxEnvironmentNamespaces).parse(NanoId.generate())).also {
-                it.sender = adaptPlayer(data.caster.entity.bukkitEntity)
+                it.sender = if (caster is Player) {
+                    adaptPlayer(caster)
+                } else {
+                    adaptCommandSender(Bukkit.getConsoleSender())
+                }
                 it[PARAMETER] = MythicMobsParameter(caster, BukkitAdapter.adapt(data.origin).toTarget())
             }
 

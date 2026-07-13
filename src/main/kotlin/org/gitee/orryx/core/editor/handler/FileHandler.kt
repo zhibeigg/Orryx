@@ -1,83 +1,82 @@
 package org.gitee.orryx.core.editor.handler
 
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
-import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.editor.EditorClient
 import taboolib.common.platform.function.getDataFolder
 
 /**
  * 文件操作处理器。
  *
- * 所有路径解析与文件系统操作统一交给 [EditorFilePolicy]，所有 I/O 在 ioScope 执行。
+ * 所有路径解析与文件系统操作统一交给 [EditorFilePolicy]，并通过 [EditorRequestQueue] 在 I/O 协程域内
+ * 有界、顺序执行。每个请求和响应均绑定接收请求时的连接 generation。
  */
 object FileHandler {
 
     private val policy: EditorFilePolicy by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         EditorFilePolicy(getDataFolder().toPath())
     }
-    private val operationMutex = Mutex()
 
-    fun handleList(id: String, data: JsonObject?) {
+    fun handleList(generation: Long, id: String, data: JsonObject?) {
         val path = data.string("path")
-        launchOperation(id, "列出文件失败") {
+        EditorRequestQueue.enqueue(generation, id, "列出文件失败") { requestGeneration ->
             val tree = policy.listTree(path)
-            EditorClient.sendMessage("file.tree", id, buildJsonObject {
+            EditorClient.sendMessage(requestGeneration, "file.tree", id, buildJsonObject {
                 put("files", JsonArray(tree.map(::toJson)))
             })
         }
     }
 
-    fun handleRead(id: String, data: JsonObject?) {
-        val path = data.requireString(id, "path") ?: return
-        launchOperation(id, "读取文件失败") {
-            val content = policy.readText(path)
-            EditorClient.sendMessage("file.content", id, buildJsonObject {
+    fun handleRead(generation: Long, id: String, data: JsonObject?) {
+        val path = data.requireString(generation, id, "path") ?: return
+        EditorRequestQueue.enqueue(generation, id, "读取文件失败") { requestGeneration ->
+            val file = policy.readTextWithRevision(path)
+            EditorClient.sendMessage(requestGeneration, "file.content", id, buildJsonObject {
                 put("path", path)
-                put("content", content)
+                put("content", file.content)
+                put("revision", file.revision)
             })
         }
     }
 
-    fun handleWrite(id: String, data: JsonObject?) {
-        val path = data.requireString(id, "path") ?: return
-        val content = data.requireString(id, "content") ?: return
-        launchOperation(id, "写入文件失败") {
-            policy.writeTextAtomic(path, content)
-            sendWritten(id, path, true)
+    fun handleWrite(generation: Long, id: String, data: JsonObject?) {
+        val path = data.requireString(generation, id, "path") ?: return
+        val content = data.requireString(generation, id, "content") ?: return
+        val expectedRevision = data.string("expectedRevision")
+        EditorRequestQueue.enqueue(generation, id, "写入文件失败") { requestGeneration ->
+            val revision = policy.writeTextAtomic(path, content, expectedRevision)
+            sendWritten(requestGeneration, id, path, true, revision)
         }
     }
 
-    fun handleCreate(id: String, data: JsonObject?) {
-        val path = data.requireString(id, "path") ?: return
+    fun handleCreate(generation: Long, id: String, data: JsonObject?) {
+        val path = data.requireString(generation, id, "path") ?: return
         val isDirectory = data?.get("isDirectory")?.jsonPrimitive?.booleanOrNull ?: false
-        launchOperation(id, "创建文件失败") {
+        EditorRequestQueue.enqueue(generation, id, "创建文件失败") { requestGeneration ->
             policy.create(path, isDirectory)
-            sendWritten(id, path, true)
+            sendWritten(requestGeneration, id, path, true)
         }
     }
 
-    fun handleDelete(id: String, data: JsonObject?) {
-        val path = data.requireString(id, "path") ?: return
-        launchOperation(id, "删除文件失败") {
-            sendWritten(id, path, policy.delete(path))
+    fun handleDelete(generation: Long, id: String, data: JsonObject?) {
+        val path = data.requireString(generation, id, "path") ?: return
+        EditorRequestQueue.enqueue(generation, id, "删除文件失败") { requestGeneration ->
+            sendWritten(requestGeneration, id, path, policy.delete(path))
         }
     }
 
-    fun handleRename(id: String, data: JsonObject?) {
-        val oldPath = data.requireString(id, "oldPath") ?: return
-        val newPath = data.requireString(id, "newPath") ?: return
-        launchOperation(id, "重命名失败") {
+    fun handleRename(generation: Long, id: String, data: JsonObject?) {
+        val oldPath = data.requireString(generation, id, "oldPath") ?: return
+        val newPath = data.requireString(generation, id, "newPath") ?: return
+        EditorRequestQueue.enqueue(generation, id, "重命名失败") { requestGeneration ->
             val renamed = policy.rename(oldPath, newPath)
-            EditorClient.sendMessage("file.written", id, buildJsonObject {
+            EditorClient.sendMessage(requestGeneration, "file.written", id, buildJsonObject {
                 put("oldPath", oldPath)
                 put("path", newPath)
                 put("success", renamed)
@@ -85,24 +84,17 @@ object FileHandler {
         }
     }
 
-    private fun launchOperation(id: String, operation: String, block: () -> Unit) {
-        OrryxAPI.ioScope.launch {
-            operationMutex.withLock {
-                try {
-                    block()
-                } catch (e: EditorFilePolicy.PolicyException) {
-                    EditorClient.sendError(id, e.message ?: operation)
-                } catch (e: Exception) {
-                    EditorClient.sendError(id, "$operation: ${e.message ?: e.javaClass.simpleName}")
-                }
-            }
-        }
-    }
-
-    private fun sendWritten(id: String, path: String, success: Boolean) {
-        EditorClient.sendMessage("file.written", id, buildJsonObject {
+    private fun sendWritten(
+        generation: Long,
+        id: String,
+        path: String,
+        success: Boolean,
+        revision: String? = null,
+    ) {
+        EditorClient.sendMessage(generation, "file.written", id, buildJsonObject {
             put("path", path)
             put("success", success)
+            revision?.let { put("revision", it) }
         })
     }
 
@@ -118,17 +110,17 @@ object FileHandler {
     }
 
     private fun JsonObject?.string(key: String): String? {
-        return this?.get(key)?.jsonPrimitive?.contentOrNull
+        return (this?.get(key) as? JsonPrimitive)?.contentOrNull
     }
 
-    private fun JsonObject?.requireString(id: String, key: String): String? {
+    private fun JsonObject?.requireString(generation: Long, id: String, key: String): String? {
         return string(key)?.also {
             if (it.isEmpty() && key != "content") {
-                EditorClient.sendError(id, "$key 字段不能为空")
+                EditorClient.sendError(generation, id, "$key 字段不能为空")
             }
         }?.takeUnless { it.isEmpty() && key != "content" } ?: run {
             if (string(key) == null) {
-                EditorClient.sendError(id, "缺少 $key 字段")
+                EditorClient.sendError(generation, id, "缺少 $key 字段")
             }
             null
         }

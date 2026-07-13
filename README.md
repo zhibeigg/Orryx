@@ -6,7 +6,7 @@
 
 **跨时代技能插件，支持实现复杂逻辑，为稳定高效而生**
 
-[![Version](https://img.shields.io/badge/version-2.45.118-blue?style=for-the-badge)](https://github.com/zhibeigg/Orryx/releases)
+[![Version](https://img.shields.io/badge/version-2.45.119-blue?style=for-the-badge)](https://github.com/zhibeigg/Orryx/releases)
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.12--1.21-green?style=for-the-badge&logo=minecraft)](https://www.minecraft.net/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.1.20-purple?style=for-the-badge&logo=kotlin)](https://kotlinlang.org/)
 [![TabooLib](https://img.shields.io/badge/TabooLib-6.2.4-orange?style=for-the-badge)](https://github.com/TabooLib/taboolib)
@@ -218,10 +218,12 @@ Self、Origin、Direct、Offset、Type、Teammate、Team、PVP、Amount、Server
 
 ### 其他模块
 
-- **AI 集成**：OpenAI 接入
+- **AI 集成**：OpenAI 会话按玩家 UUID 与 NPC 配置键隔离并串行执行；总超时覆盖排队与 HTTP，请求取消、重载、退服和停服都会清理在途调用与资源
 - **Wiki 生成**：自动生成飞书文档、Markdown 文档、Actions Schema JSON
 - **Agent SKILL 套件**：基于生产配置和源码生成、审查技能、职业、经验、中转站、状态机、选择器与多端 UI
-- **在线编辑器**：WebSocket 注册确认后签发一次性访问 Token；远程文件操作仅限业务配置白名单目录，并拒绝路径穿越、符号链接、隐藏文件、数据库、日志、密钥和证书文件
+- **在线编辑器**：WebSocket 注册确认后签发一次性访问 Token；文件请求使用有界顺序队列与 revision 冲突控制，沙箱拒绝路径穿越、符号链接和 NTFS 重解析路径，并限制消息、文件及目录遍历配额
+- **瞄准协议**：保持 1.12.2 legacy 字段顺序，通过一次性 wire token、确认状态、超时与最终施法状态复核阻止跨会话重放
+- **兼容降级**：第三方插件缺失或发生二进制不兼容时仅对对应桥接一次性降级，PacketEvents 与 ProtocolLib 监听器会在停用时卸载
 - **Buff 系统**：Buff 配置与管理
 - **NPC 系统**：基于 Adyeshach 的虚拟实体
 - **Bloom 泛光**：泛光特效配置

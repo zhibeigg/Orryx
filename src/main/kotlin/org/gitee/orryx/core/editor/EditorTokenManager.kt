@@ -9,9 +9,12 @@ object EditorTokenManager {
     /** 只有中心服务器确认 Token 注册成功后才返回 URL。 */
     fun generateEditorUrl(playerName: String): CompletableFuture<String?> {
         if (!EditorClient.isRegistered()) return CompletableFuture.completedFuture(null)
+        val generation = EditorClient.currentGeneration()
         val token = NanoId.generate(size = 16)
         return EditorClient.registerToken(token, playerName).thenApply { registered ->
-            if (!registered) return@thenApply null
+            if (!registered || !EditorClient.isRegistered() || EditorClient.currentGeneration() != generation) {
+                return@thenApply null
+            }
             val baseUrl = EditorClient.getEditorUrl().trimEnd('/')
             "$baseUrl/?token=$token"
         }
