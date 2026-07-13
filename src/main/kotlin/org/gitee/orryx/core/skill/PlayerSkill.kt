@@ -18,11 +18,15 @@ import org.gitee.orryx.core.message.PluginMessageHandler
 import org.gitee.orryx.core.skill.skills.PassiveSkill
 import org.gitee.orryx.dao.cache.ISyncCacheManager
 import org.gitee.orryx.dao.cache.MemoryCache
+import org.gitee.orryx.dao.persistence.PersistenceManager
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
-import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.utils.Tuple2
 import org.gitee.orryx.utils.castSkill
+import org.gitee.orryx.utils.castSkillAsync
+import org.gitee.orryx.utils.castSkillRawAsync
+import org.gitee.orryx.utils.mainThreadFuture
+import org.gitee.orryx.utils.thenApplyMain
 import org.gitee.orryx.utils.orryxProfileTo
 import org.gitee.orryx.utils.runCustomAction
 import taboolib.common.platform.function.isPrimaryThread
@@ -57,16 +61,27 @@ class PlayerSkill(
 
     override fun cast(parameter: IParameter, consume: Boolean): CastResult {
         if (parameter !is SkillParameter) return CastResult.PARAMETER
-        return if (OrryxPlayerSkillCastEvents.Cast(player, this, parameter).call()) {
-            val consume = if (OrryxTestCommand.isUnlimited(player)) {
-                false
-            } else {
-                consume
+        if (!OrryxPlayerSkillCastEvents.Cast(player, this, parameter).call()) return CastResult.CANCELED
+        val shouldConsume = consume && !OrryxTestCommand.isUnlimited(player)
+        skill.castSkillAsync(player, parameter, shouldConsume).exceptionally {
+            it.printStackTrace()
+            null
+        }
+        return CastResult.SUCCESS
+    }
+
+    internal fun castAsync(parameter: SkillParameter, consume: Boolean): CompletableFuture<CastResult> {
+        return mainThreadFuture {
+            if (!OrryxPlayerSkillCastEvents.Cast(player, this, parameter).call()) {
+                return@mainThreadFuture false
             }
-            skill.castSkill(player, parameter, consume)
-            CastResult.SUCCESS
-        } else {
-            CastResult.CANCELED
+            true
+        }.thenCompose { allowed ->
+            if (!allowed) {
+                CompletableFuture.completedFuture(CastResult.CANCELED)
+            } else {
+                skill.castSkillRawAsync(player, parameter, consume && !OrryxTestCommand.isUnlimited(player))
+            }
         }
     }
 
@@ -84,13 +99,13 @@ class PlayerSkill(
         // 冷却
         if (!SkillTimer.hasNext(player, key)) return CompletableFuture.completedFuture(CastResult.COOLDOWN)
         // 法力
-        return IManaManager.INSTANCE.haveMana(player, parameter.manaValue()).thenApply { mana ->
-            if (!mana) return@thenApply CastResult.MANA_NOT_ENOUGH
+        return IManaManager.INSTANCE.haveMana(player, parameter.manaValue()).thenApplyMain { mana ->
+            if (!mana) return@thenApplyMain CastResult.MANA_NOT_ENOUGH
             // 脚本检测
-            if ((skill as? ICastSkill)?.castCheckAction?.let { parameter.runCustomAction(it, mapOf()).orNull().cbool } == false) return@thenApply CastResult.CHECK_ACTION_FAILED
+            if ((skill as? ICastSkill)?.castCheckAction?.let { parameter.runCustomAction(it, mapOf()).orNull().cbool } == false) return@thenApplyMain CastResult.CHECK_ACTION_FAILED
             // 事件
-            if (!OrryxPlayerSkillCastEvents.Check(player, this, parameter).call()) return@thenApply CastResult.CANCELED
-            return@thenApply CastResult.SUCCESS
+            if (!OrryxPlayerSkillCastEvents.Check(player, this, parameter).call()) return@thenApplyMain CastResult.CANCELED
+            return@thenApplyMain CastResult.SUCCESS
         }
     }
 
@@ -136,9 +151,13 @@ class PlayerSkill(
             if (event.upLevel <= 0) error("升级等级必须>0")
             if (privateLevel + event.upLevel > skill.maxLevel) result = SkillLevelResult.MIN
             privateLevel = (privateLevel + event.upLevel).coerceAtMost(skill.maxLevel)
-            save(isPrimaryThread) {
-                OrryxPlayerSkillLevelEvents.Up.Post(player, this, event.upLevel).call()
-                future.complete(result)
+            persist(isPrimaryThread, false).whenComplete { _, throwable ->
+                org.gitee.orryx.utils.runOnMainThread {
+                    if (throwable != null) future.completeExceptionally(throwable) else {
+                        OrryxPlayerSkillLevelEvents.Up.Post(player, this, event.upLevel).call()
+                        future.complete(result)
+                    }
+                }
             }
         } else {
             future.complete(SkillLevelResult.CANCELLED)
@@ -155,9 +174,13 @@ class PlayerSkill(
             if (event.downLevel <= 0) error("降级等级必须>0")
             if (privateLevel - event.downLevel < skill.minLevel) result = SkillLevelResult.MIN
             privateLevel = (privateLevel - event.downLevel).coerceAtLeast(skill.minLevel)
-            save(isPrimaryThread) {
-                OrryxPlayerSkillLevelEvents.Down.Post(player, this, event.downLevel).call()
-                future.complete(result)
+            persist(isPrimaryThread, false).whenComplete { _, throwable ->
+                org.gitee.orryx.utils.runOnMainThread {
+                    if (throwable != null) future.completeExceptionally(throwable) else {
+                        OrryxPlayerSkillLevelEvents.Down.Post(player, this, event.downLevel).call()
+                        future.complete(result)
+                    }
+                }
             }
         } else {
             future.complete(SkillLevelResult.CANCELLED)
@@ -174,7 +197,7 @@ class PlayerSkill(
     }
 
     override fun createPO(): PlayerSkillPO {
-        return PlayerSkillPO(id, player.uniqueId, job, key, locked, level)
+        return PlayerSkillPO(id, uuid, job, key, locked, level)
     }
 
     override fun clear(): CompletableFuture<Boolean> {
@@ -183,9 +206,13 @@ class PlayerSkill(
         if (event.call()) {
             privateLocked = skill.isLocked
             privateLevel = skill.minLevel
-            save(isPrimaryThread) {
-                OrryxPlayerSkillClearEvents.Post(player, this).call()
-                future.complete(true)
+            persist(isPrimaryThread, false).whenComplete { _, throwable ->
+                org.gitee.orryx.utils.runOnMainThread {
+                    if (throwable != null) future.completeExceptionally(throwable) else {
+                        OrryxPlayerSkillClearEvents.Post(player, this).call()
+                        future.complete(true)
+                    }
+                }
             }
         } else {
             future.complete(false)
@@ -209,31 +236,35 @@ class PlayerSkill(
     }
 
     override fun save(async: Boolean, remove: Boolean, callback: Runnable) {
-        val event = OrryxPlayerSkillSaveEvents.Pre(player, this, async, remove)
-        event.call()
-        val data = createPO()
-        fun remove() {
-            if (event.remove) {
-                ISyncCacheManager.INSTANCE.removePlayerSkill(player.uniqueId, id, job, key)
-                MemoryCache.removePlayerSkill(player.uniqueId, id, job, key)
-            }
-        }
-        if (event.async && !GameManager.shutdown) {
-            OrryxAPI.ioScope.launch {
-                IStorageManager.INSTANCE.savePlayerSkill(data) {
-                    remove()
+        persist(async, remove).whenComplete { context, throwable ->
+            if (throwable != null) {
+                throwable.printStackTrace()
+            } else {
+                org.gitee.orryx.utils.runOnMainThread {
                     callback.run()
-                    OrryxPlayerSkillSaveEvents.Post(player, this@PlayerSkill, event.async, event.remove).call()
+                    OrryxPlayerSkillSaveEvents.Post(context.player, this@PlayerSkill, context.async, context.remove).call()
                 }
-            }
-        } else {
-            IStorageManager.INSTANCE.savePlayerSkill(data) {
-                remove()
-                callback.run()
-                OrryxPlayerSkillSaveEvents.Post(player, this, event.async, event.remove).call()
             }
         }
     }
+
+    private fun persist(async: Boolean, remove: Boolean): CompletableFuture<SaveContext> {
+        return org.gitee.orryx.utils.mainThreadFuture {
+            val onlinePlayer = player
+            val event = OrryxPlayerSkillSaveEvents.Pre(onlinePlayer, this, async, remove)
+            event.call()
+            SaveContext(onlinePlayer, event.async, event.remove, createPO())
+        }.thenCompose { context ->
+            PersistenceManager.saveSkill(context.data, context.remove).thenApply { context }
+        }
+    }
+
+    private data class SaveContext(
+        val player: Player,
+        val async: Boolean,
+        val remove: Boolean,
+        val data: PlayerSkillPO,
+    )
 
     override fun equals(other: Any?): Boolean {
         if (other !is PlayerSkill) return false

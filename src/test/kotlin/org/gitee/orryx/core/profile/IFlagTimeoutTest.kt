@@ -19,6 +19,11 @@ class IFlagTimeoutTest {
         val flag = mockk<Flag<String>>()
         every { flag.timestamp } returns timestamp
         every { flag.timeout } returns timeout
+        every { flag.expiresAt } returns when {
+            timeout <= 0L -> 0L
+            timestamp > Long.MAX_VALUE - timeout -> Long.MAX_VALUE
+            else -> timestamp + timeout
+        }
         every { flag.isTimeout() } answers { callOriginal() }
         return flag
     }

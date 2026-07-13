@@ -13,6 +13,7 @@ import org.gitee.orryx.utils.getParameter
 import org.gitee.orryx.utils.nextHeadActionOrNull
 import org.gitee.orryx.utils.registerProperty
 import org.gitee.orryx.utils.scriptParser
+import org.gitee.orryx.utils.ticksToMillisSaturated
 import taboolib.common.OpenResult
 import taboolib.library.kether.ParsedAction
 import taboolib.library.kether.QuestReader
@@ -95,13 +96,13 @@ object CooldownActions {
 
                     override fun ScriptFrame.skill(future: CompletableFuture<Any?>, skill: String) {
                         run(cooldown).long { cooldown ->
-                            future.complete(SkillTimer.increase(script().sender!!, skill, cooldown * 50))
+                            future.complete(SkillTimer.increase(script().sender!!, skill, ticksToMillisSaturated(cooldown)))
                         }
                     }
 
                     override fun ScriptFrame.station(future: CompletableFuture<Any?>, station: String) {
                         run(cooldown).long { cooldown ->
-                            future.complete(StationTimer.increase(script().sender!!, station, cooldown * 50))
+                            future.complete(StationTimer.increase(script().sender!!, station, ticksToMillisSaturated(cooldown)))
                         }
                     }
                 }
@@ -115,13 +116,13 @@ object CooldownActions {
 
                     override fun ScriptFrame.skill(future: CompletableFuture<Any?>, skill: String) {
                         run(cooldown).long { cooldown ->
-                            future.complete(SkillTimer.reduce(script().sender!!, skill, cooldown * 50))
+                            future.complete(SkillTimer.reduce(script().sender!!, skill, ticksToMillisSaturated(cooldown)))
                         }
                     }
 
                     override fun ScriptFrame.station(future: CompletableFuture<Any?>, station: String) {
                         run(cooldown).long { cooldown ->
-                            future.complete(StationTimer.reduce(script().sender!!, station, cooldown * 50))
+                            future.complete(StationTimer.reduce(script().sender!!, station, ticksToMillisSaturated(cooldown)))
                         }
                     }
                 }
@@ -135,13 +136,13 @@ object CooldownActions {
 
                     override fun ScriptFrame.skill(future: CompletableFuture<Any?>, skill: String) {
                         run(cooldown).long { cooldown ->
-                            future.complete(SkillTimer.set(script().sender!!, skill, cooldown * 50))
+                            future.complete(SkillTimer.set(script().sender!!, skill, ticksToMillisSaturated(cooldown)))
                         }
                     }
 
                     override fun ScriptFrame.station(future: CompletableFuture<Any?>, station: String) {
                         run(cooldown).long { cooldown ->
-                            future.complete(StationTimer.set(script().sender!!, station, cooldown * 50))
+                            future.complete(StationTimer.set(script().sender!!, station, ticksToMillisSaturated(cooldown)))
                         }
                     }
                 }

@@ -15,13 +15,13 @@ import org.bukkit.entity.Player
  * - `org.bukkit.inventory.ItemStack`
  * - `AbstractBukkitEntity`（持久化为实体 UUID）
  * - `AbstractAdyeshachEntity`（持久化为实体 ID）
- * - `Array<*>`（数组元素必须同样是上述可序列化类型且不可为 null）
+ * - `Array<*>`（元素可为 null，也可嵌套数组；非空元素必须是上述可序列化类型）
  *
  * 注意：
  * - 实体类型反序列化依赖实体是否仍存在，若实体不存在可能会返回 null 的 Flag。
  * - ItemStack 使用 TabooLib 的二进制序列化（`serializeToByteArray(true)` / `deserializeToItemStack(true)`），
  *   兼容性取决于服务端与 TabooLib 的实现。
- * - Array 类型反序列化后得到的是元素列表，使用时请按实际类型处理。
+ * - Array 类型会稳定往返为 `Array<*>`，并保留 null 与嵌套结构。
  *
  * @property value Flag 的值
  * @property isPersistence 是否持久化
@@ -38,13 +38,19 @@ sealed interface IFlag {
 
     val timeout: Long
 
+    val expiresAt: Long
+        get() {
+            if (timeout <= 0L) return 0L
+            return if (timestamp > Long.MAX_VALUE - timeout) Long.MAX_VALUE else timestamp + timeout
+        }
+
     /**
      * 是否超时。
      *
      * @return 当 [timeout] 不为 0 且超出存活时间时返回 true
      */
     fun isTimeout(): Boolean {
-        return  timeout != 0L && timeout + timestamp < System.currentTimeMillis()
+        return expiresAt != 0L && expiresAt <= System.currentTimeMillis()
     }
 
     /**

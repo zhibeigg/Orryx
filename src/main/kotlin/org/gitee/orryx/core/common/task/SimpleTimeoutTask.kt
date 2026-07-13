@@ -4,52 +4,57 @@ import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.function.submit
 import taboolib.common.platform.service.PlatformExecutor
-import taboolib.common.util.unsafeLazy
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 open class SimpleTimeoutTask(val tick: Long, open val closed: () -> Unit = EMPTY) {
 
-    var future = CompletableFuture<Void>()
+    val future = CompletableFuture<Void>()
 
-    lateinit var task: PlatformExecutor.PlatformTask
+    private val completed = AtomicBoolean(false)
+    private val taskRef = AtomicReference<PlatformExecutor.PlatformTask?>()
+
+    val task: PlatformExecutor.PlatformTask?
+        get() = taskRef.get()
+
+    private fun attach(task: PlatformExecutor.PlatformTask) {
+        if (!taskRef.compareAndSet(null, task) || completed.get()) {
+            task.cancel()
+        }
+    }
+
+    internal fun finish(running: Boolean): Boolean {
+        if (!completed.compareAndSet(false, true)) return false
+        cache.remove(this)
+        taskRef.getAndSet(null)?.cancel()
+        future.complete(null)
+        if (running) closed()
+        return true
+    }
 
     companion object {
 
-        internal val EMPTY by unsafeLazy { {} }
+        internal val EMPTY: () -> Unit = {}
 
-        private val cache = mutableListOf<SimpleTimeoutTask>()
+        private val cache = ConcurrentHashMap.newKeySet<SimpleTimeoutTask>()
 
         @Awake(LifeCycle.DISABLE)
         fun unregisterAll() {
-            val iterator = cache.iterator()
-            while (iterator.hasNext()) {
-                shutdown(iterator.next())
-                iterator.remove()
-            }
+            cache.toList().forEach { it.finish(true) }
         }
 
         fun cancel(simpleTask: SimpleTimeoutTask, running: Boolean = true) {
-            cache -= simpleTask
-            simpleTask.task.cancel()
-            // 如果已经结束了
-            if (simpleTask.future.isDone) return
-            simpleTask.future.complete(null)
-            if (running) simpleTask.closed()
-        }
-
-        private fun shutdown(simpleTask: SimpleTimeoutTask, running: Boolean = true) {
-            simpleTask.task.cancel()
-            // 如果已经结束了
-            if (simpleTask.future.isDone) return
-            simpleTask.future.complete(null)
-            if (running) simpleTask.closed()
+            simpleTask.finish(running)
         }
 
         fun SimpleTimeoutTask.register(): SimpleTimeoutTask {
-            cache += this
-            task = submit(delay = tick) {
-                cancel(this@register)
+            if (!cache.add(this)) return this
+            val scheduled = submit(delay = tick.coerceAtLeast(0L)) {
+                finish(true)
             }
+            attach(scheduled)
             return this
         }
 

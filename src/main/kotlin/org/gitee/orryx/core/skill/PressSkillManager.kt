@@ -15,12 +15,21 @@ import priv.seventeen.artist.arcartx.event.client.ClientKeyReleaseEvent
 import taboolib.common.platform.Ghost
 import taboolib.common.platform.event.SubscribeEvent
 import java.util.*
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 
 object PressSkillManager {
 
     internal val pressTaskMap = ConcurrentHashMap<UUID, Tuple2<String, PipeTask>>()
+
+    internal fun register(playerId: UUID, skillKey: String, task: PipeTask): Boolean {
+        return pressTaskMap.putIfAbsent(playerId, Tuple2(skillKey, task)) == null
+    }
+
+    internal fun remove(playerId: UUID, taskId: UUID) {
+        pressTaskMap.computeIfPresent(playerId) { _, pair ->
+            pair.takeUnless { it.second.uuid == taskId }
+        }
+    }
 
     @Ghost
     @SubscribeEvent
@@ -42,7 +51,7 @@ object PressSkillManager {
 
     @SubscribeEvent
     private fun death(e: PlayerDeathEvent) {
-        pressTaskMap.remove(e.entity.uniqueId)?.second?.close { CompletableFuture.completedFuture(null) }
+        pressTaskMap.remove(e.entity.uniqueId)?.second?.broke()
     }
 
     /**
@@ -50,14 +59,12 @@ object PressSkillManager {
      */
     @SubscribeEvent
     private fun quit(e: PlayerQuitEvent) {
-        pressTaskMap.remove(e.player.uniqueId)?.second?.close { CompletableFuture.completedFuture(null) }
+        pressTaskMap.remove(e.player.uniqueId)?.second?.broke()
     }
 
     @Reload(2)
     private fun clearAll() {
-        pressTaskMap.forEach {
-            it.value.second.close { CompletableFuture.completedFuture(null) }
-        }
+        pressTaskMap.values.toList().forEach { it.second.broke() }
         pressTaskMap.clear()
     }
 

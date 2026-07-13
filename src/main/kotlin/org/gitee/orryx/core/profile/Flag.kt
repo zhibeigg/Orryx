@@ -9,21 +9,34 @@ import taboolib.common.platform.service.PlatformExecutor
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-open class Flag<T: Any>(override val value: T, override val isPersistence: Boolean, override val timeout: Long) : IFlag {
+open class Flag<T: Any>(
+    override val value: T,
+    override val isPersistence: Boolean,
+    override val timeout: Long,
+    expiresAt: Long = 0L
+) : IFlag {
 
     override val timestamp: Long = System.currentTimeMillis()
+    override val expiresAt: Long = when {
+        timeout <= 0L -> 0L
+        expiresAt > 0L -> expiresAt
+        timestamp > Long.MAX_VALUE - timeout -> Long.MAX_VALUE
+        else -> timestamp + timeout
+    }
 
     override fun init(player: Player, key: String) {
-        if (timeout == 0L) return
-        taskMap.getOrPut(player.uniqueId) { ConcurrentHashMap() }[key] = submit(delay = timeout / 50) {
-            // 任务完成后自动从 taskMap 中移除
-            taskMap[player.uniqueId]?.remove(key)
+        if (expiresAt == 0L) return
+        val remaining = (expiresAt - System.currentTimeMillis()).coerceAtLeast(0L)
+        val tasks = taskMap.computeIfAbsent(player.uniqueId) { ConcurrentHashMap() }
+        val scheduled = submit(delay = remaining / 50L + 1L) {
+            tasks.remove(key)
             if (player.isOnline) {
                 player.orryxProfileTo { profile ->
-                    profile.removeFlag(key)
+                    if (profile.getFlag(key) === this@Flag && isTimeout()) profile.removeFlag(key)
                 }
             }
         }
+        tasks.put(key, scheduled)?.cancel()
     }
 
     override fun cancel(player: Player, key: String) {

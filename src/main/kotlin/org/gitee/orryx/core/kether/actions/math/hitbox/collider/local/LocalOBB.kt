@@ -3,9 +3,11 @@ package org.gitee.orryx.core.kether.actions.math.hitbox.collider.local
 import org.gitee.orryx.api.collider.IAABB
 import org.gitee.orryx.api.collider.local.ICoordinateConverter
 import org.gitee.orryx.api.collider.local.ILocalOBB
+import org.gitee.orryx.core.kether.actions.math.hitbox.collider.basic.AABBPlus
 import org.gitee.orryx.core.targets.ITargetLocation
 import org.joml.Quaterniond
 import org.joml.Vector3d
+import kotlin.math.abs
 
 open class LocalOBB<T : ITargetLocation<*>>(
     halfExtents: Vector3d,
@@ -19,6 +21,8 @@ open class LocalOBB<T : ITargetLocation<*>>(
 
     override val vertices = Array(8) { Vector3d() }
     override val axes = Array(3) { Vector3d() }
+    private val fastExtents = Vector3d()
+    private val fastBounds = AABBPlus<T>(fastExtents, globalCenter)
 
     /** 0 - 中心点, 1 - 旋转 */
     private val version = ShortArray(2)
@@ -94,7 +98,7 @@ open class LocalOBB<T : ITargetLocation<*>>(
     override fun update() {
         parent.update()
 
-        if ((!dirty[1] && !dirty[2] && (version[0] != parent.positionVersion() && version[1] == parent.rotationVersion()) || dirty[0])) {
+        if (!dirty[0] && !dirty[1] && !dirty[2] && version[0] != parent.positionVersion() && version[1] == parent.rotationVersion()) {
             dirty[0] = false
             version[0] = parent.positionVersion()
             //仅进行位置移动
@@ -125,6 +129,11 @@ open class LocalOBB<T : ITargetLocation<*>>(
         axes[0] = globalRotation.transform(Vector3d(1.0, 0.0, 0.0))
         axes[1] = globalRotation.transform(Vector3d(0.0, 1.0, 0.0))
         axes[2] = globalRotation.transform(Vector3d(0.0, 0.0, 1.0))
+        fastExtents.set(
+            abs(axes[0].x) * halfExtents.x + abs(axes[1].x) * halfExtents.y + abs(axes[2].x) * halfExtents.z,
+            abs(axes[0].y) * halfExtents.x + abs(axes[1].y) * halfExtents.y + abs(axes[2].y) * halfExtents.z,
+            abs(axes[0].z) * halfExtents.x + abs(axes[1].z) * halfExtents.y + abs(axes[2].z) * halfExtents.z
+        )
 
         val v = Vector3d()
 
@@ -139,13 +148,9 @@ open class LocalOBB<T : ITargetLocation<*>>(
         vertices[7] = Vector3d().set(center).sub(axes[0].mul(halfExtents.x, v)).sub(axes[1].mul(halfExtents.y, v)).sub(axes[2].mul(halfExtents.z, v))
     }
 
-    override val fastCollider: IAABB<T>?
+    override val fastCollider: IAABB<T>
         get() {
-            val length = halfExtents.length()
-            return LocalAABB(
-                localCenter,
-                Vector3d(length, length, length),
-                parent
-            )
+            update()
+            return fastBounds
         }
 }

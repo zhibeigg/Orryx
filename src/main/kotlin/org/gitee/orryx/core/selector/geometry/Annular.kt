@@ -1,7 +1,6 @@
 package org.gitee.orryx.core.selector.geometry
 
 import org.bukkit.Location
-import org.bukkit.entity.LivingEntity
 import org.bukkit.util.Vector
 import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.selector.ISelectorGeometry
@@ -10,13 +9,12 @@ import org.gitee.orryx.module.wiki.Selector
 import org.gitee.orryx.module.wiki.SelectorType
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.getParameter
-import org.gitee.orryx.utils.isInRound
 import org.gitee.orryx.utils.read
 import org.gitee.orryx.utils.toTarget
 import taboolib.common.platform.function.adaptLocation
 import taboolib.module.effect.createCircle
 import taboolib.module.kether.ScriptContext
-import kotlin.math.pow
+import kotlin.math.abs
 import kotlin.math.sqrt
 
 object Annular : ISelectorGeometry {
@@ -39,25 +37,27 @@ object Annular : ISelectorGeometry {
         val max = parameter.read<Double>(1, 0.0)
         val high = parameter.read<Double>(2, 0.0)
 
-        val livingEntities = origin.world.livingEntities
-        val list = mutableListOf<ITarget<*>>()
+        val broadRadius = maxOf(min, max).coerceAtLeast(0.0)
+        val bounds = GeometryBroadPhase.Bounds(
+            location.toVector(),
+            Vector(broadRadius, abs(high) / 2.0, broadRadius)
+        )
 
-        livingEntities.forEach {
-            if (it is LivingEntity) {
-                val offset = sqrt(it.width.pow(2) * 2) / 2
-                if (it.location.isInRound(
-                        location,
-                        (max + offset).coerceAtLeast(min)
-                    ) && !it.eyeLocation.isInRound(
-                        location,
-                        (min - offset).coerceIn(0.0, max)
-                    ) && it.location.y in (location.y - high / 2)..(location.y + high / 2)
-                ) {
-                    list += it.toTarget()
-                }
+        return GeometryBroadPhase.nearbyLivingEntities(origin.world, bounds)
+            .filter { entity ->
+                val entityLocation = entity.location
+                val dx = entityLocation.x - location.x
+                val dz = entityLocation.z - location.z
+                val distanceSquared = dx * dx + dz * dz
+                val offset = entity.width * sqrt(2.0) / 2.0
+                val outerRadius = (max + offset).coerceAtLeast(min)
+                val innerRadius = (min - offset).coerceIn(0.0, max)
+                distanceSquared <= outerRadius * outerRadius &&
+                    distanceSquared > innerRadius * innerRadius &&
+                    entityLocation.y in (location.y - high / 2.0)..(location.y + high / 2.0)
             }
-        }
-        return list
+            .map { it.toTarget() }
+            .toList()
     }
 
     override fun aFrameShowLocations(context: ScriptContext, parameter: StringParser.Entry): List<taboolib.common.util.Location> {

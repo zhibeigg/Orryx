@@ -52,6 +52,7 @@ import taboolib.platform.util.onlinePlayers
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
 
 object StateManager {
 
@@ -59,6 +60,7 @@ object StateManager {
     private val statusMap = ConcurrentHashMap<String, Status>()
     private val controllerMap = ConcurrentHashMap<String, Configuration>()
     private val globalState = ConcurrentHashMap<String, IActionState>()
+    private val statusCheckGeneration = ConcurrentHashMap<UUID, AtomicLong>()
 
     private val playerInvisibleHandTaskMap = ConcurrentHashMap<UUID, SimpleTimeoutTask>()
 
@@ -74,34 +76,50 @@ object StateManager {
      * @see org.gitee.orryx.core.skill.SkillLoaderManager.reload
      * */
     internal fun reload(skillMap: Map<String, ICastSkill>) {
+        val loaded = LinkedHashMap<String, IActionState>()
+        try {
+            state.reload()
+            state.getConfigurationSection("GlobalStates")?.getKeys(false)?.forEach { key ->
+                val section = state.getConfigurationSection("GlobalStates.$key")
+                    ?: error("GlobalStates.$key 配置节点不存在")
+                loaded[key] = load(key, section)
+            }
+            skillMap.forEach { (key, skill) -> loaded[key] = SkillState(skill) }
+        } catch (throwable: Throwable) {
+            warning("GlobalState 重载失败，继续使用旧快照: ${throwable.message}")
+            throwable.printStackTrace()
+            return
+        }
         globalState.clear()
-        state.reload()
-        state.getConfigurationSection("GlobalStates")?.getKeys(false)?.forEach {
-            globalState[it] = load(it, state.getConfigurationSection("GlobalStates.$it")!!)
-        }
-        skillMap.forEach { (t, u) ->
-            globalState[t] = SkillState(u)
-        }
+        globalState.putAll(loaded)
         consoleMessage("&e┣&7GlobalState loaded &e${globalState.size} &a√")
     }
 
     @Awake(LifeCycle.ENABLE)
     @Reload(2)
     private fun reload() {
+        val loadedControllers = LinkedHashMap<String, Configuration>()
+        val loadedStatuses = LinkedHashMap<String, Status>()
+        try {
+            files("controllers", "example.yml") { file ->
+                loadedControllers[file.nameWithoutExtension] = Configuration.loadFromFile(file)
+            }
+            files("status", "example.yml") { file ->
+                loadedStatuses[file.nameWithoutExtension] = Status(file.nameWithoutExtension, Configuration.loadFromFile(file))
+            }
+        } catch (throwable: Throwable) {
+            warning("State/Status 重载失败，继续使用旧快照: ${throwable.message}")
+            throwable.printStackTrace()
+            return
+        }
         controllerMap.clear()
-        keyPressThrottleMap.clear()
-        files("controllers", "example.yml") { file ->
-            controllerMap[file.nameWithoutExtension] = Configuration.loadFromFile(file)
-        }
-        consoleMessage("&e┣&7Controllers loaded &e${controllerMap.size} &a√")
+        controllerMap.putAll(loadedControllers)
         statusMap.clear()
-        files("status", "example.yml") { file ->
-            statusMap[file.nameWithoutExtension] = Status(file.nameWithoutExtension, Configuration.loadFromFile(file))
-        }
+        statusMap.putAll(loadedStatuses)
+        keyPressThrottleMap.clear()
+        consoleMessage("&e┣&7Controllers loaded &e${controllerMap.size} &a√")
         consoleMessage("&e┣&7Status loaded &e${statusMap.size} &a√")
-        onlinePlayers.forEach {
-            autoCheckStatus(it)
-        }
+        onlinePlayers.forEach(::autoCheckStatus)
     }
 
     fun load(key: String, configurationSection: ConfigurationSection): IActionState {
@@ -141,6 +159,7 @@ object StateManager {
     @SubscribeEvent
     private fun quit(e: PlayerQuitEvent) {
         playerDataMap.remove(e.player.uniqueId)?.nowRunningState?.stop()
+        statusCheckGeneration.remove(e.player.uniqueId)
         // 清理节流 Map 中该玩家的数据
         keyPressThrottleMap.keys.removeIf { it.startsWith("${e.player.uniqueId}_") }
         // 清理玩家的隐藏手部任务
@@ -256,21 +275,21 @@ object StateManager {
             autoCheckStatus(e.player)
         }
         if (e.identifier == "OrryxState") {
-            when(e.data[0]) {
+            when (e.data.getOrNull(0)) {
                 "InvisibleHand" -> {
-                    val invisible = e.data[1].cbool
+                    val invisible = e.data.getOrNull(1)?.let { runCatching { it.cbool }.getOrNull() } ?: return
                     if (invisible) {
-                        val tick = e.data[2].clong
-                        setInvisibleHand(e.player, tick)
+                        val tick = e.data.getOrNull(2)?.let { runCatching { it.clong }.getOrNull() } ?: return
+                        setInvisibleHand(e.player, tick.coerceAtLeast(0L))
                     } else {
                         cancelInvisibleHand(e.player)
                     }
                 }
                 "PlayHand" -> {
-                    val animation = e.data[1]
-                    val tick = e.data[2].clong
-                    val speed = e.data[3].cfloat
-                    setPlayHand(e.player, animation, tick, speed)
+                    val animation = e.data.getOrNull(1) ?: return
+                    val tick = e.data.getOrNull(2)?.let { runCatching { it.clong }.getOrNull() } ?: return
+                    val speed = e.data.getOrNull(3)?.let { runCatching { it.cfloat }.getOrNull() } ?: return
+                    setPlayHand(e.player, animation, tick.coerceAtLeast(0L), speed)
                 }
                 "stopAttack" -> {
                     e.player.keySetting {
@@ -373,19 +392,25 @@ object StateManager {
     fun autoCheckStatus(player: Player): CompletableFuture<Status?> {
         val data = playerDataMap.getOrPut(player.uniqueId) { PlayerData(player) }
         val future = CompletableFuture<Status?>()
-        val matchedStatus = java.util.concurrent.CopyOnWriteArrayList<Status>()
-        CompletableFuture.allOf(
-            *statusMap.values.map { status ->
-                status.options.getCondition(player).thenAccept { bool ->
-                    val bool = bool.cbool
-                    if (bool) {
-                        matchedStatus.add(status)
-                    }
+        val generation = statusCheckGeneration.computeIfAbsent(player.uniqueId) { AtomicLong() }.incrementAndGet()
+        val ordered = statusMap.values.sortedWith(compareByDescending<Status> { it.options.priority }.thenBy { it.key })
+        val checks = ordered.map { status ->
+            status.options.getCondition(player).handle { value, throwable ->
+                if (throwable != null) {
+                    warning("Status '${status.key}' 条件执行失败: ${throwable.message}")
+                    false
+                } else {
+                    value.cbool
                 }
-            }.toTypedArray()
-        ).whenComplete { _, _ ->
+            }
+        }
+        CompletableFuture.allOf(*checks.toTypedArray()).whenComplete { _, _ ->
             ensureSync {
-                val selected = matchedStatus.firstOrNull()
+                if (statusCheckGeneration[player.uniqueId]?.get() != generation || !player.isOnline) {
+                    future.complete(null)
+                    return@ensureSync
+                }
+                val selected = ordered.indices.firstOrNull { checks[it].getNow(false) }?.let(ordered::get)
                 data.setStatus(selected)
                 future.complete(selected)
             }

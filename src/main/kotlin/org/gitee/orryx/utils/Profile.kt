@@ -11,13 +11,15 @@ fun Player.orryxProfile(): CompletableFuture<IPlayerProfile> {
 }
 
 inline fun <T> Player.orryxProfileTo(crossinline func: (profile: IPlayerProfile) -> T): CompletableFuture<T> {
-    return orryxProfile().thenApply {
+    return orryxProfile().thenApplyMain {
         func(it)
     }
 }
 
 inline fun <T> Player.orryxProfile(crossinline func: (profile: IPlayerProfile) -> CompletionStage<T>?): CompletableFuture<T> {
-    return orryxProfile().thenCompose {
-        func(it)
+    return orryxProfile().thenComposeMain { profile ->
+        func(profile) ?: CompletableFuture<T>().also {
+            it.completeExceptionally(IllegalStateException("Profile callback returned null CompletionStage"))
+        }
     }
 }

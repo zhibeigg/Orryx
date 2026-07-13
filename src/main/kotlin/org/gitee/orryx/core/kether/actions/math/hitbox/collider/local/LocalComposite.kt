@@ -1,8 +1,10 @@
 package org.gitee.orryx.core.kether.actions.math.hitbox.collider.local
 
+import org.gitee.orryx.api.collider.IAABB
 import org.gitee.orryx.api.collider.local.ICoordinateConverter
 import org.gitee.orryx.api.collider.local.ILocalCollider
 import org.gitee.orryx.api.collider.local.ILocalComposite
+import org.gitee.orryx.core.kether.actions.math.hitbox.collider.basic.AABBPlus
 import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.utils.Tuple2
 import org.gitee.orryx.utils.paired
@@ -20,6 +22,9 @@ open class LocalComposite<T : ITargetLocation<*>, C : ILocalCollider<T>>(
     private val colliderNames = ArrayList<String>()
     private val globalPosition = Vector3d()
     private val globalRotation = Quaterniond()
+    private val fastCenter = Vector3d()
+    private val fastExtents = Vector3d()
+    private val fastBounds = AABBPlus<T>(fastExtents, fastCenter)
 
     /** 0 - 中心点, 1 - 旋转 */
     private val version = ShortArray(2)
@@ -186,6 +191,35 @@ open class LocalComposite<T : ITargetLocation<*>, C : ILocalCollider<T>>(
         return colliderMap.containsKey(name)
     }
 
+    override val fastCollider: IAABB<T>?
+        get() {
+            update()
+            var minX = Double.POSITIVE_INFINITY
+            var minY = Double.POSITIVE_INFINITY
+            var minZ = Double.POSITIVE_INFINITY
+            var maxX = Double.NEGATIVE_INFINITY
+            var maxY = Double.NEGATIVE_INFINITY
+            var maxZ = Double.NEGATIVE_INFINITY
+            var hasCollider = false
+            for (collider in colliders) {
+                if (collider.disable()) continue
+                val bounds = collider.fastCollider ?: return null
+                val min = bounds.min
+                val max = bounds.max
+                minX = kotlin.math.min(minX, min.x)
+                minY = kotlin.math.min(minY, min.y)
+                minZ = kotlin.math.min(minZ, min.z)
+                maxX = kotlin.math.max(maxX, max.x)
+                maxY = kotlin.math.max(maxY, max.y)
+                maxZ = kotlin.math.max(maxZ, max.z)
+                hasCollider = true
+            }
+            if (!hasCollider) return null
+            fastCenter.set((minX + maxX) / 2.0, (minY + maxY) / 2.0, (minZ + maxZ) / 2.0)
+            fastExtents.set((maxX - minX) / 2.0, (maxY - minY) / 2.0, (maxZ - minZ) / 2.0)
+            return fastBounds
+        }
+
     override fun setDisable(disable: Boolean) {
         this.disable = disable
     }
@@ -210,11 +244,11 @@ open class LocalComposite<T : ITargetLocation<*>, C : ILocalCollider<T>>(
             dirty[1] = false
             version[0] = parent.positionVersion()
             version[1] = parent.rotationVersion()
-            child.update()
             val position = parent.position
             val rotation = parent.rotation
             rotation.transform(localPosition, globalPosition).add(position)
             rotation.mul(localRotation, globalRotation)
+            child.update()
         }
     }
 }

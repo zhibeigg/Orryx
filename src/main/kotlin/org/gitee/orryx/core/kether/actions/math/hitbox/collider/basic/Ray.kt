@@ -13,7 +13,7 @@ class Ray<T : ITargetLocation<*>>(
     private var disable = false
 
     override val end: Vector3d
-        get() = Vector3d(origin).add(direction.mul(length))
+        get() = Vector3d(origin).add(Vector3d(direction).mul(length))
 
     override fun setDisable(disable: Boolean) {
         this.disable = disable

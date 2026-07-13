@@ -13,7 +13,6 @@ import org.gitee.orryx.utils.toTarget
 import taboolib.common.platform.function.adaptLocation
 import taboolib.module.effect.createLine
 import taboolib.module.kether.ScriptContext
-import kotlin.math.abs
 
 object OrientedBoundingBox: ISelectorGeometry {
 
@@ -42,52 +41,21 @@ object OrientedBoundingBox: ISelectorGeometry {
 
         if (!pitch) { location.pitch = 0f }
 
-        // 方向向量生成
-        val vectorZ1 = location.direction.clone().setY(0).normalize().crossProduct(Vector(0, 1, 0)).normalize()
-        val vectorX1 = location.direction.clone().normalize()
-        val vectorY1 = vectorZ1.clone().crossProduct(vectorX1)
+        val axes = GeometryBroadPhase.basis(location.direction) ?: return emptyList()
+        val center = location.toVector()
+            .add(axes[0].clone().multiply(forward))
+            .add(axes[1].clone().multiply(offsetY))
+        val box = GeometryBroadPhase.orientedBox(
+            center,
+            axes,
+            Vector(long / 2.0, high / 2.0, wide / 2.0)
+        )
+        val bounds = GeometryBroadPhase.Bounds(center, box.broadHalfExtents)
 
-        // OBB参数计算
-        val obbCenterLocation = location.clone()
-            .add(vectorX1.clone().multiply(forward))
-            .add(vectorY1.clone().multiply(offsetY))
-        val obbCenter = obbCenterLocation.toVector()
-        val obbExtents = Triple(long, high, wide)
-
-        fun overlapOnAxis(axis: Vector, t: Vector, aabbExtents: Triple<Double, Double, Double>): Boolean {
-            val projection = abs(t.dot(axis))
-            val rObb = (obbExtents.first / 2) * abs(axis.dot(vectorX1)) +
-                    (obbExtents.second / 2) * abs(axis.dot(vectorY1)) +
-                    (obbExtents.third / 2) * abs(axis.dot(vectorZ1))
-            val rAabb = aabbExtents.first * abs(axis.x) +
-                    aabbExtents.second * abs(axis.y) +
-                    aabbExtents.third * abs(axis.z)
-            return projection <= rObb + rAabb + 1e-6
-        }
-
-        val entities = origin.world.livingEntities
-
-        return entities.filter { entity ->
-            val entityLoc = entity.location
-            val aabbCenter = Vector(entityLoc.x, entityLoc.y + entity.height / 2, entityLoc.z)
-            val aabbExtents = Triple(entity.width / 2, entity.height / 2, entity.width / 2)
-            val t = aabbCenter.subtract(obbCenter)
-
-            // 分离轴检测（轴列表与计算逻辑不变）
-            val axisList = mutableListOf(
-                vectorX1, vectorY1, vectorZ1,
-                Vector(1.0, 0.0, 0.0), Vector(0.0, 1.0, 0.0), Vector(0.0, 0.0, 1.0)
-            ).apply {
-                arrayOf(vectorX1, vectorY1, vectorZ1).forEach { a ->
-                    arrayOf(Vector(1.0, 0.0, 0.0), Vector(0.0, 1.0, 0.0), Vector(0.0, 0.0, 1.0)).forEach { b ->
-                        val cross = a.clone().crossProduct(b)
-                        if (cross.lengthSquared() > 1e-6) add(cross.normalize())
-                    }
-                }
-            }
-
-            axisList.all { axis -> overlapOnAxis(axis, t, aabbExtents) }
-        }.map { it.toTarget() }
+        return GeometryBroadPhase.nearbyLivingEntities(origin.world, bounds)
+            .filter { box.intersects(GeometryBroadPhase.entityBounds(it)) }
+            .map { it.toTarget() }
+            .toList()
     }
 
     override fun aFrameShowLocations(context: ScriptContext, parameter: StringParser.Entry): List<taboolib.common.util.Location> {
@@ -104,9 +72,10 @@ object OrientedBoundingBox: ISelectorGeometry {
 
         val list = mutableListOf<taboolib.common.util.Location>()
 
-        val vectorZ1 = location.direction.clone().setY(0).normalize().crossProduct(Vector(0, 1, 0)).normalize()
-        val vectorX1 = location.direction.clone().normalize()
-        val vectorY1 = vectorZ1.clone().crossProduct(vectorX1)
+        val axes = GeometryBroadPhase.basis(location.direction) ?: return emptyList()
+        val vectorX1 = axes[0]
+        val vectorY1 = axes[1]
+        val vectorZ1 = axes[2]
 
         val upFLeft = adaptLocation(location.clone().add(vectorX1.clone().multiply(forward + long / 2)).add(vectorY1.clone().multiply(offsetY + high / 2)).add(vectorZ1.clone().multiply(- wide / 2)))
         val upFRight = adaptLocation(location.clone().add(vectorX1.clone().multiply(forward + long / 2)).add(vectorY1.clone().multiply(offsetY + high / 2)).add(vectorZ1.clone().multiply(wide / 2)))

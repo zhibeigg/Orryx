@@ -32,11 +32,16 @@ object AiActions {
         npcMap.clear()
         config.reload()
         config.getKeys(false).forEach { key ->
-            val name = config.getString("$key.name")!!.colored()
-            val system = config.getString("$key.system")!!
-            val model = config.getString("$key.model")!!
-            val maxTokens = config.getInt("$key.maxTokens", 64)
-            val temperature = config.getDouble("$key.temperature")
+            val name = config.getString("$key.name")?.colored()
+            val system = config.getString("$key.system")
+            val model = config.getString("$key.model")
+            if (name == null || system == null || model == null) {
+                consoleMessage("&c[AI] 跳过配置不完整的 NPC: $key")
+                return@forEach
+            }
+            val maxTokens = config.getInt("$key.maxTokens", 64).coerceAtLeast(1)
+            val configuredTemperature = config.getDouble("$key.temperature", 1.0)
+            val temperature = configuredTemperature.takeIf(Double::isFinite)?.coerceIn(0.0, 2.0) ?: 1.0
             npcMap[key] = Npc(key, name, system, model, maxTokens, temperature)
         }
         consoleMessage("&e┣&7Npc loaded &e${npcMap.size} &a√")

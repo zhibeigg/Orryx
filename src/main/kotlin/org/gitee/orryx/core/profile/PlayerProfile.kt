@@ -12,8 +12,10 @@ import org.gitee.orryx.core.GameManager
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.dao.cache.ISyncCacheManager
 import org.gitee.orryx.dao.cache.MemoryCache
+import org.gitee.orryx.dao.persistence.PersistenceManager
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
-import org.gitee.orryx.dao.storage.IStorageManager
+import org.gitee.orryx.utils.mainThreadFuture
+import org.gitee.orryx.utils.runOnMainThread
 import org.gitee.orryx.utils.toSerializable
 import taboolib.common.platform.function.isPrimaryThread
 import java.util.*
@@ -45,8 +47,13 @@ class PlayerProfile(
         val event = OrryxPlayerFlagChangeEvents.Pre(player, this, flagName, privateFlags[flagName], flag)
         if (event.call()) {
             event.oldFlag?.cancel(player, event.flagName)
-            privateFlags[event.flagName] = event.newFlag
-            event.newFlag?.init(player, event.flagName)
+            val newFlag = event.newFlag
+            if (newFlag == null) {
+                privateFlags.remove(event.flagName)
+            } else {
+                privateFlags[event.flagName] = newFlag
+                newFlag.init(player, event.flagName)
+            }
             if (save && (event.oldFlag?.isPersistence == true || event.newFlag?.isPersistence == true)) {
                 save(isPrimaryThread) {
                     OrryxPlayerFlagChangeEvents.Post(player, this, event.flagName, event.oldFlag, event.newFlag).call()
@@ -59,6 +66,16 @@ class PlayerProfile(
 
     override fun getFlag(flagName: String): IFlag? {
         return privateFlags[flagName]
+    }
+
+    /** 系统保留 Flag 的内部写入口，不触发可取消的通用 Flag 事件。 */
+    internal fun replaceSystemFlag(player: Player, flagName: String, flag: IFlag?) {
+        require(player.uniqueId == uuid) { "玩家与 Profile 不匹配" }
+        privateFlags.remove(flagName)?.cancel(player, flagName)
+        if (flag != null) {
+            privateFlags[flagName] = flag
+            flag.init(player, flagName)
+        }
     }
 
     override fun removeFlag(flagName: String, save: Boolean): IFlag? {
@@ -117,59 +134,64 @@ class PlayerProfile(
     }
 
     override fun setJob(job: IPlayerJob) {
-        if (OrryxPlayerJobChangeEvents.Pre(player, job).call()) {
-            privateJob = job.key
-            val profilePO = createPO()
-            val jobPO = job.createPO()
-            val doSave = {
-                try {
-                    IStorageManager.INSTANCE.savePlayerDataAndJob(profilePO, jobPO) {
-                        ISyncCacheManager.INSTANCE.removePlayerProfile(player.uniqueId)
-                        MemoryCache.removePlayerProfile(player.uniqueId)
-                        ISyncCacheManager.INSTANCE.removePlayerJob(player.uniqueId, id, job.key)
-                        MemoryCache.removePlayerJob(player.uniqueId, id, job.key)
-                        OrryxPlayerJobChangeEvents.Post(player, job).call()
-                    }
-                } catch (e: Throwable) {
-                    e.printStackTrace()
-                }
+        mainThreadFuture {
+            val onlinePlayer = player
+            if (!OrryxPlayerJobChangeEvents.Pre(onlinePlayer, job).call()) {
+                return@mainThreadFuture null
             }
-            if (isPrimaryThread && !GameManager.shutdown) {
-                OrryxAPI.ioScope.launch { doSave() }
+            privateJob = job.key
+            Triple(onlinePlayer, createPO(), job.createPO())
+        }.thenCompose { context ->
+            if (context == null) {
+                java.util.concurrent.CompletableFuture.completedFuture(null)
             } else {
-                doSave()
+                PersistenceManager.saveProfileAndJob(context.second, context.third, invalidate = true)
+                    .thenApply { context }
+            }
+        }.whenComplete { context, throwable ->
+            if (throwable != null) {
+                throwable.printStackTrace()
+            } else if (context != null) {
+                runOnMainThread {
+                    OrryxPlayerJobChangeEvents.Post(context.first, job).call()
+                }
             }
         }
     }
 
     override fun createPO(): PlayerProfilePO {
-        return PlayerProfilePO(id, player.uniqueId, job, point, privateFlags.filter { it.value.isPersistence }.mapValues { it.value.toSerializable() })
+        return PlayerProfilePO(id, uuid, job, point, privateFlags.filter { it.value.isPersistence }.mapValues { it.value.toSerializable() })
     }
 
     override fun save(async: Boolean, remove: Boolean, callback: Runnable) {
-        val event = OrryxPlayerProfileSaveEvents.Pre(player, this, async, remove)
-        event.call()
-        val data = createPO()
-        fun remove() {
-            if (event.remove) {
-                ISyncCacheManager.INSTANCE.removePlayerProfile(player.uniqueId)
-                MemoryCache.removePlayerProfile(player.uniqueId)
-            }
-        }
-        if (event.async && !GameManager.shutdown) {
-            OrryxAPI.ioScope.launch {
-                IStorageManager.INSTANCE.savePlayerData(data) {
-                    remove()
+        mainThreadFuture {
+            val onlinePlayer = player
+            val event = OrryxPlayerProfileSaveEvents.Pre(onlinePlayer, this, async, remove)
+            event.call()
+            SaveContext(onlinePlayer, event.async, event.remove, createPO())
+        }.thenCompose { context ->
+            PersistenceManager.saveProfile(context.data, context.remove).thenApply { context }
+        }.whenComplete { context, throwable ->
+            if (throwable != null) {
+                throwable.printStackTrace()
+            } else {
+                runOnMainThread {
                     callback.run()
-                    OrryxPlayerProfileSaveEvents.Post(player, this@PlayerProfile, event.async, event.remove).call()
+                    OrryxPlayerProfileSaveEvents.Post(
+                        context.player,
+                        this@PlayerProfile,
+                        context.async,
+                        context.remove,
+                    ).call()
                 }
-            }
-        } else {
-            IStorageManager.INSTANCE.savePlayerData(data) {
-                remove()
-                callback.run()
-                OrryxPlayerProfileSaveEvents.Post(player, this, event.async, event.remove).call()
             }
         }
     }
+
+    private data class SaveContext(
+        val player: Player,
+        val async: Boolean,
+        val remove: Boolean,
+        val data: PlayerProfilePO,
+    )
 }

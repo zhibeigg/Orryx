@@ -89,7 +89,6 @@ class BlockState(override val key: String, configurationSection: ConfigurationSe
             getNearPlayers(data.player) { viewer ->
                 IAnimationBridge.INSTANCE.setPlayerAnimation(viewer, data.player, state.animation.key, 1f)
             }
-            ISpiritManager.INSTANCE.takeSpirit(data.player, state.spirit)
             state.runScript(data) { context = this }
             task = submit(delay = state.check.first) {
                 state.blockTypes.forEach { blockType ->

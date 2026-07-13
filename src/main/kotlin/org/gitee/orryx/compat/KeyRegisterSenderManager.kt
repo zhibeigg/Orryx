@@ -15,12 +15,12 @@ import org.gitee.orryx.utils.GermPluginPlugin
 object KeyRegisterSenderManager {
 
     private val cachedSender: IKeyRegisterSender? by lazy {
-        when {
-            GermPluginPlugin.isEnabled -> GermKeyRegisterSender()
-            DragonCorePlugin.isEnabled -> DragonCoreKeyRegisterSender()
-            ArcartXPlugin.isEnabled -> ArcartXKeyRegisterSender()
-            else -> null
-        }
+        CompatGuard.firstAvailable(
+            default = { null },
+            { GermPluginPlugin.isEnabled } to { GermKeyRegisterSender() },
+            { DragonCorePlugin.isEnabled } to { DragonCoreKeyRegisterSender() },
+            { ArcartXPlugin.isEnabled } to { ArcartXKeyRegisterSender() },
+        )
     }
 
     /**

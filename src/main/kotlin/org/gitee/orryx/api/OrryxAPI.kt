@@ -2,6 +2,7 @@ package org.gitee.orryx.api
 
 import kotlinx.coroutines.*
 import org.gitee.orryx.api.interfaces.*
+import org.gitee.orryx.utils.minecraftMain
 import taboolib.common.env.RuntimeDependencies
 import taboolib.common.env.RuntimeDependency
 import taboolib.common.platform.PlatformFactory
@@ -96,42 +97,17 @@ class OrryxAPI: IOrryxAPI {
 
         internal val ioScope by lazy { CoroutineScope(Dispatchers.IO + ioJob + exceptionHandler + CoroutineName("orryx-io")) }
         internal val effectScope by lazy { CoroutineScope(Dispatchers.Default + effectJob + exceptionHandler + CoroutineName("orryx-effect")) }
-        internal val pluginScope by lazy { CoroutineScope(Dispatchers.Default + pluginJob + exceptionHandler + CoroutineName("orryx-plugin")) }
+        internal val pluginScope by lazy { CoroutineScope(Dispatchers.minecraftMain + pluginJob + exceptionHandler + CoroutineName("orryx-plugin")) }
 
         /**
          * 优雅关闭所有协程作用域
          * @param timeout 等待协程完成的超时时间（秒）
          */
-        internal fun shutdownScopes(timeout: Long = 5) {
-            // 先取消所有子协程，给它们发送取消信号
-            ioJob.cancelChildren()
-            effectJob.cancelChildren()
-            pluginJob.cancelChildren()
-
-            // 在独立线程中等待，避免阻塞主线程导致死锁
-            val latch = java.util.concurrent.CountDownLatch(1)
-            Thread({
-                runBlocking {
-                    try {
-                        withTimeout(timeout.seconds) {
-                            ioJob.children.forEach { it.join() }
-                            effectJob.children.forEach { it.join() }
-                            pluginJob.children.forEach { it.join() }
-                        }
-                    } catch (_: TimeoutCancellationException) {
-                        // 超时后强制取消
-                    }
-                }
-                latch.countDown()
-            }, "orryx-shutdown").start()
-
-            // 主线程最多等待 timeout 秒
-            latch.await(timeout, java.util.concurrent.TimeUnit.SECONDS)
-
-            // 最终取消整个作用域
-            ioJob.cancel()
-            effectJob.cancel()
+        internal fun shutdownScopes(@Suppress("UNUSED_PARAMETER") timeout: Long = 5) {
+            // 生命周期关闭线程绝不等待 Future/协程；持久化和连接关闭在独立 runtime 完成后调用这里。
             pluginJob.cancel()
+            effectJob.cancel()
+            ioJob.cancel()
         }
     }
 }

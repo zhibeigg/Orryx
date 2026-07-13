@@ -2,7 +2,9 @@ package org.gitee.orryx.core.skill.caster
 
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.kether.parameter.SkillParameter
+import org.gitee.orryx.core.skill.CastResult
 import org.gitee.orryx.core.skill.ISkill
+import java.util.concurrent.CompletableFuture
 
 /**
  * 技能释放器接口。
@@ -27,5 +29,5 @@ interface ISkillCaster {
      * @param parameter 技能参数
      * @param consume 是否消耗资源（冷却、法力等）
      */
-    fun cast(skill: ISkill, player: Player, parameter: SkillParameter, consume: Boolean)
+    fun cast(skill: ISkill, player: Player, parameter: SkillParameter, consume: Boolean): CompletableFuture<CastResult>
 }

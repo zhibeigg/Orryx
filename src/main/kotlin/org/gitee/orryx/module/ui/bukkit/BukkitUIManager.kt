@@ -11,8 +11,10 @@ import org.gitee.orryx.core.key.BindKeyLoaderManager.getBindKey
 import org.gitee.orryx.module.ui.ISkillHud
 import org.gitee.orryx.module.ui.ISkillUI
 import org.gitee.orryx.module.ui.IUIManager
+import org.gitee.orryx.module.ui.bukkit.BukkitSkillHud.Companion.bukkitSkillHudByViewer
 import org.gitee.orryx.module.ui.bukkit.BukkitSkillHud.Companion.bukkitSkillHudMap
 import org.gitee.orryx.module.ui.bukkit.BukkitSkillHud.Companion.getViewerHud
+import org.gitee.orryx.module.ui.bukkit.BukkitSkillHud.Companion.hasViewerHud
 import org.gitee.orryx.module.ui.bukkit.BukkitSkillHud.Companion.slotIndex
 import org.gitee.orryx.module.ui.bukkit.BukkitSkillHud.Companion.slots
 import org.gitee.orryx.utils.loadFromFile
@@ -37,11 +39,7 @@ class BukkitUIManager: IUIManager {
     init {
         BukkitSkillUI.ui = BukkitSkillUI.Companion.UI(config.getConfigurationSection("SkillUI")!!)
         val task = submit(period = 5) {
-            bukkitSkillHudMap.forEach {
-                it.value.forEach { map ->
-                    map.value.update()
-                }
-            }
+            bukkitSkillHudByViewer.values.forEach { it.refreshTick() }
         }
 
         Database.prepareClose {
@@ -59,9 +57,9 @@ class BukkitUIManager: IUIManager {
         }
 
         registerBukkitListener(PlayerQuitEvent::class.java) { e ->
-            bukkitSkillHudMap.remove(e.player.uniqueId)?.forEach {
-                it.value.close()
-            }
+            val viewerHud = getViewerHud(e.player)
+            val ownerHuds = bukkitSkillHudMap[e.player.uniqueId]?.values?.toList().orEmpty()
+            (ownerHuds + listOfNotNull(viewerHud)).toSet().forEach { it.close() }
         }
 
         registerBukkitListener(InventoryClickEvent::class.java) { e ->
@@ -70,7 +68,7 @@ class BukkitUIManager: IUIManager {
                 DOUBLE_CLICK, LEFT, RIGHT, MIDDLE, WINDOW_BORDER_LEFT, SHIFT_LEFT, SHIFT_RIGHT, WINDOW_BORDER_RIGHT, CREATIVE, DROP, CONTROL_DROP, SWAP_OFFHAND, UNKNOWN -> {
                     if (e.rawSlot in slots) {
                         getBindKey("MC" + (slots.indexOf(e.rawSlot) + 1)) ?: return@registerBukkitListener
-                        if (bukkitSkillHudMap.any { it.value.containsKey(e.view.player.uniqueId) }) {
+                        if (hasViewerHud(e.view.player.uniqueId)) {
                             e.isCancelled = true
                         }
                     }
@@ -78,7 +76,7 @@ class BukkitUIManager: IUIManager {
                 NUMBER_KEY -> {
                     if (e.hotbarButton in slotIndex) {
                         getBindKey("MC" + (e.hotbarButton + 1)) ?: return@registerBukkitListener
-                        if (bukkitSkillHudMap.any { it.value.containsKey(e.view.player.uniqueId) }) {
+                        if (hasViewerHud(e.view.player.uniqueId)) {
                             e.isCancelled = true
                         }
                     }
@@ -90,7 +88,7 @@ class BukkitUIManager: IUIManager {
             if (e.isCancelled) return@registerBukkitListener
             if (e.rawSlots.any { it in slots }) {
                 if (e.rawSlots.any { getBindKey("MC" + (slots.indexOf(it) + 1)) != null }) {
-                    if (bukkitSkillHudMap.any { it.value.containsKey(e.view.player.uniqueId) }) {
+                    if (hasViewerHud(e.view.player.uniqueId)) {
                         e.isCancelled = true
                     }
                 }

@@ -45,7 +45,6 @@ class DodgeState(override val key: String, configurationSection: ConfigurationSe
         private var context: ScriptContext? = null
 
         override fun start() {
-            ISpiritManager.INSTANCE.takeSpirit(data.player, state.spirit)
             state.runScript(data) { context = this }
             val key = when(data.moveState) {
                 FRONT -> state.animation.front

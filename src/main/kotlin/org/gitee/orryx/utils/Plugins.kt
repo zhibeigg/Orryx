@@ -1,6 +1,7 @@
 package org.gitee.orryx.utils
 
 import org.bukkit.Bukkit
+import org.gitee.orryx.compat.CompatGuard
 import taboolib.common.platform.function.console
 import taboolib.module.lang.sendLang
 
@@ -14,8 +15,11 @@ class Plugin(val name: String, val extensionFunction: () -> Unit = {}) {
 
     fun load() {
         if (isEnabled) {
-            extensionFunction()
-            console().sendLang("hook-true", name)
+            val loaded = CompatGuard.linkageFallback(name, { false }) {
+                extensionFunction()
+                true
+            }
+            console().sendLang(if (loaded) "hook-true" else "hook-false", name)
         } else {
             console().sendLang("hook-false", name)
         }

@@ -8,11 +8,12 @@ import org.gitee.orryx.api.adapters.IVector
 import org.gitee.orryx.api.adapters.entity.AbstractBukkitEntity
 import org.gitee.orryx.api.collider.local.ILocalCollider
 import org.gitee.orryx.core.kether.actions.game.projectile.Projectile.ProjectileType.*
+import org.gitee.orryx.core.kether.actions.math.hitbox.collider.basic.AABBPlus
 import org.gitee.orryx.core.kether.actions.math.hitbox.collider.local.LocalAABB
 import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.utils.*
 import org.joml.Vector3d
-import taboolib.common.platform.function.submitAsync
+import taboolib.common.platform.function.submit
 import taboolib.common.platform.function.warning
 import taboolib.common.platform.service.PlatformExecutor
 import taboolib.library.kether.ParsedAction
@@ -20,7 +21,6 @@ import taboolib.library.kether.QuestContext
 import taboolib.module.kether.run
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ConcurrentHashMap
 
 class Projectile<T: ITargetLocation<*>>(
     val type: ProjectileType,
@@ -42,21 +42,22 @@ class Projectile<T: ITargetLocation<*>>(
 
     val removed = CompletableFuture<Boolean>()
 
-    lateinit var task: PlatformExecutor.PlatformTask
+    private var task: PlatformExecutor.PlatformTask? = null
     private var ticked = -period
     private var hitCount = 0
-    private var hitCountMap = ConcurrentHashMap<UUID, Int>()
+    private val hitCountMap = HashMap<UUID, Int>()
 
     fun start(frame: QuestContext.Frame) {
         ensureSync {
-            val entity = source.getBukkitLivingEntity() ?: return@ensureSync
-            entity.setGravity(true)
-            entity.addPotionEffect(PotionEffect(PotionEffectType.LEVITATION, timeout.toInt(), -1, false, false))
-        }
-        task = submitAsync(delay = period, period = period) {
+            source.getBukkitLivingEntity()?.let { entity ->
+                entity.setGravity(true)
+                entity.addPotionEffect(PotionEffect(PotionEffectType.LEVITATION, timeout.toInt(), -1, false, false))
+            }
+            task = submit(delay = period, period = period) {
+                nextTick(frame)
+            }
             nextTick(frame)
         }
-        nextTick(frame)
     }
 
     fun validCheck() {
@@ -155,8 +156,20 @@ class Projectile<T: ITargetLocation<*>>(
 
     fun checkHitEntity(onHit: (IEntity) -> Unit): Boolean {
         if (hitEntity) {
-            val length = hitbox.fastCollider?.halfExtents?.length() ?: return false
-            val entities = source.world.getNearbyEntities(source.location, length, length, length)
+            val broadPhase = hitbox.fastCollider ?: return false
+            val center = broadPhase.center
+            val halfExtents = broadPhase.halfExtents
+            val queryCenter = source.location.clone().apply {
+                x = center.x
+                y = center.y
+                z = center.z
+            }
+            val entities = source.world.getNearbyEntities(
+                queryCenter,
+                halfExtents.x.coerceAtLeast(0.0),
+                halfExtents.y.coerceAtLeast(0.0),
+                halfExtents.z.coerceAtLeast(0.0),
+            )
             entities.forEach {
                 if (it.uniqueId == source.uniqueId) return@forEach
                 val abstract = it.abstract()
@@ -187,7 +200,7 @@ class Projectile<T: ITargetLocation<*>>(
     fun remove() {
         if (removed.isDone) return
         removed.complete(true)
-        task.cancel()
+        task?.cancel()
         ensureSync {
             if (source.isValid) {
                 source.remove()

@@ -1,4 +1,6 @@
-# Orryx API 开发文档
+# Orryx API
+
+> 2.45.116：数据库与 Redis I/O 始终异步；Profile、Job、Skill、Key 的保存按玩家串行并通过 `CompletableFuture` 传播失败，Bukkit Post 事件与兼容 callback 会切回主线程。Mana/Spirit 不足时不会修改余额，技能消费、冷却与脚本启动按玩家串行。 开发文档
 
 > 本文档面向 Kotlin/Java 开发者，帮助您使用 Orryx API 进行二次开发。
 

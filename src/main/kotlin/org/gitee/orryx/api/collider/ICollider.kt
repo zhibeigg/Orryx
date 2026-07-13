@@ -9,7 +9,7 @@ import org.gitee.orryx.core.targets.ITargetLocation
  *
  * @param T 目标位置类型
  * @property type 碰撞箱类型
- * @property fastCollider 快速 AABB 碰撞箱，为 null 时不进行快速排除
+ * @property fastCollider 保守覆盖当前碰撞体的快速 AABB；实现应复用稳定实例并在状态变化时更新，为 null 时不进行快速排除。调用方不得修改返回值
  */
 interface ICollider<T: ITargetLocation<*>> {
 

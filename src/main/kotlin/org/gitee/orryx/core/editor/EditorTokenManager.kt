@@ -1,23 +1,19 @@
 package org.gitee.orryx.core.editor
 
 import org.gitee.orryx.core.common.NanoId
+import java.util.concurrent.CompletableFuture
 
-/**
- * 编辑器 Token 管理器
- * 生成 Token 并注册到中心服务器
- */
+/** 编辑器 Token 管理器。 */
 object EditorTokenManager {
 
-    /**
-     * 生成 Token 并注册到中心服务器，返回编辑器 URL
-     * @param playerName 请求编辑器的玩家名
-     * @return 编辑器 URL，如果未连接中心服务器则返回 null
-     */
-    fun generateEditorUrl(playerName: String): String? {
-        if (!EditorClient.isConnected()) return null
+    /** 只有中心服务器确认 Token 注册成功后才返回 URL。 */
+    fun generateEditorUrl(playerName: String): CompletableFuture<String?> {
+        if (!EditorClient.isRegistered()) return CompletableFuture.completedFuture(null)
         val token = NanoId.generate(size = 16)
-        EditorClient.registerToken(token, playerName)
-        val baseUrl = EditorClient.getEditorUrl().trimEnd('/')
-        return "$baseUrl/?token=$token"
+        return EditorClient.registerToken(token, playerName).thenApply { registered ->
+            if (!registered) return@thenApply null
+            val baseUrl = EditorClient.getEditorUrl().trimEnd('/')
+            "$baseUrl/?token=$token"
+        }
     }
 }

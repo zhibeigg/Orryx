@@ -245,14 +245,48 @@ fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(capsule: ICapsu
 }
 
 /**
- * 判断射线与AABB盒是否碰撞
+ * 判断有限线段与 AABB 是否碰撞。
  *
- * @param ray  射线
+ * 参数 t 被限制在 [0, 1]，不会把线段末端之外的无限延长线算作命中。
+ */
+fun segmentIntersectsAabb(start: Vector3d, end: Vector3d, min: Vector3d, max: Vector3d): Boolean {
+    var near = 0.0
+    var far = 1.0
+
+    fun clip(startValue: Double, delta: Double, minValue: Double, maxValue: Double): Boolean {
+        if (abs(delta) <= 1e-12) {
+            return startValue in minValue..maxValue
+        }
+        var first = (minValue - startValue) / delta
+        var second = (maxValue - startValue) / delta
+        if (first > second) {
+            val swap = first
+            first = second
+            second = swap
+        }
+        near = max(near, first)
+        far = min(far, second)
+        return near <= far
+    }
+
+    return clip(start.x, end.x - start.x, min.x, max.x) &&
+        clip(start.y, end.y - start.y, min.y, max.y) &&
+        clip(start.z, end.z - start.z, min.z, max.z)
+}
+
+private fun <T: ITargetLocation<*>> rayEnd(ray: IRay<T>): Vector3d {
+    return Vector3d(ray.direction).mul(ray.length).add(ray.origin)
+}
+
+/**
+ * 判断有限射线段与AABB盒是否碰撞
+ *
+ * @param ray  有限射线段
  * @param aabb AABB盒
  * @return 有碰撞返回true
  */
 fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(ray: IRay<T1>, aabb: IAABB<T2>): Boolean {
-    return Intersectiond.testRayAab(ray.origin, ray.direction, aabb.min, aabb.max)
+    return segmentIntersectsAabb(ray.origin, rayEnd(ray), aabb.min, aabb.max)
 }
 
 /**
@@ -264,7 +298,7 @@ fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(ray: IRay<T1>, 
  */
 fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(ray: IRay<T1>, sphere: ISphere<T2>): Boolean {
     val origin = ray.origin
-    val end = ray.end
+    val end = rayEnd(ray)
     val center = sphere.center
     return Intersectiond.testLineSegmentSphere(
         origin.x, origin.y, origin.z,
@@ -282,63 +316,27 @@ fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(ray: IRay<T1>, 
  * @return 有碰撞返回true
  */
 fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(ray: IRay<T1>, obb: IOBB<T2>): Boolean {
-    val origin = ray.origin
-    val direction = ray.direction
-    val v = Vector3d()
     val center = obb.center
     val axes = obb.axes
     val halfExtents = obb.halfExtents
-    val vertices = obb.vertices
-    // 判断不在 OBB 内
-    val centerDis = origin.sub(center, v)
-    val ray2ObbX = centerDis.dot(axes[0])
-    val ray2ObbY = centerDis.dot(axes[1])
-    val ray2ObbZ = centerDis.dot(axes[2])
-    val checkNotInside =
-        ray2ObbX < -halfExtents.x || ray2ObbX > halfExtents.x || ray2ObbY < -halfExtents.y || ray2ObbY > halfExtents.y || ray2ObbZ < -halfExtents.z || ray2ObbZ > halfExtents.z
-    // 判断反向情况
-    val checkFoward = center.sub(origin, v).dot(direction) < 0
-    if (checkNotInside && checkFoward) {
-        return false
+
+    fun toLocal(point: Vector3d): Vector3d {
+        val offset = point.sub(center, Vector3d())
+        return Vector3d(
+            offset.dot(axes[0]),
+            offset.dot(axes[1]),
+            offset.dot(axes[2])
+        )
     }
-    // 判断是否相交
-    val min = Vector3d()
-    val minP = vertices[4].sub(origin, v)
-    min.x = minP.dot(axes[0])
-    min.y = minP.dot(axes[1])
-    min.z = minP.dot(axes[2])
-    val max = Vector3d()
-    val maxP = vertices[2].sub(origin, v)
-    max.x = maxP.dot(axes[0])
-    max.y = maxP.dot(axes[1])
-    max.z = maxP.dot(axes[2])
-    val projection = Vector3d()
-    projection.x = 1 / direction.dot(axes[0])
-    projection.y = 1 / direction.dot(axes[1])
-    projection.z = 1 / direction.dot(axes[2])
-    val pMin = min.mul(projection)
-    val pMax = max.mul(projection)
-    if (projection.x < 0) {
-        val t = pMin.x
-        pMin.x = pMax.x
-        pMax.x = t
-    }
-    if (projection.y < 0) {
-        val t = pMin.y
-        pMin.y = pMax.y
-        pMax.y = t
-    }
-    if (projection.z < 0) {
-        val t = pMin.z
-        pMin.z = pMax.z
-        pMax.z = t
-    }
-    val n = max(max(pMin.x, pMin.y), pMin.z)
-    val f = min(min(pMax.x, pMax.y), pMax.z)
-    if (checkNotInside) {
-        return n < f && ray.length >= n
-    }
-    return true
+
+    val localStart = toLocal(ray.origin)
+    val localEnd = toLocal(rayEnd(ray))
+    return segmentIntersectsAabb(
+        localStart,
+        localEnd,
+        Vector3d(-halfExtents.x, -halfExtents.y, -halfExtents.z),
+        halfExtents
+    )
 }
 
 /**
@@ -352,7 +350,7 @@ fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(ray: IRay<T1>, 
     val halfHeight = capsule.height / 2.0
     val startPoint = capsule.direction.mul(-halfHeight, Vector3d()).add(capsule.center)
     val endPoint = capsule.direction.mul(halfHeight, Vector3d()).add(capsule.center)
-    val sqr = getClosestDistanceBetweenSegmentsSqr(ray.origin, ray.end, startPoint, endPoint)
+    val sqr = getClosestDistanceBetweenSegmentsSqr(ray.origin, rayEnd(ray), startPoint, endPoint)
     return sqr <= square(capsule.radius)
 }
 
@@ -365,7 +363,7 @@ fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(ray: IRay<T1>, 
  * @return 有碰撞返回true
  */
 fun <T1: ITargetLocation<*>, T2: ITargetLocation<*>> isColliding(ray: IRay<T1>, other: IRay<T2>): Boolean {
-    return isSegmentCross(ray.origin, ray.end, other.origin, other.end)
+    return isSegmentCross(ray.origin, rayEnd(ray), other.origin, rayEnd(other))
 }
 
 /**

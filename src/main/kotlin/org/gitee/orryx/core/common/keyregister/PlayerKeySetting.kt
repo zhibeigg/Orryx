@@ -10,8 +10,8 @@ import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.dao.cache.ISyncCacheManager
 import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.dao.cache.Saveable
+import org.gitee.orryx.dao.persistence.PersistenceManager
 import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
-import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.utils.LEFT_MENU
 import org.gitee.orryx.utils.MOUSE_LEFT
 import org.gitee.orryx.utils.MOUSE_RIGHT
@@ -64,31 +64,36 @@ class PlayerKeySetting(
     }
 
     override fun save(async: Boolean, remove: Boolean, callback: Runnable) {
-        val event = OrryxPlayerKeySettingSaveEvents.Pre(player, this, async, remove)
-        event.call()
-        val data = createPO()
-        fun remove() {
-            if (event.remove) {
-                ISyncCacheManager.INSTANCE.removePlayerKeySetting(player.uniqueId)
-                MemoryCache.removePlayerKeySetting(player.uniqueId)
-            }
-        }
-        if (event.async && !GameManager.shutdown) {
-            OrryxAPI.ioScope.launch {
-                IStorageManager.INSTANCE.savePlayerKey(data) {
-                    remove()
+        org.gitee.orryx.utils.mainThreadFuture {
+            val onlinePlayer = player
+            val event = OrryxPlayerKeySettingSaveEvents.Pre(onlinePlayer, this, async, remove)
+            event.call()
+            SaveContext(onlinePlayer, event.async, event.remove, createPO())
+        }.thenCompose { context ->
+            PersistenceManager.saveKey(context.data, context.remove).thenApply { context }
+        }.whenComplete { context, throwable ->
+            if (throwable != null) {
+                throwable.printStackTrace()
+            } else {
+                org.gitee.orryx.utils.runOnMainThread {
                     callback.run()
-                    OrryxPlayerKeySettingSaveEvents.Post(player, this@PlayerKeySetting, event.async, event.remove).call()
+                    OrryxPlayerKeySettingSaveEvents.Post(
+                        context.player,
+                        this@PlayerKeySetting,
+                        context.async,
+                        context.remove,
+                    ).call()
                 }
-            }
-        } else {
-            IStorageManager.INSTANCE.savePlayerKey(data) {
-                remove()
-                callback.run()
-                OrryxPlayerKeySettingSaveEvents.Post(player, this, event.async, event.remove).call()
             }
         }
     }
+
+    private data class SaveContext(
+        val player: Player,
+        val async: Boolean,
+        val remove: Boolean,
+        val data: PlayerKeySettingPO,
+    )
 
     override fun toString(): String {
         return "PlayerKeySetting(player=$player)"

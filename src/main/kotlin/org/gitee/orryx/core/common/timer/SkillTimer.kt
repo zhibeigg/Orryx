@@ -5,7 +5,9 @@ import org.bukkit.event.player.PlayerQuitEvent
 import org.gitee.orryx.api.events.player.skill.OrryxPlayerSkillCooldownEvents
 import org.gitee.orryx.core.kether.parameter.IParameter
 import org.gitee.orryx.core.kether.parameter.SkillParameter
+import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.utils.getSkill
+import org.gitee.orryx.utils.thenApplyMain
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.platform.function.adaptPlayer
@@ -18,6 +20,24 @@ object SkillTimer : ITimer {
 
     fun reset(player: Player, parameter: SkillParameter) {
         reset(adaptPlayer(player), parameter)
+    }
+
+    /** 已持有玩家技能实例时，在当前主线程原子设置冷却并同步派发事件。 */
+    fun reset(skill: IPlayerSkill, parameter: SkillParameter): Long {
+        val timeout = parameter.cooldownValue(true)
+        val amount = timeout.coerceAtLeast(0L)
+        val event = OrryxPlayerSkillCooldownEvents.Set.Pre(skill.player, skill, amount)
+        if (event.call()) {
+            val cooldownMap = getCooldownMap(adaptPlayer(skill.player))
+            cooldownMap.values.removeIf { entry -> entry.isReady }
+            if (event.amount <= 0L) {
+                cooldownMap.remove(skill.key)
+            } else {
+                cooldownMap[skill.key] = CooldownEntry(skill.key, event.amount)
+            }
+            OrryxPlayerSkillCooldownEvents.Set.Post(event.player, event.skill, event.amount).call()
+        }
+        return timeout
     }
 
     override fun reset(sender: ProxyCommandSender, parameter: IParameter): Long {
@@ -51,8 +71,8 @@ object SkillTimer : ITimer {
 
     override fun increase(sender: ProxyCommandSender, tag: String, amount: Long) {
         val player = sender.castSafely<Player>() ?: return
-        player.getSkill(tag).thenApply {
-            val event = OrryxPlayerSkillCooldownEvents.Increase.Pre(player, it ?: return@thenApply, amount)
+        player.getSkill(tag).thenApplyMain {
+            val event = OrryxPlayerSkillCooldownEvents.Increase.Pre(player, it ?: return@thenApplyMain, amount)
             if (event.call()) {
                 getCooldownMap(sender).let { map ->
                     map[tag]?.addDuration(event.amount) ?: run {
@@ -66,8 +86,8 @@ object SkillTimer : ITimer {
 
     override fun reduce(sender: ProxyCommandSender, tag: String, amount: Long) {
         val player = sender.castSafely<Player>() ?: return
-        player.getSkill(tag).thenApply {
-            val event = OrryxPlayerSkillCooldownEvents.Reduce.Pre(player, it ?: return@thenApply, amount)
+        player.getSkill(tag).thenApplyMain {
+            val event = OrryxPlayerSkillCooldownEvents.Reduce.Pre(player, it ?: return@thenApplyMain, amount)
             if (event.call()) {
                 getCooldownMap(sender)[tag]?.reduceDuration(event.amount)
                 OrryxPlayerSkillCooldownEvents.Reduce.Post(event.player, event.skill, event.amount).call()
@@ -77,8 +97,8 @@ object SkillTimer : ITimer {
 
     override fun set(sender: ProxyCommandSender, tag: String, amount: Long) {
         val player = sender.castSafely<Player>() ?: return
-        player.getSkill(tag).thenApply {
-            val event = OrryxPlayerSkillCooldownEvents.Set.Pre(player, it ?: return@thenApply, amount)
+        player.getSkill(tag).thenApplyMain {
+            val event = OrryxPlayerSkillCooldownEvents.Set.Pre(player, it ?: return@thenApplyMain, amount)
             if (event.call()) {
                 val cooldownMap = getCooldownMap(sender)
                 cooldownMap.values.removeIf { c -> c.isReady }

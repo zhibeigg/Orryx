@@ -8,6 +8,7 @@ import org.gitee.orryx.dao.pojo.PlayerJobPO
 import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
+import org.gitee.orryx.dao.persistence.PersistenceManager
 import org.gitee.orryx.utils.consoleMessage
 import taboolib.common.LifeCycle
 import taboolib.common.io.newFile
@@ -66,6 +67,10 @@ interface IStorageManager {
                 }
                 else -> error("未知的持久化数据库类型: $lazyType")
             }
+            INSTANCE.initializeAsync().exceptionally {
+                it.printStackTrace()
+                null
+            }
         }
 
         @Reload(1)
@@ -77,9 +82,22 @@ interface IStorageManager {
 
         @SubscribeEvent
         private fun quit(e: PlayerQuitEvent) {
-            (INSTANCE as? SqlLiteManager)?.quit(e.player.uniqueId)
+            val player = e.player.uniqueId
+            PersistenceManager.release(player).thenRun {
+                (INSTANCE as? SqlLiteManager)?.quit(player)
+            }
         }
     }
+
+    /**
+     * 异步初始化 DataSource 与数据表。
+     */
+    fun initializeAsync(): CompletableFuture<Unit> = CompletableFuture.completedFuture(Unit)
+
+    /**
+     * 等待未完成操作后异步关闭 DataSource。
+     */
+    fun closeAsync(): CompletableFuture<Unit> = CompletableFuture.completedFuture(Unit)
 
     /**
      * 从数据库获取玩家数据
@@ -128,21 +146,39 @@ interface IStorageManager {
      * @param playerProfilePO 玩家数据
      * @param onSuccess 成功时执行
      * */
-    fun savePlayerData(playerProfilePO: PlayerProfilePO, onSuccess: Runnable)
+    fun savePlayerDataAsync(playerProfilePO: PlayerProfilePO): CompletableFuture<Unit>
+
+    fun savePlayerData(playerProfilePO: PlayerProfilePO, onSuccess: Runnable) {
+        savePlayerDataAsync(playerProfilePO).whenComplete { _, throwable ->
+            if (throwable == null) onSuccess.run() else throwable.printStackTrace()
+        }
+    }
 
     /**
      * 保存职业数据到数据库
      * @param playerJobPO 职业数据
      * @param onSuccess 成功时执行
      * */
-    fun savePlayerJob(playerJobPO: PlayerJobPO, onSuccess: Runnable)
+    fun savePlayerJobAsync(playerJobPO: PlayerJobPO): CompletableFuture<Unit>
+
+    fun savePlayerJob(playerJobPO: PlayerJobPO, onSuccess: Runnable) {
+        savePlayerJobAsync(playerJobPO).whenComplete { _, throwable ->
+            if (throwable == null) onSuccess.run() else throwable.printStackTrace()
+        }
+    }
 
     /**
      * 保存技能数据到数据库
      * @param playerSkillPO 技能数据
      * @param onSuccess 成功时执行
      * */
-    fun savePlayerSkill(playerSkillPO: PlayerSkillPO, onSuccess: Runnable)
+    fun savePlayerSkillAsync(playerSkillPO: PlayerSkillPO): CompletableFuture<Unit>
+
+    fun savePlayerSkill(playerSkillPO: PlayerSkillPO, onSuccess: Runnable) {
+        savePlayerSkillAsync(playerSkillPO).whenComplete { _, throwable ->
+            if (throwable == null) onSuccess.run() else throwable.printStackTrace()
+        }
+    }
 
     /**
      * 原子保存玩家数据和职业数据到数据库（事务）
@@ -150,7 +186,13 @@ interface IStorageManager {
      * @param jobPO 职业数据
      * @param onSuccess 成功时执行
      * */
-    fun savePlayerDataAndJob(profilePO: PlayerProfilePO, jobPO: PlayerJobPO, onSuccess: Runnable)
+    fun savePlayerDataAndJobAsync(profilePO: PlayerProfilePO, jobPO: PlayerJobPO): CompletableFuture<Unit>
+
+    fun savePlayerDataAndJob(profilePO: PlayerProfilePO, jobPO: PlayerJobPO, onSuccess: Runnable) {
+        savePlayerDataAndJobAsync(profilePO, jobPO).whenComplete { _, throwable ->
+            if (throwable == null) onSuccess.run() else throwable.printStackTrace()
+        }
+    }
 
     /**
      * 原子保存职业数据和技能数据到数据库（事务）
@@ -158,14 +200,26 @@ interface IStorageManager {
      * @param skillPOs 技能数据列表
      * @param onSuccess 成功时执行
      * */
-    fun saveJobAndSkills(jobPO: PlayerJobPO, skillPOs: List<PlayerSkillPO>, onSuccess: Runnable)
+    fun saveJobAndSkillsAsync(jobPO: PlayerJobPO, skillPOs: List<PlayerSkillPO>): CompletableFuture<Unit>
+
+    fun saveJobAndSkills(jobPO: PlayerJobPO, skillPOs: List<PlayerSkillPO>, onSuccess: Runnable) {
+        saveJobAndSkillsAsync(jobPO, skillPOs).whenComplete { _, throwable ->
+            if (throwable == null) onSuccess.run() else throwable.printStackTrace()
+        }
+    }
 
     /**
      * 保存按键数据到数据库
      * @param playerKeySettingPO 按键数据
      * @param onSuccess 成功时执行
      * */
-    fun savePlayerKey(playerKeySettingPO: PlayerKeySettingPO, onSuccess: Runnable)
+    fun savePlayerKeyAsync(playerKeySettingPO: PlayerKeySettingPO): CompletableFuture<Unit>
+
+    fun savePlayerKey(playerKeySettingPO: PlayerKeySettingPO, onSuccess: Runnable) {
+        savePlayerKeyAsync(playerKeySettingPO).whenComplete { _, throwable ->
+            if (throwable == null) onSuccess.run() else throwable.printStackTrace()
+        }
+    }
 
     /**
      * 获取全局 Flag
@@ -180,5 +234,11 @@ interface IStorageManager {
      * @param flag flag 为空时删除
      * @param onSuccess 成功时执行
      * */
-    fun saveGlobalFlag(key: String, flag: IFlag?, onSuccess: Runnable)
+    fun saveGlobalFlagAsync(key: String, flag: IFlag?): CompletableFuture<Unit>
+
+    fun saveGlobalFlag(key: String, flag: IFlag?, onSuccess: Runnable) {
+        saveGlobalFlagAsync(key, flag).whenComplete { _, throwable ->
+            if (throwable == null) onSuccess.run() else throwable.printStackTrace()
+        }
+    }
 }

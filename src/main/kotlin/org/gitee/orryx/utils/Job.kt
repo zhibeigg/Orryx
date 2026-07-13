@@ -8,9 +8,12 @@ import org.gitee.orryx.core.key.BindKeyLoaderManager
 import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.dao.cache.MemoryCache
+import org.gitee.orryx.dao.persistence.PersistenceManager
 import java.util.Collections
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
+
+private val pendingJobCreations = ConcurrentHashMap<String, CompletableFuture<IPlayerJob?>>()
 
 fun IPlayerJob.clearAllLevelAndBackPoint(): CompletableFuture<Boolean> {
     val event = OrryxClearAllSkillLevelAndBackPointEvent(player, this)
@@ -67,13 +70,13 @@ inline fun <T> IPlayerJob.bindSkills(crossinline func: (bindSkills: Map<IBindKey
 }
 
 inline fun <T> Player.job(crossinline function: (IPlayerJob) -> T): CompletableFuture<T?> {
-    return job().thenApply {
+    return job().thenApplyMain {
         it?.let { it1 -> function(it1) }
     }
 }
 
 inline fun <T> Player.job(id: Int, job: String, crossinline function: (IPlayerJob) -> T): CompletableFuture<T?> {
-    return job(id, job).thenApply {
+    return job(id, job).thenApplyMain {
         it?.let { it1 -> function(it1) }
     }
 }
@@ -87,10 +90,20 @@ fun Player.job(): CompletableFuture<IPlayerJob?> {
 }
 
 fun Player.job(id: Int, job: String): CompletableFuture<IPlayerJob?> {
-    return MemoryCache.getPlayerJob(uniqueId, id, job).thenApply {
-        it ?: defaultJob(id, job).apply {
-            save(remove = false)
+    val tag = playerJobDataTag(uniqueId, id, job)
+    return MemoryCache.getPlayerJob(uniqueId, id, job).thenComposeMain { cached ->
+        if (cached != null) return@thenComposeMain CompletableFuture.completedFuture(cached)
+        val creation = pendingJobCreations.computeIfAbsent(tag) {
+            val created = defaultJob(id, job)
+            MemoryCache.savePlayerJob(created)
+            PersistenceManager.saveJob(created.createPO(), invalidate = false).thenApply<IPlayerJob?> {
+                created
+            }.whenComplete { _, throwable ->
+                if (throwable != null) MemoryCache.removePlayerJob(uniqueId, id, job)
+            }
         }
+        creation.whenComplete { _, _ -> pendingJobCreations.remove(tag, creation) }
+        creation
     }
 }
 

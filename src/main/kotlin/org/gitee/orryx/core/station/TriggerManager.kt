@@ -4,6 +4,7 @@ import org.bukkit.Bukkit
 import org.gitee.orryx.api.events.register.OrryxTriggerRegisterEvent
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.station.pipe.IPipeTrigger
+import org.gitee.orryx.core.station.pipe.PipeTriggerKey
 import org.gitee.orryx.core.station.stations.IStationTrigger
 import org.gitee.orryx.utils.consoleMessage
 import org.gitee.orryx.utils.debug
@@ -11,14 +12,15 @@ import taboolib.common.LifeCycle
 import taboolib.common.inject.ClassVisitor
 import taboolib.common.platform.Awake
 import taboolib.common.reflect.hasAnnotation
-import taboolib.common.util.unsafeLazy
 import taboolib.library.reflex.ReflexClass
+import java.util.Locale
+import java.util.concurrent.ConcurrentHashMap
 
 @Awake
 object TriggerManager: ClassVisitor(3) {
 
-    private val pipeTriggers by unsafeLazy { hashMapOf<String, IPipeTrigger<*>>() }
-    private val stationTriggers by unsafeLazy { hashMapOf<String, IStationTrigger<*>>() }
+    private val pipeTriggers = ConcurrentHashMap<String, IPipeTrigger<*>>()
+    private val stationTriggers = ConcurrentHashMap<String, IStationTrigger<*>>()
 
     val pipeTriggersMap: Map<String, IPipeTrigger<*>>
         get() = pipeTriggers
@@ -53,7 +55,7 @@ object TriggerManager: ClassVisitor(3) {
             } else {
                 debug { "&e┣&7PipeTrigger loaded &e${instance.event} &a√" }
             }
-            pipeTriggers[instance.event.uppercase()] = instance
+            pipeTriggers[PipeTriggerKey.normalize(instance.event)] = instance
         }
         if (IStationTrigger::class.java.isAssignableFrom(c)) {
             val instance = try {
@@ -69,7 +71,7 @@ object TriggerManager: ClassVisitor(3) {
             } else {
                 debug { "&e┣&7StationTrigger loaded &e${instance.event} &a√" }
             }
-            stationTriggers[instance.event.uppercase()] = instance
+            stationTriggers[instance.event.trim().uppercase(Locale.ROOT)] = instance
         }
     }
 
@@ -80,24 +82,20 @@ object TriggerManager: ClassVisitor(3) {
         event.list().forEach {
             val clazz = it.javaClass
             if (it is IPipeTrigger) {
-                if (clazz.hasAnnotation(Plugin::class.java)) {
-                    val annotation = clazz.getAnnotation(Plugin::class.java)
-                    val pluginLoaded = Bukkit.getPluginManager().getPlugin(annotation.plugin) != null
-                    if (pluginLoaded) {
-                        pipeTriggers[it.event.uppercase()] = it
-                    }
-                    consoleMessage("&e┣&c第三方 &7PipeTrigger loaded &e${it.event} ${if (pluginLoaded) "&a√" else "&4×"}")
+                val pluginLoaded = !clazz.hasAnnotation(Plugin::class.java) || Bukkit.getPluginManager()
+                    .getPlugin(clazz.getAnnotation(Plugin::class.java).plugin) != null
+                if (pluginLoaded) {
+                    pipeTriggers[PipeTriggerKey.normalize(it.event)] = it
                 }
+                consoleMessage("&e┣&c第三方 &7PipeTrigger loaded &e${it.event} ${if (pluginLoaded) "&a√" else "&4×"}")
             }
             if (it is IStationTrigger) {
-                if (clazz.hasAnnotation(Plugin::class.java)) {
-                    val annotation = clazz.getAnnotation(Plugin::class.java)
-                    val pluginLoaded = Bukkit.getPluginManager().getPlugin(annotation.plugin) != null
-                    if (pluginLoaded) {
-                        stationTriggers[it.event.uppercase()] = it
-                    }
-                    consoleMessage("&e┣&c第三方 &7PluginStationTrigger loaded &e${it.event} ${if (pluginLoaded) "&a√" else "&4×"}")
+                val pluginLoaded = !clazz.hasAnnotation(Plugin::class.java) || Bukkit.getPluginManager()
+                    .getPlugin(clazz.getAnnotation(Plugin::class.java).plugin) != null
+                if (pluginLoaded) {
+                    stationTriggers[it.event.trim().uppercase(Locale.ROOT)] = it
                 }
+                consoleMessage("&e┣&c第三方 &7PluginStationTrigger loaded &e${it.event} ${if (pluginLoaded) "&a√" else "&4×"}")
             }
         }
     }

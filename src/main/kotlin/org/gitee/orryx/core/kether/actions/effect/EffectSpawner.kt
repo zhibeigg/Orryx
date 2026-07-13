@@ -17,6 +17,8 @@ import org.gitee.orryx.utils.*
 import org.joml.Matrix3d
 import org.joml.Vector3d
 import taboolib.common.platform.function.adaptPlayer
+import taboolib.common.platform.function.submitAsync
+import taboolib.common.platform.service.PlatformExecutor
 import taboolib.common.util.Location
 import taboolib.common5.cdouble
 import taboolib.module.effect.*
@@ -32,17 +34,27 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
 
     val future = CompletableFuture<Void>()
 
+    private val particleName = builder.particle.name
+    private val particleOffset = taboolib.common.util.Vector(builder.offset.x(), builder.offset.y(), builder.offset.z())
+    private val particleData = createParticleData()
+    internal val matrix = builder.matrix?.taboo()
+
     private val effects =
         origins.mapInstance<ITargetLocation<*>, OrryxParticleObj> {
             build(EffectOrigin(it))
         }
 
+    private var updateTask: PlatformExecutor.PlatformTask? = null
+
     fun start() {
         effectScope.launch {
             try {
+                effects.forEach { it.startManaged() }
+                if (duration > 1L && effects.isNotEmpty()) {
+                    startUpdateTask()
+                }
                 effects.map { effect ->
                     async {
-                        effect.start()
                         effect.future.await()
                     }
                 }.awaitAll()
@@ -53,26 +65,43 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
         }
     }
 
+    private fun startUpdateTask() {
+        var delay = 0L
+        updateTask = submitAsync(period = 1) {
+            if (delay >= duration) {
+                stop()
+            }
+            if (delay % tick.coerceAtLeast(1L) == 0L) {
+                effects.forEach { it.sync() }
+            }
+            delay++
+        }
+    }
+
     fun stop() {
+        updateTask?.cancel()
+        updateTask = null
         effects.forEach {
             it.stop()
         }
     }
 
     override fun spawn(location: Location) {
+        val count = builder.count
+        val speed = builder.speed
         viewers.forEachInstance<ITargetEntity<Player>> { target ->
             adaptPlayer(target.getSource()).sendParticle(
-                builder.particle.name,
+                particleName,
                 location,
-                taboolib.common.util.Vector(builder.offset.x(), builder.offset.y(), builder.offset.z()),
-                builder.count,
-                builder.speed,
-                getParticleData()
+                particleOffset,
+                count,
+                speed,
+                particleData
             )
         }
     }
 
-    private fun getParticleData(): Any? {
+    private fun createParticleData(): Any? {
         return when (val data = builder.data) {
             // 渐变红石（1.17+）
             is ParticleData.DustTransitionData -> {
@@ -197,14 +226,19 @@ class EffectSpawner(val builder: EffectBuilder, val duration: Long = 1, val tick
     }
 
     private fun buildCube(origin: EffectOrigin): OrryxParticleObj {
-        val o = origin.getLocation(builder).toVector().joml()
-        val width = builder.width
-        val height = builder.height
-        val length = builder.length
-        val min = o.add(-0.5, -0.5, -0.5, Vector3d()).toLocation()
-        val max = o.add(0.5, 0.5, 0.5, Vector3d())
-        val z = origin.getLocation(builder).direction.clone().setY(0).normalize().crossProduct(taboolib.common.util.Vector(0, 1, 0)).joml()
-        val matrix = Matrix3d().scale(width, height, length).rotateY(origin.getLocation(builder).yaw.cdouble).rotate(origin.getLocation(builder).pitch.cdouble, z)
+        val location = origin.getLocation(builder)
+        val vector = location.toVector().joml()
+        val min = vector.add(-0.5, -0.5, -0.5, Vector3d()).toLocation()
+        val max = vector.add(0.5, 0.5, 0.5, Vector3d())
+        val rotationAxis = location.direction.clone()
+            .setY(0)
+            .normalize()
+            .crossProduct(taboolib.common.util.Vector(0, 1, 0))
+            .joml()
+        val matrix = Matrix3d()
+            .scale(builder.width, builder.height, builder.length)
+            .rotateY(location.yaw.cdouble)
+            .rotate(location.pitch.cdouble, rotationAxis)
         return OrryxParticleObj(origin, createCube(
             Location(origin.bindTarget.world.name, min.x, min.y, min.z),
             Location(origin.bindTarget.world.name, max.x, max.y, max.z),

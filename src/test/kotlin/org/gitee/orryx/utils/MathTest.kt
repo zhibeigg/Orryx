@@ -20,4 +20,14 @@ class MathTest {
     @Test fun `square of fraction`() {
         assertEquals(0.25, square(0.5), 1e-15)
     }
+
+    @Test fun `tick conversion preserves regular signed values`() {
+        assertEquals(1_000L, ticksToMillisSaturated(20L))
+        assertEquals(-1_000L, ticksToMillisSaturated(-20L))
+    }
+
+    @Test fun `tick conversion saturates at long boundaries`() {
+        assertEquals(Long.MAX_VALUE, ticksToMillisSaturated(Long.MAX_VALUE))
+        assertEquals(Long.MIN_VALUE, ticksToMillisSaturated(Long.MIN_VALUE))
+    }
 }

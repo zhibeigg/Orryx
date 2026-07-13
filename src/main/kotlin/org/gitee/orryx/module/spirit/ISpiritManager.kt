@@ -3,6 +3,7 @@ package org.gitee.orryx.module.spirit
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.core.job.IJob
+import org.gitee.orryx.module.ResourceRegainTicker
 import org.gitee.orryx.core.reload.Reload
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
@@ -24,23 +25,8 @@ interface ISpiritManager {
 
         internal var INSTANCE: ISpiritManager = SpiritManagerDefault()
 
-        private var runnable: PlatformExecutor.PlatformTask? = null
-
-        private val regainTick: Long by ReloadAwareLazy(Orryx.config) { Orryx.config.getLong("SpiritRegainTick", 20) }
-        
-        @Reload(2)
-        @Awake(LifeCycle.ENABLE)
-        private fun init() {
-            runnable?.cancel()
-            runnable = submitAsync(period = regainTick) {
-                onlinePlayers.forEach {
-                    INSTANCE.regainSpirit(it)
-                }
-            }
-        }
-
         internal fun closeThread() {
-            runnable?.cancel()
+            ResourceRegainTicker.close()
         }
     }
 

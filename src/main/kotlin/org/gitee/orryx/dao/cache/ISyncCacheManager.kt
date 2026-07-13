@@ -11,6 +11,7 @@ import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.utils.consoleMessage
+import org.gitee.orryx.utils.ioFuture
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.Ghost
@@ -85,6 +86,11 @@ interface ISyncCacheManager {
     }
 
     /**
+     * 异步关闭当前缓存客户端持有的资源；外部托管客户端可直接完成。
+     */
+    fun closeAsync(): CompletableFuture<Unit> = CompletableFuture.completedFuture(Unit)
+
+    /**
      * 从缓存获取玩家数据
      *
      * 如果数据不存在将自动从storage中调用并保存到缓存
@@ -131,6 +137,10 @@ interface ISyncCacheManager {
      * @param player 玩家的UUID
      * @param playerProfilePO 玩家数据
      * */
+    fun savePlayerProfileAsync(player: UUID, playerProfilePO: PlayerProfilePO): CompletableFuture<Unit> = ioFuture {
+        savePlayerProfile(player, playerProfilePO)
+    }
+
     fun savePlayerProfile(player: UUID, playerProfilePO: PlayerProfilePO)
 
     /**
@@ -138,6 +148,10 @@ interface ISyncCacheManager {
      * @param player 玩家的UUID
      * @param playerJobPO 职业数据
      * */
+    fun savePlayerJobAsync(player: UUID, playerJobPO: PlayerJobPO): CompletableFuture<Unit> = ioFuture {
+        savePlayerJob(player, playerJobPO)
+    }
+
     fun savePlayerJob(player: UUID, playerJobPO: PlayerJobPO)
 
     /**
@@ -145,6 +159,10 @@ interface ISyncCacheManager {
      * @param player 玩家的UUID
      * @param playerSkillPO 技能数据
      * */
+    fun savePlayerSkillAsync(player: UUID, playerSkillPO: PlayerSkillPO): CompletableFuture<Unit> = ioFuture {
+        savePlayerSkill(player, playerSkillPO)
+    }
+
     fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO)
 
     /**
@@ -152,12 +170,20 @@ interface ISyncCacheManager {
      * @param player 玩家的UUID
      * @param playerKeySettingPO 按键数据
      * */
+    fun savePlayerKeySettingAsync(player: UUID, playerKeySettingPO: PlayerKeySettingPO): CompletableFuture<Unit> = ioFuture {
+        savePlayerKeySetting(player, playerKeySettingPO)
+    }
+
     fun savePlayerKeySetting(player: UUID, playerKeySettingPO: PlayerKeySettingPO)
 
     /**
      * 删除缓存中的玩家数据
      * @param player 玩家的UUID
      * */
+    fun removePlayerProfileAsync(player: UUID): CompletableFuture<Unit> = ioFuture {
+        removePlayerProfile(player)
+    }
+
     fun removePlayerProfile(player: UUID)
 
     /**
@@ -165,6 +191,10 @@ interface ISyncCacheManager {
      * @param player 玩家的UUID
      * @param job 职业键名
      * */
+    fun removePlayerJobAsync(player: UUID, id: Int, job: String): CompletableFuture<Unit> = ioFuture {
+        removePlayerJob(player, id, job)
+    }
+
     fun removePlayerJob(player: UUID, id: Int, job: String)
 
     /**
@@ -173,12 +203,20 @@ interface ISyncCacheManager {
      * @param job 职业键名
      * @param skill 技能键名
      * */
+    fun removePlayerSkillAsync(player: UUID, id: Int, job: String, skill: String): CompletableFuture<Unit> = ioFuture {
+        removePlayerSkill(player, id, job, skill)
+    }
+
     fun removePlayerSkill(player: UUID, id: Int, job: String, skill: String)
 
     /**
      * 删除缓存中的按键数据
      * @param player 玩家的UUID
      * */
+    fun removePlayerKeySettingAsync(player: UUID): CompletableFuture<Unit> = ioFuture {
+        removePlayerKeySetting(player)
+    }
+
     fun removePlayerKeySetting(player: UUID)
 
 }

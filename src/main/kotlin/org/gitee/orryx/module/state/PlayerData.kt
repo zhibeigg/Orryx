@@ -7,6 +7,9 @@ import org.bukkit.entity.Player
 import org.gitee.orryx.compat.dragoncore.DragonCoreCustomPacketSender
 import org.gitee.orryx.core.common.keyregister.KeyRegisterManager
 import org.gitee.orryx.module.spirit.ISpiritManager
+import org.gitee.orryx.module.spirit.SpiritResult
+import org.gitee.orryx.utils.thenApplyMain
+import org.gitee.orryx.utils.thenComposeMain
 import org.gitee.orryx.module.state.StateManager.getController
 import org.gitee.orryx.module.state.StateManager.statusDataList
 import org.gitee.orryx.utils.ArcartXPlugin
@@ -18,6 +21,7 @@ import taboolib.common.platform.function.warning
 import taboolib.platform.util.onlinePlayers
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.atomic.AtomicLong
 
 class PlayerData(val player: Player) {
 
@@ -41,18 +45,11 @@ class PlayerData(val player: Player) {
     var nowRunningState: IRunningState? = null
         private set
 
-    fun firstCheck(runningState: IRunningState): Boolean {
-        return if (nowRunningState == null) {
-            if (player.gameMode == GameMode.SPECTATOR || player.gameMode == GameMode.CREATIVE) return false
-            val state = runningState.state
-            if (state is ISpiritCost) {
-                ISpiritManager.INSTANCE.haveSpirit(player, state.spirit)
-            } else {
-                true
-            }
-        } else {
-            false
-        }
+    private val transitionGeneration = AtomicLong()
+
+    fun firstCheck(@Suppress("UNUSED_PARAMETER") runningState: IRunningState): Boolean {
+        if (nowRunningState != null) return false
+        return player.gameMode != GameMode.SPECTATOR && player.gameMode != GameMode.CREATIVE
     }
 
     /**
@@ -61,19 +58,37 @@ class PlayerData(val player: Player) {
      * @return 过渡到的状态
      * */
     fun tryNext(input: String): CompletableFuture<IRunningState?>? {
-        return status?.next(this, input)?.thenApply {
-            if (it == null) {
-                nextInput = input
-                return@thenApply null
+        val generation = transitionGeneration.incrementAndGet()
+        return status?.next(this, input)?.thenComposeMain { nextState ->
+            if (generation != transitionGeneration.get()) {
+                return@thenComposeMain CompletableFuture.completedFuture(null)
             }
-            if (firstCheck(it) || nowRunningState!!.hasNext(it)) {
-                nextInput = null
-                nowRunningState = it
-                it.start()
-                it
-            } else {
+            if (nextState == null) {
                 nextInput = input
-                null
+                return@thenComposeMain CompletableFuture.completedFuture(null)
+            }
+            val current = nowRunningState
+            val allowed = (current == null && firstCheck(nextState)) || current?.hasNext(nextState) == true
+            if (!allowed) {
+                nextInput = input
+                return@thenComposeMain CompletableFuture.completedFuture(null)
+            }
+            val cost = (nextState.state as? ISpiritCost)?.spirit?.takeIf { it.isFinite() }?.coerceAtLeast(0.0) ?: 0.0
+            val consumption = if (cost <= 0.0) {
+                CompletableFuture.completedFuture(SpiritResult.SUCCESS)
+            } else {
+                ISpiritManager.INSTANCE.takeSpirit(player, cost)
+            }
+            consumption.thenApplyMain { result ->
+                if (result != SpiritResult.SUCCESS || generation != transitionGeneration.get() || nowRunningState !== current) {
+                    nextInput = input
+                    return@thenApplyMain null
+                }
+                current?.stop()
+                nextInput = null
+                nowRunningState = nextState
+                nextState.start()
+                nextState
             }
         }
     }
@@ -84,6 +99,7 @@ class PlayerData(val player: Player) {
      * @return 过渡到的状态
      * */
     fun next(running: IRunningState) {
+        transitionGeneration.incrementAndGet()
         nowRunningState?.stop()
         nextInput = null
         nowRunningState = running
@@ -96,6 +112,9 @@ class PlayerData(val player: Player) {
 
     fun setStatus(status: Status?) {
         if (this.status == status) return
+        transitionGeneration.incrementAndGet()
+        nowRunningState?.stop()
+        nowRunningState = null
         this.status = status
         if (status != null) {
             updateController(status)

@@ -17,12 +17,12 @@ interface IAnimationBridge {
     companion object {
 
         val INSTANCE by unsafeLazy {
-            when {
-                ArcartXPlugin.isEnabled -> ArcartXAnimationBridge()
-                DragonCorePlugin.isEnabled -> DragonCoreAnimationBridge()
-                GermPluginPlugin.isEnabled -> GermPluginAnimationBridge()
-                else -> DefaultAnimationBridge()
-            }
+            CompatGuard.firstAvailable(
+                default = { DefaultAnimationBridge() },
+                { ArcartXPlugin.isEnabled } to { ArcartXAnimationBridge() },
+                { DragonCorePlugin.isEnabled } to { DragonCoreAnimationBridge() },
+                { GermPluginPlugin.isEnabled } to { GermPluginAnimationBridge() },
+            )
         }
     }
 

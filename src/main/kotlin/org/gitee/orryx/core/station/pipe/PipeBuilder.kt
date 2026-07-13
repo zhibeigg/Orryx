@@ -20,7 +20,17 @@ class PipeBuilder {
      * 构建
      * */
     fun build(): PipeTask {
-        return PipeTask(uuid, scriptContext, brokeTriggers, timeout ?: error("创建PipeTask时未设置timeout"), onBrock, onComplete, periodTask)
+        val timeout = timeout ?: error("创建PipeTask时未设置timeout")
+        require(timeout >= 0L) { "PipeTask timeout 不能小于 0: $timeout" }
+        return PipeTask(
+            uuid,
+            scriptContext,
+            brokeTriggers.mapTo(linkedSetOf(), PipeTriggerKey::normalize),
+            timeout,
+            onBrock,
+            onComplete,
+            periodTask
+        )
     }
 
     fun uuid(uuid: UUID): PipeBuilder = apply {
@@ -63,6 +73,14 @@ class PipeBuilder {
      * 周期触发
      * */
     fun periodTask(period: Long, func: Consumer<IPipeTask>): PipeBuilder = apply {
+        require(period > 0L) { "PipeTask period 必须大于 0: $period" }
         periodTask = PipePeriodTask(period) { func.accept(it) }
+    }
+}
+
+internal object PipeTriggerKey {
+
+    fun normalize(key: String): String {
+        return key.trim().uppercase(Locale.ROOT)
     }
 }

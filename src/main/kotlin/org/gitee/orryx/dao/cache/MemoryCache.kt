@@ -6,7 +6,9 @@ import com.github.benmanes.caffeine.cache.Scheduler
 import com.github.benmanes.caffeine.cache.stats.CacheStats
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
+import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.api.OrryxAPI
+import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.core.common.keyregister.PlayerKeySetting
 import org.gitee.orryx.core.job.IPlayerJob
 import org.gitee.orryx.core.job.PlayerJob
@@ -29,10 +31,18 @@ import java.util.concurrent.TimeUnit
  * */
 object MemoryCache {
 
+    private fun maximum(name: String, default: Long): Long {
+        return Orryx.config.getLong("MemoryCache.$name.MaximumSize", default).coerceAtLeast(1L)
+    }
+
+    private fun expireMinutes(name: String, default: Long): Long {
+        return Orryx.config.getLong("MemoryCache.$name.ExpireAfterAccessMinutes", default).coerceAtLeast(1L)
+    }
+
     private val playerProfileCache: AsyncLoadingCache<UUID, IPlayerProfile> = Caffeine.newBuilder()
         .initialCapacity(60)
-        .maximumSize(100)
-        .expireAfterAccess(30, TimeUnit.MINUTES)
+        .maximumSize(maximum("Profile", 1_000))
+        .expireAfterAccess(expireMinutes("Profile", 30), TimeUnit.MINUTES)
         .recordStats()
         .scheduler(Scheduler.systemScheduler())
         .buildAsync { uuid, _ ->
@@ -40,7 +50,7 @@ object MemoryCache {
             OrryxAPI.ioScope.future {
                 val po = ISyncCacheManager.INSTANCE.getPlayerProfile(uuid).await()
                 val list = po.flags.mapNotNull { (key, value) ->
-                    value.toFlag()?.let { flag -> kotlin.Pair(key, flag) }
+                    value.toFlag()?.takeUnless { it.isTimeout() }?.let { flag -> kotlin.Pair(key, flag) }
                 }
                 PlayerProfile(po.id, uuid, po.job, po.point, list.toMap(ConcurrentHashMap(list.size)))
             }
@@ -48,8 +58,8 @@ object MemoryCache {
 
     private val playerJobCache: AsyncLoadingCache<String, IPlayerJob?> = Caffeine.newBuilder()
         .initialCapacity(60)
-        .maximumSize(100)
-        .expireAfterAccess(30, TimeUnit.MINUTES)
+        .maximumSize(maximum("Job", 1_000))
+        .expireAfterAccess(expireMinutes("Job", 30), TimeUnit.MINUTES)
         .recordStats()
         .scheduler(Scheduler.systemScheduler())
         .buildAsync { tag, _ ->
@@ -72,8 +82,8 @@ object MemoryCache {
 
     private val playerSkillCache: AsyncLoadingCache<String, IPlayerSkill?> = Caffeine.newBuilder()
         .initialCapacity(300)
-        .maximumSize(500)
-        .expireAfterAccess(20, TimeUnit.MINUTES)
+        .maximumSize(maximum("Skill", 5_000))
+        .expireAfterAccess(expireMinutes("Skill", 20), TimeUnit.MINUTES)
         .recordStats()
         .scheduler(Scheduler.systemScheduler())
         .buildAsync { tag, _ ->
@@ -98,8 +108,8 @@ object MemoryCache {
 
     private val playerKeyCache: AsyncLoadingCache<UUID, PlayerKeySetting> = Caffeine.newBuilder()
         .initialCapacity(60)
-        .maximumSize(100)
-        .expireAfterAccess(30, TimeUnit.MINUTES)
+        .maximumSize(maximum("Key", 1_000))
+        .expireAfterAccess(expireMinutes("Key", 30), TimeUnit.MINUTES)
         .recordStats()
         .scheduler(Scheduler.systemScheduler())
         .buildAsync { uuid, _ ->
@@ -111,15 +121,22 @@ object MemoryCache {
             }
         }
 
-    @Awake(LifeCycle.DISABLE)
+    @Reload(1)
+    private fun resize() {
+        playerProfileCache.synchronous().policy().eviction().ifPresent { it.maximum = maximum("Profile", 1_000) }
+        playerJobCache.synchronous().policy().eviction().ifPresent { it.maximum = maximum("Job", 1_000) }
+        playerSkillCache.synchronous().policy().eviction().ifPresent { it.maximum = maximum("Skill", 5_000) }
+        playerKeyCache.synchronous().policy().eviction().ifPresent { it.maximum = maximum("Key", 1_000) }
+    }
+
     fun printStats() {
-        fun printStats(name: String, stats: CacheStats) {
-            consoleMessage("&e┣&f缓存：$name &c命中率：${(stats.hitRate()*100).format(2)} % &c加载平均时间：${(stats.averageLoadPenalty()/1_000_000).format(2)} ms")
+        fun printStats(name: String, size: Long, stats: CacheStats) {
+            consoleMessage("&e┣&f缓存：$name &7大小：$size &c命中率：${(stats.hitRate()*100).format(2)} % &c驱逐：${stats.evictionCount()} &c加载平均：${(stats.averageLoadPenalty()/1_000_000).format(2)} ms")
         }
-        printStats("玩家", playerProfileCache.synchronous().stats())
-        printStats("职业", playerJobCache.synchronous().stats())
-        printStats("技能", playerSkillCache.synchronous().stats())
-        printStats("按键", playerKeyCache.synchronous().stats())
+        printStats("玩家", playerProfileCache.synchronous().estimatedSize(), playerProfileCache.synchronous().stats())
+        printStats("职业", playerJobCache.synchronous().estimatedSize(), playerJobCache.synchronous().stats())
+        printStats("技能", playerSkillCache.synchronous().estimatedSize(), playerSkillCache.synchronous().stats())
+        printStats("按键", playerKeyCache.synchronous().estimatedSize(), playerKeyCache.synchronous().stats())
 
         // 清理所有缓存，释放内存
         playerProfileCache.synchronous().invalidateAll()

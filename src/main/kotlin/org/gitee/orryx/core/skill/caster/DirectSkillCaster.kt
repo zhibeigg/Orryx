@@ -2,25 +2,35 @@ package org.gitee.orryx.core.skill.caster
 
 import org.bukkit.entity.Player
 import org.gitee.orryx.core.kether.parameter.SkillParameter
+import org.gitee.orryx.core.skill.CastResult
 import org.gitee.orryx.core.skill.ISkill
 import org.gitee.orryx.core.skill.skills.DirectSkill
 import org.gitee.orryx.utils.consume
-import org.gitee.orryx.utils.runSkillAction
+import org.gitee.orryx.utils.startSkillAction
+import org.gitee.orryx.utils.thenComposeMain
+import java.util.concurrent.CompletableFuture
 
-/**
- * 直接技能释放器。
- *
- * 处理 [DirectSkill] 类型的技能释放，立即执行技能脚本。
- */
+/** 直接技能释放器。 */
 object DirectSkillCaster : ISkillCaster {
 
-    override fun supports(skill: ISkill): Boolean {
-        return skill is DirectSkill
-    }
+    override fun supports(skill: ISkill): Boolean = skill is DirectSkill
 
-    override fun cast(skill: ISkill, player: Player, parameter: SkillParameter, consume: Boolean) {
+    override fun cast(
+        skill: ISkill,
+        player: Player,
+        parameter: SkillParameter,
+        consume: Boolean,
+    ): CompletableFuture<CastResult> {
         skill as DirectSkill
-        if (consume) skill.consume(player, parameter)
-        parameter.runSkillAction()
+        if (!consume) {
+            return parameter.startSkillAction().thenApply { CastResult.SUCCESS }
+        }
+        return skill.consume(player, parameter).thenComposeMain { result ->
+            if (result == CastResult.SUCCESS) {
+                parameter.startSkillAction().thenApply { result }
+            } else {
+                CompletableFuture.completedFuture(result)
+            }
+        }
     }
 }

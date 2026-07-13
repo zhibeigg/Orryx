@@ -84,7 +84,7 @@ object FlagActions {
                                 containerOrSelf(they) {
                                     it.forEachInstance<PlayerTarget> { target ->
                                         target.getSource().orryxProfileTo { profile ->
-                                            value?.flag(persistence, timeout * 50)?.let { it1 -> profile.setFlag(key, it1) }
+                                            value?.flag(persistence, ticksToMillisSaturated(timeout))?.let { it1 -> profile.setFlag(key, it1) }
                                         }
                                     }
                                 }
@@ -168,8 +168,12 @@ object FlagActions {
 
                         future.complete(
                             flag?.let {
-                                (flag.timestamp + flag.timeout - System.currentTimeMillis()) / 50
-                            } ?: 0
+                                if (it.expiresAt == 0L) {
+                                    0L
+                                } else {
+                                    ((it.expiresAt - System.currentTimeMillis()).coerceAtLeast(0L)) / 50L
+                                }
+                            } ?: 0L
                         )
                     }
                 }

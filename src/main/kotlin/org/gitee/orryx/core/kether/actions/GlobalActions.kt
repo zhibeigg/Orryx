@@ -1,18 +1,17 @@
 package org.gitee.orryx.core.kether.actions
 
-import kotlinx.coroutines.launch
-import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.api.events.OrryxGlobalFlagChangeEvents
-import org.gitee.orryx.core.GameManager
 import org.gitee.orryx.core.profile.IFlag
+import org.gitee.orryx.dao.persistence.PersistenceManager
 import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.module.wiki.Action
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.ORRYX_NAMESPACE
 import org.gitee.orryx.utils.flag
 import org.gitee.orryx.utils.nextHeadAction
+import org.gitee.orryx.utils.runOnMainThread
 import org.gitee.orryx.utils.scriptParser
-import taboolib.common.platform.function.isPrimaryThread
+import org.gitee.orryx.utils.ticksToMillisSaturated
 import taboolib.library.kether.LocalizedException
 import taboolib.library.kether.ParsedAction
 import taboolib.library.kether.QuestReader
@@ -35,17 +34,16 @@ object GlobalActions {
     }
 
     private fun persistGlobalFlag(flagName: String, flag: IFlag?, callback: Runnable = Runnable { }) {
-        val saveTask = {
-            try {
-                IStorageManager.INSTANCE.saveGlobalFlag(flagName, flag, callback)
-            } catch (ex: Throwable) {
-                ex.printStackTrace()
+        try {
+            PersistenceManager.saveGlobalFlag(flagName, flag).whenComplete { _, throwable ->
+                if (throwable != null) {
+                    throwable.printStackTrace()
+                } else {
+                    runOnMainThread { callback.run() }
+                }
             }
-        }
-        if (isPrimaryThread && !GameManager.shutdown) {
-            OrryxAPI.ioScope.launch { saveTask() }
-        } else {
-            saveTask()
+        } catch (throwable: Throwable) {
+            throwable.printStackTrace()
         }
     }
 
@@ -138,7 +136,7 @@ object GlobalActions {
                     run(value).thenAccept { value ->
                         run(persistence).bool { persistence ->
                             run(timeout).long { timeout ->
-                                value?.flag(persistence, timeout * 50)?.let { it1 -> setFlag(key, it1) }
+                                value?.flag(persistence, ticksToMillisSaturated(timeout))?.let { it1 -> setFlag(key, it1) }
                             }
                         }
                     }
@@ -213,8 +211,12 @@ object GlobalActions {
                     } else {
                         future.complete(
                             flag?.let {
-                                (flag.timestamp + flag.timeout - System.currentTimeMillis()) / 50
-                            } ?: 0
+                                if (it.expiresAt == 0L) {
+                                    0L
+                                } else {
+                                    ((it.expiresAt - System.currentTimeMillis()).coerceAtLeast(0L)) / 50L
+                                }
+                            } ?: 0L
                         )
                     }
                 }
@@ -241,15 +243,13 @@ object GlobalActions {
         val event = OrryxGlobalFlagChangeEvents.Pre(flagName, globalFlagMap[flagName], flag)
 
         if (event.call()) {
-            if (event.newFlag == null) {
-                globalFlagMap.remove(flagName)
-            } else {
-                globalFlagMap[flagName] = event.newFlag!!
-            }
+            event.newFlag?.let { globalFlagMap[flagName] = it } ?: globalFlagMap.remove(flagName)
             if (save && (event.oldFlag?.isPersistence == true || event.newFlag?.isPersistence == true)) {
                 persistGlobalFlag(flagName, event.newFlag) {
                     OrryxGlobalFlagChangeEvents.Post(flagName, event.oldFlag, event.newFlag).call()
                 }
+            } else {
+                OrryxGlobalFlagChangeEvents.Post(flagName, event.oldFlag, event.newFlag).call()
             }
         }
     }
@@ -264,15 +264,13 @@ object GlobalActions {
         val event = OrryxGlobalFlagChangeEvents.Pre(flagName, globalFlagMap[flagName], null)
 
         if (event.call()) {
-            if (event.newFlag == null) {
-                globalFlagMap.remove(flagName)
-            } else {
-                globalFlagMap[flagName] = event.newFlag!!
-            }
+            event.newFlag?.let { globalFlagMap[flagName] = it } ?: globalFlagMap.remove(flagName)
             if (save && (event.oldFlag?.isPersistence == true || event.newFlag?.isPersistence == true)) {
                 persistGlobalFlag(flagName, event.newFlag) {
                     OrryxGlobalFlagChangeEvents.Post(flagName, event.oldFlag, event.newFlag).call()
                 }
+            } else {
+                OrryxGlobalFlagChangeEvents.Post(flagName, event.oldFlag, event.newFlag).call()
             }
         }
         return event.oldFlag

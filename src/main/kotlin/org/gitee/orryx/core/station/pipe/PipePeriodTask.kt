@@ -2,23 +2,32 @@ package org.gitee.orryx.core.station.pipe
 
 import taboolib.common.platform.function.submit
 import taboolib.common.platform.service.PlatformExecutor
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 class PipePeriodTask(override val period: Long, override val onPeriod: PipeTaskConsumer): IPipePeriodTask {
 
-    private lateinit var bukkitRunningTask: PlatformExecutor.PlatformTask
+    private val cancelled = AtomicBoolean(false)
+    private val taskRef = AtomicReference<PlatformExecutor.PlatformTask?>()
 
     override fun start(pipeTask: IPipeTask) {
-        bukkitRunningTask = submit(period = period) {
+        if (cancelled.get()) return
+        val task = submit(period = period) {
             if (pipeTask.scriptContext?.breakLoop == true) {
-                pipeTask.broke()
                 pipeTask.scriptContext?.breakLoop = false
+                pipeTask.broke()
             } else {
                 onPeriod.accept(pipeTask)
             }
         }
+        if (!taskRef.compareAndSet(null, task) || cancelled.get()) {
+            task.cancel()
+        }
     }
 
     override fun cancel(pipeTask: IPipeTask) {
-        bukkitRunningTask.cancel()
+        if (cancelled.compareAndSet(false, true)) {
+            taskRef.getAndSet(null)?.cancel()
+        }
     }
 }

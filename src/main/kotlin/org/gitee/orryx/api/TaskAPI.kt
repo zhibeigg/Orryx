@@ -20,7 +20,7 @@ class TaskAPI: ITaskAPI {
     }
 
     override fun closeSimpleTask(task: SimpleTimeoutTask) {
-        SimpleTimeoutTask.cancel(task)
+        SimpleTimeoutTask.cancel(task, false)
     }
 
     override fun pipeBuilder(): PipeBuilder {

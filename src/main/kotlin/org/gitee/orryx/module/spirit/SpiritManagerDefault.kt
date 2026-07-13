@@ -1,32 +1,38 @@
 package org.gitee.orryx.module.spirit
 
-import kotlinx.coroutines.launch
 import org.bukkit.entity.Player
-import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.api.events.player.OrryxPlayerSpiritEvents
-import org.gitee.orryx.core.GameManager
 import org.gitee.orryx.core.job.IJob
 import org.gitee.orryx.core.job.JobLoaderManager
+import org.gitee.orryx.core.profile.IFlag
 import org.gitee.orryx.core.profile.IPlayerProfile
-import org.gitee.orryx.dao.cache.ISyncCacheManager
+import org.gitee.orryx.core.profile.PlayerProfile
 import org.gitee.orryx.dao.cache.MemoryCache
-import org.gitee.orryx.utils.*
+import org.gitee.orryx.dao.persistence.PersistenceManager
+import org.gitee.orryx.dao.persistence.PersistenceWriteException
+import org.gitee.orryx.utils.SPIRIT_FLAG
+import org.gitee.orryx.utils.eval
+import org.gitee.orryx.utils.flag
+import org.gitee.orryx.utils.job
+import org.gitee.orryx.utils.orryxProfile
+import org.gitee.orryx.utils.thenApplyMain
+import org.gitee.orryx.utils.thenComposeMain
 import taboolib.common.platform.ProxyCommandSender
-import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common5.cdouble
 import taboolib.module.kether.orNull
 import java.util.concurrent.CompletableFuture
 
-class SpiritManagerDefault: ISpiritManager {
+class SpiritManagerDefault : ISpiritManager {
 
     override fun getMaxSpirit(player: Player): CompletableFuture<Double> {
-        return player.job().thenApply {
-            it?.getMaxSpirit() ?: 0.0
-        }
+        return player.job().thenApplyMain { job -> job?.getMaxSpirit() ?: 0.0 }
     }
 
     override fun getMaxSpirit(sender: ProxyCommandSender, job: IJob, level: Int): Double {
         return sender.eval(job.maxSpiritActions, mapOf("level" to level)).orNull().cdouble
+            .takeIf { it.isFinite() }
+            ?.coerceAtLeast(0.0)
+            ?: 0.0
     }
 
     override fun getMaxSpirit(sender: ProxyCommandSender, job: String, level: Int): Double {
@@ -35,132 +41,171 @@ class SpiritManagerDefault: ISpiritManager {
     }
 
     override fun getSpirit(player: Player): Double {
-        // 在线玩家的 Profile 已在 MemoryCache 中，同步取已完成的 future，未加载时兜底 0.0，不阻塞线程
         val profile = MemoryCache.getPlayerProfile(player.uniqueId).getNow(null) ?: return 0.0
-        return profile.getFlag(SPIRIT_FLAG)?.value.cdouble
+        return current(profile)
     }
 
     override fun giveSpirit(player: Player, spirit: Double): CompletableFuture<SpiritResult> {
-        if (spirit < 0) return takeSpirit(player, -spirit)
-        val future = CompletableFuture<SpiritResult>()
-        player.orryxProfile { profile ->
-            player.job { job ->
+        if (!spirit.isFinite()) return failed(IllegalArgumentException("精力值必须是有限数字"))
+        if (spirit < 0.0) return takeSpirit(player, -spirit)
+        return player.orryxProfile().thenComposeMain { profile ->
+            player.job().thenComposeMain { job ->
+                if (job == null) return@thenComposeMain CompletableFuture.completedFuture(SpiritResult.NO_JOB)
                 val event = OrryxPlayerSpiritEvents.Up.Pre(player, profile, spirit)
-                if (event.call()) {
-                    profile.setFlag(SPIRIT_FLAG, (profile.getFlag(SPIRIT_FLAG)?.value.cdouble + event.spirit).coerceIn(0.0, job.getMaxSpirit()).flag(true), false)
-                    save(player, profile) {
-                        future.complete(SpiritResult.SUCCESS)
-                        OrryxPlayerSpiritEvents.Up.Post(player, profile, event.spirit).call()
-                    }
-                } else {
-                    future.complete(SpiritResult.CANCELLED)
+                if (!event.call()) return@thenComposeMain CompletableFuture.completedFuture(SpiritResult.CANCELLED)
+                val max = job.getMaxSpirit().finiteNonNegative()
+                val next = (current(profile) + event.spirit.finiteNonNegative()).coerceIn(0.0, max)
+                val previous = profile.getFlag(SPIRIT_FLAG)
+                val attempted = next.flag(true)
+                replaceResourceFlag(profile, player, attempted)
+                commitResource(profile, player, previous, attempted) {
+                    OrryxPlayerSpiritEvents.Up.Post(player, profile, event.spirit).call()
+                    SpiritResult.SUCCESS
                 }
-            }.thenApply {
-                it ?: future.complete(SpiritResult.NO_JOB)
             }
         }
-        return future
     }
 
     override fun takeSpirit(player: Player, spirit: Double): CompletableFuture<SpiritResult> {
-        if (spirit < 0) return giveSpirit(player, -spirit)
-        val future = CompletableFuture<SpiritResult>()
-        player.orryxProfile { profile ->
-            player.job { job ->
+        if (!spirit.isFinite()) return failed(IllegalArgumentException("精力值必须是有限数字"))
+        if (spirit < 0.0) return giveSpirit(player, -spirit)
+        return player.orryxProfile().thenComposeMain { profile ->
+            player.job().thenComposeMain { job ->
+                if (job == null) return@thenComposeMain CompletableFuture.completedFuture(SpiritResult.NO_JOB)
                 val event = OrryxPlayerSpiritEvents.Down.Pre(player, profile, spirit)
-                if (event.call()) {
-                    val less = profile.getFlag(SPIRIT_FLAG)?.value.cdouble - event.spirit
-                    profile.setFlag(SPIRIT_FLAG, less.coerceIn(0.0, job.getMaxSpirit()).flag(true), false)
-                    save(player, profile) {
-                        future.complete(
-                            if (less >= 0) {
-                                SpiritResult.SUCCESS
-                            } else {
-                                SpiritResult.NOT_ENOUGH
-                            }
-                        )
-                        OrryxPlayerSpiritEvents.Down.Post(player, profile, event.spirit).call()
-                    }
-                } else {
-                    future.complete(SpiritResult.CANCELLED)
+                if (!event.call()) return@thenComposeMain CompletableFuture.completedFuture(SpiritResult.CANCELLED)
+                val cost = event.spirit.finiteNonNegative()
+                val current = current(profile)
+                if (current < cost) {
+                    return@thenComposeMain CompletableFuture.completedFuture(SpiritResult.NOT_ENOUGH)
                 }
-            }.thenApply {
-                it ?: future.complete(SpiritResult.NO_JOB)
+                val next = (current - cost).coerceIn(0.0, job.getMaxSpirit().finiteNonNegative())
+                val previous = profile.getFlag(SPIRIT_FLAG)
+                val attempted = next.flag(true)
+                replaceResourceFlag(profile, player, attempted)
+                commitResource(profile, player, previous, attempted) {
+                    OrryxPlayerSpiritEvents.Down.Post(player, profile, cost).call()
+                    SpiritResult.SUCCESS
+                }
             }
         }
-        return future
     }
 
     override fun haveSpirit(player: Player, spirit: Double): Boolean {
-        return getSpirit(player) - spirit >= 0
+        if (!spirit.isFinite()) return false
+        return spirit <= 0.0 || getSpirit(player) + EPSILON >= spirit
     }
 
     override fun healSpirit(player: Player): CompletableFuture<Double> {
-        val future = CompletableFuture<Double>()
-        player.orryxProfile { profile ->
-            player.job { job ->
-                val maxSpirit = job.getMaxSpirit()
-                val add = maxSpirit - profile.getFlag(SPIRIT_FLAG)?.value.cdouble
-                val event = OrryxPlayerSpiritEvents.Heal.Pre(player, profile, add)
-                if (event.call()) {
-                    profile.setFlag(SPIRIT_FLAG, maxSpirit.flag(true), false)
-                    save(player, profile) {
-                        future.complete(add)
-                        OrryxPlayerSpiritEvents.Heal.Post(player, profile, add).call()
-                    }
-                } else {
-                    future.complete(0.0)
+        return player.orryxProfile().thenComposeMain { profile ->
+            player.job().thenComposeMain { job ->
+                if (job == null) return@thenComposeMain CompletableFuture.completedFuture(0.0)
+                val max = job.getMaxSpirit().finiteNonNegative()
+                val current = current(profile).coerceAtMost(max)
+                val requested = (max - current).coerceAtLeast(0.0)
+                if (requested <= 0.0) return@thenComposeMain CompletableFuture.completedFuture(0.0)
+                val event = OrryxPlayerSpiritEvents.Heal.Pre(player, profile, requested)
+                if (!event.call()) return@thenComposeMain CompletableFuture.completedFuture(0.0)
+                val added = event.healSpirit.finiteNonNegative().coerceAtMost(max - current)
+                val previous = profile.getFlag(SPIRIT_FLAG)
+                val attempted = (current + added).flag(true)
+                replaceResourceFlag(profile, player, attempted)
+                commitResource(profile, player, previous, attempted) {
+                    OrryxPlayerSpiritEvents.Heal.Post(player, profile, added).call()
+                    added
                 }
-            }.thenApply {
-                it ?: future.complete(0.0)
             }
         }
-        return future
     }
 
     override fun regainSpirit(player: Player): CompletableFuture<Double> {
-        val future = CompletableFuture<Double>()
-        player.orryxProfile { profile ->
-            player.job { job ->
-                val spirit = job.getRegainSpirit()
-                val event = OrryxPlayerSpiritEvents.Regain.Pre(player, profile, spirit)
-                if (event.call()) {
-                    profile.setFlag(SPIRIT_FLAG, (profile.getFlag(SPIRIT_FLAG)?.value.cdouble + event.regainSpirit).coerceAtMost(job.getMaxSpirit()).flag(true), false)
-                    save(player, profile) {
-                        future.complete(event.regainSpirit)
-                        OrryxPlayerSpiritEvents.Regain.Post(player, profile, event.regainSpirit).call()
-                    }
-                } else {
-                    future.complete(0.0)
+        return player.orryxProfile().thenComposeMain { profile ->
+            player.job().thenComposeMain { job ->
+                if (job == null) return@thenComposeMain CompletableFuture.completedFuture(0.0)
+                val max = job.getMaxSpirit().finiteNonNegative()
+                val current = current(profile).coerceAtMost(max)
+                if (current + EPSILON >= max) return@thenComposeMain CompletableFuture.completedFuture(0.0)
+                val configured = job.getRegainSpirit().finiteNonNegative()
+                if (configured <= 0.0) return@thenComposeMain CompletableFuture.completedFuture(0.0)
+                val event = OrryxPlayerSpiritEvents.Regain.Pre(player, profile, configured)
+                if (!event.call()) return@thenComposeMain CompletableFuture.completedFuture(0.0)
+                val added = event.regainSpirit.finiteNonNegative().coerceAtMost(max - current)
+                if (added <= 0.0) return@thenComposeMain CompletableFuture.completedFuture(0.0)
+                val previous = profile.getFlag(SPIRIT_FLAG)
+                val attempted = (current + added).flag(true)
+                replaceResourceFlag(profile, player, attempted)
+                commitResource(profile, player, previous, attempted) {
+                    OrryxPlayerSpiritEvents.Regain.Post(player, profile, added).call()
+                    added
                 }
-            }.thenApply {
-                it ?: future.complete(0.0)
             }
         }
-        return future
     }
 
     override fun setSpirit(player: Player, spirit: Double): CompletableFuture<SpiritResult> {
-        val currentSpirit = getSpirit(player)
-        return when {
-            spirit > currentSpirit -> giveSpirit(player, spirit - currentSpirit)
-            spirit < currentSpirit -> takeSpirit(player, currentSpirit - spirit)
-            else -> CompletableFuture.completedFuture(SpiritResult.SAME)
+        if (!spirit.isFinite()) return failed(IllegalArgumentException("精力值必须是有限数字"))
+        return player.orryxProfile().thenComposeMain { profile ->
+            val current = current(profile)
+            when {
+                spirit > current -> giveSpirit(player, spirit - current)
+                spirit < current -> takeSpirit(player, current - spirit)
+                else -> CompletableFuture.completedFuture(SpiritResult.SAME)
+            }
         }
     }
 
-    private fun save(player: Player, profile: IPlayerProfile, callback: () -> Unit) {
-        if (isPrimaryThread && !GameManager.shutdown) {
-            OrryxAPI.ioScope.launch {
-                ISyncCacheManager.INSTANCE.savePlayerProfile(player.uniqueId, profile.createPO())
-                MemoryCache.savePlayerProfile(profile)
-            }.invokeOnCompletion {
-                callback()
+    private fun replaceResourceFlag(profile: IPlayerProfile, player: Player, flag: IFlag?) {
+        val concrete = profile as? PlayerProfile
+            ?: error("Spirit 仅支持 Orryx 内置 PlayerProfile 实现")
+        concrete.replaceSystemFlag(player, SPIRIT_FLAG, flag)
+    }
+
+    private fun <T> commitResource(
+        profile: IPlayerProfile,
+        player: Player,
+        previous: IFlag?,
+        attempted: IFlag,
+        committed: () -> T,
+    ): CompletableFuture<T> {
+        return PersistenceManager.saveProfile(profile.createPO(), invalidate = false)
+            .handle { _, throwable -> throwable }
+            .thenComposeMain { throwable ->
+                if (throwable == null || throwable.databaseCommitted()) {
+                    if (throwable != null) throwable.printStackTrace()
+                    MemoryCache.savePlayerProfile(profile)
+                    CompletableFuture.completedFuture(committed())
+                } else {
+                    if (profile.getFlag(SPIRIT_FLAG) === attempted) {
+                        replaceResourceFlag(profile, player, previous)
+                        MemoryCache.savePlayerProfile(profile)
+                    }
+                    failed(throwable)
+                }
             }
-        } else {
-            ISyncCacheManager.INSTANCE.savePlayerProfile(player.uniqueId, profile.createPO())
-            MemoryCache.savePlayerProfile(profile)
-            callback()
+    }
+
+    private fun Throwable.databaseCommitted(): Boolean {
+        var current: Throwable? = this
+        while (current != null) {
+            if (current is PersistenceWriteException && current.databaseCommitted) return true
+            current = current.cause
         }
+        return false
+    }
+
+    private fun current(profile: IPlayerProfile): Double {
+        return profile.getFlag(SPIRIT_FLAG)?.value.cdouble.finiteNonNegative()
+    }
+
+    private fun Double.finiteNonNegative(): Double {
+        return if (isFinite()) coerceAtLeast(0.0) else 0.0
+    }
+
+    private fun <T> failed(throwable: Throwable): CompletableFuture<T> {
+        return CompletableFuture<T>().also { it.completeExceptionally(throwable) }
+    }
+
+    companion object {
+        private const val EPSILON = 1e-9
     }
 }

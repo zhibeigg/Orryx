@@ -4,7 +4,7 @@ import org.gitee.orryx.core.targets.ITargetLocation
 import org.joml.Vector3d
 
 /**
- * 射线碰撞箱接口。
+ * 有限射线段碰撞箱接口，命中范围限制在 [origin, end]。
  *
  * @param T 目标位置类型
  * @property length 长度

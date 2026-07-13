@@ -21,13 +21,13 @@ interface IAttributeBridge {
     companion object {
 
         val INSTANCE by unsafeLazy {
-            when {
-                AttributePlusPlugin.isEnabled -> AttributePlusBridge()
-                NodensPlugin.isEnabled -> NodensBridge()
-                AstraXHeroPlugin.isEnabled -> AstraXHeroBridge()
-                CraneAttributePlugin.isEnabled -> CraneAttributeBridge()
-                else -> DefaultAttributeBridge()
-            }
+            CompatGuard.firstAvailable(
+                default = { DefaultAttributeBridge() },
+                { AttributePlusPlugin.isEnabled } to { AttributePlusBridge() },
+                { NodensPlugin.isEnabled } to { NodensBridge() },
+                { AstraXHeroPlugin.isEnabled } to { AstraXHeroBridge() },
+                { CraneAttributePlugin.isEnabled } to { CraneAttributeBridge() },
+            )
         }
     }
 

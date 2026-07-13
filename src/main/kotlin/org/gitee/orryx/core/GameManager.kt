@@ -13,11 +13,16 @@ import org.gitee.orryx.api.events.player.job.OrryxPlayerJobLevelEvents
 import org.gitee.orryx.compat.IAttributeBridge
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.reload.Reload
+import org.gitee.orryx.dao.cache.ISyncCacheManager
+import org.gitee.orryx.dao.cache.MemoryCache
+import org.gitee.orryx.dao.persistence.PersistenceManager
+import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.module.spirit.ISpiritManager
 import org.gitee.orryx.utils.consoleMessage
 import org.gitee.orryx.utils.job
 import org.gitee.orryx.utils.orryxProfile
+import org.gitee.orryx.utils.thenApplyMain
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.event.EventPriority
@@ -47,18 +52,14 @@ object GameManager {
     }
 
     private fun initTimeoutFlag(player: Player) {
-        player.orryxProfile().thenAccept {
-            it.flags.forEach { (key, flag) ->
-                flag.init(player, key)
-            }
+        player.orryxProfile().thenApplyMain { profile ->
+            profile.flags.forEach { (key, flag) -> flag.init(player, key) }
         }
     }
 
     private fun cancelTimeoutFlag(player: Player) {
-        player.orryxProfile().thenAccept {
-            it.flags.forEach { (key, flag) ->
-                flag.cancel(player, key)
-            }
+        player.orryxProfile().thenApplyMain { profile ->
+            profile.flags.forEach { (key, flag) -> flag.cancel(player, key) }
         }
     }
 
@@ -114,17 +115,38 @@ object GameManager {
 
     @Awake(LifeCycle.DISABLE)
     private fun disabled() {
-        consoleMessage("&e┣&7检测到关闭服务器 Orryx 开始关闭流程")
-        ScriptManager.terminateAllSkills()
-        consoleMessage("&e┣&7终止所有玩家技能 &a√")
-        IManaManager.closeThread()
-        consoleMessage("&e┣&7 Mana 线程已关闭 &a√")
-        ISpiritManager.closeThread()
-        consoleMessage("&e┣&7 Spirit 线程已关闭 &a√")
-        consoleMessage("&e┣&7等待协程完成...")
-        OrryxAPI.shutdownScopes(timeout = 5)
-        consoleMessage("&e┣&7协程域终止 &a√")
         shutdown = true
-        consoleMessage("&e┣&7 Storage 禁止异步 &a√")
+        consoleMessage("&e┣&7检测到关闭服务器，Orryx 开始非阻塞关闭流程")
+        ScriptManager.terminateAllSkills()
+        IManaManager.closeThread()
+        ISpiritManager.closeThread()
+        consoleMessage("&e┣&7已停止技能与资源恢复任务 &a√")
+
+        PersistenceManager.shutdown()
+            .handle { _, throwable ->
+                throwable?.let {
+                    consoleMessage("&e┣&c持久化队列 flush 失败: ${it.message}")
+                    it.printStackTrace()
+                }
+                Unit
+            }
+            .thenCompose { ISyncCacheManager.INSTANCE.closeAsync() }
+            .handle { _, throwable ->
+                throwable?.let {
+                    consoleMessage("&e┣&c同步缓存关闭失败: ${it.message}")
+                    it.printStackTrace()
+                }
+                Unit
+            }
+            .thenCompose { IStorageManager.INSTANCE.closeAsync() }
+            .whenComplete { _, throwable ->
+                throwable?.let {
+                    consoleMessage("&e┣&c数据库关闭失败: ${it.message}")
+                    it.printStackTrace()
+                }
+                MemoryCache.printStats()
+                OrryxAPI.shutdownScopes()
+                consoleMessage("&e┣&7Orryx 异步资源关闭流程结束 &a√")
+            }
     }
 }

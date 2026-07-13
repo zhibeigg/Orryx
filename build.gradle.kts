@@ -239,6 +239,7 @@ dependencies {
     compileOnly("org.java-websocket:Java-WebSocket:1.5.7")
 
     testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1")
     testImplementation("com.github.ben-manes.caffeine:caffeine:2.9.3")
     testImplementation("com.eatthepath:fast-uuid:0.2.0")
     testImplementation(kotlin("reflect"))

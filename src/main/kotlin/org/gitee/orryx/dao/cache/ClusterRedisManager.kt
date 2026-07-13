@@ -220,69 +220,89 @@ class ClusterRedisManager: ISyncCacheManager {
         return future
     }
 
-    override fun savePlayerProfile(player: UUID, playerProfilePO: PlayerProfilePO) {
-        requireAsync("redis")
-        debug { "Redis 获取玩家 Profile" }
-        api.useAsyncCommands { commands ->
+    override fun savePlayerProfileAsync(player: UUID, playerProfilePO: PlayerProfilePO): CompletableFuture<Unit> {
+        return redisCommand { commands ->
             commands.setex(playerDataTag(player), RedisManager.SECOND_12_HOURS, Json.encodeToString(playerProfilePO))
         }
     }
 
+    override fun savePlayerProfile(player: UUID, playerProfilePO: PlayerProfilePO) {
+        savePlayerProfileAsync(player, playerProfilePO).exceptionally { it.printStackTrace(); null }
+    }
+
+    override fun savePlayerJobAsync(player: UUID, playerJobPO: PlayerJobPO): CompletableFuture<Unit> {
+        return redisCommand { commands ->
+            commands.setex(playerJobDataTag(player, playerJobPO.id, playerJobPO.job), RedisManager.SECOND_12_HOURS, Json.encodeToString(playerJobPO))
+        }
+    }
+
     override fun savePlayerJob(player: UUID, playerJobPO: PlayerJobPO) {
-        requireAsync("redis")
-        debug { "Redis 获取玩家 Job" }
-        api.useAsyncCommands { commands ->
-            commands.setex(playerJobDataTag(player, playerJobPO.id, playerJobPO.job),
-                RedisManager.SECOND_12_HOURS, Json.encodeToString(playerJobPO))
+        savePlayerJobAsync(player, playerJobPO).exceptionally { it.printStackTrace(); null }
+    }
+
+    override fun savePlayerSkillAsync(player: UUID, playerSkillPO: PlayerSkillPO): CompletableFuture<Unit> {
+        return redisCommand { commands ->
+            commands.setex(playerJobSkillDataTag(player, playerSkillPO.id, playerSkillPO.job, playerSkillPO.skill), RedisManager.SECOND_6_HOURS, Json.encodeToString(playerSkillPO))
         }
     }
 
     override fun savePlayerSkill(player: UUID, playerSkillPO: PlayerSkillPO) {
-        requireAsync("redis")
-        debug { "Redis 保存玩家 Skill" }
-        api.useAsyncCommands { commands ->
-            commands.setex(playerJobSkillDataTag(player, playerSkillPO.id, playerSkillPO.job, playerSkillPO.skill),
-                RedisManager.SECOND_6_HOURS, Json.encodeToString(playerSkillPO))
-        }
+        savePlayerSkillAsync(player, playerSkillPO).exceptionally { it.printStackTrace(); null }
     }
 
-    override fun savePlayerKeySetting(player: UUID, playerKeySettingPO: PlayerKeySettingPO) {
-        requireAsync("redis")
-        debug { "Redis 保存玩家 KeySetting" }
-        api.useAsyncCommands { commands ->
+    override fun savePlayerKeySettingAsync(player: UUID, playerKeySettingPO: PlayerKeySettingPO): CompletableFuture<Unit> {
+        return redisCommand { commands ->
             commands.setex(playerKeySettingDataTag(player), RedisManager.SECOND_6_HOURS, Json.encodeToString(playerKeySettingPO))
         }
     }
 
+    override fun savePlayerKeySetting(player: UUID, playerKeySettingPO: PlayerKeySettingPO) {
+        savePlayerKeySettingAsync(player, playerKeySettingPO).exceptionally { it.printStackTrace(); null }
+    }
+
+    override fun removePlayerProfileAsync(player: UUID): CompletableFuture<Unit> {
+        return redisCommand { commands -> commands.del(playerDataTag(player)) }
+    }
+
     override fun removePlayerProfile(player: UUID) {
-        requireAsync("redis")
-        debug { "Redis 移除玩家 Profile" }
-        api.useAsyncCommands { commands ->
-            commands.del(playerDataTag(player))
-        }
+        removePlayerProfileAsync(player).exceptionally { it.printStackTrace(); null }
+    }
+
+    override fun removePlayerJobAsync(player: UUID, id: Int, job: String): CompletableFuture<Unit> {
+        return redisCommand { commands -> commands.del(playerJobDataTag(player, id, job)) }
     }
 
     override fun removePlayerJob(player: UUID, id: Int, job: String) {
-        requireAsync("redis")
-        debug { "Redis 移除玩家 Job" }
-        api.useAsyncCommands { commands ->
-            commands.del(playerJobDataTag(player, id, job))
-        }
+        removePlayerJobAsync(player, id, job).exceptionally { it.printStackTrace(); null }
+    }
+
+    override fun removePlayerSkillAsync(player: UUID, id: Int, job: String, skill: String): CompletableFuture<Unit> {
+        return redisCommand { commands -> commands.del(playerJobSkillDataTag(player, id, job, skill)) }
     }
 
     override fun removePlayerSkill(player: UUID, id: Int, job: String, skill: String) {
-        requireAsync("redis")
-        debug { "Redis 移除玩家 Skill" }
-        api.useAsyncCommands { commands ->
-            commands.del(playerJobSkillDataTag(player, id, job, skill))
-        }
+        removePlayerSkillAsync(player, id, job, skill).exceptionally { it.printStackTrace(); null }
+    }
+
+    override fun removePlayerKeySettingAsync(player: UUID): CompletableFuture<Unit> {
+        return redisCommand { commands -> commands.del(playerKeySettingDataTag(player)) }
     }
 
     override fun removePlayerKeySetting(player: UUID) {
-        requireAsync("redis")
-        debug { "Redis 移除玩家 KeySetting" }
-        api.useAsyncCommands { commands ->
-            commands.del(playerKeySettingDataTag(player))
+        removePlayerKeySettingAsync(player).exceptionally { it.printStackTrace(); null }
+    }
+
+    private fun redisCommand(command: (io.lettuce.core.cluster.api.async.RedisClusterAsyncCommands<String, String>) -> java.util.concurrent.CompletionStage<*>): CompletableFuture<Unit> {
+        val future = CompletableFuture<Unit>()
+        try {
+            api.useAsyncCommands { commands ->
+                command(commands).whenComplete { _, throwable ->
+                    if (throwable == null) future.complete(Unit) else future.completeExceptionally(throwable)
+                }
+            }
+        } catch (throwable: Throwable) {
+            future.completeExceptionally(throwable)
         }
+        return future
     }
 }

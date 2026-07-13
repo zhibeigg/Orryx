@@ -7,6 +7,7 @@ import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.skill.ISkill
 import org.gitee.orryx.core.skill.SkillLoaderManager
 import org.gitee.orryx.core.targets.ITargetLocation
+import org.gitee.orryx.utils.ticksToMillisSaturated
 import org.gitee.orryx.utils.toTarget
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common.platform.function.warning
@@ -105,11 +106,11 @@ class SkillParameter(val skill: String?, val player: Player, var level: Int = 1)
     }
 
     fun cooldownValue(lazy: Boolean = false): Long {
-        return getVariable("COOLDOWN", lazy).clong * 50
+        return ticksToMillisSaturated(getVariable("COOLDOWN", lazy).clong)
     }
 
     fun silenceValue(lazy: Boolean = false): Long {
-        return getVariable("SILENCE", lazy).clong * 50
+        return ticksToMillisSaturated(getVariable("SILENCE", lazy).clong)
     }
 
     override fun toString(): String {

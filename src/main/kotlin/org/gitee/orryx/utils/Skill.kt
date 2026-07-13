@@ -15,6 +15,8 @@ import org.gitee.orryx.core.key.IBindKey
 import org.gitee.orryx.core.skill.*
 import org.gitee.orryx.core.skill.caster.SkillCasterRegistry
 import org.gitee.orryx.dao.cache.MemoryCache
+import org.gitee.orryx.dao.persistence.PersistenceManager
+import java.util.concurrent.ConcurrentHashMap
 import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.module.state.StateManager
 import org.gitee.orryx.module.state.StateManager.statusData
@@ -34,6 +36,8 @@ const val DEFAULT_PICTURE = "default"
 
 val silence: Boolean by ReloadAwareLazy(Orryx.config) { Orryx.config.getBoolean("Silence", false) }
 
+private val pendingSkillCreations = ConcurrentHashMap<String, CompletableFuture<IPlayerSkill?>>()
+
 internal fun SkillParameter.runSkillAction(map: Map<String, Any?> = emptyMap()): CompletableFuture<Any?>? {
     return SkillLoaderManager.getSkillLoader(skill ?: return CompletableFuture.completedFuture(null))?.let { skill ->
         skill as ICastSkill
@@ -43,6 +47,18 @@ internal fun SkillParameter.runSkillAction(map: Map<String, Any?> = emptyMap()):
             combinedMap
         )
     }
+}
+
+internal fun SkillParameter.startSkillAction(map: Map<String, Any?> = emptyMap()): CompletableFuture<Unit> {
+    val loader = SkillLoaderManager.getSkillLoader(skill ?: return CompletableFuture.completedFuture(Unit))
+        ?: return CompletableFuture.completedFuture(Unit)
+    val castSkill = loader as? ICastSkill
+        ?: return CompletableFuture<Unit>().also {
+            it.completeExceptionally(IllegalArgumentException("技能 ${loader.key} 不是可释放技能"))
+        }
+    val combinedMap = buildTriggerVariables() + map
+    return KetherScript(castSkill.key, castSkill.script ?: error("请修复技能配置中的错误${castSkill.key}"))
+        .startActions(this, combinedMap)
 }
 
 internal fun SkillParameter.runSkillExtendAction(
@@ -147,7 +163,7 @@ inline fun <T> Player.skill(
     create: Boolean = false,
     crossinline function: (IPlayerSkill) -> T
 ): CompletableFuture<T?> {
-    return getSkill(skill, create).thenApply {
+    return getSkill(skill, create).thenApplyMain {
         it?.let { it1 -> function(it1) }
     }
 }
@@ -162,7 +178,7 @@ inline fun <T> Player.skill(
     create: Boolean = false,
     crossinline function: (IPlayerSkill) -> T
 ): CompletableFuture<T?> {
-    return getSkill(job, skill, create).thenApply {
+    return getSkill(job, skill, create).thenApplyMain {
         it?.let { it1 -> function(it1) }
     }
 }
@@ -173,37 +189,35 @@ inline fun <T> Player.skill(
     create: Boolean = false,
     crossinline function: (IPlayerSkill) -> T
 ): CompletableFuture<T?> {
-    return getSkill(job, skill, create).thenApply {
+    return getSkill(job, skill, create).thenApplyMain {
         it?.let { it1 -> function(it1) }
     }
 }
 
 fun Player.getSkill(skill: String, create: Boolean = false): CompletableFuture<IPlayerSkill?> {
-    val future = CompletableFuture<IPlayerSkill?>()
-    job {
-        getSkill(it.key, skill, create).thenApply { skill ->
-            future.complete(skill)
-        }
-    }.thenApply {
-        // 无职业时 job() 返回 null，确保 future 被 complete
-        if (it == null) {
-            future.complete(null)
-        }
+    return job().thenComposeMain { currentJob ->
+        currentJob?.let { getSkill(it.key, skill, create) }
+            ?: CompletableFuture.completedFuture(null)
     }
-    return future
 }
 
 fun Player.getSkill(job: String, skill: String, create: Boolean = false): CompletableFuture<IPlayerSkill?> {
     val skillLoader = SkillLoaderManager.getSkillLoader(skill) ?: return CompletableFuture.completedFuture(null)
     return orryxProfile { profile ->
-        MemoryCache.getPlayerSkill(uniqueId, profile.id, job, skill).thenApply {
-            it ?: if (create) {
-                PlayerSkill(profile.id, uniqueId, skill, job, skillLoader.minLevel, skillLoader.isLocked).apply {
-                    save(remove = false)
+        MemoryCache.getPlayerSkill(uniqueId, profile.id, job, skill).thenComposeMain { cached ->
+            if (cached != null || !create) return@thenComposeMain CompletableFuture.completedFuture(cached)
+            val tag = playerJobSkillDataTag(uniqueId, profile.id, job, skill)
+            val creation = pendingSkillCreations.computeIfAbsent(tag) {
+                val created = PlayerSkill(profile.id, uniqueId, skill, job, skillLoader.minLevel, skillLoader.isLocked)
+                MemoryCache.savePlayerSkill(created)
+                PersistenceManager.saveSkill(created.createPO(), invalidate = false).thenApply<IPlayerSkill?> {
+                    created
+                }.whenComplete { _, throwable ->
+                    if (throwable != null) MemoryCache.removePlayerSkill(uniqueId, profile.id, job, skill)
                 }
-            } else {
-                null
             }
+            creation.whenComplete { _, _ -> pendingSkillCreations.remove(tag, creation) }
+            creation
         }
     }
 }
@@ -228,29 +242,55 @@ fun IPlayerSkill.getIcon(): String {
     return skill.icon.getIcon(player, SkillParameter(key, player, level))
 }
 
-fun ICastSkill.consume(player: Player, parameter: SkillParameter) {
-    silence(parameter, player)
-    SkillTimer.reset(player, parameter)
-    IManaManager.INSTANCE.takeMana(player, parameter.manaValue(true))
+fun ICastSkill.consume(player: Player, parameter: SkillParameter): CompletableFuture<CastResult> {
+    return SkillCastCoordinator.consume(player, parameter)
+}
+
+internal fun ISkill.castSkillRawAsync(
+    player: Player,
+    parameter: SkillParameter,
+    consume: Boolean,
+): CompletableFuture<CastResult> {
+    return SkillCasterRegistry.getCaster(this)?.cast(this, player, parameter, consume)
+        ?: CompletableFuture.completedFuture(CastResult.PARAMETER)
+}
+
+fun ISkill.castSkillAsync(player: Player, parameter: SkillParameter, consume: Boolean = true): CompletableFuture<CastResult> {
+    debug { "玩家 ${player.name} cast skill $key" }
+    return if (consume) {
+        SkillCastCoordinator.enqueue(player.uniqueId) {
+            castSkillRawAsync(player, parameter, true)
+        }
+    } else {
+        castSkillRawAsync(player, parameter, false)
+    }
 }
 
 fun ISkill.castSkill(player: Player, parameter: SkillParameter, consume: Boolean = true) {
-    debug { "玩家 ${player.name} cast skill $key" }
-    SkillCasterRegistry.getCaster(this)?.cast(this, player, parameter, consume)
+    castSkillAsync(player, parameter, consume).exceptionally {
+        it.printStackTrace()
+        null
+    }
 }
 
 fun IPlayerSkill.tryCast(trigger: SkillTrigger = SkillTrigger.Unknown): CompletableFuture<CastResult> {
     debug { "玩家 ${player.name} try cast skill $key" }
     val parameter = parameter().apply { this.trigger = trigger }
-    val result = castCheck(parameter)
-    result.thenAccept {
-        debug { "玩家 ${player.name} try cast skill result ${it.name}" }
-        if (!silence) it.sendLang(player)
-        if (it.isSuccess()) {
-            cast(parameter, true)
+    return SkillCastCoordinator.enqueue(player.uniqueId) {
+        castCheck(parameter).thenComposeMain { checkResult ->
+            if (!checkResult.isSuccess()) {
+                CompletableFuture.completedFuture(checkResult)
+            } else if (this is PlayerSkill) {
+                castAsync(parameter, true)
+            } else {
+                CompletableFuture.completedFuture(cast(parameter, true))
+            }
         }
+    }.thenApplyMain { result ->
+        debug { "玩家 ${player.name} try cast skill result ${result.name}" }
+        if (!silence) result.sendLang(player)
+        result
     }
-    return result
 }
 
 fun CastResult.isSuccess(): Boolean {

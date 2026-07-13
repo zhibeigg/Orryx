@@ -22,8 +22,8 @@ import org.gitee.orryx.core.skill.IPlayerSkill
 import org.gitee.orryx.core.skill.PlayerSkill
 import org.gitee.orryx.dao.cache.ISyncCacheManager
 import org.gitee.orryx.dao.cache.MemoryCache
+import org.gitee.orryx.dao.persistence.PersistenceManager
 import org.gitee.orryx.dao.pojo.PlayerJobPO
-import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.module.experience.ExperienceLoaderManager
 import org.gitee.orryx.module.experience.IExperience
 import org.gitee.orryx.utils.*
@@ -73,7 +73,7 @@ class PlayerJob(
         get() = getExperience().getExperienceOfLevel(player, level)
 
     override fun createPO(): PlayerJobPO {
-        return PlayerJobPO(id, player.uniqueId, key, experience, group, bindKeyOfGroupToMap(bindKeyOfGroup))
+        return PlayerJobPO(id, uuid, key, experience, group, bindKeyOfGroupToMap(bindKeyOfGroup))
     }
 
     override fun getUpgradePoint(from: Int, to: Int): Int {
@@ -111,16 +111,22 @@ class PlayerJob(
         if (event.call()) {
             val before = level
             privateExperience = (privateExperience + event.upExperience.coerceAtLeast(0)).coerceAtMost(getExperience().maxExp(player))
-            save(isPrimaryThread) {
-                OrryxPlayerJobExperienceEvents.Up.Post(player, this, event.upExperience).call()
-                val changeLevel = level - before
-                if (changeLevel > 0) {
-                    val levelEvent = OrryxPlayerJobLevelEvents.Up.Pre(player, this, changeLevel)
-                    if (levelEvent.call()) {
-                        OrryxPlayerJobLevelEvents.Up.Post(player, this, levelEvent.upLevel).call()
+            persist(isPrimaryThread, false).whenComplete { _, throwable ->
+                runOnMainThread {
+                    if (throwable != null) {
+                        future.completeExceptionally(throwable)
+                    } else {
+                        OrryxPlayerJobExperienceEvents.Up.Post(player, this, event.upExperience).call()
+                        val changeLevel = level - before
+                        if (changeLevel > 0) {
+                            val levelEvent = OrryxPlayerJobLevelEvents.Up.Pre(player, this, changeLevel)
+                            if (levelEvent.call()) {
+                                OrryxPlayerJobLevelEvents.Up.Post(player, this, levelEvent.upLevel).call()
+                            }
+                        }
+                        future.complete(SUCCESS)
                     }
                 }
-                future.complete(SUCCESS)
             }
         } else {
             future.complete(CANCELLED)
@@ -135,16 +141,22 @@ class PlayerJob(
         if (event.call()) {
             val before = level
             privateExperience = (privateExperience - event.downExperience.coerceAtLeast(0)).coerceAtLeast(0)
-            save(isPrimaryThread) {
-                OrryxPlayerJobExperienceEvents.Down.Post(player, this, event.downExperience).call()
-                val changeLevel = before - level
-                if (changeLevel > 0) {
-                    val levelEvent = OrryxPlayerJobLevelEvents.Down.Pre(player, this, changeLevel)
-                    if (levelEvent.call()) {
-                        OrryxPlayerJobLevelEvents.Down.Post(player, this, levelEvent.downLevel).call()
+            persist(isPrimaryThread, false).whenComplete { _, throwable ->
+                runOnMainThread {
+                    if (throwable != null) {
+                        future.completeExceptionally(throwable)
+                    } else {
+                        OrryxPlayerJobExperienceEvents.Down.Post(player, this, event.downExperience).call()
+                        val changeLevel = before - level
+                        if (changeLevel > 0) {
+                            val levelEvent = OrryxPlayerJobLevelEvents.Down.Pre(player, this, changeLevel)
+                            if (levelEvent.call()) {
+                                OrryxPlayerJobLevelEvents.Down.Post(player, this, levelEvent.downLevel).call()
+                            }
+                        }
+                        future.complete(SUCCESS)
                     }
                 }
-                future.complete(SUCCESS)
             }
         } else {
             future.complete(CANCELLED)
@@ -198,9 +210,13 @@ class PlayerJob(
         val future = CompletableFuture<Boolean>()
         if (event.call()) {
             privateGroup = event.group.key
-            save(isPrimaryThread) {
-                OrryxPlayerChangeGroupEvents.Post(player, this, event.group).call()
-                future.complete(true)
+            persist(isPrimaryThread, false).whenComplete { _, throwable ->
+                runOnMainThread {
+                    if (throwable != null) future.completeExceptionally(throwable) else {
+                        OrryxPlayerChangeGroupEvents.Post(player, this, event.group).call()
+                        future.complete(true)
+                    }
+                }
             }
         } else {
             future.complete(false)
@@ -223,9 +239,13 @@ class PlayerJob(
                 }
                 set(event.bindKey, skill.key)
             }
-            save(isPrimaryThread) {
-                OrryxPlayerSkillBindKeyEvent.Post(player, skill, event.group, event.bindKey).call()
-                future.complete(true)
+            persist(isPrimaryThread, false).whenComplete { _, throwable ->
+                runOnMainThread {
+                    if (throwable != null) future.completeExceptionally(throwable) else {
+                        OrryxPlayerSkillBindKeyEvent.Post(player, skill, event.group, event.bindKey).call()
+                        future.complete(true)
+                    }
+                }
             }
         } else {
             future.complete(false)
@@ -244,9 +264,13 @@ class PlayerJob(
                     u
                 }
             }
-            save(isPrimaryThread) {
-                OrryxPlayerSkillUnBindKeyEvent.Post(player, skill, event.group).call()
-                future.complete(true)
+            persist(isPrimaryThread, false).whenComplete { _, throwable ->
+                runOnMainThread {
+                    if (throwable != null) future.completeExceptionally(throwable) else {
+                        OrryxPlayerSkillUnBindKeyEvent.Post(player, skill, event.group).call()
+                        future.complete(true)
+                    }
+                }
             }
         } else {
             future.complete(false)
@@ -255,79 +279,84 @@ class PlayerJob(
     }
 
     override fun clear(): CompletableFuture<Boolean> {
-        val event = OrryxPlayerJobClearEvents.Pre(player, this)
-        val future = CompletableFuture<Boolean>()
-        if (event.call()) {
-            privateBindKeyOfGroup.clear()
-            privateExperience = 0
-            privateGroup = DEFAULT
-
-            val skillFutures = job.skills.map { skillKey ->
-                player.getSkill(key, skillKey)
+        return mainThreadFuture {
+            val onlinePlayer = player
+            if (!OrryxPlayerJobClearEvents.Pre(onlinePlayer, this).call()) {
+                return@mainThreadFuture null
             }
-            CompletableFuture.allOf(*skillFutures.toTypedArray()).thenAccept {
-                val skills = skillFutures.mapNotNull { it.get() }
-                val clearedSkills = skills.filter { skill ->
-                    (skill as PlayerSkill).clearMemoryState()
-                }
-                val skillPOs = clearedSkills.map { it.createPO() }
-                val jobPO = createPO()
-                val doSave = {
-                    try {
-                        IStorageManager.INSTANCE.saveJobAndSkills(jobPO, skillPOs) {
-                            ISyncCacheManager.INSTANCE.removePlayerJob(player.uniqueId, id, key)
-                            MemoryCache.removePlayerJob(player.uniqueId, id, key)
-                            clearedSkills.forEach { skill ->
-                                ISyncCacheManager.INSTANCE.removePlayerSkill(player.uniqueId, id, key, skill.key)
-                                MemoryCache.removePlayerSkill(player.uniqueId, id, key, skill.key)
-                                OrryxPlayerSkillClearEvents.Post(player, skill).call()
-                            }
-                            OrryxPlayerJobClearEvents.Post(player, this).call()
-                            future.complete(true)
-                        }
-                    } catch (e: Throwable) {
-                        e.printStackTrace()
-                        future.complete(false)
-                    }
-                }
-                if (isPrimaryThread && !GameManager.shutdown) {
-                    OrryxAPI.ioScope.launch { doSave() }
-                } else {
-                    doSave()
+            onlinePlayer to job.skills.map { skillKey -> onlinePlayer.getSkill(key, skillKey) }
+        }.thenCompose { preparation ->
+            if (preparation == null) {
+                CompletableFuture.completedFuture(null)
+            } else {
+                val (onlinePlayer, skillFutures) = preparation
+                CompletableFuture.allOf(*skillFutures.toTypedArray()).thenApplyMain {
+                    privateBindKeyOfGroup.clear()
+                    privateExperience = 0
+                    privateGroup = DEFAULT
+                    val clearedSkills = skillFutures.mapNotNull { it.getNow(null) }
+                        .filterIsInstance<PlayerSkill>()
+                        .filter { it.clearMemoryState() }
+                    ClearContext(onlinePlayer, clearedSkills, createPO(), clearedSkills.map { it.createPO() })
                 }
             }
-        } else {
-            future.complete(false)
+        }.thenCompose { context ->
+            if (context == null) {
+                CompletableFuture.completedFuture(null)
+            } else {
+                PersistenceManager.saveJobAndSkills(context.job, context.skillData, invalidate = true)
+                    .thenApply { context }
+            }
+        }.thenApplyMain { context ->
+            if (context == null) {
+                false
+            } else {
+                context.skills.forEach { skill ->
+                    OrryxPlayerSkillClearEvents.Post(context.player, skill).call()
+                }
+                OrryxPlayerJobClearEvents.Post(context.player, this).call()
+                true
+            }
         }
-        return future
     }
 
     override fun save(async: Boolean, remove: Boolean, callback: Runnable) {
-        val event = OrryxPlayerJobSaveEvents.Pre(player, this, async, remove)
-        event.call()
-        val data = createPO()
-        fun remove() {
-            if (event.remove) {
-                ISyncCacheManager.INSTANCE.removePlayerJob(player.uniqueId, id, key)
-                MemoryCache.removePlayerJob(player.uniqueId, id, key)
-            }
-        }
-        if (event.async && !GameManager.shutdown) {
-            OrryxAPI.ioScope.launch {
-                IStorageManager.INSTANCE.savePlayerJob(data) {
-                    remove()
+        persist(async, remove).whenComplete { context, throwable ->
+            if (throwable != null) {
+                throwable.printStackTrace()
+            } else {
+                runOnMainThread {
                     callback.run()
-                    OrryxPlayerJobSaveEvents.Post(player, this@PlayerJob, event.async, event.remove).call()
+                    OrryxPlayerJobSaveEvents.Post(context.player, this@PlayerJob, context.async, context.remove).call()
                 }
-            }
-        } else {
-            IStorageManager.INSTANCE.savePlayerJob(data) {
-                remove()
-                callback.run()
-                OrryxPlayerJobSaveEvents.Post(player, this, event.async, event.remove).call()
             }
         }
     }
+
+    private fun persist(async: Boolean, remove: Boolean): CompletableFuture<SaveContext> {
+        return mainThreadFuture {
+            val onlinePlayer = player
+            val event = OrryxPlayerJobSaveEvents.Pre(onlinePlayer, this, async, remove)
+            event.call()
+            SaveContext(onlinePlayer, event.async, event.remove, createPO())
+        }.thenCompose { context ->
+            PersistenceManager.saveJob(context.data, context.remove).thenApply { context }
+        }
+    }
+
+    private data class SaveContext(
+        val player: Player,
+        val async: Boolean,
+        val remove: Boolean,
+        val data: PlayerJobPO,
+    )
+
+    private data class ClearContext(
+        val player: Player,
+        val skills: List<PlayerSkill>,
+        val job: PlayerJobPO,
+        val skillData: List<org.gitee.orryx.dao.pojo.PlayerSkillPO>,
+    )
 
     override fun toString(): String {
         return "PlayerJob(player=${player.name}, key=$key, level=$level)"

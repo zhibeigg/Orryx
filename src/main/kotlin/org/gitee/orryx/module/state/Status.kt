@@ -1,6 +1,5 @@
 package org.gitee.orryx.module.state
 
-import kotlinx.coroutines.future.future
 import org.bukkit.entity.Player
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.kether.ScriptManager.runKether
@@ -17,7 +16,6 @@ import taboolib.module.kether.Script
 import taboolib.module.kether.ScriptContext
 import taboolib.module.kether.orNull
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 
 class Status(override val key: String, configuration: Configuration): IStatus {
@@ -42,6 +40,7 @@ class Status(override val key: String, configuration: Configuration): IStatus {
         val cancelHeldEventWhenPlaying = configurationSection.getBoolean("CancelHeldEventWhenPlaying", true)
         val cancelBukkitAttack = configurationSection.getBoolean("CancelBukkitAttack", false)
         val attackSpeedAction = configurationSection.getString("AttackSpeed") ?: "1.0"
+        val priority = configurationSection.getInt("Priority", 0)
 
         // 龙核附属
         val controller = if (DragonCorePlugin.isEnabled) {
@@ -69,9 +68,7 @@ class Status(override val key: String, configuration: Configuration): IStatus {
         }
 
         fun getCondition(player: Player): CompletableFuture<Any?> {
-            return OrryxAPI.pluginScope.future {
-                player.eval(conditionAction, emptyMap()).get(100, TimeUnit.MILLISECONDS)
-            }
+            return player.eval(conditionAction, emptyMap())
         }
     }
 

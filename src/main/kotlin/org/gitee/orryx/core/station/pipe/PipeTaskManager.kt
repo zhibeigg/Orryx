@@ -1,56 +1,64 @@
 package org.gitee.orryx.core.station.pipe
 
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-import org.gitee.orryx.api.OrryxAPI.Companion.pluginScope
 import org.gitee.orryx.core.station.TriggerManager
+import org.gitee.orryx.utils.runOnMainThread
 import taboolib.common.platform.event.ProxyListener
+import taboolib.common.platform.function.isPrimaryThread
 import taboolib.common.platform.function.registerBukkitListener
+import taboolib.common.platform.function.submit
 import taboolib.common.platform.function.unregisterListener
+import taboolib.common.platform.function.warning
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 object PipeTaskManager {
 
     private val pipeTaskMap = ConcurrentHashMap<UUID, IPipeTask>()
-    private val listenerMutex = Mutex()
-
-    /**
-     * 按触发器分组的任务索引，用于快速查找
-     * key: 触发器事件名, value: 使用该触发器的任务UUID集合
-     */
     private val triggerTaskIndex = ConcurrentHashMap<String, MutableSet<UUID>>()
+    private val listenerLock = Any()
 
     fun addPipeTask(task: IPipeTask) {
-        task.brokeTriggers.forEach { triggerKey ->
-            // 更新索引
-            triggerTaskIndex.getOrPut(triggerKey) { ConcurrentHashMap.newKeySet() }.add(task.uuid)
+        val triggerKeys = task.brokeTriggers.map(PipeTriggerKey::normalize)
+        val missing = triggerKeys.firstOrNull { TriggerManager.pipeTriggersMap[it] == null }
+        require(missing == null) { "PipeTask UUID: ${task.uuid} 使用了不存在的 trigger: $missing" }
+        require(pipeTaskMap.putIfAbsent(task.uuid, task) == null) { "重复的 PipeTask UUID: ${task.uuid}" }
 
-            pluginScope.launch {
-                val trigger = TriggerManager.pipeTriggersMap[triggerKey] ?: error("PipeTask UUID: ${task.uuid}发现写入不存在的trigger: $triggerKey")
-                if (trigger.listener == null) {
-                    listenerMutex.withLock {
-                        if (trigger.listener == null) {
-                            trigger.listener = registerBukkitListener(trigger)
-                        }
-                    }
-                }
-            }
+        triggerKeys.forEach { triggerKey ->
+            triggerTaskIndex.computeIfAbsent(triggerKey) { ConcurrentHashMap.newKeySet() }.add(task.uuid)
+            ensureListener(triggerKey)
         }
-        pipeTaskMap[task.uuid] = task
     }
 
-    private fun <E> registerBukkitListener(trigger: IPipeTrigger<E>): ProxyListener {
+    private fun ensureListener(triggerKey: String) {
+        onMainThread {
+            synchronized(listenerLock) {
+                val trigger = TriggerManager.pipeTriggersMap[triggerKey] ?: return@synchronized
+                if (triggerTaskIndex[triggerKey].isNullOrEmpty() || trigger.listener != null) return@synchronized
+                trigger.listener = registerBukkitListener(triggerKey, trigger)
+            }
+        }
+    }
+
+    private fun <E> registerBukkitListener(triggerKey: String, trigger: IPipeTrigger<E>): ProxyListener {
         return registerBukkitListener(trigger.clazz) { event ->
-            // 使用索引快速获取相关任务，避免遍历所有任务
-            val taskUuids = triggerTaskIndex[trigger.event] ?: return@registerBukkitListener
+            val taskUuids = triggerTaskIndex[triggerKey]?.toList() ?: return@registerBukkitListener
             taskUuids.forEach { uuid ->
                 val pipeTask = pipeTaskMap[uuid] ?: return@forEach
-                if (trigger.onCheck(pipeTask, event, pipeTask.scriptContext?.rootFrame()?.variables()?.toMap() ?: emptyMap())) {
-                    pipeTask.scriptContext?.let { trigger.onStart(it, event, pipeTask.scriptContext?.rootFrame()?.variables()?.toMap() ?: emptyMap()) }
+                val context = pipeTask.scriptContext
+                val variables = context?.rootFrame()?.variables()?.toMap() ?: emptyMap()
+                val shouldBreak = try {
+                    trigger.onCheck(pipeTask, event, variables)
+                } catch (ex: Throwable) {
+                    warning("PipeTrigger $triggerKey 检查 PipeTask $uuid 时发生异常: ${ex.message}")
+                    ex.printStackTrace()
+                    false
+                }
+                if (shouldBreak) {
+                    context?.let { trigger.onStart(it, event, variables) }
                     pipeTask.broke().whenComplete { _, _ ->
-                        pipeTask.scriptContext?.let { trigger.onEnd(it, event, pipeTask.scriptContext?.rootFrame()?.variables()?.toMap() ?: emptyMap()) }
+                        runOnMainThread {
+                            context?.let { trigger.onEnd(it, event, it.rootFrame().variables().toMap()) }
+                        }
                     }
                 }
             }
@@ -62,29 +70,33 @@ object PipeTaskManager {
     }
 
     fun removePipeTask(pipeTask: IPipeTask) {
-        pipeTaskMap.remove(pipeTask.uuid)
-        // 从索引中移除
-        pipeTask.brokeTriggers.forEach { triggerKey ->
-            triggerTaskIndex[triggerKey]?.remove(pipeTask.uuid)
+        if (!pipeTaskMap.remove(pipeTask.uuid, pipeTask)) return
+        pipeTask.brokeTriggers.forEach { rawKey ->
+            val triggerKey = PipeTriggerKey.normalize(rawKey)
+            triggerTaskIndex.computeIfPresent(triggerKey) { _, taskUuids ->
+                taskUuids.remove(pipeTask.uuid)
+                taskUuids.takeUnless { it.isEmpty() }
+            }
+            removeListenerIfUnused(triggerKey)
         }
-        checkListener()
     }
 
-    private fun checkListener() {
-        TriggerManager.pipeTriggersMap.values.forEach { trigger ->
-            pluginScope.launch {
-                listenerMutex.withLock {
-                    // 使用索引检查是否有任务使用该Trigger
-                    val taskUuids = triggerTaskIndex[trigger.event]
-                    val isInactive = taskUuids.isNullOrEmpty()
-                    if (isInactive && trigger.listener != null) {
-                        unregisterListener(trigger.listener!!)
-                        trigger.listener = null
-                        // 清理空的索引条目
-                        triggerTaskIndex.remove(trigger.event)
-                    }
-                }
+    private fun removeListenerIfUnused(triggerKey: String) {
+        onMainThread {
+            synchronized(listenerLock) {
+                if (!triggerTaskIndex[triggerKey].isNullOrEmpty()) return@synchronized
+                val trigger = TriggerManager.pipeTriggersMap[triggerKey] ?: return@synchronized
+                trigger.listener?.let(::unregisterListener)
+                trigger.listener = null
             }
+        }
+    }
+
+    private fun onMainThread(action: () -> Unit) {
+        if (isPrimaryThread) {
+            action()
+        } else {
+            submit { action() }
         }
     }
 }

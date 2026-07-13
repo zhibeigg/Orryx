@@ -48,65 +48,92 @@ class ProfileAPI: IProfileAPI {
         private class TimedStatusImpl(
             private val map: ConcurrentHashMap<UUID, TimedInfo> = ConcurrentHashMap(),
             private val onActivate: ((Player) -> Unit)? = null,
-            private val onDeactivate: ((Player) -> Unit)? = null
+            private val onDeactivate: ((Player) -> Unit)? = null,
         ) : ITimedStatus {
 
-            class TimedInfo(var timeout: Long)
+            class TimedInfo(var expiresAt: Long, var task: taboolib.common.platform.service.PlatformExecutor.PlatformTask? = null)
 
             override fun isActive(player: Player): Boolean {
-                return (map[player.uniqueId]?.timeout ?: return false) >= System.currentTimeMillis()
+                return (map[player.uniqueId]?.expiresAt ?: return false) > System.currentTimeMillis()
             }
 
             override fun countdown(player: Player): Long {
-                return ((map[player.uniqueId]?.timeout ?: return 0) - System.currentTimeMillis()).coerceAtLeast(0)
+                return positiveDifference(map[player.uniqueId]?.expiresAt ?: return 0L, System.currentTimeMillis())
             }
 
             override fun set(player: Player, timeout: Long) {
-                val info = map.getOrPut(player.uniqueId) { TimedInfo(0) }
-                if (info.timeout - System.currentTimeMillis() < timeout) {
-                    info.timeout = System.currentTimeMillis() + timeout
-                    onActivate?.invoke(player)
-                }
-                scheduleDeactivation(player, timeout)
+                val now = System.currentTimeMillis()
+                val expiresAt = saturatedAdd(now, timeout.coerceAtLeast(0L))
+                val wasActive = isActive(player)
+                val info = map.compute(player.uniqueId) { _, previous ->
+                    (previous ?: TimedInfo(expiresAt)).also {
+                        it.expiresAt = maxOf(it.expiresAt, expiresAt)
+                        it.task?.cancel()
+                    }
+                } ?: return
+                if (!wasActive && info.expiresAt > now) onActivate?.invoke(player)
+                scheduleDeactivation(player, info)
             }
 
             override fun cancel(player: Player) {
-                map.remove(player.uniqueId)?.let { onDeactivate?.invoke(player) }
+                map.remove(player.uniqueId)?.let {
+                    it.task?.cancel()
+                    onDeactivate?.invoke(player)
+                }
             }
 
             override fun add(player: Player, timeout: Long) {
-                val time = System.currentTimeMillis()
-                map.getOrPut(player.uniqueId) { TimedInfo(0) }.also {
-                    if (it.timeout >= time) {
-                        it.timeout += timeout
-                    } else {
-                        it.timeout = time + timeout
-                    }
-                    scheduleDeactivation(player, it.timeout - time)
-                }
-                onActivate?.invoke(player)
+                if (timeout <= 0L) return reduce(player, -timeout)
+                val now = System.currentTimeMillis()
+                val wasActive = isActive(player)
+                val info = map.compute(player.uniqueId) { _, previous ->
+                    val value = previous ?: TimedInfo(now)
+                    value.expiresAt = saturatedAdd(maxOf(value.expiresAt, now), timeout)
+                    value.task?.cancel()
+                    value
+                } ?: return
+                if (!wasActive) onActivate?.invoke(player)
+                scheduleDeactivation(player, info)
             }
 
             override fun reduce(player: Player, timeout: Long) {
-                map[player.uniqueId]?.also {
-                    it.timeout -= timeout
-                    if (it.timeout < System.currentTimeMillis()) {
-                        map.remove(player.uniqueId)
-                        onDeactivate?.invoke(player)
-                    }
+                if (timeout < 0L) return add(player, if (timeout == Long.MIN_VALUE) Long.MAX_VALUE else -timeout)
+                val info = map[player.uniqueId] ?: return
+                info.expiresAt = saturatedSubtract(info.expiresAt, timeout)
+                info.task?.cancel()
+                if (info.expiresAt <= System.currentTimeMillis()) {
+                    if (map.remove(player.uniqueId, info)) onDeactivate?.invoke(player)
+                } else {
+                    scheduleDeactivation(player, info)
                 }
             }
 
-            private fun scheduleDeactivation(player: Player, delay: Long) {
-                if (onDeactivate != null) {
-                    submit(delay = delay / 50L + 1L) {
-                        if (!isActive(player)) onDeactivate.invoke(player)
+            private fun scheduleDeactivation(player: Player, info: TimedInfo) {
+                if (onDeactivate == null) return
+                val delayMillis = positiveDifference(info.expiresAt, System.currentTimeMillis())
+                val delayTicks = (delayMillis / 50L).coerceAtMost(Long.MAX_VALUE - 1L) + 1L
+                info.task = submit(delay = delayTicks) {
+                    if (System.currentTimeMillis() >= info.expiresAt && map.remove(player.uniqueId, info)) {
+                        onDeactivate.invoke(player)
                     }
                 }
             }
 
             fun cleanup(player: Player) {
-                map.remove(player.uniqueId)
+                map.remove(player.uniqueId)?.task?.cancel()
+            }
+
+            private fun saturatedAdd(value: Long, amount: Long): Long {
+                return if (amount > 0L && value > Long.MAX_VALUE - amount) Long.MAX_VALUE else value + amount
+            }
+
+            private fun saturatedSubtract(value: Long, amount: Long): Long {
+                return if (amount > 0L && value < Long.MIN_VALUE + amount) Long.MIN_VALUE else value - amount
+            }
+
+            private fun positiveDifference(end: Long, start: Long): Long {
+                if (end <= start) return 0L
+                return if (start < 0L && end > Long.MAX_VALUE + start) Long.MAX_VALUE else end - start
             }
         }
 
@@ -115,7 +142,7 @@ class ProfileAPI: IProfileAPI {
         private class BlockStatusImpl : IBlockStatus {
 
             class BlockInfo {
-                val map = mutableMapOf<DamageType, Task>()
+                val map = ConcurrentHashMap<DamageType, Task>()
                 class Task(var timeout: Long, val function: (OrryxDamageEvents.Pre) -> Unit)
             }
 
@@ -133,10 +160,14 @@ class ProfileAPI: IProfileAPI {
 
             override fun set(player: Player, type: DamageType, timeout: Long, onSuccess: Consumer<OrryxDamageEvents.Pre>) {
                 val info = blockMap.getOrPut(player.uniqueId) { BlockInfo() }
-                val task = info.map.getOrPut(type) { BlockInfo.Task(0) { onSuccess.accept(it) } }
-                if (task.timeout - System.currentTimeMillis() < timeout) {
-                    task.timeout = System.currentTimeMillis() + timeout
+                val now = System.currentTimeMillis()
+                val currentTimeout = info.map[type]?.timeout ?: 0L
+                val expiresAt = when {
+                    timeout <= 0L -> now
+                    now > Long.MAX_VALUE - timeout -> Long.MAX_VALUE
+                    else -> now + timeout
                 }
+                info.map[type] = BlockInfo.Task(maxOf(currentTimeout, expiresAt)) { onSuccess.accept(it) }
             }
 
             override fun cancel(player: Player, type: DamageType) {
