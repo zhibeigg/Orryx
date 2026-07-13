@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zhibeigg.github.io/Orryx/kether/contracts/actions-schema-v3.schema.json",
+  "title": "Orryx Kether actions schema v3",
+  "type": "object",
+  "required": ["version", "schemaVersion", "plugin", "types", "categories", "actions", "selectors", "triggers", "properties"],
+  "properties": {
+    "$schema": { "type": "string", "format": "uri" },
+    "version": { "const": 2 },
+    "schemaVersion": { "const": 3 },
+    "pluginId": { "const": "Orryx" },
+    "pluginVersion": { "type": "string" },
+    "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "plugin": {
+      "type": "object",
+      "required": ["id", "version", "commit"],
+      "properties": {
+        "id": { "const": "Orryx" },
+        "version": { "type": "string" },
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+      }
+    },
+    "types": { "type": "object", "minProperties": 1 },
+    "categories": { "type": "object", "minProperties": 1 },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "aliases", "namespace", "category", "visibility", "description", "syntax", "inputs", "output", "flow", "examples", "execution", "requirements"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "name": { "type": "string", "minLength": 1 },
+          "aliases": { "type": "array", "items": { "type": "string" } },
+          "namespace": { "type": "string", "minLength": 1 },
+          "category": { "type": "string", "minLength": 1 },
+          "visibility": { "enum": ["public", "private"] },
+          "description": { "type": "string" },
+          "syntax": { "type": "string", "minLength": 1 },
+          "inputs": { "type": "array" },
+          "output": { "type": ["object", "null"] },
+          "flow": { "enum": ["normal", "branch", "loop", "container"] },
+          "examples": { "type": "array", "items": { "type": "string" } },
+          "execution": { "type": "object" },
+          "requirements": { "type": "array", "items": { "type": "string" } },
+          "source": { "type": "object" }
+        }
+      }
+    },
+    "selectors": { "type": "array", "items": { "type": "object", "required": ["id", "name", "description", "syntax", "params", "examples"] } },
+    "triggers": { "type": "array", "items": { "type": "object", "required": ["id", "name", "category", "description", "variables", "specialKeys"] } },
+    "properties": { "type": "array", "items": { "type": "object", "required": ["id", "name", "group", "description", "usage", "keys"] } }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$" }
+  }
+}

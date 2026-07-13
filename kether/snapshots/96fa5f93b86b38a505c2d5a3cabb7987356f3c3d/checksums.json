@@ -1,0 +1,10 @@
+{
+    "formatVersion": 1,
+    "algorithm": "SHA-256",
+    "files": {
+        "actions-schema.json": "36a55ebb1beeaca57306d05b2182623ccae9c87ac16aed5cde58b4fd6cf5ef26",
+        "actions-schema.schema.json": "922d8eee672f33b212b68a80c3d52c22ff4eb256adb20c71b1823493e0a4f2b0",
+        "docs.md": "f57fb954042738ae519c90120ef0477143de0b78db1a83ea7af86c199cab48a7",
+        "changes.json": "02a62025223dc2076ca2ec224a230d56b6767a06a1da1c158cfc76c7ff11bd79"
+    }
+}

@@ -1,0 +1,34 @@
+{
+    "formatVersion": 1,
+    "fromReleaseId": "Orryx@2.44.116+025679491d7bc7bd4f5d178bde1d66f78dcd6186",
+    "toReleaseId": "Orryx@2.44.116+96fa5f93b86b38a505c2d5a3cabb7987356f3c3d",
+    "breaking": false,
+    "summary": {
+        "actionsAdded": 0,
+        "actionsRemoved": 0,
+        "actionsChanged": 0,
+        "selectorsChanged": 0,
+        "triggersChanged": 0,
+        "propertiesChanged": 0
+    },
+    "actions": {
+        "added": [],
+        "removed": [],
+        "changed": []
+    },
+    "selectors": {
+        "added": [],
+        "removed": [],
+        "changed": []
+    },
+    "triggers": {
+        "added": [],
+        "removed": [],
+        "changed": []
+    },
+    "properties": {
+        "added": [],
+        "removed": [],
+        "changed": []
+    }
+}
