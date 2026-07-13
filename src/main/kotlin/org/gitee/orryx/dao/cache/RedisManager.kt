@@ -1,6 +1,7 @@
 package org.gitee.orryx.dao.cache
 
 import com.gitee.redischannel.RedisChannelPlugin
+import io.lettuce.core.api.async.RedisAsyncCommands
 import kotlinx.serialization.json.Json
 import org.gitee.orryx.dao.pojo.PlayerJobPO
 import org.gitee.orryx.dao.pojo.PlayerKeySettingPO
@@ -8,11 +9,11 @@ import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.dao.storage.IStorageManager
 import org.gitee.orryx.utils.*
-import java.util.*
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
 
 @Suppress("DuplicatedCode")
-class RedisManager: ISyncCacheManager {
+class RedisManager : ISyncCacheManager {
 
     companion object {
         const val SECOND_6_HOURS = 6 * 60 * 60L
@@ -22,207 +23,47 @@ class RedisManager: ISyncCacheManager {
     private val api by lazy { RedisChannelPlugin.commandAPI() }
 
     override fun getPlayerProfile(player: UUID): CompletableFuture<PlayerProfilePO> {
-        requireAsync("redis")
         debug { "Redis 获取玩家 Profile" }
-        val tag = playerDataTag(player)
-        val future = CompletableFuture<PlayerProfilePO>()
-        api.useAsyncCommands { commands ->
-            commands[tag].whenComplete { json, error ->
-                when {
-                    error != null -> {
-                        error.printStackTrace()
-                        IStorageManager.INSTANCE.getPlayerData(player).whenComplete { data, storageError ->
-                            if (storageError != null) {
-                                future.completeExceptionally(storageError)
-                            } else {
-                                savePlayerProfile(player, data)
-                                future.complete(data)
-                            }
-                        }
-                    }
-                    json == null -> {
-                        IStorageManager.INSTANCE.getPlayerData(player).whenComplete { data, storageError ->
-                            if (storageError != null) {
-                                future.completeExceptionally(storageError)
-                            } else {
-                                savePlayerProfile(player, data)
-                                future.complete(data)
-                            }
-                        }
-                    }
-                    else -> {
-                        try {
-                            commands.expire(tag, SECOND_12_HOURS)
-                            future.complete(Json.decodeFromString<PlayerProfilePO>(json))
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            IStorageManager.INSTANCE.getPlayerData(player).whenComplete { data, storageError ->
-                                if (storageError != null) {
-                                    future.completeExceptionally(storageError)
-                                } else {
-                                    savePlayerProfile(player, data)
-                                    future.complete(data)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return future
+        return readThrough(
+            tag = playerDataTag(player),
+            ttl = SECOND_12_HOURS,
+            decode = { Json.decodeFromString<PlayerProfilePO>(it) },
+            fallback = { IStorageManager.INSTANCE.getPlayerData(player) },
+            warmCache = { savePlayerProfile(player, it) },
+        )
     }
 
     override fun getPlayerJob(player: UUID, id: Int, job: String): CompletableFuture<PlayerJobPO?> {
-        requireAsync("redis")
         debug { "Redis 获取玩家 Job" }
-        val tag = playerJobDataTag(player, id, job)
-        val future = CompletableFuture<PlayerJobPO?>()
-        api.useAsyncCommands { commands ->
-            commands[tag].whenComplete { json, error ->
-                when {
-                    error != null -> {
-                        error.printStackTrace()
-                        IStorageManager.INSTANCE.getPlayerJob(player, id, job).whenComplete { data, storageError ->
-                            if (storageError != null) {
-                                future.completeExceptionally(storageError)
-                            } else {
-                                data?.let { savePlayerJob(player, it) }
-                                future.complete(data)
-                            }
-                        }
-                    }
-                    json == null -> {
-                        IStorageManager.INSTANCE.getPlayerJob(player, id, job).whenComplete { data, storageError ->
-                            if (storageError != null) {
-                                future.completeExceptionally(storageError)
-                            } else {
-                                data?.let { savePlayerJob(player, it) }
-                                future.complete(data)
-                            }
-                        }
-                    }
-                    else -> {
-                        try {
-                            commands.expire(tag, SECOND_12_HOURS)
-                            future.complete(Json.decodeFromString<PlayerJobPO>(json))
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            IStorageManager.INSTANCE.getPlayerJob(player, id, job).whenComplete { data, storageError ->
-                                if (storageError != null) {
-                                    future.completeExceptionally(storageError)
-                                } else {
-                                    data?.let { savePlayerJob(player, it) }
-                                    future.complete(data)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return future
+        return readThrough(
+            tag = playerJobDataTag(player, id, job),
+            ttl = SECOND_12_HOURS,
+            decode = { Json.decodeFromString<PlayerJobPO>(it) },
+            fallback = { IStorageManager.INSTANCE.getPlayerJob(player, id, job) },
+            warmCache = { value -> value?.let { savePlayerJob(player, it) } },
+        )
     }
 
     override fun getPlayerSkill(player: UUID, id: Int, job: String, skill: String): CompletableFuture<PlayerSkillPO?> {
-        requireAsync("redis")
         debug { "Redis 获取玩家 Skill" }
-        val tag = playerJobSkillDataTag(player, id, job, skill)
-        val future = CompletableFuture<PlayerSkillPO?>()
-        api.useAsyncCommands { commands ->
-            commands[tag].whenComplete { json, error ->
-                when {
-                    error != null -> {
-                        error.printStackTrace()
-                        IStorageManager.INSTANCE.getPlayerSkill(player, id, job, skill).whenComplete { data, storageError ->
-                            if (storageError != null) {
-                                future.completeExceptionally(storageError)
-                            } else {
-                                data?.let { savePlayerSkill(player, it) }
-                                future.complete(data)
-                            }
-                        }
-                    }
-                    json == null -> {
-                        IStorageManager.INSTANCE.getPlayerSkill(player, id, job, skill).whenComplete { data, storageError ->
-                            if (storageError != null) {
-                                future.completeExceptionally(storageError)
-                            } else {
-                                data?.let { savePlayerSkill(player, it) }
-                                future.complete(data)
-                            }
-                        }
-                    }
-                    else -> {
-                        try {
-                            commands.expire(tag, SECOND_6_HOURS)
-                            future.complete(Json.decodeFromString<PlayerSkillPO>(json))
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            IStorageManager.INSTANCE.getPlayerSkill(player, id, job, skill).whenComplete { data, storageError ->
-                                if (storageError != null) {
-                                    future.completeExceptionally(storageError)
-                                } else {
-                                    data?.let { savePlayerSkill(player, it) }
-                                    future.complete(data)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return future
+        return readThrough(
+            tag = playerJobSkillDataTag(player, id, job, skill),
+            ttl = SECOND_6_HOURS,
+            decode = { Json.decodeFromString<PlayerSkillPO>(it) },
+            fallback = { IStorageManager.INSTANCE.getPlayerSkill(player, id, job, skill) },
+            warmCache = { value -> value?.let { savePlayerSkill(player, it) } },
+        )
     }
 
     override fun getPlayerKeySetting(player: UUID, id: Int): CompletableFuture<PlayerKeySettingPO?> {
-        requireAsync("redis")
         debug { "Redis 获取玩家 KeySetting" }
-        val tag = playerKeySettingDataTag(player)
-        val future = CompletableFuture<PlayerKeySettingPO?>()
-        api.useAsyncCommands { commands ->
-            commands[tag].whenComplete { json, error ->
-                when {
-                    error != null -> {
-                        error.printStackTrace()
-                        IStorageManager.INSTANCE.getPlayerKey(id).whenComplete { data, storageError ->
-                            if (storageError != null) {
-                                future.completeExceptionally(storageError)
-                            } else {
-                                data?.let { savePlayerKeySetting(player, it) }
-                                future.complete(data)
-                            }
-                        }
-                    }
-                    json == null -> {
-                        IStorageManager.INSTANCE.getPlayerKey(id).whenComplete { data, storageError ->
-                            if (storageError != null) {
-                                future.completeExceptionally(storageError)
-                            } else {
-                                data?.let { savePlayerKeySetting(player, it) }
-                                future.complete(data)
-                            }
-                        }
-                    }
-                    else -> {
-                        try {
-                            commands.expire(tag, SECOND_6_HOURS)
-                            future.complete(Json.decodeFromString<PlayerKeySettingPO>(json))
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            IStorageManager.INSTANCE.getPlayerKey(id).whenComplete { data, storageError ->
-                                if (storageError != null) {
-                                    future.completeExceptionally(storageError)
-                                } else {
-                                    data?.let { savePlayerKeySetting(player, it) }
-                                    future.complete(data)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return future
+        return readThrough(
+            tag = playerKeySettingDataTag(player),
+            ttl = SECOND_6_HOURS,
+            decode = { Json.decodeFromString<PlayerKeySettingPO>(it) },
+            fallback = { IStorageManager.INSTANCE.getPlayerKey(id) },
+            warmCache = { value -> value?.let { savePlayerKeySetting(player, it) } },
+        )
     }
 
     override fun savePlayerProfileAsync(player: UUID, playerProfilePO: PlayerProfilePO): CompletableFuture<Unit> {
@@ -297,17 +138,29 @@ class RedisManager: ISyncCacheManager {
         removePlayerKeySettingAsync(player).exceptionally { it.printStackTrace(); null }
     }
 
-    private fun redisCommand(command: (io.lettuce.core.api.async.RedisAsyncCommands<String, String>) -> java.util.concurrent.CompletionStage<*>): CompletableFuture<Unit> {
-        val future = CompletableFuture<Unit>()
-        try {
-            api.useAsyncCommands { commands ->
-                command(commands).whenComplete { _, throwable ->
-                    if (throwable == null) future.complete(Unit) else future.completeExceptionally(throwable)
-                }
-            }
-        } catch (throwable: Throwable) {
-            future.completeExceptionally(throwable)
-        }
-        return future
+    private fun <T> readThrough(
+        tag: String,
+        ttl: Long,
+        decode: (String) -> T,
+        fallback: () -> java.util.concurrent.CompletionStage<T>,
+        warmCache: (T) -> Unit,
+    ): CompletableFuture<T> {
+        return redisReadFuture(
+            useCommands = { consumer: (RedisAsyncCommands<String, String>) -> Unit -> api.useAsyncCommands(consumer) },
+            request = { commands -> commands[tag] },
+            refreshExpiry = { commands -> commands.expire(tag, ttl) },
+            decode = decode,
+            fallback = fallback,
+            warmCache = warmCache,
+        )
+    }
+
+    private fun redisCommand(
+        command: (RedisAsyncCommands<String, String>) -> java.util.concurrent.CompletionStage<*>,
+    ): CompletableFuture<Unit> {
+        return redisCommandFuture(
+            useCommands = { operation -> api.useAsyncCommands(operation) },
+            command = command,
+        )
     }
 }

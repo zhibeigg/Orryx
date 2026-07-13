@@ -16,6 +16,7 @@ import org.gitee.orryx.utils.LEFT_MENU
 import org.gitee.orryx.utils.MOUSE_LEFT
 import org.gitee.orryx.utils.MOUSE_RIGHT
 import org.gitee.orryx.utils.bindKeys
+import org.gitee.orryx.utils.finishSaveCallback
 import java.util.*
 
 class PlayerKeySetting(
@@ -72,18 +73,13 @@ class PlayerKeySetting(
         }.thenCompose { context ->
             PersistenceManager.saveKey(context.data, context.remove).thenApply { context }
         }.whenComplete { context, throwable ->
-            if (throwable != null) {
-                throwable.printStackTrace()
-            } else {
-                org.gitee.orryx.utils.runOnMainThread {
-                    callback.run()
-                    OrryxPlayerKeySettingSaveEvents.Post(
-                        context.player,
-                        this@PlayerKeySetting,
-                        context.async,
-                        context.remove,
-                    ).call()
-                }
+            finishSaveCallback(callback, throwable) {
+                OrryxPlayerKeySettingSaveEvents.Post(
+                    context.player,
+                    this@PlayerKeySetting,
+                    context.async,
+                    context.remove,
+                ).call()
             }
         }
     }

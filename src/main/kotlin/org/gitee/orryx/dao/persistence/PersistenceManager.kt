@@ -112,7 +112,7 @@ object PersistenceManager {
         job: PlayerJobPO,
         invalidate: Boolean,
     ): CompletableFuture<Unit> {
-        return enqueue(profile.player, PROFILE_JOB_KEY) {
+        return enqueue(profile.player, "$PROFILE_JOB_KEY:${job.job.uppercase()}") {
             IStorageManager.INSTANCE.savePlayerDataAndJobAsync(profile, job).thenCompose {
                 afterDatabaseCommit {
                     val profileCache = if (invalidate) {
@@ -193,13 +193,13 @@ object PersistenceManager {
             val ready = globalTails[normalized]?.handle { _, _ -> Unit }
                 ?: CompletableFuture.completedFuture(Unit)
             result = ready.thenCompose { IStorageManager.INSTANCE.saveGlobalFlagAsync(key, flag) }
-            tail = result.handle { _, _ -> Unit }
-            globalTails[normalized] = tail
-        }
-        result.whenComplete { _, throwable ->
-            if (throwable != null) synchronized(globalLock) {
-                if (globalFailure == null) globalFailure = throwable
+            tail = result.handle { _, throwable ->
+                if (throwable != null) synchronized(globalLock) {
+                    if (globalFailure == null) globalFailure = throwable
+                }
+                Unit
             }
+            globalTails[normalized] = tail
         }
         tail.whenComplete { _, _ -> globalTails.remove(normalized, tail) }
         return result

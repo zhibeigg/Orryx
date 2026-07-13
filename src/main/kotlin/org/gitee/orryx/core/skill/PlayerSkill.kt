@@ -25,6 +25,7 @@ import org.gitee.orryx.utils.Tuple2
 import org.gitee.orryx.utils.castSkill
 import org.gitee.orryx.utils.castSkillAsync
 import org.gitee.orryx.utils.castSkillRawAsync
+import org.gitee.orryx.utils.finishSaveCallback
 import org.gitee.orryx.utils.mainThreadFuture
 import org.gitee.orryx.utils.thenApplyMain
 import org.gitee.orryx.utils.orryxProfileTo
@@ -237,13 +238,8 @@ class PlayerSkill(
 
     override fun save(async: Boolean, remove: Boolean, callback: Runnable) {
         persist(async, remove).whenComplete { context, throwable ->
-            if (throwable != null) {
-                throwable.printStackTrace()
-            } else {
-                org.gitee.orryx.utils.runOnMainThread {
-                    callback.run()
-                    OrryxPlayerSkillSaveEvents.Post(context.player, this@PlayerSkill, context.async, context.remove).call()
-                }
+            finishSaveCallback(callback, throwable) {
+                OrryxPlayerSkillSaveEvents.Post(context.player, this@PlayerSkill, context.async, context.remove).call()
             }
         }
     }

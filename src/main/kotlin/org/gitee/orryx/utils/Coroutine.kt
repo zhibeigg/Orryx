@@ -90,3 +90,26 @@ fun <T, R> CompletionStage<T>.thenComposeMain(block: (T) -> CompletionStage<R>):
 fun <T> CompletableFuture<T>.getNowOrDefault(default: T): T {
     return if (isDone && !isCompletedExceptionally && !isCancelled) getNow(default) else default
 }
+
+/** 旧 Saveable callback 的统一完成语义：无论成功失败，都在主线程恰好调用一次。 */
+fun finishSaveCallback(
+    callback: Runnable,
+    throwable: Throwable?,
+    onSuccess: () -> Unit,
+) {
+    runOnMainThread {
+        throwable?.printStackTrace()
+        try {
+            callback.run()
+        } catch (callbackFailure: Throwable) {
+            callbackFailure.printStackTrace()
+        }
+        if (throwable == null) {
+            try {
+                onSuccess()
+            } catch (postFailure: Throwable) {
+                postFailure.printStackTrace()
+            }
+        }
+    }
+}

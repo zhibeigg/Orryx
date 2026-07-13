@@ -2,6 +2,7 @@ package org.gitee.orryx.dao.persistence
 
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionException
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -162,12 +163,13 @@ internal object PlayerWriteCoordinator {
             lane = lanes[player] ?: return CompletableFuture.completedFuture(Unit)
             idle = lane.idleFuture()
         }
-        return idle.thenApply {
+        return idle.handle { _, throwable ->
             synchronized(stateLock) {
                 if (lane.isIdle()) {
                     lanes.remove(player, lane)
                 }
             }
+            if (throwable != null) throw CompletionException(throwable)
             Unit
         }
     }
@@ -177,10 +179,11 @@ internal object PlayerWriteCoordinator {
             accepting = false
             lanes.values.map { it.idleFuture() }
         }
-        return CompletableFuture.allOf(*futures.toTypedArray()).thenApply {
+        return CompletableFuture.allOf(*futures.toTypedArray()).handle { _, throwable ->
             synchronized(stateLock) {
                 lanes.clear()
             }
+            if (throwable != null) throw CompletionException(throwable)
             Unit
         }
     }

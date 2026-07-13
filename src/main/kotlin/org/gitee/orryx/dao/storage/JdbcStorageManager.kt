@@ -15,9 +15,99 @@ import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionException
+import java.util.concurrent.CompletionStage
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import javax.sql.DataSource
+
+/** 非阻塞关闭屏障：停止接收新操作，等待全部已接收 Future，再执行关闭动作。 */
+internal class AsyncCloseBarrier(private val closingMessage: String) {
+
+    private enum class State { OPEN, CLOSING, CLOSED }
+
+    private val lock = Any()
+    private val inFlight = LinkedHashSet<CompletableFuture<Unit>>()
+    private var state = State.OPEN
+    private var firstFailure: Throwable? = null
+    private var closeFuture: CompletableFuture<Unit>? = null
+
+    fun <T> submit(operation: () -> CompletionStage<T>): CompletableFuture<T> {
+        val result = CompletableFuture<T>()
+        val ticket = CompletableFuture<Unit>()
+        synchronized(lock) {
+            if (state != State.OPEN) {
+                result.completeExceptionally(IllegalStateException(closingMessage))
+                return result
+            }
+            inFlight += ticket
+        }
+
+        val stage = try {
+            operation()
+        } catch (throwable: Throwable) {
+            CompletableFuture<T>().also { it.completeExceptionally(throwable) }
+        }
+        stage.whenComplete { value, throwable ->
+            synchronized(lock) {
+                if (throwable != null && state != State.OPEN && firstFailure == null) {
+                    firstFailure = unwrap(throwable)
+                }
+                inFlight.remove(ticket)
+            }
+            if (throwable == null) {
+                result.complete(value)
+            } else {
+                result.completeExceptionally(throwable)
+            }
+            ticket.complete(Unit)
+        }
+        return result
+    }
+
+    fun close(action: () -> CompletionStage<Unit>): CompletableFuture<Unit> {
+        val result: CompletableFuture<Unit>
+        val accepted: Array<CompletableFuture<Unit>>
+        synchronized(lock) {
+            closeFuture?.let { return it }
+            state = State.CLOSING
+            result = CompletableFuture()
+            closeFuture = result
+            accepted = inFlight.toTypedArray()
+        }
+
+        CompletableFuture.allOf(*accepted).whenComplete { _, _ ->
+            val closeStage = try {
+                action()
+            } catch (throwable: Throwable) {
+                CompletableFuture<Unit>().also { it.completeExceptionally(throwable) }
+            }
+            closeStage.whenComplete { _, closeFailure ->
+                val failure = synchronized(lock) {
+                    state = State.CLOSED
+                    combineFailures(firstFailure, closeFailure)
+                }
+                if (failure == null) result.complete(Unit) else result.completeExceptionally(failure)
+            }
+        }
+        return result
+    }
+
+    private fun combineFailures(first: Throwable?, second: Throwable?): Throwable? {
+        val primary = first ?: second?.let(::unwrap) ?: return null
+        val additional = second?.let(::unwrap)
+        if (additional != null && additional !== primary) primary.addSuppressed(additional)
+        return primary
+    }
+
+    private fun unwrap(throwable: Throwable): Throwable {
+        var current = throwable
+        while (current is CompletionException && current.cause != null) {
+            current = current.cause ?: break
+        }
+        return current
+    }
+}
 
 /**
  * 三种内置数据库共用的 JDBC 实现。
@@ -46,6 +136,8 @@ internal class JdbcStorageManager(
         }
     }
 
+    private val lifecycle = AsyncCloseBarrier("Orryx 数据库存储正在关闭")
+
     private val ready: CompletableFuture<Unit> = CompletableFuture.supplyAsync({
         createTables()
         Unit
@@ -54,17 +146,33 @@ internal class JdbcStorageManager(
     override fun initializeAsync(): CompletableFuture<Unit> = ready
 
     override fun closeAsync(): CompletableFuture<Unit> {
-        return ready.handle { _, _ -> Unit }.thenCompose {
-            CompletableFuture.supplyAsync({
-                (dataSource as? AutoCloseable)?.close()
-                Unit
-            }, executor)
+        return lifecycle.close {
+            ready.handle { _, initializeFailure -> initializeFailure }.thenCompose { initializeFailure ->
+                val closeStage = try {
+                    CompletableFuture.supplyAsync({
+                        (dataSource as? AutoCloseable)?.close()
+                        Unit
+                    }, executor)
+                } catch (throwable: Throwable) {
+                    CompletableFuture<Unit>().also { it.completeExceptionally(throwable) }
+                }
+                closeStage.handle { _, closeFailure ->
+                    val failure = initializeFailure ?: closeFailure
+                    if (initializeFailure != null && closeFailure != null && closeFailure !== initializeFailure) {
+                        initializeFailure.addSuppressed(closeFailure)
+                    }
+                    if (failure != null) throw CompletionException(failure)
+                    Unit
+                }
+            }
         }.whenComplete { _, _ -> executor.shutdown() }
     }
 
     private fun <T> read(block: () -> T): CompletableFuture<T> {
-        return ready.thenCompose {
-            CompletableFuture.supplyAsync(block, executor)
+        return lifecycle.submit {
+            ready.thenCompose {
+                CompletableFuture.supplyAsync(block, executor)
+            }
         }
     }
 

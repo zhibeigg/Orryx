@@ -83,6 +83,12 @@ class PlayerWriteCoordinatorTest {
         assertThrows(ExecutionException::class.java) {
             PlayerWriteCoordinator.release(player).get(1, TimeUnit.SECONDS)
         }
+
+        val afterRelease = PlayerWriteCoordinator.enqueue(player, "profile") {
+            CompletableFuture.completedFuture(Unit)
+        }
+        afterRelease.get(1, TimeUnit.SECONDS)
+        PlayerWriteCoordinator.release(player).get(1, TimeUnit.SECONDS)
     }
 
     @Test

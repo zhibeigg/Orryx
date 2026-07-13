@@ -2,6 +2,9 @@ package org.gitee.orryx.utils
 
 import com.eatthepath.uuid.FastUUID
 import java.util.*
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionStage
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Redis 键规范:
@@ -122,4 +125,121 @@ fun reversePlayerJobSkillDataTag(tag: String): JobSkillDataTag {
 fun reversePlayerKeySettingTag(tag: String): UUID {
     // orryx:player:{uuid}:keysetting -> 提取 uuid 部分
     return tag.substring(PREFIX.length, PREFIX.length + UUID_LEN).parseUUID()!!
+}
+
+/**
+ * 将 Redis 异步读取桥接为恰好完成一次的 Future。
+ *
+ * 命令 API、命令创建、解码及回源阶段的同步异常都会转换为异常 Future；
+ * Redis 未命中或失败时回源 Storage，避免调用方永久等待。
+ */
+internal fun <C, T> redisReadFuture(
+    useCommands: (((C) -> Unit) -> CompletionStage<*>),
+    request: (C) -> CompletionStage<String?>,
+    refreshExpiry: (C) -> Unit,
+    decode: (String) -> T,
+    fallback: () -> CompletionStage<T>,
+    warmCache: (T) -> Unit = {},
+): CompletableFuture<T> {
+    val result = CompletableFuture<T>()
+    val resolutionStarted = AtomicBoolean(false)
+
+    fun fallbackToStorage(redisFailure: Throwable?) {
+        if (!resolutionStarted.compareAndSet(false, true)) return
+        redisFailure?.printStackTrace()
+        val storage = try {
+            fallback()
+        } catch (throwable: Throwable) {
+            result.completeExceptionally(throwable)
+            return
+        }
+        storage.whenComplete { value, storageFailure ->
+            if (storageFailure != null) {
+                if (redisFailure != null && redisFailure !== storageFailure) {
+                    runCatching { storageFailure.addSuppressed(redisFailure) }
+                }
+                result.completeExceptionally(storageFailure)
+            } else {
+                try {
+                    warmCache(value)
+                } catch (throwable: Throwable) {
+                    throwable.printStackTrace()
+                }
+                result.complete(value)
+            }
+        }
+    }
+
+    val commandsInvoked = AtomicBoolean(false)
+    try {
+        val outer = useCommands { commands ->
+            commandsInvoked.set(true)
+            val command = try {
+                request(commands)
+            } catch (throwable: Throwable) {
+                fallbackToStorage(throwable)
+                return@useCommands
+            }
+            command.whenComplete { payload, commandFailure ->
+                when {
+                    commandFailure != null -> fallbackToStorage(commandFailure)
+                    payload == null -> fallbackToStorage(null)
+                    else -> {
+                        try {
+                            refreshExpiry(commands)
+                            val value = decode(payload)
+                            if (resolutionStarted.compareAndSet(false, true)) {
+                                result.complete(value)
+                            }
+                        } catch (throwable: Throwable) {
+                            fallbackToStorage(throwable)
+                        }
+                    }
+                }
+            }
+        }
+        outer.whenComplete { _, outerFailure ->
+            when {
+                outerFailure != null -> fallbackToStorage(outerFailure)
+                !commandsInvoked.get() -> fallbackToStorage(IllegalStateException("Redis 异步命令上下文未执行"))
+            }
+        }
+    } catch (throwable: Throwable) {
+        fallbackToStorage(throwable)
+    }
+    return result
+}
+
+/** 将 RedisChannel 外层连接 Future 与实际命令 Future 一并桥接。 */
+internal fun <C> redisCommandFuture(
+    useCommands: (((C) -> CompletionStage<*>) -> CompletionStage<*>),
+    command: (C) -> CompletionStage<*>,
+): CompletableFuture<Unit> {
+    val result = CompletableFuture<Unit>()
+    val commandsInvoked = AtomicBoolean(false)
+    try {
+        val outer = useCommands { commands ->
+            commandsInvoked.set(true)
+            val stage = try {
+                command(commands)
+            } catch (throwable: Throwable) {
+                CompletableFuture<Unit>().also { it.completeExceptionally(throwable) }
+            }
+            stage.whenComplete { _, commandFailure ->
+                if (commandFailure == null) result.complete(Unit) else result.completeExceptionally(commandFailure)
+            }
+            stage
+        }
+        outer.whenComplete { _, outerFailure ->
+            when {
+                outerFailure != null -> result.completeExceptionally(outerFailure)
+                !commandsInvoked.get() -> result.completeExceptionally(
+                    IllegalStateException("Redis 异步命令上下文未执行")
+                )
+            }
+        }
+    } catch (throwable: Throwable) {
+        result.completeExceptionally(throwable)
+    }
+    return result
 }

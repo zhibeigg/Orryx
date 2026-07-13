@@ -249,7 +249,9 @@ object GlobalActions {
                     OrryxGlobalFlagChangeEvents.Post(flagName, event.oldFlag, event.newFlag).call()
                 }
             } else {
-                OrryxGlobalFlagChangeEvents.Post(flagName, event.oldFlag, event.newFlag).call()
+                runOnMainThread {
+                    OrryxGlobalFlagChangeEvents.Post(flagName, event.oldFlag, event.newFlag).call()
+                }
             }
         }
     }
@@ -270,7 +272,9 @@ object GlobalActions {
                     OrryxGlobalFlagChangeEvents.Post(flagName, event.oldFlag, event.newFlag).call()
                 }
             } else {
-                OrryxGlobalFlagChangeEvents.Post(flagName, event.oldFlag, event.newFlag).call()
+                runOnMainThread {
+                    OrryxGlobalFlagChangeEvents.Post(flagName, event.oldFlag, event.newFlag).call()
+                }
             }
         }
         return event.oldFlag

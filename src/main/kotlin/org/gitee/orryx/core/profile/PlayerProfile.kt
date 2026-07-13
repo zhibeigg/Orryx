@@ -14,6 +14,7 @@ import org.gitee.orryx.dao.cache.ISyncCacheManager
 import org.gitee.orryx.dao.cache.MemoryCache
 import org.gitee.orryx.dao.persistence.PersistenceManager
 import org.gitee.orryx.dao.pojo.PlayerProfilePO
+import org.gitee.orryx.utils.finishSaveCallback
 import org.gitee.orryx.utils.mainThreadFuture
 import org.gitee.orryx.utils.runOnMainThread
 import org.gitee.orryx.utils.toSerializable
@@ -59,7 +60,9 @@ class PlayerProfile(
                     OrryxPlayerFlagChangeEvents.Post(player, this, event.flagName, event.oldFlag, event.newFlag).call()
                 }
             } else {
-                OrryxPlayerFlagChangeEvents.Post(player, this, event.flagName, event.oldFlag, event.newFlag).call()
+                runOnMainThread {
+                    OrryxPlayerFlagChangeEvents.Post(player, this, event.flagName, event.oldFlag, event.newFlag).call()
+                }
             }
         }
     }
@@ -88,7 +91,9 @@ class PlayerProfile(
                     OrryxPlayerFlagChangeEvents.Post(player, this, event.flagName, event.oldFlag, event.newFlag).call()
                 }
             } else {
-                OrryxPlayerFlagChangeEvents.Post(player, this, event.flagName, event.oldFlag, event.newFlag).call()
+                runOnMainThread {
+                    OrryxPlayerFlagChangeEvents.Post(player, this, event.flagName, event.oldFlag, event.newFlag).call()
+                }
             }
             return flag
         } else {
@@ -172,18 +177,13 @@ class PlayerProfile(
         }.thenCompose { context ->
             PersistenceManager.saveProfile(context.data, context.remove).thenApply { context }
         }.whenComplete { context, throwable ->
-            if (throwable != null) {
-                throwable.printStackTrace()
-            } else {
-                runOnMainThread {
-                    callback.run()
-                    OrryxPlayerProfileSaveEvents.Post(
-                        context.player,
-                        this@PlayerProfile,
-                        context.async,
-                        context.remove,
-                    ).call()
-                }
+            finishSaveCallback(callback, throwable) {
+                OrryxPlayerProfileSaveEvents.Post(
+                    context.player,
+                    this@PlayerProfile,
+                    context.async,
+                    context.remove,
+                ).call()
             }
         }
     }

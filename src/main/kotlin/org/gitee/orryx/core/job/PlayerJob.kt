@@ -322,13 +322,8 @@ class PlayerJob(
 
     override fun save(async: Boolean, remove: Boolean, callback: Runnable) {
         persist(async, remove).whenComplete { context, throwable ->
-            if (throwable != null) {
-                throwable.printStackTrace()
-            } else {
-                runOnMainThread {
-                    callback.run()
-                    OrryxPlayerJobSaveEvents.Post(context.player, this@PlayerJob, context.async, context.remove).call()
-                }
+            finishSaveCallback(callback, throwable) {
+                OrryxPlayerJobSaveEvents.Post(context.player, this@PlayerJob, context.async, context.remove).call()
             }
         }
     }

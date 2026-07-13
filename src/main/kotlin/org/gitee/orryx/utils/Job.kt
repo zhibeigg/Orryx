@@ -51,7 +51,7 @@ inline fun <T> IPlayerJob.skills(crossinline func: (skills: List<IPlayerSkill>) 
                 skill?.let { skills.add(it) }
             }
         }.toTypedArray()
-    ).thenApply {
+    ).thenApplyMain {
         func(skills.sortedBy { it.skill.sort })
     }
 }
@@ -64,7 +64,7 @@ inline fun <T> IPlayerJob.bindSkills(crossinline func: (bindSkills: Map<IBindKey
                 bindSkills[k] = it
             }
         } ?: CompletableFuture.completedFuture(null)
-    }.toTypedArray()).thenApply {
+    }.toTypedArray()).thenApplyMain {
         func(bindSkills)
     }
 }

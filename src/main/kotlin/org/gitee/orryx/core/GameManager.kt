@@ -122,9 +122,11 @@ object GameManager {
         ISpiritManager.closeThread()
         consoleMessage("&e┣&7已停止技能与资源恢复任务 &a√")
 
+        val shutdownFailures = mutableListOf<Throwable>()
         PersistenceManager.shutdown()
             .handle { _, throwable ->
                 throwable?.let {
+                    shutdownFailures += it
                     consoleMessage("&e┣&c持久化队列 flush 失败: ${it.message}")
                     it.printStackTrace()
                 }
@@ -133,6 +135,7 @@ object GameManager {
             .thenCompose { ISyncCacheManager.INSTANCE.closeAsync() }
             .handle { _, throwable ->
                 throwable?.let {
+                    shutdownFailures += it
                     consoleMessage("&e┣&c同步缓存关闭失败: ${it.message}")
                     it.printStackTrace()
                 }
@@ -141,12 +144,17 @@ object GameManager {
             .thenCompose { IStorageManager.INSTANCE.closeAsync() }
             .whenComplete { _, throwable ->
                 throwable?.let {
+                    shutdownFailures += it
                     consoleMessage("&e┣&c数据库关闭失败: ${it.message}")
                     it.printStackTrace()
                 }
                 MemoryCache.printStats()
                 OrryxAPI.shutdownScopes()
-                consoleMessage("&e┣&7Orryx 异步资源关闭流程结束 &a√")
+                if (shutdownFailures.isEmpty()) {
+                    consoleMessage("&e┣&7Orryx 异步资源关闭流程结束 &a√")
+                } else {
+                    consoleMessage("&e┣&cOrryx 异步资源关闭完成，但有 ${shutdownFailures.size} 个阶段失败 &4×")
+                }
             }
     }
 }

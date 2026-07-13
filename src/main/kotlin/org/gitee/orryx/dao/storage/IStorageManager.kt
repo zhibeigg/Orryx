@@ -10,6 +10,7 @@ import org.gitee.orryx.dao.pojo.PlayerProfilePO
 import org.gitee.orryx.dao.pojo.PlayerSkillPO
 import org.gitee.orryx.dao.persistence.PersistenceManager
 import org.gitee.orryx.utils.consoleMessage
+import org.gitee.orryx.utils.runOnMainThread
 import taboolib.common.LifeCycle
 import taboolib.common.io.newFile
 import taboolib.common.platform.event.SubscribeEvent
@@ -20,6 +21,22 @@ import taboolib.platform.bukkit.Parallel
 import java.io.File
 import java.util.*
 import java.util.concurrent.CompletableFuture
+
+private fun completeStorageCallback(future: CompletableFuture<Unit>, onSuccess: Runnable) {
+    future.whenComplete { _, throwable ->
+        if (throwable != null) {
+            throwable.printStackTrace()
+        } else {
+            runOnMainThread {
+                try {
+                    onSuccess.run()
+                } catch (callbackFailure: Throwable) {
+                    callbackFailure.printStackTrace()
+                }
+            }
+        }
+    }
+}
 
 /**
  * 存储管理接口。
@@ -149,9 +166,7 @@ interface IStorageManager {
     fun savePlayerDataAsync(playerProfilePO: PlayerProfilePO): CompletableFuture<Unit>
 
     fun savePlayerData(playerProfilePO: PlayerProfilePO, onSuccess: Runnable) {
-        savePlayerDataAsync(playerProfilePO).whenComplete { _, throwable ->
-            if (throwable == null) onSuccess.run() else throwable.printStackTrace()
-        }
+        completeStorageCallback(savePlayerDataAsync(playerProfilePO), onSuccess)
     }
 
     /**
@@ -162,9 +177,7 @@ interface IStorageManager {
     fun savePlayerJobAsync(playerJobPO: PlayerJobPO): CompletableFuture<Unit>
 
     fun savePlayerJob(playerJobPO: PlayerJobPO, onSuccess: Runnable) {
-        savePlayerJobAsync(playerJobPO).whenComplete { _, throwable ->
-            if (throwable == null) onSuccess.run() else throwable.printStackTrace()
-        }
+        completeStorageCallback(savePlayerJobAsync(playerJobPO), onSuccess)
     }
 
     /**
@@ -175,9 +188,7 @@ interface IStorageManager {
     fun savePlayerSkillAsync(playerSkillPO: PlayerSkillPO): CompletableFuture<Unit>
 
     fun savePlayerSkill(playerSkillPO: PlayerSkillPO, onSuccess: Runnable) {
-        savePlayerSkillAsync(playerSkillPO).whenComplete { _, throwable ->
-            if (throwable == null) onSuccess.run() else throwable.printStackTrace()
-        }
+        completeStorageCallback(savePlayerSkillAsync(playerSkillPO), onSuccess)
     }
 
     /**
@@ -189,9 +200,7 @@ interface IStorageManager {
     fun savePlayerDataAndJobAsync(profilePO: PlayerProfilePO, jobPO: PlayerJobPO): CompletableFuture<Unit>
 
     fun savePlayerDataAndJob(profilePO: PlayerProfilePO, jobPO: PlayerJobPO, onSuccess: Runnable) {
-        savePlayerDataAndJobAsync(profilePO, jobPO).whenComplete { _, throwable ->
-            if (throwable == null) onSuccess.run() else throwable.printStackTrace()
-        }
+        completeStorageCallback(savePlayerDataAndJobAsync(profilePO, jobPO), onSuccess)
     }
 
     /**
@@ -203,9 +212,7 @@ interface IStorageManager {
     fun saveJobAndSkillsAsync(jobPO: PlayerJobPO, skillPOs: List<PlayerSkillPO>): CompletableFuture<Unit>
 
     fun saveJobAndSkills(jobPO: PlayerJobPO, skillPOs: List<PlayerSkillPO>, onSuccess: Runnable) {
-        saveJobAndSkillsAsync(jobPO, skillPOs).whenComplete { _, throwable ->
-            if (throwable == null) onSuccess.run() else throwable.printStackTrace()
-        }
+        completeStorageCallback(saveJobAndSkillsAsync(jobPO, skillPOs), onSuccess)
     }
 
     /**
@@ -216,9 +223,7 @@ interface IStorageManager {
     fun savePlayerKeyAsync(playerKeySettingPO: PlayerKeySettingPO): CompletableFuture<Unit>
 
     fun savePlayerKey(playerKeySettingPO: PlayerKeySettingPO, onSuccess: Runnable) {
-        savePlayerKeyAsync(playerKeySettingPO).whenComplete { _, throwable ->
-            if (throwable == null) onSuccess.run() else throwable.printStackTrace()
-        }
+        completeStorageCallback(savePlayerKeyAsync(playerKeySettingPO), onSuccess)
     }
 
     /**
@@ -237,8 +242,6 @@ interface IStorageManager {
     fun saveGlobalFlagAsync(key: String, flag: IFlag?): CompletableFuture<Unit>
 
     fun saveGlobalFlag(key: String, flag: IFlag?, onSuccess: Runnable) {
-        saveGlobalFlagAsync(key, flag).whenComplete { _, throwable ->
-            if (throwable == null) onSuccess.run() else throwable.printStackTrace()
-        }
+        completeStorageCallback(saveGlobalFlagAsync(key, flag), onSuccess)
     }
 }
