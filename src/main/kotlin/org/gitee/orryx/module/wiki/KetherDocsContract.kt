@@ -77,6 +77,11 @@ internal object KetherDocsContract {
         return if (tail.isBlank()) action.key else "${action.key} $tail"
     }
 
+    fun inputKey(entry: Action.Entry, index: Int): String = entry.head
+        ?.takeIf(String::isNotBlank)
+        ?: entry.description.takeIf(String::isNotBlank)
+        ?: "p$index"
+
     fun selectorSyntax(selector: Selector): String {
         val tail = selector.entries.joinToString(" ") { entry ->
             buildString {

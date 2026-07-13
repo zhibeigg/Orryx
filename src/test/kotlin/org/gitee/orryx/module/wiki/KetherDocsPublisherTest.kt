@@ -18,7 +18,7 @@ class KetherDocsPublisherTest {
         val manifest = Json.parseToJsonElement(
             KetherDocsPublisher.buildManifest(
                 pluginName = "Orryx",
-                version = "2.43.113",
+                version = "2.43.114",
                 commit = commit,
                 generatedAt = Instant.parse("2026-07-13T03:59:59Z"),
                 counts = counts()
@@ -26,7 +26,7 @@ class KetherDocsPublisherTest {
         ).jsonObject
 
         assertEquals("Orryx", manifest.getValue("pluginId").jsonPrimitive.content)
-        assertEquals("2.43.113", manifest.getValue("version").jsonPrimitive.content)
+        assertEquals("2.43.114", manifest.getValue("version").jsonPrimitive.content)
         assertEquals(3, manifest.getValue("schemaVersion").jsonPrimitive.content.toInt())
         assertEquals("$KETHER_DOCS_BASE_URL/actions-schema.json", manifest.getValue("schema").jsonPrimitive.content)
         assertEquals("$KETHER_DOCS_BASE_URL/channels/stable.json", manifest.getValue("stableChannel").jsonPrimitive.content)
@@ -37,7 +37,7 @@ class KetherDocsPublisherTest {
     fun `channel and release manifests bind an immutable release`() {
         val metadata = KetherDocsContract.metadata(
             pluginId = "Orryx",
-            version = "2.43.113",
+            version = "2.43.114",
             commit = commit,
             channel = "stable",
             generatedAt = Instant.parse("2026-07-13T03:59:59Z"),
@@ -46,7 +46,7 @@ class KetherDocsPublisherTest {
         val channel = Json.parseToJsonElement(KetherDocsPublisher.buildChannelManifest(metadata)).jsonObject
         assertEquals(1, channel.getValue("formatVersion").jsonPrimitive.content.toInt())
         assertEquals("stable", channel.getValue("channel").jsonPrimitive.content)
-        assertEquals("/Orryx/kether/releases/2.43.113/$commit/manifest.json", channel.getValue("releaseManifest").jsonPrimitive.content)
+        assertEquals("/Orryx/kether/releases/2.43.114/$commit/manifest.json", channel.getValue("releaseManifest").jsonPrimitive.content)
 
         val assets = mapOf(
             "schema" to asset("actions-schema.json"),
@@ -80,6 +80,7 @@ class KetherDocsPublisherTest {
         assertNotEquals(first.getValue(set), first.getValue(reset))
         assertTrue(first.getValue(set).startsWith("orryx.action.cooldown."))
         assertEquals("cooldown set/to <LONG>", KetherDocsContract.actionSyntax(set))
+        assertEquals("冷却值", KetherDocsContract.inputKey(set.entries[1], 1))
     }
 
     @Test
@@ -95,7 +96,7 @@ class KetherDocsPublisherTest {
 
     @Test
     fun `version filenames are sanitized`() {
-        assertEquals("2.43.113_build_1", KetherDocsPublisher.sanitizeVersion("2.43.113+build/1"))
+        assertEquals("2.43.114_build_1", KetherDocsPublisher.sanitizeVersion("2.43.114+build/1"))
     }
 
     private fun counts() = KetherDocsPublisher.RegistrationCounts(

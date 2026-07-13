@@ -169,7 +169,7 @@ object ActionsSchemaGenerator {
 
     private fun input(entry: Action.Entry, index: Int): JsonObject = buildJsonObject {
         put("name", entry.description.ifBlank { entry.head ?: entry.type.name.lowercase(Locale.ROOT) })
-        put("key", entry.head?.takeIf(String::isNotBlank) ?: "p$index")
+        put("key", KetherDocsContract.inputKey(entry, index))
         if (entry.type == Type.SYMBOL) {
             put("type", "keyword")
             put("required", true)
