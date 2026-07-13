@@ -1,0 +1,20 @@
+{
+  "contractVersion": "1.0",
+  "component": "progression",
+  "operation": "generate",
+  "workspace": {"root": "plugins/Orryx", "mode": "standalone"},
+  "request": {
+    "id": "指数成长",
+    "minLevel": 1,
+    "maxLevel": 10,
+    "curve": {"type": "exponential", "base": 100, "growth": 1.25, "offset": 1},
+    "rounding": "ceil",
+    "maxManaActions": "calc \"80+8*level\"",
+    "regainManaActions": "2",
+    "maxSpiritActions": "calc \"60+4*level\"",
+    "regainSpiritActions": "3",
+    "upgradePointActions": "1",
+    "chart": true
+  },
+  "policy": {"strict": true, "network": "deny"}
+}

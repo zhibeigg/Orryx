@@ -1,0 +1,10 @@
+Options:
+  Min: 0
+  Max: 50
+  ExperienceOfLevel: |-
+    set a to pow 1.2 &level
+    case &level [
+      when < 3 -> calc "500 * a + 500"
+      when < 15 -> calc "600 * a"
+      else calc "700 * a"
+    ]

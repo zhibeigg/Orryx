@@ -1,0 +1,20 @@
+{
+  "contractVersion": "1.0",
+  "component": "orchestrator",
+  "operation": "generate",
+  "workspace": {"root": "."},
+  "request": {
+    "steps": [
+      {"component": "validator", "operation": "validate", "request": {}},
+      {"component": "kether", "operation": "validate", "request": {"script": "true", "context": "generic"}},
+      {"component": "ability", "request": {"key": "斩击", "type": "DIRECT", "actions": "true"}},
+      {"component": "progression", "request": {"key": "剑修经验", "minLevel": 0, "maxLevel": 5, "curve": {"type": "exponential", "base": 100, "growth": 1.2}}},
+      {"component": "job", "request": {"key": "剑修", "skills": ["斩击"], "experience": "剑修经验"}},
+      {"component": "station", "request": {"key": "斩击增伤", "event": "Player Damage Pre", "async": false, "actions": "true"}},
+      {"component": "combat", "request": {"status": {"key": "长剑", "states": {"普攻0": {"Type": "General Attack", "Connection": "8-16", "Animation": {"Key": "长剑普攻0", "Duration": "21"}}}}, "controller": {"key": "长剑控制器", "backend": "dragoncore", "states": {"长剑普攻0": {}}, "config": {}}}},
+      {"component": "selector", "request": {"selectors": {"近战": "container they \"@sector 3.5 120 2 !@self !@team\""}}},
+      {"component": "ui", "request": {"backend": "bukkit", "skills": ["斩击"], "config": {"SkillUI": {"title": "技能界面", "Skills": {"Slots": [28]}}}}}
+    ]
+  },
+  "policy": {"materialize": false, "reloadServer": false, "validateReferences": true}
+}

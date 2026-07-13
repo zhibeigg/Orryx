@@ -1,0 +1,12 @@
+{
+  "contractVersion": "1.0",
+  "component": "kether",
+  "operation": "validate",
+  "workspace": {"root": "../../../..", "mode": "standalone"},
+  "request": {
+    "context": "experience",
+    "script": "if check &level > 10 then { calc \"200*level\"",
+    "actionsSchemaPath": "build/generated-docs/kether/actions-schema.json"
+  },
+  "policy": {"strict": true, "network": "deny"}
+}

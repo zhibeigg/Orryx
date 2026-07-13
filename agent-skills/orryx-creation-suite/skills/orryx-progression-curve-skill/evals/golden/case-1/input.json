@@ -1,0 +1,20 @@
+{
+  "contractVersion": "1.0",
+  "component": "progression",
+  "operation": "generate",
+  "workspace": {"root": "plugins/Orryx", "mode": "standalone"},
+  "request": {
+    "id": "线性成长",
+    "minLevel": 0,
+    "maxLevel": 20,
+    "curve": {"type": "polynomial", "a": 0, "b": 200, "c": 0},
+    "formula": "calc \"200*level\"",
+    "maxManaActions": "calc \"100+10*level\"",
+    "regainManaActions": "1",
+    "maxSpiritActions": "100",
+    "regainSpiritActions": "5",
+    "upgradePointActions": "1",
+    "chart": true
+  },
+  "policy": {"strict": true, "network": "deny"}
+}

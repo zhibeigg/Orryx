@@ -1,0 +1,16 @@
+{
+  "contractVersion": "1.0",
+  "component": "ui",
+  "operation": "generate",
+  "workspace": {},
+  "request": {
+    "backend": "dragoncore",
+    "skills": ["斩击", "招架", "闪避"],
+    "files": {
+      "setting.yml": {"keyTime": 100, "KeySort": false, "ActionType": "press", "JoinOpenHud": true},
+      "OrryxSkillHUD.yml": {"placeholderOrder": ["skill", "icon", "cooldown"], "separator": "<br>"}
+    },
+    "assets": ["gui/OrryxSkillHUD.yml", "icons/斩击.png", "icons/招架.png", "icons/闪避.png"]
+  },
+  "policy": {"materialize": false, "reloadServer": false}
+}

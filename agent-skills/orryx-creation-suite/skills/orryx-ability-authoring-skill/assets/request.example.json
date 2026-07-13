@@ -1,0 +1,29 @@
+{
+  "contractVersion": "1.0",
+  "component": "ability",
+  "operation": "generate",
+  "workspace": {
+    "root": "../../../..",
+    "mode": "standalone"
+  },
+  "request": {
+    "id": "破空斩-示例",
+    "type": "DIRECT",
+    "name": "破空斩示例",
+    "sort": 1,
+    "description": ["&f造成 {{ scaled lazy *damage }} 点伤害"],
+    "minLevel": 1,
+    "maxLevel": 7,
+    "variables": {
+      "damage": "calc \"40+25*(level-1)\"",
+      "cooldown": "calc \"(17-0.5*(level-1))*20\""
+    },
+    "actions": "sync {\n  set targets to container they \"@range 4 !@self\"\n  damage lazy *damage they &targets\n}",
+    "actionsSchemaPath": "build/generated-docs/kether/actions-schema.json",
+    "serverVersion": "1.20.4"
+  },
+  "policy": {
+    "strict": true,
+    "network": "deny"
+  }
+}

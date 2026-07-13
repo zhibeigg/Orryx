@@ -1,0 +1,25 @@
+{
+  "contractVersion": "1.0",
+  "component": "combat",
+  "operation": "generate",
+  "workspace": {},
+  "request": {
+    "status": {
+      "key": "长剑防御",
+      "condition": "true",
+      "controller": "长剑防御控制器",
+      "states": {
+        "招架": {"Type": "Block", "Check": "0-10", "Invincible": 4, "DamageType": ["PHYSICS", "MONSTER"], "Animation": {"Key": "长剑招架", "SuccessKey": "长剑受击招架", "Duration": "15"}, "BlockAction": "set blocked to true"},
+        "闪避": {"Type": "Dodge", "Invincible": "0-10", "Connection": "8-15", "Spirit": 25, "Animation": {"Front": "闪避前", "Rear": "闪避后", "Left": "闪避左", "Right": "闪避右", "Duration": "15"}}
+      },
+      "action": "case &input [ when keySetting block -> running \"招架\" when keySetting dodge -> running \"闪避\" ]"
+    },
+    "controller": {
+      "key": "长剑防御控制器",
+      "backend": "dragoncore",
+      "states": {"长剑招架": {}, "长剑受击招架": {}, "闪避前": {}, "闪避后": {}, "闪避左": {}, "闪避右": {}},
+      "config": {"layers": ["base"]}
+    }
+  },
+  "policy": {"materialize": false, "reloadServer": false}
+}

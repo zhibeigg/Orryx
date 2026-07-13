@@ -1,0 +1,17 @@
+{
+  "$schema": "../contracts/component-input.schema.json",
+  "contractVersion": "1.0",
+  "component": "validator",
+  "operation": "validate",
+  "workspace": {
+    "root": ".",
+    "mode": "project"
+  },
+  "request": {},
+  "policy": {
+    "strict": true,
+    "overwrite": "deny",
+    "network": "deny",
+    "minecraftVersion": "1.20.4"
+  }
+}

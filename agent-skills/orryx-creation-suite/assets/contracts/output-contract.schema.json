@@ -1,0 +1,386 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:orryx:creation-suite:schema:component-output:1.0",
+  "title": "Orryx Creation Suite 组件输出合同",
+  "description": "兼容 shared/orryx_toolkit 1.0 实际输出，并为编排层可选增强字段预留稳定结构。",
+  "type": "object",
+  "required": [
+    "contractVersion",
+    "suiteVersion",
+    "component",
+    "operation",
+    "status",
+    "summary",
+    "artifacts",
+    "diagnostics",
+    "checks",
+    "references",
+    "requirements",
+    "nextSteps",
+    "metadata",
+    "provenance"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri-reference"
+    },
+    "contractVersion": {
+      "const": "1.0"
+    },
+    "suiteVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "共享 Runtime 版本，且与 provenance.suiteVersion 一致。"
+    },
+    "component": {
+      "type": "string",
+      "enum": [
+        "ability",
+        "job",
+        "progression",
+        "kether",
+        "validator",
+        "station",
+        "combat",
+        "selector",
+        "ui",
+        "orchestrator",
+        "materialize"
+      ]
+    },
+    "operation": {
+      "type": "string",
+      "enum": [
+        "generate",
+        "validate",
+        "plan",
+        "materialize"
+      ],
+      "description": "Runtime 对规范化 operation 的确定性回显。"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "invalid"
+      ],
+      "description": "当前 Runtime 只根据 diagnostics 中是否存在 severity=error 计算。"
+    },
+    "summary": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "#/$defs/Summary"
+        }
+      ],
+      "description": "Runtime 生成的结构化执行摘要。"
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Artifact"
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Diagnostic"
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Check"
+      }
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Reference"
+      }
+    },
+    "requirements": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Requirement"
+      }
+    },
+    "nextSteps": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "$ref": "#/$defs/NextStep"
+          }
+        ]
+      },
+      "description": "由错误、外部 requirements 和候选 artifacts 确定性推导的下一步建议。"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "可选非语义扩展；不得放入时间戳、临时绝对路径或随机值破坏确定性。"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    }
+  },
+  "$defs": {
+    "Artifact": {
+      "type": "object",
+      "required": [
+        "path",
+        "kind",
+        "mediaType",
+        "encoding",
+        "content",
+        "sha256",
+        "metadata"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$)).+$",
+          "description": "相对 workspace.root 的 POSIX 风格候选路径。"
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mediaType": {
+          "type": "string",
+          "minLength": 1
+        },
+        "encoding": {
+          "const": "utf-8"
+        },
+        "content": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "metadata": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Diagnostic": {
+      "type": "object",
+      "required": [
+        "severity",
+        "code",
+        "path",
+        "pointer",
+        "message",
+        "suggestion"
+      ],
+      "properties": {
+        "severity": {
+          "type": "string",
+          "enum": [
+            "error",
+            "warning",
+            "info"
+          ]
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string"
+        },
+        "pointer": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "suggestion": {
+          "type": "string"
+        },
+        "details": {}
+      },
+      "additionalProperties": false
+    },
+    "Check": {
+      "type": "object",
+      "required": [
+        "code",
+        "status",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {}
+      },
+      "additionalProperties": false
+    },
+    "Reference": {
+      "type": "object",
+      "required": [
+        "source",
+        "target",
+        "kind",
+        "required"
+      ],
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "required": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Requirement": {
+      "type": "object",
+      "required": [
+        "code",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string"
+        },
+        "component": {
+          "type": "string"
+        },
+        "details": {}
+      },
+      "additionalProperties": false
+    },
+    "Summary": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "artifactCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "errorCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "warningCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checkCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": true
+    },
+    "NextStep": {
+      "type": "object",
+      "required": [
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "component": {
+          "type": "string"
+        },
+        "operation": {
+          "type": "string",
+          "enum": [
+            "generate",
+            "validate",
+            "plan",
+            "materialize"
+          ]
+        },
+        "message": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": true
+    },
+    "Provenance": {
+      "type": "object",
+      "required": [
+        "suiteVersion",
+        "inputDigest"
+      ],
+      "properties": {
+        "suiteVersion": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "inputDigest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "runtime": {
+          "type": "string"
+        },
+        "contractSource": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "x-runtimeCompatibility": {
+    "runtimeRequiredTopLevelFields": [
+      "contractVersion",
+      "status",
+      "component",
+      "artifacts",
+      "references",
+      "requirements",
+      "diagnostics",
+      "checks",
+      "provenance"
+    ],
+    "requiredEnrichmentFields": [
+      "suiteVersion",
+      "operation",
+      "summary",
+      "nextSteps",
+      "metadata"
+    ],
+    "artifactsAreCandidatesUntilMaterialize": true
+  }
+}

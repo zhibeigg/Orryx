@@ -1,0 +1,17 @@
+{
+  "contractVersion": "1.0",
+  "component": "combat",
+  "operation": "generate",
+  "workspace": {},
+  "request": {
+    "status": {
+      "key": "空状态机",
+      "condition": "true",
+      "controller": "缺失控制器",
+      "states": {},
+      "action": "running \"不存在状态\""
+    },
+    "controller": {"key": "缺失控制器", "backend": "dragoncore", "states": {}, "config": {}}
+  },
+  "policy": {"materialize": true, "reloadServer": true}
+}

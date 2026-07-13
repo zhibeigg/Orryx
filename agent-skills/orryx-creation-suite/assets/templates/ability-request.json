@@ -1,0 +1,14 @@
+{
+  "contractVersion": "1.0",
+  "component": "ability",
+  "operation": "generate",
+  "workspace": {"root": "plugins/Orryx", "mode": "standalone"},
+  "request": {
+    "id": "example",
+    "type": "DIRECT",
+    "name": "示例技能",
+    "variables": {"damage": "calc \"20+5*(level-1)\""},
+    "actions": "damage lazy *damage they \"@range 3 !@self\""
+  },
+  "policy": {"strict": true, "network": "deny", "overwrite": "deny", "minecraftVersion": "1.20.4", "plugins": []}
+}

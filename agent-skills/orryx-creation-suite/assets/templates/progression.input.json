@@ -1,0 +1,26 @@
+{
+  "$schema": "../contracts/component-input.schema.json",
+  "contractVersion": "1.0",
+  "component": "progression",
+  "operation": "generate",
+  "workspace": {
+    "root": ".",
+    "mode": "standalone"
+  },
+  "request": {
+    "key": "示例经验",
+    "minLevel": 0,
+    "maxLevel": 5,
+    "curve": {
+      "type": "exponential",
+      "base": 100,
+      "growth": 1.2
+    }
+  },
+  "policy": {
+    "strict": true,
+    "overwrite": "deny",
+    "network": "deny",
+    "minecraftVersion": "1.20.4"
+  }
+}

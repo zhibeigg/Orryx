@@ -1,0 +1,16 @@
+{
+  "contractVersion": "1.0",
+  "component": "station",
+  "operation": "generate",
+  "workspace": {},
+  "request": {
+    "key": "凝灵盾受击审查",
+    "event": "Player Damaged Pre",
+    "priority": "HIGH",
+    "weight": 20,
+    "ignoreCancelled": true,
+    "async": false,
+    "actions": "if &isCancelled then exit\nif check flag shield > 0 then {\n  set &event[damage] to math sub [ &event[damage] flag shield ]\n}"
+  },
+  "policy": {"materialize": false, "reloadServer": false}
+}

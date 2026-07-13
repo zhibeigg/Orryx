@@ -1,0 +1,13 @@
+Options:
+  Name: "剑修"
+  Skills:
+    - 破空斩
+  Attributes:
+    - "气血回复: +{{ orryx level }}"
+  RegainManaActions: 1
+  MaxManaActions: |-
+    calc "100+10*level"
+  RegainSpiritActions: 5
+  MaxSpiritActions: 100
+  UpgradePointActions: 1
+  Experience: default

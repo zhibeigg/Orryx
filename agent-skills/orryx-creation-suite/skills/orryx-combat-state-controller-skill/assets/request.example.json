@@ -1,0 +1,30 @@
+{
+  "contractVersion": "1.0",
+  "component": "combat",
+  "operation": "generate",
+  "workspace": {},
+  "request": {
+    "status": {
+      "key": "长剑演示",
+      "condition": "check itemVariable weapon itemInMainHand == 长剑",
+      "controller": "长剑演示控制器",
+      "cancelBukkitAttack": true,
+      "attackSpeed": 1.0,
+      "states": {
+        "普攻0": {
+          "Type": "General Attack",
+          "Connection": "8-16",
+          "Animation": {"Key": "长剑普攻0", "Duration": "21"}
+        }
+      },
+      "action": "case &input [ when keySetting generalAttack -> running \"普攻0\" ]"
+    },
+    "controller": {
+      "key": "长剑演示控制器",
+      "backend": "dragoncore",
+      "states": {"长剑普攻0": {"layer": "base"}},
+      "config": {"animations": ["长剑普攻0"]}
+    }
+  },
+  "policy": {"materialize": false, "reloadServer": false}
+}

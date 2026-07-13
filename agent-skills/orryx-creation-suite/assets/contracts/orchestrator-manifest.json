@@ -1,0 +1,330 @@
+{
+  "$schema": "./orchestrator-manifest.schema.json",
+  "manifestVersion": "1.0",
+  "contractVersion": "1.0",
+  "suiteVersion": "1.0.0",
+  "runtime": {
+    "module": "shared/orryx_toolkit",
+    "contractModule": "orryx_toolkit.contracts",
+    "entryPoints": {
+      "run": "orryx_toolkit.orchestrator.run_contract",
+      "validateWorkspace": "orryx_toolkit.cli.execute:validate-workspace",
+      "materialize": "orryx_toolkit.cli.execute:materialize"
+    },
+    "outputFinalizer": "orryx_toolkit.contracts.finalize_result"
+  },
+  "publicOperations": [
+    "generate",
+    "validate",
+    "plan",
+    "materialize"
+  ],
+  "runtimeCompatibility": {
+    "normalizeContractAcceptedOperations": [
+      "generate",
+      "validate",
+      "plan",
+      "materialize"
+    ],
+    "plan": {
+      "native": true,
+      "writesFiles": false
+    },
+    "materialize": {
+      "viaRunContract": false,
+      "viaOrchestratorStep": true,
+      "blockedAfterErrors": true,
+      "viaCliCommand": true,
+      "command": "materialize"
+    }
+  },
+  "recommendedOrder": [
+    "validator",
+    "kether",
+    "ability",
+    "progression",
+    "job",
+    "station",
+    "combat",
+    "selector",
+    "ui"
+  ],
+  "components": [
+    {
+      "name": "validator",
+      "role": "只读扫描现有 Orryx YAML、重复 basename、部分跨文件引用、Station 结构和疑似秘密值",
+      "runner": "orryx_toolkit.validation.run",
+      "defaultOperation": "validate",
+      "inputTemplate": "../templates/validator.input.json",
+      "dependencies": [],
+      "produces": [
+        "diagnostics",
+        "checks"
+      ],
+      "writesFiles": false
+    },
+    {
+      "name": "kether",
+      "role": "执行确定性的轻量 Kether 结构、动作 token、变量和线程风险静态检查",
+      "runner": "orryx_toolkit.kether.run",
+      "defaultOperation": "validate",
+      "inputTemplate": "../templates/kether.input.json",
+      "dependencies": [
+        {
+          "component": "validator",
+          "kind": "quality-gate",
+          "reason": "先确认工作区与 actions-schema.json 的可用位置"
+        }
+      ],
+      "produces": [
+        "diagnostics",
+        "checks"
+      ],
+      "writesFiles": false
+    },
+    {
+      "name": "progression",
+      "role": "计算经验曲线和可静态求值的资源成长，并生成 Experience YAML 与报告候选",
+      "runner": "orryx_toolkit.progression.run",
+      "defaultOperation": "generate",
+      "inputTemplate": "../templates/progression.input.json",
+      "dependencies": [
+        {
+          "component": "validator",
+          "kind": "quality-gate",
+          "reason": "生成前检查经验 ID 冲突"
+        }
+      ],
+      "produces": [
+        "experiences/<key>.yml",
+        "reports/progression/<key>.json"
+      ],
+      "writesFiles": false
+    },
+    {
+      "name": "ability",
+      "role": "生成五种技能 YAML 候选；被动技能可附带 Station 候选与 requirement",
+      "runner": "orryx_toolkit.ability.run",
+      "defaultOperation": "generate",
+      "inputTemplate": "../templates/ability.input.json",
+      "dependencies": [
+        {
+          "component": "kether",
+          "kind": "quality-gate",
+          "reason": "Ability 内会再次调用同一轻量 Kether 检查器；独立预检便于先处理脚本问题"
+        },
+        {
+          "component": "station",
+          "kind": "conditional",
+          "reason": "事件驱动被动需要 Station 或其他运行时入口"
+        }
+      ],
+      "produces": [
+        "skills/<key>.yml",
+        "stations/<key>.yml (conditional)"
+      ],
+      "writesFiles": false
+    },
+    {
+      "name": "station",
+      "role": "生成事件型 Station YAML 候选并检查优先级、Kether 与异步线程风险",
+      "runner": "orryx_toolkit.station.run",
+      "defaultOperation": "generate",
+      "inputTemplate": "../templates/station.input.json",
+      "dependencies": [
+        {
+          "component": "ability",
+          "kind": "conditional",
+          "reason": "仅当 Station 声明 skill/passiveSkill 引用时依赖技能 ID"
+        },
+        {
+          "component": "kether",
+          "kind": "quality-gate",
+          "reason": "Station 内嵌 Kether 脚本"
+        }
+      ],
+      "produces": [
+        "stations/<key>.yml"
+      ],
+      "writesFiles": false
+    },
+    {
+      "name": "combat",
+      "role": "联合生成 Status 与 Controller YAML 候选并检查状态类型、tick 区间和脚本",
+      "runner": "orryx_toolkit.combat.run",
+      "defaultOperation": "generate",
+      "inputTemplate": "../templates/combat.input.json",
+      "dependencies": [
+        {
+          "component": "kether",
+          "kind": "quality-gate",
+          "reason": "Status Condition、Action 与状态动作包含 Kether"
+        }
+      ],
+      "produces": [
+        "status/<key>.yml",
+        "controllers/<key>.yml"
+      ],
+      "writesFiles": false
+    },
+    {
+      "name": "selector",
+      "role": "生成完整 selectors.yml 候选并静态检查其中的 Kether selector 脚本",
+      "runner": "orryx_toolkit.selector.run",
+      "defaultOperation": "generate",
+      "inputTemplate": "../templates/selector.input.json",
+      "dependencies": [
+        {
+          "component": "kether",
+          "kind": "quality-gate",
+          "reason": "selector Actions 由 Kether 执行"
+        }
+      ],
+      "produces": [
+        "selectors.yml"
+      ],
+      "writesFiles": false
+    },
+    {
+      "name": "job",
+      "role": "生成 Job YAML 候选、技能和经验引用，以及非原生二转实施计划候选",
+      "runner": "orryx_toolkit.job.run",
+      "defaultOperation": "generate",
+      "inputTemplate": "../templates/job.input.json",
+      "dependencies": [
+        {
+          "component": "progression",
+          "kind": "conditional",
+          "reason": "Job 的 Experience 引用必须由工作区或 progression artifact 提供"
+        },
+        {
+          "component": "ability",
+          "kind": "conditional",
+          "reason": "Job 的 Skills 引用必须由工作区或 ability artifacts 提供"
+        },
+        {
+          "component": "kether",
+          "kind": "quality-gate",
+          "reason": "职业资源公式由 Kether 表达式承载"
+        }
+      ],
+      "produces": [
+        "jobs/<key>.yml",
+        "plans/jobs/<key>-advancement.json (conditional)"
+      ],
+      "writesFiles": false
+    },
+    {
+      "name": "ui",
+      "role": "生成 Bukkit、DragonCore、GermPlugin 或 ArcartX UI YAML 候选并记录可选技能引用",
+      "runner": "orryx_toolkit.ui.run",
+      "defaultOperation": "generate",
+      "inputTemplate": "../templates/ui.input.json",
+      "dependencies": [
+        {
+          "component": "ability",
+          "kind": "conditional",
+          "reason": "仅当 request.skills 声明技能时建立可选引用；外部图标和客户端资源仍是 requirement"
+        }
+      ],
+      "produces": [
+        "ui/<backend>/*.yml"
+      ],
+      "writesFiles": false
+    },
+    {
+      "name": "orchestrator",
+      "role": "按固定依赖顺序调用领域组件，合并结果并检查重复 artifact、必需引用与写盘安全门",
+      "runner": "orryx_toolkit.orchestrator.run_orchestrator",
+      "defaultOperation": "generate",
+      "inputTemplate": "../templates/orchestrator.input.json",
+      "dependencies": [
+        {
+          "component": "validator",
+          "kind": "quality-gate",
+          "reason": "建议以只读扫描开始，并在候选物化后对 staging 再执行一次验证"
+        }
+      ],
+      "produces": [
+        "merged artifacts",
+        "merged diagnostics",
+        "merged checks",
+        "merged references",
+        "merged requirements"
+      ],
+      "writesFiles": false
+    }
+  ],
+  "orchestrator": {
+    "stepPointer": "/request/steps",
+    "preservesInputOrderWithinComponent": true,
+    "autoReorders": true,
+    "dependencyOrder": [
+      "validator",
+      "kether",
+      "ability",
+      "progression",
+      "job",
+      "station",
+      "combat",
+      "selector",
+      "ui",
+      "materialize"
+    ],
+    "recursionAllowed": false,
+    "validatesDuplicateArtifacts": true,
+    "validatesRequiredReferences": true,
+    "materializesArtifacts": true,
+    "materializeRequiresTopLevelOperation": "materialize",
+    "materializeBlockedAfterErrors": true,
+    "runnableComponents": [
+      "validator",
+      "kether",
+      "ability",
+      "progression",
+      "job",
+      "station",
+      "combat",
+      "selector",
+      "ui",
+      "materialize"
+    ]
+  },
+  "safety": {
+    "artifactsAreCandidates": true,
+    "materializeRequiredForWrites": true,
+    "relativePathsOnly": true,
+    "pathContainment": true,
+    "defaultOverwrite": "deny",
+    "hashVerifiedWhenPresent": true,
+    "createParentsDefault": true,
+    "atomicPerFileReplace": true,
+    "transactionalBatch": false,
+    "partialWritePossible": true,
+    "automaticReload": false,
+    "networkAccessImplemented": false,
+    "networkPolicyEnforced": false
+  },
+  "requirements": [
+    {
+      "code": "SERVER_PREFLIGHT_REQUIRED",
+      "message": "静态合同通过后仍需在隔离服务器验证 Orryx 加载、Kether 编译、Trigger 注册与客户端资源。"
+    },
+    {
+      "code": "MATERIALIZE_STAGING_REQUIRED",
+      "message": "生产发布前应先在 staging workspace 执行 materialize 和磁盘级 validator；禁止直接把候选 artifacts 当作已发布文件。"
+    },
+    {
+      "code": "WORKSPACE_MODE_NOT_ENFORCED",
+      "message": "Runtime 会规范化 workspace.mode，但当前不会据此改变引用校验或诊断严重度。"
+    },
+    {
+      "code": "NETWORK_POLICY_DECLARATIVE",
+      "message": "Runtime 当前没有网络调用，也没有 network 策略执行器；宿主仍须在外层限制网络。"
+    },
+    {
+      "code": "MATERIALIZE_NOT_TRANSACTIONAL",
+      "message": "materialize 逐文件原子替换，但没有跨文件事务回滚；中途 I/O 失败可能留下已写入的前序文件。"
+    }
+  ]
+}

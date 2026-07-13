@@ -1,0 +1,65 @@
+{
+  "name": "orryx-creation-suite",
+  "plugins": [
+    {
+      "name": "orryx-config-validator-skill",
+      "description": "扫描 Orryx 配置并验证文件 ID、跨文件引用、兼容性、线程和安全问题。",
+      "source": "./skills/orryx-config-validator-skill",
+      "skills": ["./skills/orryx-config-validator-skill"]
+    },
+    {
+      "name": "orryx-kether-authoring-skill",
+      "description": "根据 Orryx 上下文和 Actions Schema 编写、解释并审查 Kether 脚本。",
+      "source": "./skills/orryx-kether-authoring-skill",
+      "skills": ["./skills/orryx-kether-authoring-skill"]
+    },
+    {
+      "name": "orryx-ability-authoring-skill",
+      "description": "生成 Orryx 主动、指向、蓄力和被动游戏技能配置及依赖清单。",
+      "source": "./skills/orryx-ability-authoring-skill",
+      "skills": ["./skills/orryx-ability-authoring-skill"]
+    },
+    {
+      "name": "orryx-progression-curve-skill",
+      "description": "生成和模拟 Orryx 经验、技能点、法力、精力及技能升级成长曲线。",
+      "source": "./skills/orryx-progression-curve-skill",
+      "skills": ["./skills/orryx-progression-curve-skill"]
+    },
+    {
+      "name": "orryx-job-kit-skill",
+      "description": "创建和维护 Orryx 职业、技能组、属性、资源公式和二转骨架。",
+      "source": "./skills/orryx-job-kit-skill",
+      "skills": ["./skills/orryx-job-kit-skill"]
+    },
+    {
+      "name": "orryx-station-mechanic-skill",
+      "description": "生成 Orryx Station 事件机制、事件型被动、护盾、Flag 和伤害累计逻辑。",
+      "source": "./skills/orryx-station-mechanic-skill",
+      "skills": ["./skills/orryx-station-mechanic-skill"]
+    },
+    {
+      "name": "orryx-combat-state-controller-skill",
+      "description": "联合生成 Orryx Status 与 Controller，覆盖普攻、格挡、闪避和动画引用。",
+      "source": "./skills/orryx-combat-state-controller-skill",
+      "skills": ["./skills/orryx-combat-state-controller-skill"]
+    },
+    {
+      "name": "orryx-workflow-orchestrator-skill",
+      "description": "按依赖顺序协调 Orryx 完整职业和跨组件配置生成，并统一执行发布门禁。",
+      "source": "./skills/orryx-workflow-orchestrator-skill",
+      "skills": ["./skills/orryx-workflow-orchestrator-skill"]
+    },
+    {
+      "name": "orryx-selector-library-skill",
+      "description": "生成 Orryx 几何选择器、流式过滤器和 selectors.yml 可复用预设。",
+      "source": "./skills/orryx-selector-library-skill",
+      "skills": ["./skills/orryx-selector-library-skill"]
+    },
+    {
+      "name": "orryx-ui-adapter-skill",
+      "description": "生成和审查 Bukkit、DragonCore、GermPlugin 与 ArcartX 的 Orryx UI 补丁。",
+      "source": "./skills/orryx-ui-adapter-skill",
+      "skills": ["./skills/orryx-ui-adapter-skill"]
+    }
+  ]
+}

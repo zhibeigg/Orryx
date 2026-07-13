@@ -1,0 +1,26 @@
+{
+  "contractVersion": "1.0",
+  "component": "job",
+  "operation": "generate",
+  "workspace": {
+    "root": "../../../../src/main/resources",
+    "mode": "standalone"
+  },
+  "request": {
+    "id": "剑修-示例",
+    "name": "剑修示例",
+    "icon": "剑修",
+    "skills": ["操翻诸神拳"],
+    "attributes": ["气血回复: +{{ orryx level }}"],
+    "regainManaActions": "1",
+    "maxManaActions": "calc \"100+10*level\"",
+    "regainSpiritActions": "5",
+    "maxSpiritActions": "100",
+    "upgradePointActions": "1",
+    "experience": "default"
+  },
+  "policy": {
+    "strict": true,
+    "network": "deny"
+  }
+}

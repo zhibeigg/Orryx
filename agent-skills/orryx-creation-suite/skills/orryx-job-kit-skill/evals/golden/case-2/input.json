@@ -1,0 +1,21 @@
+{
+  "contractVersion": "1.0",
+  "component": "job",
+  "operation": "generate",
+  "workspace": {"root": "../../../../src/main/resources", "mode": "standalone"},
+  "request": {
+    "id": "剑宗",
+    "name": "剑宗",
+    "icon": "剑宗",
+    "advancementFrom": "剑修",
+    "skills": ["操翻诸神拳"],
+    "attributes": ["气血回复: +{{ orryx level }}"],
+    "regainManaActions": "2",
+    "maxManaActions": "calc \"120+12*level\"",
+    "regainSpiritActions": "5",
+    "maxSpiritActions": "120",
+    "upgradePointActions": "1",
+    "experience": "default"
+  },
+  "policy": {"strict": true, "network": "deny"}
+}

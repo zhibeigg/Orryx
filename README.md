@@ -6,7 +6,7 @@
 
 **跨时代技能插件，支持实现复杂逻辑，为稳定高效而生**
 
-[![Version](https://img.shields.io/badge/version-2.43.114-blue?style=for-the-badge)](https://github.com/zhibeigg/Orryx/releases)
+[![Version](https://img.shields.io/badge/version-2.44.114-blue?style=for-the-badge)](https://github.com/zhibeigg/Orryx/releases)
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.12--1.21-green?style=for-the-badge&logo=minecraft)](https://www.minecraft.net/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.1.20-purple?style=for-the-badge&logo=kotlin)](https://kotlinlang.org/)
 [![TabooLib](https://img.shields.io/badge/TabooLib-6.2.4-orange?style=for-the-badge)](https://github.com/TabooLib/taboolib)
@@ -220,6 +220,7 @@ Self、Origin、Direct、Offset、Type、Teammate、Team、PVP、Amount、Server
 
 - **AI 集成**：OpenAI 接入
 - **Wiki 生成**：自动生成飞书文档、Markdown 文档、Actions Schema JSON
+- **Agent SKILL 套件**：基于生产配置和源码生成、审查技能、职业、经验、中转站、状态机、选择器与多端 UI
 - **在线编辑器**：WebSocket 连接中心服务器，支持浏览器远程编辑配置文件、重载模块、查看日志
 - **Buff 系统**：Buff 配置与管理
 - **NPC 系统**：基于 Adyeshach 的虚拟实体
@@ -470,7 +471,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("org.gitee.orryx:orryx:2.43.114:api")
+    compileOnly("org.gitee.orryx:orryx:2.44.114:api")
 }
 ```
 
@@ -482,9 +483,44 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'org.gitee.orryx:orryx:2.43.114:api'
+    compileOnly 'org.gitee.orryx:orryx:2.44.114:api'
 }
 ```
+
+---
+
+## Orryx Agent SKILL 套件
+
+仓库内置 `agent-skills/orryx-creation-suite/`，提供 10 个可组合的 Agent SKILL，用于创建和校验 Orryx 配置：
+
+- 技能、Kether、职业和经验曲线
+- Station 事件机制
+- Status 与 Controller
+- Selector 预设
+- Bukkit、DragonCore、GermPlugin、ArcartX UI
+- 完整职业套件编排与跨文件校验
+
+安装到 Claude Code：
+
+```bash
+./agent-skills/orryx-creation-suite/install.sh --platform claude-code
+```
+
+Windows PowerShell：
+
+```powershell
+./agent-skills/orryx-creation-suite/install.ps1 -Platform claude-code
+```
+
+安装后可调用：
+
+```text
+/orryx-ability-authoring-skill 创建一个蓄力技能
+/orryx-progression-curve-skill 设计 1-60 级经验曲线
+/orryx-workflow-orchestrator-skill 创建完整职业套件
+```
+
+详细说明见 `agent-skills/orryx-creation-suite/README.md`。
 
 ---
 

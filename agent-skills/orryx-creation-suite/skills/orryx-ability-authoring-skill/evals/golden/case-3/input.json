@@ -1,0 +1,17 @@
+{
+  "contractVersion": "1.0",
+  "component": "ability",
+  "operation": "generate",
+  "workspace": {"root": "../../../..", "mode": "standalone"},
+  "request": {
+    "id": "不兼容瞄准",
+    "type": "DIRECT_AIM",
+    "name": "不兼容瞄准",
+    "aimSizeAction": "3",
+    "aimRadiusAction": "12",
+    "actions": "set target to lazy *aim",
+    "actionsSchemaPath": "build/generated-docs/kether/actions-schema.json",
+    "serverVersion": "1.20.4"
+  },
+  "policy": {"strict": true, "network": "deny"}
+}

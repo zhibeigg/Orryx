@@ -1,0 +1,13 @@
+{
+  "contractVersion": "1.0",
+  "component": "selector",
+  "operation": "generate",
+  "workspace": {},
+  "request": {
+    "argumentCount": 0,
+    "selectors": {
+      "近战敌人": "container they \"@sector 3.5 120 2 !@self !@type ARMOR_STAND !@team\""
+    }
+  },
+  "policy": {"materialize": false, "reloadServer": false}
+}

@@ -1,0 +1,20 @@
+Options:
+  Condition: |-
+    check orryx job == 剑修
+  Controller: 长剑
+  CancelHeldEventWhenPlaying: true
+  CancelBukkitAttack: true
+  AttackSpeed: 1.0
+States:
+  长剑普攻0:
+    Type: "General Attack"
+    Connection: "8-16"
+    Animation:
+      Key: 长剑普攻0
+      Duration: 21
+    Action: |-
+      damage 10 they "@sector 3.5 120 2 !@self !@team"
+Action: |-
+  if check &input == keySetting generalAttack then {
+    running "长剑普攻0"
+  }

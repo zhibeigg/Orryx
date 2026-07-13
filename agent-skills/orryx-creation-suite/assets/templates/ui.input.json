@@ -1,0 +1,29 @@
+{
+  "$schema": "../contracts/component-input.schema.json",
+  "contractVersion": "1.0",
+  "component": "ui",
+  "operation": "generate",
+  "workspace": {
+    "root": ".",
+    "mode": "standalone"
+  },
+  "request": {
+    "backend": "bukkit",
+    "config": {
+      "SkillUI": {
+        "title": "技能界面",
+        "Skills": {
+          "Slots": [
+            28
+          ]
+        }
+      }
+    }
+  },
+  "policy": {
+    "strict": true,
+    "overwrite": "deny",
+    "network": "deny",
+    "minecraftVersion": "1.20.4"
+  }
+}

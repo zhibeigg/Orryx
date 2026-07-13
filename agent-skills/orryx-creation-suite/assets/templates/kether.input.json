@@ -1,0 +1,20 @@
+{
+  "$schema": "../contracts/component-input.schema.json",
+  "contractVersion": "1.0",
+  "component": "kether",
+  "operation": "validate",
+  "workspace": {
+    "root": ".",
+    "mode": "standalone"
+  },
+  "request": {
+    "context": "generic",
+    "script": "true"
+  },
+  "policy": {
+    "strict": true,
+    "overwrite": "deny",
+    "network": "deny",
+    "minecraftVersion": "1.20.4"
+  }
+}

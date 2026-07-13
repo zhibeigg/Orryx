@@ -6,3 +6,7 @@ build
 .narrafork/
 .worktrees/
 /out/
+__pycache__/
+*.py[cod]
+agent-skills/**/.eval-output/
+agent-skills/**/.skill-dist/

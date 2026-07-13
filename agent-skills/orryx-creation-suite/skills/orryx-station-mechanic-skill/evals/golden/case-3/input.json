@@ -1,0 +1,16 @@
+{
+  "contractVersion": "1.0",
+  "component": "station",
+  "operation": "generate",
+  "workspace": {},
+  "request": {
+    "key": "非法异步护盾",
+    "event": "Player Damaged Post",
+    "priority": "BEFORE_ALL",
+    "weight": 1,
+    "ignoreCancelled": false,
+    "async": true,
+    "actions": ""
+  },
+  "policy": {"materialize": true, "reloadServer": true}
+}

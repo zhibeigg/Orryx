@@ -1,0 +1,36 @@
+{
+  "$schema": "../contracts/component-input.schema.json",
+  "contractVersion": "1.0",
+  "component": "combat",
+  "operation": "generate",
+  "workspace": {
+    "root": ".",
+    "mode": "standalone"
+  },
+  "request": {
+    "status": {
+      "key": "示例战斗状态",
+      "states": {
+        "普攻0": {
+          "Type": "General Attack",
+          "Connection": "0-0",
+          "Animation": {
+            "Key": "示例普攻",
+            "Duration": "1"
+          }
+        }
+      }
+    },
+    "controller": {
+      "key": "示例控制器",
+      "backend": "bukkit",
+      "config": {}
+    }
+  },
+  "policy": {
+    "strict": true,
+    "overwrite": "deny",
+    "network": "deny",
+    "minecraftVersion": "1.20.4"
+  }
+}

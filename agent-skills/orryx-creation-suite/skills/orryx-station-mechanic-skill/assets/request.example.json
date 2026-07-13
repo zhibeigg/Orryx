@@ -1,0 +1,22 @@
+{
+  "contractVersion": "1.0",
+  "component": "station",
+  "operation": "generate",
+  "workspace": {},
+  "request": {
+    "key": "拳修内劲增强",
+    "event": "Player Damage Pre",
+    "priority": "NORMAL",
+    "weight": 10,
+    "ignoreCancelled": true,
+    "async": false,
+    "variables": {
+      "bonusRate": 0.04
+    },
+    "actions": "if &isCancelled then exit\nset &event[damage] to math add [ &event[damage] math mul [ &bonusRate player max health ] ]"
+  },
+  "policy": {
+    "materialize": false,
+    "reloadServer": false
+  }
+}

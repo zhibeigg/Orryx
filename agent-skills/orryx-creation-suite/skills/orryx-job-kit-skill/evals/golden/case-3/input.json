@@ -1,0 +1,13 @@
+{
+  "contractVersion": "1.0",
+  "component": "job",
+  "operation": "generate",
+  "workspace": {"root": "../../../..", "mode": "standalone"},
+  "request": {
+    "id": "非法/职业",
+    "name": "非法职业",
+    "skills": ["不存在技能"],
+    "experience": "不存在经验"
+  },
+  "policy": {"strict": true, "network": "deny"}
+}

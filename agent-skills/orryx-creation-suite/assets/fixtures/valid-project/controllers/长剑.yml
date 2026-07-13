@@ -1,0 +1,24 @@
+Layer:
+  base:
+    blendType: OVERRIDE
+    weight: 1
+    animations:
+      - 长剑init
+      - 长剑普攻0
+  action:
+    blendType: OVERRIDE
+    weight: 60
+    animations:
+      - 长剑idle
+      - 长剑walk
+Trigger:
+  init: |-
+    界面变量.action = true;
+  stand: |-
+    if(界面变量.action == true) {
+      方法.播放动画('长剑idle', 100);
+    };
+  walk: |-
+    if(界面变量.action == true) {
+      方法.播放动画('长剑walk', 100);
+    };

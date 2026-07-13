@@ -1,0 +1,997 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:orryx:creation-suite:schema:component-input:1.0",
+  "title": "Orryx Creation Suite 组件输入合同",
+  "description": "面向共享 Runtime 的生产输入边界。模板使用显式 workspace object；Runtime 仍兼容路径字符串简写。",
+  "type": "object",
+  "required": [
+    "contractVersion",
+    "component",
+    "operation",
+    "workspace",
+    "request",
+    "policy"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri-reference"
+    },
+    "contractVersion": {
+      "const": "1.0",
+      "description": "shared/orryx_toolkit/contracts.py 当前唯一接受的合同版本。"
+    },
+    "component": {
+      "type": "string",
+      "enum": [
+        "ability",
+        "job",
+        "progression",
+        "kether",
+        "validator",
+        "station",
+        "combat",
+        "selector",
+        "ui",
+        "orchestrator",
+        "materialize"
+      ]
+    },
+    "operation": {
+      "type": "string",
+      "enum": [
+        "generate",
+        "validate",
+        "plan",
+        "materialize"
+      ],
+      "description": "Runtime 原生接受 generate/validate/plan/materialize；plan 只计算候选结果，不写盘。"
+    },
+    "workspace": {
+      "description": "建议使用显式 object。字符串是 Runtime 的兼容简写，会被规范化为 root=<字符串>, mode=project。",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/Workspace"
+        },
+        {
+          "type": "string",
+          "minLength": 1
+        }
+      ]
+    },
+    "request": {
+      "type": "object"
+    },
+    "policy": {
+      "$ref": "#/$defs/Policy"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "component": {
+            "const": "ability"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "request": {
+            "$ref": "#/$defs/AbilityRequest"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "component": {
+            "const": "job"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "request": {
+            "$ref": "#/$defs/JobRequest"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "component": {
+            "const": "progression"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "request": {
+            "$ref": "#/$defs/ProgressionRequest"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "component": {
+            "const": "kether"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "request": {
+            "$ref": "#/$defs/KetherRequest"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "component": {
+            "const": "validator"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "request": {
+            "$ref": "#/$defs/ValidatorRequest"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "component": {
+            "const": "station"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "request": {
+            "$ref": "#/$defs/StationRequest"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "component": {
+            "const": "combat"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "request": {
+            "$ref": "#/$defs/CombatRequest"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "component": {
+            "const": "selector"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "request": {
+            "$ref": "#/$defs/SelectorRequest"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "component": {
+            "const": "ui"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "request": {
+            "$ref": "#/$defs/UiRequest"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "component": {
+            "const": "orchestrator"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "request": {
+            "$ref": "#/$defs/OrchestratorRequest"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "component": {
+            "const": "materialize"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "operation": {
+            "const": "materialize"
+          },
+          "request": {
+            "$ref": "#/$defs/MaterializeRequest"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "materialize"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "component": {
+            "enum": ["materialize", "orchestrator"]
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "Workspace": {
+      "type": "object",
+      "required": [
+        "root",
+        "mode"
+      ],
+      "properties": {
+        "root": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Orryx 配置工作区根目录；artifact.path 相对此目录解析。"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "standalone",
+            "project"
+          ],
+          "description": "当前 Runtime 会保留该值，但不会据此改变引用诊断级别。"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Runtime 兼容别名；仅在 root 缺失时使用。"
+        },
+        "minecraftVersion": {
+          "type": "string"
+        },
+        "serverVersion": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "Policy": {
+      "type": "object",
+      "required": [
+        "strict",
+        "overwrite",
+        "network",
+        "minecraftVersion"
+      ],
+      "properties": {
+        "strict": {
+          "type": "boolean",
+          "default": true,
+          "description": "当前 Runtime 会规范化并透传，尚未统一驱动诊断升级。"
+        },
+        "overwrite": {
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": [
+                "deny",
+                "allow"
+              ]
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "default": "deny"
+        },
+        "network": {
+          "type": "string",
+          "enum": [
+            "deny",
+            "allow"
+          ],
+          "default": "deny",
+          "description": "当前共享 Runtime 不执行网络请求，也没有网络策略执行器；该字段是调用方边界声明。"
+        },
+        "minecraftVersion": {
+          "type": "string",
+          "default": "",
+          "description": "Ability/Kether 的 Aim 兼容性检查会读取此值。"
+        },
+        "serverVersion": {
+          "type": "string"
+        },
+        "plugins": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "validateReferences": {
+          "type": "boolean",
+          "default": true
+        },
+        "createParents": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "enum": [
+                "allow",
+                "deny",
+                "true",
+                "false",
+                "yes",
+                "no"
+              ]
+            }
+          ],
+          "default": true
+        },
+        "materialize": {
+          "type": "boolean",
+          "description": "兼容意图字段；run/orchestrator 不会因其为 true 自动写盘。"
+        },
+        "reloadServer": {
+          "type": "boolean",
+          "description": "仅作为拒绝自动重载的意图记录；Runtime 不执行服务器重载。"
+        }
+      },
+      "additionalProperties": true
+    },
+    "SafeKey": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^/\\\\]+$"
+    },
+    "AbilityRequest": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "anyOf": [
+        {
+          "required": [
+            "key"
+          ]
+        },
+        {
+          "required": [
+            "id"
+          ]
+        },
+        {
+          "required": [
+            "name"
+          ]
+        }
+      ],
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/SafeKey"
+        },
+        "id": {
+          "$ref": "#/$defs/SafeKey"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "PASSIVE",
+            "DIRECT",
+            "DIRECT AIM",
+            "DIRECT_AIM",
+            "AIM",
+            "PRESSING",
+            "PRESS",
+            "CHARGE",
+            "PRESSING AIM",
+            "PRESSING_AIM",
+            "CHARGE_AIM"
+          ]
+        },
+        "actions": {
+          "type": "string",
+          "minLength": 1
+        },
+        "extendActions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "variables": {
+          "type": "object"
+        },
+        "station": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "JobRequest": {
+      "type": "object",
+      "anyOf": [
+        {
+          "required": [
+            "key"
+          ]
+        },
+        {
+          "required": [
+            "id"
+          ]
+        },
+        {
+          "required": [
+            "name"
+          ]
+        }
+      ],
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/SafeKey"
+        },
+        "id": {
+          "$ref": "#/$defs/SafeKey"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "skills": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "experience": {
+          "type": "string",
+          "minLength": 1
+        },
+        "advancement": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": true
+    },
+    "Curve": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "exponential",
+            "polynomial",
+            "piecewise",
+            "table"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "ProgressionRequest": {
+      "type": "object",
+      "required": [
+        "minLevel",
+        "maxLevel",
+        "curve"
+      ],
+      "anyOf": [
+        {
+          "required": [
+            "key"
+          ]
+        },
+        {
+          "required": [
+            "id"
+          ]
+        }
+      ],
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/SafeKey"
+        },
+        "id": {
+          "$ref": "#/$defs/SafeKey"
+        },
+        "minLevel": {
+          "type": "integer"
+        },
+        "maxLevel": {
+          "type": "integer"
+        },
+        "curve": {
+          "$ref": "#/$defs/Curve"
+        },
+        "rounding": {
+          "type": "string",
+          "enum": [
+            "floor",
+            "ceil",
+            "round"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "KetherScriptList": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "script"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "script": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "KetherRequest": {
+      "type": "object",
+      "anyOf": [
+        {
+          "required": [
+            "script"
+          ]
+        },
+        {
+          "required": [
+            "actions"
+          ]
+        },
+        {
+          "required": [
+            "scripts"
+          ]
+        }
+      ],
+      "properties": {
+        "script": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actions": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scripts": {
+          "$ref": "#/$defs/KetherScriptList"
+        },
+        "context": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object"
+            }
+          ]
+        },
+        "actionsSchema": {
+          "oneOf": [
+            {
+              "type": "object"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "actionsSchemaPath": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "ValidatorRequest": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "StationRequest": {
+      "type": "object",
+      "required": [
+        "event",
+        "actions"
+      ],
+      "anyOf": [
+        {
+          "required": [
+            "key"
+          ]
+        },
+        {
+          "required": [
+            "id"
+          ]
+        }
+      ],
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/SafeKey"
+        },
+        "id": {
+          "$ref": "#/$defs/SafeKey"
+        },
+        "event": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actions": {
+          "type": "string",
+          "minLength": 1
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "LOWEST",
+            "LOW",
+            "NORMAL",
+            "HIGH",
+            "HIGHEST",
+            "MONITOR"
+          ]
+        },
+        "async": {
+          "type": "boolean"
+        },
+        "skill": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "CombatStatus": {
+      "type": "object",
+      "required": [
+        "key",
+        "states"
+      ],
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/SafeKey"
+        },
+        "states": {
+          "type": "object",
+          "minProperties": 1
+        }
+      },
+      "additionalProperties": true
+    },
+    "CombatController": {
+      "type": "object",
+      "required": [
+        "key"
+      ],
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/SafeKey"
+        },
+        "backend": {
+          "type": "string"
+        },
+        "config": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": true
+    },
+    "CombatRequest": {
+      "type": "object",
+      "required": [
+        "status",
+        "controller"
+      ],
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/CombatStatus"
+        },
+        "controller": {
+          "$ref": "#/$defs/CombatController"
+        }
+      },
+      "additionalProperties": true
+    },
+    "SelectorRequest": {
+      "type": "object",
+      "anyOf": [
+        {
+          "required": [
+            "selectors"
+          ]
+        },
+        {
+          "required": [
+            "key",
+            "actions"
+          ]
+        }
+      ],
+      "properties": {
+        "selectors": {
+          "type": "object",
+          "minProperties": 1
+        },
+        "key": {
+          "$ref": "#/$defs/SafeKey"
+        },
+        "actions": {
+          "type": "string",
+          "minLength": 1
+        },
+        "argumentCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": true
+    },
+    "UiRequest": {
+      "type": "object",
+      "required": [
+        "backend"
+      ],
+      "properties": {
+        "backend": {
+          "type": "string",
+          "enum": [
+            "bukkit",
+            "dragoncore",
+            "germplugin",
+            "arcartx"
+          ]
+        },
+        "config": {
+          "type": "object"
+        },
+        "files": {
+          "type": "object"
+        },
+        "skills": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "Step": {
+      "type": "object",
+      "required": [
+        "component",
+        "request"
+      ],
+      "properties": {
+        "component": {
+          "type": "string",
+          "enum": [
+            "validator",
+            "kether",
+            "ability",
+            "progression",
+            "job",
+            "station",
+            "combat",
+            "selector",
+            "ui",
+            "materialize"
+          ]
+        },
+        "operation": {
+          "type": "string",
+          "enum": [
+            "generate",
+            "validate",
+            "plan",
+            "materialize"
+          ]
+        },
+        "workspace": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Workspace"
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            }
+          ]
+        },
+        "request": {
+          "type": "object"
+        },
+        "policy": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    "OrchestratorRequest": {
+      "type": "object",
+      "required": [
+        "steps"
+      ],
+      "properties": {
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/Step"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "MaterializeArtifact": {
+      "type": "object",
+      "required": [
+        "path",
+        "content"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string"
+        },
+        "mediaType": {
+          "type": "string"
+        },
+        "encoding": {
+          "const": "utf-8"
+        },
+        "content": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "metadata": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": true
+    },
+    "MaterializeRequest": {
+      "type": "object",
+      "anyOf": [
+        {
+          "required": [
+            "artifacts"
+          ]
+        },
+        {
+          "required": [
+            "result"
+          ]
+        }
+      ],
+      "properties": {
+        "artifacts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/MaterializeArtifact"
+          }
+        },
+        "result": {
+          "type": "object",
+          "required": [
+            "artifacts"
+          ],
+          "properties": {
+            "artifacts": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/MaterializeArtifact"
+              }
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "x-runtimeCompatibility": {
+    "runtimeContractVersion": "1.0",
+    "runtimeSuiteVersion": "1.0.0",
+    "normalizeContractAcceptedOperations": [
+      "generate",
+      "validate",
+      "plan",
+      "materialize"
+    ],
+    "publicPlanRequiresAdapter": false,
+    "materializeRequiresExplicitBoundary": true
+  }
+}

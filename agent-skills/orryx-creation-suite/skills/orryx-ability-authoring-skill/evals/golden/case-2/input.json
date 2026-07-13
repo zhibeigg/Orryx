@@ -1,0 +1,20 @@
+{
+  "contractVersion": "1.0",
+  "component": "ability",
+  "operation": "generate",
+  "workspace": {"root": "../../../..", "mode": "standalone"},
+  "request": {
+    "id": "测试内劲",
+    "type": "PASSIVE",
+    "name": "测试内劲",
+    "sort": 0,
+    "description": ["&f攻击时附加气血比例伤害"],
+    "minLevel": 1,
+    "maxLevel": 1,
+    "station": "测试内劲触发",
+    "stationEvent": "Player Damage Pre",
+    "stationActions": "set &event[damage] to math add [ &event[damage] 1 ]",
+    "serverVersion": "1.20.4"
+  },
+  "policy": {"strict": true, "network": "deny"}
+}

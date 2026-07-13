@@ -1,0 +1,15 @@
+{
+  "contractVersion": "1.0",
+  "component": "orchestrator",
+  "operation": "generate",
+  "workspace": {"root": "."},
+  "request": {
+    "steps": [
+      {"component": "validator", "operation": "validate", "request": {}},
+      {"component": "kether", "operation": "validate", "request": {"script": "true", "context": "generic"}},
+      {"component": "ability", "request": {"key": "治疗术", "type": "DIRECT", "actions": "true"}},
+      {"component": "ui", "request": {"backend": "bukkit", "skills": ["治疗术"], "config": {"SkillUI": {"title": "治疗技能", "Skills": {"Slots": [28, 29]}}}}}
+    ]
+  },
+  "policy": {"materialize": false, "reloadServer": false, "validateReferences": true}
+}

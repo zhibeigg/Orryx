@@ -1,0 +1,11 @@
+{
+  "contractVersion": "1.0",
+  "component": "selector",
+  "operation": "generate",
+  "workspace": {},
+  "request": {
+    "argumentCount": 1,
+    "selectors": {}
+  },
+  "policy": {"materialize": true, "reloadServer": true}
+}

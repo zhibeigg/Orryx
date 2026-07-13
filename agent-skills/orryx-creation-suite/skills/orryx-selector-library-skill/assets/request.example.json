@@ -1,0 +1,16 @@
+{
+  "contractVersion": "1.0",
+  "component": "selector",
+  "operation": "generate",
+  "workspace": {},
+  "request": {
+    "argumentCount": 2,
+    "selectors": {
+      "近战扇形": {
+        "Actions": "set result to container they inline \"@sector {{ &v0 }} {{ &v1 }} 2 !@self !@type ARMOR_STAND !@team\"",
+        "Parameters": ["v0: radius(block)", "v1: angle(degree)"]
+      }
+    }
+  },
+  "policy": {"materialize": false, "reloadServer": false}
+}

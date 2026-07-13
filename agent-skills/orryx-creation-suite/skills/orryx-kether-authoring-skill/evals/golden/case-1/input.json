@@ -1,0 +1,12 @@
+{
+  "contractVersion": "1.0",
+  "component": "kether",
+  "operation": "validate",
+  "workspace": {"root": "../../../..", "mode": "standalone"},
+  "request": {
+    "context": {"type": "skill", "variables": ["damage"]},
+    "script": "set targets to container they \"@range 4 !@self\"\ndamage lazy *damage they &targets",
+    "actionsSchemaPath": "build/generated-docs/kether/actions-schema.json"
+  },
+  "policy": {"strict": true, "network": "deny", "serverVersion": "1.20.4"}
+}

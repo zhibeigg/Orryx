@@ -1,0 +1,14 @@
+{
+  "contractVersion": "1.0",
+  "component": "progression",
+  "operation": "generate",
+  "workspace": {"root": "plugins/Orryx", "mode": "standalone"},
+  "request": {
+    "id": "错误范围",
+    "minLevel": 20,
+    "maxLevel": 10,
+    "curve": {"type": "polynomial", "a": 10, "b": 100, "c": 0},
+    "chart": true
+  },
+  "policy": {"strict": true, "network": "deny"}
+}

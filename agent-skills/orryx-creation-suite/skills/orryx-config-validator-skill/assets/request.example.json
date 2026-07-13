@@ -1,0 +1,17 @@
+{
+  "contractVersion": "1.0",
+  "component": "validator",
+  "operation": "validate",
+  "workspace": {
+    "root": "../../../../src/main/resources",
+    "mode": "project"
+  },
+  "request": {},
+  "policy": {
+    "strict": true,
+    "network": "deny",
+    "overwrite": "deny",
+    "minecraftVersion": "1.20.4",
+    "plugins": []
+  }
+}

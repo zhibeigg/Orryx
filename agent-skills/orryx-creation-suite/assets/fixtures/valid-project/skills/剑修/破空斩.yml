@@ -1,0 +1,27 @@
+Options:
+  Type: DIRECT
+  Name: "破空斩"
+  Sort: 1
+  Icon: "破空斩"
+  XMaterial: IRON_SWORD
+  Description:
+    - '&7当前等级 &8» &f{{ &level }}'
+    - '&7冷却 &8» &b{{ scaled math div [ lazy *cooldown 20.0 ] }} &7秒'
+    - '&f造成 &c{{ scaled lazy *base }} &f固定伤害。'
+  IsLocked: false
+  MinLevel: 1
+  MaxLevel: 7
+  UpgradePointAction: 1
+  UpLevelCheckAction: |-
+    check orryx level >= calc "2+2*(to-1)"
+  CastCheckAction: true
+  Variables:
+    Silence: 6
+    Mana: 0
+    Cooldown: |-
+      calc "(17-0.5*(level-1))*20"
+    base: |-
+      calc "40+25*(level-1)"
+Actions: |-
+  set targets to container they "@range 4 !@self !@team"
+  damage lazy *base they &targets

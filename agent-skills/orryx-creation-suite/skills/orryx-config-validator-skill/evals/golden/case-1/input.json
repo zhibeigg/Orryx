@@ -1,0 +1,8 @@
+{
+  "contractVersion": "1.0",
+  "component": "ignored-by-wrapper",
+  "operation": "validate",
+  "workspace": {"root": ".", "mode": "project"},
+  "request": {},
+  "policy": {"strict": true, "network": "deny", "minecraftVersion": "1.20.4"}
+}

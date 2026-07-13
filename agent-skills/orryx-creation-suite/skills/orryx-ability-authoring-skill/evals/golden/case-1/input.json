@@ -1,0 +1,18 @@
+{
+  "contractVersion": "1.0",
+  "component": "ability",
+  "operation": "generate",
+  "workspace": {"root": "../../../..", "mode": "standalone"},
+  "request": {
+    "id": "测试直击",
+    "type": "DIRECT",
+    "name": "测试直击",
+    "sort": 1,
+    "description": ["&f造成 {{ scaled lazy *damage }} 点伤害"],
+    "variables": {"damage": "calc \"40+10*(level-1)\""},
+    "actions": "sync { damage lazy *damage they \"@range 3 !@self\" }",
+    "actionsSchemaPath": "build/generated-docs/kether/actions-schema.json",
+    "serverVersion": "1.20.4"
+  },
+  "policy": {"strict": true, "network": "deny"}
+}

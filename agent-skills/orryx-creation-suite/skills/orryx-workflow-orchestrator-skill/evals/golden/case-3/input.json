@@ -1,0 +1,13 @@
+{
+  "contractVersion": "1.0",
+  "component": "orchestrator",
+  "operation": "materialize",
+  "workspace": {"root": "."},
+  "request": {
+    "steps": [
+      {"component": "job", "request": {"key": "坏职业", "skills": ["不存在技能"], "experience": "不存在经验"}},
+      {"component": "materialize", "request": {"reloadServer": true}}
+    ]
+  },
+  "policy": {"materialize": true, "reloadServer": true, "validateReferences": true}
+}

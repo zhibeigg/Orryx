@@ -1,0 +1,3816 @@
+{
+  "actions": [
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "pipe",
+      "namespace": "DEFAULT",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "pipe",
+        "line": 31,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/PipeActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [
+          "import org.bukkit."
+        ],
+        "thread": "main"
+      },
+      "name": "damageProcessor",
+      "namespace": "NODENS_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "pluginPrerequisites": [
+        {
+          "evidence": "src/main/kotlin/org/gitee/orryx/core/kether/actions/compat/NodensActions.kt",
+          "module": "Nodens",
+          "required": true
+        }
+      ],
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "damageProcessor",
+        "line": 20,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/compat/NodensActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [
+          "import org.bukkit."
+        ],
+        "thread": "main"
+      },
+      "name": "regainProcessor",
+      "namespace": "NODENS_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "pluginPrerequisites": [
+        {
+          "evidence": "src/main/kotlin/org/gitee/orryx/core/kether/actions/compat/NodensActions.kt",
+          "module": "Nodens",
+          "required": true
+        }
+      ],
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "regainProcessor",
+        "line": 44,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/compat/NodensActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "abs",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionABS",
+        "line": 142,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/math/MathActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "acos",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionAcos",
+        "line": 78,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/math/MathActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "aiChat",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "aiChat",
+        "line": 45,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/AiActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [
+          "import org.bukkit."
+        ],
+        "thread": "main"
+      },
+      "name": "apAttack",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "pluginPrerequisites": [
+        {
+          "evidence": "src/main/kotlin/org/gitee/orryx/core/kether/actions/compat/AttributePlus3Actions.kt",
+          "module": "AttributePlus3",
+          "required": true
+        }
+      ],
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "apAttack",
+        "line": 14,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/compat/AttributePlus3Actions.kt"
+      }
+    },
+    {
+      "aliases": [
+        "ax"
+      ],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "arcartx",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "pluginPrerequisites": [
+        {
+          "evidence": "src/main/kotlin/org/gitee/orryx/core/kether/actions/compat/arcartx/ArcartXActions.kt",
+          "module": "arcartx",
+          "required": true
+        }
+      ],
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "arcartX",
+        "line": 15,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/compat/arcartx/ArcartXActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "asin",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionAsin",
+        "line": 62,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/math/MathActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "atan",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionAtan",
+        "line": 94,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/math/MathActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [
+          "import org.bukkit."
+        ],
+        "thread": "main"
+      },
+      "name": "attribute",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "pluginPrerequisites": [
+        {
+          "evidence": "src/main/kotlin/org/gitee/orryx/core/kether/actions/compat/AttributeActions.kt",
+          "module": "Attribute",
+          "required": true
+        }
+      ],
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "attribute",
+        "line": 13,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/compat/AttributeActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [
+          "import org.bukkit."
+        ],
+        "thread": "main"
+      },
+      "name": "axhDamage",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "pluginPrerequisites": [
+        {
+          "evidence": "src/main/kotlin/org/gitee/orryx/core/kether/actions/compat/AstraXHeroActions.kt",
+          "module": "AstraXHero",
+          "required": true
+        }
+      ],
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "axhDamage",
+        "line": 14,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/compat/AstraXHeroActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [
+          ".inventory",
+          "import org.bukkit."
+        ],
+        "thread": "main"
+      },
+      "name": "boots",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionBoots",
+        "line": 130,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/ItemActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [
+          "import org.bukkit."
+        ],
+        "thread": "main"
+      },
+      "name": "buff",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "buff",
+        "line": 117,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/BuffActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "ceil",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionCeil",
+        "line": 174,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/math/MathActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [
+          ".inventory",
+          "import org.bukkit."
+        ],
+        "thread": "main"
+      },
+      "name": "chestplate",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionChestplate",
+        "line": 96,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/ItemActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "circleShockwave",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionCircleShockwave",
+        "line": 194,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/OrryxModActions.kt"
+      }
+    },
+    {
+      "aliases": [
+        "cp"
+      ],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [
+          ".world",
+          "import org.bukkit."
+        ],
+        "thread": "main"
+      },
+      "name": "cloudpick",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "pluginPrerequisites": [
+        {
+          "evidence": "src/main/kotlin/org/gitee/orryx/core/kether/actions/compat/cloudpick/CloudPickActions.kt",
+          "module": "cloudpick",
+          "required": true
+        }
+      ],
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "cloudPick",
+        "line": 56,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/compat/cloudpick/CloudPickActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "coalesce",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionCoalesce",
+        "line": 193,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/UtilActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "colliderRemove",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionColliderRemove",
+        "line": 323,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/OrryxModActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "colliderShow",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionColliderShow",
+        "line": 270,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/OrryxModActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "colliderUpdate",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionColliderUpdate",
+        "line": 299,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/OrryxModActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "contain",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget",
+          "selector"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionContain",
+        "line": 107,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/ContainerActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "container",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget",
+          "selector"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionContainer",
+        "line": 29,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/ContainerActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "contains",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionContains",
+        "line": 52,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/UtilActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "cooldown",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": false,
+      "source": {
+        "function": "actionCooldown",
+        "line": 37,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/CooldownActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "cos",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionCos",
+        "line": 30,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/math/MathActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          ".damage("
+        ]
+      },
+      "execution": {
+        "evidence": [
+          ".damage(",
+          "import org.bukkit."
+        ],
+        "thread": "main"
+      },
+      "name": "damage",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "damageAction",
+        "line": 19,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/DamageActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "degrees",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionToDegrees",
+        "line": 110,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/math/MathActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          ".teleport(",
+          ".velocity ="
+        ]
+      },
+      "execution": {
+        "evidence": [
+          ".teleport(",
+          ".velocity =",
+          ".world"
+        ],
+        "thread": "main"
+      },
+      "name": "direct",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionDirect",
+        "line": 127,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/VectorActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "directCast",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": false,
+      "source": {
+        "function": "cast",
+        "line": 170,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/Actions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "directRelease",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": false,
+      "source": {
+        "function": "release",
+        "line": 202,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/Actions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          ".teleport(",
+          ".velocity ="
+        ]
+      },
+      "execution": {
+        "evidence": [
+          ".teleport(",
+          ".velocity =",
+          ".world"
+        ],
+        "thread": "main"
+      },
+      "name": "drag",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": false,
+      "source": {
+        "function": "actionDrag",
+        "line": 158,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/VectorActions.kt"
+      }
+    },
+    {
+      "aliases": [
+        "dragon"
+      ],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [
+          ".world",
+          "import org.bukkit."
+        ],
+        "thread": "main"
+      },
+      "name": "dragoncore",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "pluginPrerequisites": [
+        {
+          "evidence": "src/main/kotlin/org/gitee/orryx/core/kether/actions/compat/dragoncore/DragonCoreActions.kt",
+          "module": "dragoncore",
+          "required": true
+        }
+      ],
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "dragonCore",
+        "line": 56,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/compat/dragoncore/DragonCoreActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [
+          ".world"
+        ],
+        "thread": "main"
+      },
+      "name": "draw",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "draw",
+        "line": 92,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/effect/EffectActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [
+          ".world"
+        ],
+        "thread": "main"
+      },
+      "name": "effect",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "effect",
+        "line": 39,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/effect/EffectActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove(",
+          "spawn("
+        ]
+      },
+      "execution": {
+        "evidence": [
+          "import org.bukkit."
+        ],
+        "thread": "main"
+      },
+      "name": "entity",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": false,
+      "source": {
+        "function": "entityParser",
+        "line": 21,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/entity/EntityActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "entityShow",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionEntityShow",
+        "line": 91,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/OrryxModActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "station"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [
+          "import org.bukkit."
+        ],
+        "thread": "main"
+      },
+      "name": "event",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": false,
+      "source": {
+        "function": "event",
+        "line": 14,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/station/EventActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "flag",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionFlag",
+        "line": 14,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/FlagActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          ".teleport(",
+          ".velocity ="
+        ]
+      },
+      "execution": {
+        "evidence": [
+          ".teleport(",
+          ".velocity =",
+          ".world"
+        ],
+        "thread": "main"
+      },
+      "name": "flash",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionFlash",
+        "line": 41,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/VectorActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "flicker",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionFlicker",
+        "line": 43,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/OrryxModActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "floor",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionFloor",
+        "line": 158,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/math/MathActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          ".velocity ="
+        ]
+      },
+      "execution": {
+        "evidence": [
+          ".addPotionEffect(",
+          ".velocity =",
+          ".world",
+          "import org.bukkit."
+        ],
+        "thread": "main"
+      },
+      "name": "flyHeight",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionFlyHeight",
+        "line": 115,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/GameActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "gddaction",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "pluginPrerequisites": [
+        {
+          "evidence": "src/main/kotlin/org/gitee/orryx/core/kether/actions/compat/GddTitleActions.kt",
+          "module": "GddTitle",
+          "required": true
+        }
+      ],
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "gddAction",
+        "line": 36,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/compat/GddTitleActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "gddtitle",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "pluginPrerequisites": [
+        {
+          "evidence": "src/main/kotlin/org/gitee/orryx/core/kether/actions/compat/GddTitleActions.kt",
+          "module": "GddTitle",
+          "required": true
+        }
+      ],
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "gddTitle",
+        "line": 13,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/compat/GddTitleActions.kt"
+      }
+    },
+    {
+      "aliases": [
+        "germ"
+      ],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [
+          "import org.bukkit.",
+          "playSound("
+        ],
+        "thread": "main"
+      },
+      "name": "germplugin",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "pluginPrerequisites": [
+        {
+          "evidence": "src/main/kotlin/org/gitee/orryx/core/kether/actions/compat/germplugin/GermPluginActions.kt",
+          "module": "germplugin",
+          "required": true
+        }
+      ],
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "germplugin",
+        "line": 32,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/compat/germplugin/GermPluginActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "ghost",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionGhost",
+        "line": 16,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/OrryxModActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "global",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionGlobal",
+        "line": 78,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/GlobalActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [
+          ".inventory",
+          "import org.bukkit."
+        ],
+        "thread": "main"
+      },
+      "name": "helmet",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionHelmet",
+        "line": 79,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/ItemActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "hitbox",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionHitbox",
+        "line": 92,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/math/hitbox/HitBoxActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "ifBlank",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionIfBlank",
+        "line": 299,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/UtilActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "ifEmpty",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionIfEmpty",
+        "line": 227,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/UtilActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "ifNull",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionIfNull",
+        "line": 121,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/UtilActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "inMain",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionInMain",
+        "line": 13,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/CoroutineActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "invincible",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "superInvincible",
+        "line": 184,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/PlayerProfileActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "isNull",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionIsNull",
+        "line": 85,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/UtilActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "isUnlimited",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionIsUnlimited",
+        "line": 492,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/UtilActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [
+          ".inventory",
+          "import org.bukkit."
+        ],
+        "thread": "main"
+      },
+      "name": "itemInMainHand",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionItemInMainHand",
+        "line": 28,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/ItemActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [
+          ".inventory",
+          "import org.bukkit."
+        ],
+        "thread": "main"
+      },
+      "name": "itemInOffHand",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionItemInOffHand",
+        "line": 45,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/ItemActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [
+          ".inventory",
+          "import org.bukkit."
+        ],
+        "thread": "main"
+      },
+      "name": "itemOnCursor",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionItemOnCursor",
+        "line": 62,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/ItemActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "keySetting",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionState",
+        "line": 52,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/KeyActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          ".teleport(",
+          ".velocity ="
+        ]
+      },
+      "execution": {
+        "evidence": [
+          ".teleport(",
+          ".velocity =",
+          ".world"
+        ],
+        "thread": "main"
+      },
+      "name": "launch",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionLaunch",
+        "line": 96,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/VectorActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "lazy",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": false,
+      "source": {
+        "function": "actionLazy",
+        "line": 13,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/VariableActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [
+          ".inventory",
+          "import org.bukkit."
+        ],
+        "thread": "main"
+      },
+      "name": "leggings",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionLeggings",
+        "line": 113,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/ItemActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "let",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionLet",
+        "line": 463,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/UtilActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          ".teleport(",
+          ".velocity ="
+        ]
+      },
+      "execution": {
+        "evidence": [
+          ".teleport(",
+          ".velocity =",
+          ".world"
+        ],
+        "thread": "main"
+      },
+      "name": "lookAt",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionLookAt",
+        "line": 18,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/VectorActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "mana",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionMana",
+        "line": 12,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/ManaActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "matrix",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionMatrix",
+        "line": 22,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/math/vector/MatrixMathActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "merge",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget",
+          "selector"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionMerge",
+        "line": 43,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/ContainerActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "mergeIf",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget",
+          "selector"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionMergeIf",
+        "line": 59,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/ContainerActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "money",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": false,
+      "source": {
+        "function": "actionMoney",
+        "line": 14,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/MoneyActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "mouse",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionMouse",
+        "line": 72,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/OrryxModActions.kt"
+      }
+    },
+    {
+      "aliases": [
+        "mm"
+      ],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [
+          "import org.bukkit."
+        ],
+        "thread": "main"
+      },
+      "name": "mythicmobs",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "pluginPrerequisites": [
+        {
+          "evidence": "src/main/kotlin/org/gitee/orryx/core/kether/actions/compat/mythicmobs/MythicMobsActions.kt",
+          "module": "mythicmobs",
+          "required": true
+        }
+      ],
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "mythicMobs",
+        "line": 17,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/compat/mythicmobs/MythicMobsActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "natural",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionNatural",
+        "line": 240,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/math/MathActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "navigation",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionNavigation",
+        "line": 155,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/OrryxModActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [
+          ".inventory",
+          "import org.bukkit."
+        ],
+        "thread": "main"
+      },
+      "name": "nbt",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "nbt",
+        "line": 147,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/ItemActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "notNull",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionNotNull",
+        "line": 103,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/UtilActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "orryx",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionOrryx",
+        "line": 16,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/OrryxActions.kt"
+      }
+    },
+    {
+      "aliases": [
+        "parm"
+      ],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "parameter",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": false,
+      "source": {
+        "function": "parameter",
+        "line": 44,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/ContextActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "pi",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionPI",
+        "line": 249,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/math/MathActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          ".velocity ="
+        ]
+      },
+      "execution": {
+        "evidence": [
+          ".addPotionEffect(",
+          ".velocity =",
+          ".world",
+          "import org.bukkit."
+        ],
+        "thread": "main"
+      },
+      "name": "potion",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionPotion",
+        "line": 153,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/GameActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "pow",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionPow",
+        "line": 222,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/math/MathActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [
+          "import org.bukkit."
+        ],
+        "thread": "main"
+      },
+      "name": "press",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionPress",
+        "line": 16,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/PressSkillActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "projectile",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionLookAt",
+        "line": 59,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/projectile/ProjectileAction.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "quaternion",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionQuaternion",
+        "line": 28,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/math/vector/QuaternionMathActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "radians",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionToRadians",
+        "line": 126,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/math/MathActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "randomAction",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "randomAction",
+        "line": 32,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/RandomActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [
+          ".world"
+        ],
+        "thread": "main"
+      },
+      "name": "ray",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": false,
+      "source": {
+        "function": "rayTrace",
+        "line": 13,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/RayTraceActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "reinit",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": false,
+      "source": {
+        "function": "actionReinit",
+        "line": 27,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/VariableActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "removeIf",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget",
+          "selector"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionRemoveIf",
+        "line": 84,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/ContainerActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "removeShow",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionRemoveShow",
+        "line": 131,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/OrryxModActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "require",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionRequire",
+        "line": 371,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/UtilActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "requireNotNull",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionRequireNotNull",
+        "line": 403,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/UtilActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "runExtend",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": false,
+      "source": {
+        "function": "callExtend",
+        "line": 142,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/Actions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "running",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionRunning",
+        "line": 28,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/StateActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "sectorShockwave",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionSectorShockwave",
+        "line": 244,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/OrryxModActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "selector",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "StringParser(they)",
+          "selector",
+          "showAFrame("
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionSelector",
+        "line": 18,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/SelectorActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "senderSpace",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "senderSpace",
+        "line": 20,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/ContextActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "silence",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "superSilence",
+        "line": 270,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/PlayerProfileActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "sin",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionSin",
+        "line": 14,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/math/MathActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          ".velocity ="
+        ]
+      },
+      "execution": {
+        "evidence": [
+          ".addPotionEffect(",
+          ".velocity =",
+          ".world",
+          "import org.bukkit."
+        ],
+        "thread": "main"
+      },
+      "name": "specialTarget",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionSpecialTarget",
+        "line": 131,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/GameActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "spirit",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionSpirit",
+        "line": 12,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/SpiritActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          ".velocity ="
+        ]
+      },
+      "execution": {
+        "evidence": [
+          ".addPotionEffect(",
+          ".velocity =",
+          ".world",
+          "import org.bukkit."
+        ],
+        "thread": "main"
+      },
+      "name": "sprint",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionSprint",
+        "line": 94,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/GameActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "sqrt",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionSqrt",
+        "line": 206,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/math/MathActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "squareShockwave",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionSquareShockwave",
+        "line": 218,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/OrryxModActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "state",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionState",
+        "line": 56,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/StateActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "stream",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget",
+          "selector"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionStream",
+        "line": 130,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/ContainerActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "superBody",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "superBody",
+        "line": 12,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/PlayerProfileActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "superFoot",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "superFoot",
+        "line": 98,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/PlayerProfileActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "sync",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": false,
+      "source": {
+        "function": "actionSync",
+        "line": 126,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/Actions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "tan",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionTan",
+        "line": 46,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/math/MathActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "tap",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionTap",
+        "line": 434,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/UtilActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          ".teleport(",
+          ".velocity ="
+        ]
+      },
+      "execution": {
+        "evidence": [
+          ".teleport(",
+          ".velocity =",
+          ".world"
+        ],
+        "thread": "main"
+      },
+      "name": "teleport",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionTeleport",
+        "line": 209,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/VectorActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "truncate",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionTruncate",
+        "line": 190,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/math/MathActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "tryCast",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": false,
+      "source": {
+        "function": "tryCast",
+        "line": 225,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/Actions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "unlessBlank",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionUnlessBlank",
+        "line": 328,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/UtilActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "unlessEmpty",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionUnlessEmpty",
+        "line": 256,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/UtilActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "unlessNull",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionUnlessNull",
+        "line": 150,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/UtilActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "uuid",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "uuid",
+        "line": 13,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/RandomActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "vector",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": false,
+        "evidence": []
+      },
+      "shared": true,
+      "source": {
+        "function": "actionVector",
+        "line": 109,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/math/vector/VectorMathActions.kt"
+      }
+    },
+    {
+      "aliases": [],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "state-mutating",
+        "evidence": [
+          ".teleport(",
+          ".velocity ="
+        ]
+      },
+      "execution": {
+        "evidence": [
+          ".teleport(",
+          ".velocity =",
+          ".world"
+        ],
+        "thread": "main"
+      },
+      "name": "velocity",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "combinationParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": true,
+      "source": {
+        "function": "actionVelocity",
+        "line": 187,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/VectorActions.kt"
+      }
+    },
+    {
+      "aliases": [
+        "delay",
+        "sleep"
+      ],
+      "contexts": [
+        "generic"
+      ],
+      "danger": {
+        "classification": "not-detected",
+        "evidence": []
+      },
+      "execution": {
+        "evidence": [],
+        "thread": "any"
+      },
+      "name": "wait",
+      "namespace": "ORRYX_NAMESPACE",
+      "parserFactory": "scriptParser",
+      "selectorUsage": {
+        "detected": true,
+        "evidence": [
+          "ITarget"
+        ]
+      },
+      "shared": false,
+      "source": {
+        "function": "actionWait",
+        "line": 109,
+        "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/Actions.kt"
+      }
+    }
+  ],
+  "generator": "scripts/build_action_schema.py",
+  "implicitVariables": [
+    {
+      "name": "@hitBlock",
+      "sources": [
+        "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/projectile/Projectile.kt"
+      ]
+    },
+    {
+      "name": "@hitEntity",
+      "sources": [
+        "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/projectile/Projectile.kt"
+      ]
+    },
+    {
+      "name": "@ticked",
+      "sources": [
+        "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/projectile/Projectile.kt"
+      ]
+    },
+    {
+      "name": "COOLDOWN",
+      "sources": [
+        "src/main/kotlin/org/gitee/orryx/core/kether/actions/OrryxActions.kt",
+        "src/main/kotlin/org/gitee/orryx/core/kether/parameter/SkillParameter.kt"
+      ]
+    },
+    {
+      "name": "entityHitCount",
+      "sources": [
+        "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/projectile/Projectile.kt"
+      ]
+    },
+    {
+      "name": "hitCount",
+      "sources": [
+        "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/projectile/Projectile.kt"
+      ]
+    },
+    {
+      "name": "level",
+      "sources": [
+        "src/main/kotlin/org/gitee/orryx/core/kether/parameter/SkillParameter.kt"
+      ]
+    },
+    {
+      "name": "MANA",
+      "sources": [
+        "src/main/kotlin/org/gitee/orryx/core/kether/parameter/SkillParameter.kt"
+      ]
+    },
+    {
+      "name": "SILENCE",
+      "sources": [
+        "src/main/kotlin/org/gitee/orryx/core/kether/actions/OrryxActions.kt",
+        "src/main/kotlin/org/gitee/orryx/core/kether/parameter/SkillParameter.kt"
+      ]
+    },
+    {
+      "name": "triggerType",
+      "sources": [
+        "src/main/kotlin/org/gitee/orryx/core/kether/parameter/SkillParameter.kt"
+      ]
+    }
+  ],
+  "schemaVersion": "1.0",
+  "sourceRoot": "src/main/kotlin/org/gitee/orryx/core/kether",
+  "sourceSha256": "99f5ac9164a2dac5535ff72ad9e7ab8ced7e9429489c54ca4372810056fdd954",
+  "summary": {
+    "actionCount": 123,
+    "aliasCount": 8,
+    "implicitVariableCount": 10,
+    "sourceFileCount": 80
+  }
+}

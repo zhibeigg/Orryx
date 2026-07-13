@@ -1,0 +1,20 @@
+{
+  "contractVersion": "1.0",
+  "component": "ui",
+  "operation": "generate",
+  "workspace": {},
+  "request": {
+    "backend": "bukkit",
+    "skills": ["斩击", "招架"],
+    "config": {
+      "SkillUI": {
+        "title": "技能界面",
+        "Skills": {"Slots": [28, 29, 30, 31]},
+        "BindSkills": {"Slots": [10, 11, 12, 13]},
+        "Previous": {"XMaterial": "PAPER", "Slots": [45]},
+        "Next": {"XMaterial": "PAPER", "Slots": [53]}
+      }
+    }
+  },
+  "policy": {"materialize": false, "reloadServer": false}
+}

@@ -1,0 +1,9 @@
+Options:
+  Event: "Player Damage Post"
+  Weight: 1
+  Priority: NORMAL
+  Async: false
+Actions: |-
+  if check orryx job == "剑修" then {
+    mana give 1
+  }

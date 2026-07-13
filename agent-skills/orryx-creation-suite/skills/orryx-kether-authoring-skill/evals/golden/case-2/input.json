@@ -1,0 +1,12 @@
+{
+  "contractVersion": "1.0",
+  "component": "kether",
+  "operation": "validate",
+  "workspace": {"root": "../../../..", "mode": "standalone"},
+  "request": {
+    "context": {"type": "station", "async": true, "variables": ["event"]},
+    "script": "potion set SLOW 20 level 2\nset &event[cancelled] to true",
+    "actionsSchemaPath": "build/generated-docs/kether/actions-schema.json"
+  },
+  "policy": {"strict": true, "network": "deny", "serverVersion": "1.20.4"}
+}

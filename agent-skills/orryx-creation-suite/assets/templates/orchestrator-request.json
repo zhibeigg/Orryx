@@ -1,0 +1,16 @@
+{
+  "contractVersion": "1.0",
+  "component": "orchestrator",
+  "operation": "generate",
+  "workspace": {"root": ".", "mode": "standalone"},
+  "request": {
+    "steps": [
+      {"component": "validator", "operation": "validate", "request": {}},
+      {"component": "kether", "operation": "validate", "request": {"context": "ability", "script": "tell example"}},
+      {"component": "ability", "operation": "generate", "request": {"id": "example", "type": "DIRECT", "actions": "tell example"}},
+      {"component": "progression", "operation": "generate", "request": {"id": "default", "minLevel": 0, "maxLevel": 20, "curve": {"type": "polynomial", "b": 200}}},
+      {"component": "job", "operation": "generate", "request": {"id": "example", "skills": ["example"], "experience": "default"}}
+    ]
+  },
+  "policy": {"strict": true, "network": "deny", "overwrite": "deny", "minecraftVersion": "1.20.4", "plugins": []}
+}

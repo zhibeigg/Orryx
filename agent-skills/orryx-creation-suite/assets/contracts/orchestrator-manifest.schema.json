@@ -1,0 +1,392 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:orryx:creation-suite:schema:orchestrator-manifest:1.0",
+  "title": "Orryx Creation Suite Orchestrator Manifest Schema",
+  "type": "object",
+  "required": [
+    "manifestVersion",
+    "contractVersion",
+    "suiteVersion",
+    "runtime",
+    "publicOperations",
+    "runtimeCompatibility",
+    "recommendedOrder",
+    "components",
+    "orchestrator",
+    "safety",
+    "requirements"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri-reference"
+    },
+    "manifestVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+$"
+    },
+    "contractVersion": {
+      "const": "1.0"
+    },
+    "suiteVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "runtime": {
+      "$ref": "#/$defs/Runtime"
+    },
+    "publicOperations": {
+      "type": "array",
+      "minItems": 4,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "generate",
+          "validate",
+          "plan",
+          "materialize"
+        ]
+      }
+    },
+    "runtimeCompatibility": {
+      "$ref": "#/$defs/RuntimeCompatibility"
+    },
+    "recommendedOrder": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/RunnableComponentName"
+      }
+    },
+    "components": {
+      "type": "array",
+      "minItems": 10,
+      "items": {
+        "$ref": "#/$defs/Component"
+      }
+    },
+    "orchestrator": {
+      "$ref": "#/$defs/OrchestratorBehavior"
+    },
+    "safety": {
+      "$ref": "#/$defs/Safety"
+    },
+    "requirements": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Requirement"
+      }
+    }
+  },
+  "$defs": {
+    "ComponentName": {
+      "type": "string",
+      "enum": [
+        "validator",
+        "kether",
+        "progression",
+        "ability",
+        "station",
+        "combat",
+        "selector",
+        "job",
+        "ui",
+        "orchestrator"
+      ]
+    },
+    "RunnableComponentName": {
+      "type": "string",
+      "enum": [
+        "validator",
+        "kether",
+        "progression",
+        "ability",
+        "station",
+        "combat",
+        "selector",
+        "job",
+        "ui",
+        "materialize"
+      ]
+    },
+    "Runtime": {
+      "type": "object",
+      "required": [
+        "module",
+        "contractModule",
+        "entryPoints",
+        "outputFinalizer"
+      ],
+      "properties": {
+        "module": {
+          "type": "string"
+        },
+        "contractModule": {
+          "type": "string"
+        },
+        "entryPoints": {
+          "type": "object",
+          "required": [
+            "run",
+            "validateWorkspace",
+            "materialize"
+          ],
+          "properties": {
+            "run": {
+              "type": "string"
+            },
+            "validateWorkspace": {
+              "type": "string"
+            },
+            "materialize": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "outputFinalizer": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "RuntimeCompatibility": {
+      "type": "object",
+      "required": [
+        "normalizeContractAcceptedOperations",
+        "plan",
+        "materialize"
+      ],
+      "properties": {
+        "normalizeContractAcceptedOperations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": ["generate", "validate", "plan", "materialize"]
+          }
+        },
+        "plan": {
+          "type": "object",
+          "required": ["native", "writesFiles"],
+          "properties": {
+            "native": {"const": true},
+            "writesFiles": {"const": false}
+          },
+          "additionalProperties": false
+        },
+        "materialize": {
+          "type": "object",
+          "required": [
+            "viaRunContract",
+            "viaOrchestratorStep",
+            "blockedAfterErrors",
+            "viaCliCommand",
+            "command"
+          ],
+          "properties": {
+            "viaRunContract": {"const": false},
+            "viaOrchestratorStep": {"const": true},
+            "blockedAfterErrors": {"const": true},
+            "viaCliCommand": {"const": true},
+            "command": {"const": "materialize"}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "Dependency": {
+      "type": "object",
+      "required": [
+        "component",
+        "kind",
+        "reason"
+      ],
+      "properties": {
+        "component": {
+          "$ref": "#/$defs/ComponentName"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "hard",
+            "conditional",
+            "quality-gate"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Component": {
+      "type": "object",
+      "required": [
+        "name",
+        "role",
+        "runner",
+        "defaultOperation",
+        "inputTemplate",
+        "dependencies",
+        "produces",
+        "writesFiles"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/ComponentName"
+        },
+        "role": {
+          "type": "string"
+        },
+        "runner": {
+          "type": "string"
+        },
+        "defaultOperation": {
+          "type": "string",
+          "enum": [
+            "generate",
+            "validate"
+          ]
+        },
+        "inputTemplate": {
+          "type": "string"
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Dependency"
+          }
+        },
+        "produces": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "writesFiles": {
+          "const": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "OrchestratorBehavior": {
+      "type": "object",
+      "required": [
+        "stepPointer",
+        "preservesInputOrderWithinComponent",
+        "autoReorders",
+        "dependencyOrder",
+        "recursionAllowed",
+        "validatesDuplicateArtifacts",
+        "validatesRequiredReferences",
+        "materializesArtifacts",
+        "materializeRequiresTopLevelOperation",
+        "materializeBlockedAfterErrors",
+        "runnableComponents"
+      ],
+      "properties": {
+        "stepPointer": {"const": "/request/steps"},
+        "preservesInputOrderWithinComponent": {"const": true},
+        "autoReorders": {"const": true},
+        "dependencyOrder": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/RunnableComponentName"}
+        },
+        "recursionAllowed": {"const": false},
+        "validatesDuplicateArtifacts": {"const": true},
+        "validatesRequiredReferences": {"const": true},
+        "materializesArtifacts": {"const": true},
+        "materializeRequiresTopLevelOperation": {"const": "materialize"},
+        "materializeBlockedAfterErrors": {"const": true},
+        "runnableComponents": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/RunnableComponentName"}
+        }
+      },
+      "additionalProperties": false
+    },
+    "Safety": {
+      "type": "object",
+      "required": [
+        "artifactsAreCandidates",
+        "materializeRequiredForWrites",
+        "relativePathsOnly",
+        "pathContainment",
+        "defaultOverwrite",
+        "hashVerifiedWhenPresent",
+        "createParentsDefault",
+        "atomicPerFileReplace",
+        "transactionalBatch",
+        "partialWritePossible",
+        "automaticReload",
+        "networkAccessImplemented",
+        "networkPolicyEnforced"
+      ],
+      "properties": {
+        "artifactsAreCandidates": {
+          "const": true
+        },
+        "materializeRequiredForWrites": {
+          "const": true
+        },
+        "relativePathsOnly": {
+          "const": true
+        },
+        "pathContainment": {
+          "const": true
+        },
+        "defaultOverwrite": {
+          "const": "deny"
+        },
+        "hashVerifiedWhenPresent": {
+          "const": true
+        },
+        "createParentsDefault": {
+          "const": true
+        },
+        "atomicPerFileReplace": {
+          "const": true
+        },
+        "transactionalBatch": {
+          "const": false
+        },
+        "partialWritePossible": {
+          "const": true
+        },
+        "automaticReload": {
+          "const": false
+        },
+        "networkAccessImplemented": {
+          "const": false
+        },
+        "networkPolicyEnforced": {
+          "const": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "Requirement": {
+      "type": "object",
+      "required": [
+        "code",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

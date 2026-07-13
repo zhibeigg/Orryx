@@ -1,0 +1,21 @@
+{
+  "$schema": "../contracts/component-input.schema.json",
+  "contractVersion": "1.0",
+  "component": "selector",
+  "operation": "generate",
+  "workspace": {
+    "root": ".",
+    "mode": "standalone"
+  },
+  "request": {
+    "selectors": {
+      "示例选择器": "container"
+    }
+  },
+  "policy": {
+    "strict": true,
+    "overwrite": "deny",
+    "network": "deny",
+    "minecraftVersion": "1.20.4"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "contractVersion": "1.0",
+  "component": "materialize",
+  "operation": "materialize",
+  "workspace": {"root": "build/orryx-staging", "mode": "project"},
+  "request": {
+    "artifacts": [
+      {
+        "path": "skills/example.yml",
+        "kind": "yaml",
+        "mediaType": "application/yaml",
+        "encoding": "utf-8",
+        "content": "Options:\n  Type: DIRECT\nActions: true\n",
+        "sha256": "0231636520e347c230b84728a5a45f60a104402288206f371802c046d29cda7f",
+        "metadata": {"component": "ability"}
+      }
+    ]
+  },
+  "policy": {"strict": true, "network": "deny", "overwrite": "deny", "createParents": true, "minecraftVersion": "1.20.4", "plugins": []}
+}
