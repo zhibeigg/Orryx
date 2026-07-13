@@ -116,7 +116,7 @@ jobs:
           retention-days: 3
 
   publish:
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
     needs: validate
     runs-on: ubuntu-latest
     permissions:
@@ -177,76 +177,7 @@ jobs:
 
       - name: Deploy GitHub Pages atomically
         id: deployment
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
-        env:
-          PAGES_ARTIFACT_NAME: github-pages
-          PAGES_BUILD_VERSION: ${{ format('{0}-{1}-{2}-{3}', github.sha, needs.validate.outputs.channel, github.run_id, github.run_attempt) }}
-        with:
-          github-token: ${{ github.token }}
-          script: |
-            const artifactName = process.env.PAGES_ARTIFACT_NAME
-            const buildVersion = process.env.PAGES_BUILD_VERSION
-            const { owner, repo } = context.repo
-            const { data: artifactPage } = await github.rest.actions.listWorkflowRunArtifacts({
-              owner,
-              repo,
-              run_id: context.runId,
-              per_page: 100,
-            })
-            const artifacts = artifactPage.artifacts.filter(
-              (artifact) => artifact.name === artifactName && !artifact.expired,
-            )
-            if (artifacts.length !== 1) {
-              throw new Error(`Expected one active ${artifactName} artifact, found ${artifacts.length}`)
-            }
-
-            const oidcToken = await core.getIDToken()
-            const { data: deployment } = await github.request(
-              "POST /repos/{owner}/{repo}/pages/deployments",
-              {
-                owner,
-                repo,
-                artifact_id: artifacts[0].id,
-                pages_build_version: buildVersion,
-                oidc_token: oidcToken,
-              },
-            )
-            const deploymentId =
-              deployment.id ?? deployment.status_url?.split("/").pop() ?? buildVersion
-            core.setOutput("page_url", deployment.page_url ?? "")
-            core.info(`Created Pages deployment ${deploymentId} for ${buildVersion}`)
-
-            const terminalErrors = new Set([
-              "deployment_failed",
-              "deployment_perms_error",
-              "deployment_content_failed",
-              "deployment_cancelled",
-              "deployment_lost",
-            ])
-            const deadline = Date.now() + 600_000
-            while (Date.now() < deadline) {
-              await new Promise((resolve) => setTimeout(resolve, 5_000))
-              let status
-              try {
-                const response = await github.request(
-                  "GET /repos/{owner}/{repo}/pages/deployments/{deploymentId}",
-                  { owner, repo, deploymentId },
-                )
-                status = response.data
-              } catch (error) {
-                core.warning(`Pages deployment status check failed: ${error.message}`)
-                continue
-              }
-              if (status.status === "succeed") {
-                core.info(`Pages deployment ${deploymentId} succeeded`)
-                return
-              }
-              if (terminalErrors.has(status.status)) {
-                throw new Error(`Pages deployment ${deploymentId} failed: ${status.status}`)
-              }
-              core.info(`Pages deployment ${deploymentId} status: ${status.status}`)
-            }
-            throw new Error(`Pages deployment ${deploymentId} timed out`)
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
 
   verify:
     needs: [validate, publish]
