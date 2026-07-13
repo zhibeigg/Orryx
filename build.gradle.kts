@@ -1,4 +1,6 @@
+import groovy.json.JsonSlurper
 import io.izzel.taboolib.gradle.*
+import xyz.jpenilla.runpaper.task.RunServer
 
 val publishUsername: String by project
 val publishPassword: String by project
@@ -11,7 +13,66 @@ plugins {
     kotlin("jvm") version "2.1.20"
     kotlin("plugin.serialization") version "2.1.20"
     id("io.izzel.taboolib") version "2.0.37"
+    id("xyz.jpenilla.run-paper") version "3.0.2"
     id("org.jetbrains.dokka") version "2.0.0"
+}
+
+val ketherDocsSiteDirectory = layout.buildDirectory.dir("generated-docs")
+val ketherDocsServerDirectory = layout.buildDirectory.dir("kether-docs-server")
+
+/**
+ * 启动临时 Paper 服务端，复用插件完整生命周期注册的 Wiki 数据生成 Kether 文档。
+ */
+tasks.register<RunServer>("generateKetherDocs") {
+    group = "documentation"
+    description = "Builds Orryx, starts a temporary Paper server, and generates Kether documentation."
+
+    dependsOn(tasks.named("jar"))
+    minecraftVersion("1.21.1")
+    javaLauncher.set(javaToolchains.launcherFor {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    })
+    runDirectory.set(ketherDocsServerDirectory)
+    pluginJars(tasks.named<Jar>("jar").flatMap { it.archiveFile })
+    systemProperty("com.mojang.eula.agree", "true")
+    systemProperty("orryx.ketherDocs.version", project.version.toString())
+
+    inputs.dir("src/main/kotlin")
+    inputs.dir("src/main/resources")
+    inputs.file("build.gradle.kts")
+    inputs.file("gradle.properties")
+    outputs.dir(ketherDocsSiteDirectory)
+
+    doFirst {
+        val outputDirectory = ketherDocsSiteDirectory.get().asFile
+        project.delete(outputDirectory)
+        systemProperty("orryx.ketherDocs.output", outputDirectory.absolutePath)
+        providers.environmentVariable("GITHUB_SHA").orNull
+            ?.takeIf { it.isNotBlank() }
+            ?.let { systemProperty("orryx.ketherDocs.commit", it) }
+    }
+
+    doLast {
+        val siteDirectory = ketherDocsSiteDirectory.get().asFile
+        val outputDirectory = siteDirectory.resolve("kether")
+        val latest = outputDirectory.resolve("latest.md")
+        val schema = outputDirectory.resolve("actions-schema.json")
+        val manifest = outputDirectory.resolve("manifest.json")
+        val versioned = outputDirectory.resolve("versions/${project.version}.md")
+
+        listOf(latest, schema, manifest, versioned, siteDirectory.resolve("index.html")).forEach { file ->
+            check(file.isFile && file.length() > 0L) {
+                "Kether documentation output is missing or empty: ${file.absolutePath}"
+            }
+        }
+        check(siteDirectory.resolve(".nojekyll").isFile) {
+            "GitHub Pages marker is missing: ${siteDirectory.resolve(".nojekyll").absolutePath}"
+        }
+        runCatching { JsonSlurper().parse(schema) }
+            .getOrElse { throw GradleException("Invalid actions-schema.json", it) }
+        runCatching { JsonSlurper().parse(manifest) }
+            .getOrElse { throw GradleException("Invalid manifest.json", it) }
+    }
 }
 
 taboolib {

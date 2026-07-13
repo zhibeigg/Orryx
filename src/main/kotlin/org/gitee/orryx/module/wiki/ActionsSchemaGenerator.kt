@@ -218,7 +218,9 @@ object ActionsSchemaGenerator {
     // ==================== actions ====================
 
     private fun generateActions(): JsonArray {
-        return JsonArray(ScriptManager.wikiActions.map { action ->
+        val actions = ScriptManager.wikiActions
+            .sortedWith(compareBy<Action> { it.group }.thenBy { it.key }.thenBy { it.name })
+        return JsonArray(actions.map { action ->
             buildJsonObject {
                 put("name", action.key)
                 put("category", mapActionCategory(action.group))
@@ -309,7 +311,9 @@ object ActionsSchemaGenerator {
     // ==================== selectors ====================
 
     private fun generateSelectors(): JsonArray {
-        return JsonArray(ScriptManager.wikiSelectors.map { selector ->
+        val selectors = ScriptManager.wikiSelectors
+            .sortedWith(compareBy<Selector> { it.type.ordinal }.thenBy { it.keys.firstOrNull() ?: "" })
+        return JsonArray(selectors.map { selector ->
             buildJsonObject {
                 put("name", selector.keys.first())
                 if (selector.keys.size > 1) {
@@ -332,7 +336,9 @@ object ActionsSchemaGenerator {
     // ==================== triggers ====================
 
     private fun generateTriggers(): JsonArray {
-        return JsonArray(ScriptManager.wikiTriggers.map { trigger ->
+        val triggers = ScriptManager.wikiTriggers
+            .sortedWith(compareBy<Trigger> { it.group.ordinal }.thenBy { it.key })
+        return JsonArray(triggers.map { trigger ->
             buildJsonObject {
                 put("name", trigger.key)
                 put("category", mapTriggerCategory(trigger.group, trigger.key))

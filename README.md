@@ -6,7 +6,7 @@
 
 **跨时代技能插件，支持实现复杂逻辑，为稳定高效而生**
 
-[![Version](https://img.shields.io/badge/version-2.38.96-blue?style=for-the-badge)](https://github.com/zhibeigg/Orryx/releases)
+[![Version](https://img.shields.io/badge/version-2.42.112-blue?style=for-the-badge)](https://github.com/zhibeigg/Orryx/releases)
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.12--1.21-green?style=for-the-badge&logo=minecraft)](https://www.minecraft.net/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.1.20-purple?style=for-the-badge&logo=kotlin)](https://kotlinlang.org/)
 [![TabooLib](https://img.shields.io/badge/TabooLib-6.2.4-orange?style=for-the-badge)](https://github.com/TabooLib/taboolib)
@@ -457,7 +457,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("org.gitee.orryx:orryx:2.38.96:api")
+    compileOnly("org.gitee.orryx:orryx:2.42.112:api")
 }
 ```
 
@@ -469,7 +469,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'org.gitee.orryx:orryx:2.38.96:api'
+    compileOnly 'org.gitee.orryx:orryx:2.42.112:api'
 }
 ```
 
@@ -486,6 +486,9 @@ dependencies {
 
 # 生成 API 文档
 ./gradlew dokkaHtml
+
+# 启动临时 Paper 并生成最新 Kether 文档、Schema 与 Manifest
+./gradlew generateKetherDocs
 ```
 
 ---
@@ -505,6 +508,9 @@ dependencies {
 ## 文档资源
 
 - [飞书 Wiki](https://o0vvjwgpeju.feishu.cn/wiki/Syzzw7aQwixJ4YkXoOAcyYkfnOg) — 完整使用文档
+- [Kether 最新文档](https://zhibeigg.github.io/Orryx/kether/latest.md) — 由插件运行时注册数据自动生成
+- [Kether 编辑器 Schema](https://zhibeigg.github.io/Orryx/kether/actions-schema.json) — 供 `orryx-edit` 获取动作、选择器和触发器定义
+- [Kether 文档 Manifest](https://zhibeigg.github.io/Orryx/kether/manifest.json) — 当前版本、版本化文档与下载地址
 - [DeepWiki AI](https://deepwiki.com/zhibeigg/Orryx) — AI 问答助手
 - [ZRead AI](https://zread.ai/zhibeigg/Orryx) — AI 问答助手
 - [API 文档](docs/API.md) — 开发者 API 参考

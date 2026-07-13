@@ -8,10 +8,18 @@ import java.io.File
 object MarkdownGenerator {
 
     fun generate(outputFile: File) {
-        val actionGroup = ScriptManager.wikiActions.groupBy { it.group }
-        val selectorsGroup = ScriptManager.wikiSelectors.groupBy { it.type }
-        val triggersGroup = ScriptManager.wikiTriggers.groupBy { it.group }
-        val propertiesGroup = ScriptManager.wikiProperties.groupBy { it.group }
+        val actionGroup = ScriptManager.wikiActions
+            .sortedWith(compareBy<Action> { it.group }.thenBy { it.key }.thenBy { it.name })
+            .groupBy { it.group }
+        val selectorsGroup = ScriptManager.wikiSelectors
+            .sortedWith(compareBy<Selector> { it.type.ordinal }.thenBy { it.keys.firstOrNull() ?: "" })
+            .groupBy { it.type }
+        val triggersGroup = ScriptManager.wikiTriggers
+            .sortedWith(compareBy<Trigger> { it.group.ordinal }.thenBy { it.key })
+            .groupBy { it.group }
+        val propertiesGroup = ScriptManager.wikiProperties
+            .sortedWith(compareBy<Property> { it.group }.thenBy { it.name }.thenBy { it.id })
+            .groupBy { it.group }
 
         val sb = StringBuilder()
         sb.appendLine("# $pluginId-$pluginVersion 脚本语句文档（自生成）")
@@ -180,7 +188,7 @@ object MarkdownGenerator {
         return "${action.key} " + action.entries.joinToString(" ") { entry ->
             val (start, end) = if (entry.optional) "[" to "]" else "<" to ">"
             if (entry.type == Type.SYMBOL) {
-                entry.head!!
+                entry.head?.takeIf { it.isNotBlank() } ?: "${start}SYMBOL${end}"
             } else {
                 var s = "$start${entry.type.name}"
                 if (entry.head != null) s = "*${entry.head} $s"
