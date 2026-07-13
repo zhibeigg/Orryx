@@ -1,0 +1,24 @@
+{
+    "pluginId": "Orryx",
+    "pluginVersion": "2.44.115",
+    "version": "2.44.115",
+    "schemaVersion": 3,
+    "generatedAt": "2026-07-13T14:13:14Z",
+    "commit": "10199c35bb35af279eb74775179bf476a51a504b",
+    "latest": "https://zhibeigg.github.io/Orryx/kether/latest.md",
+    "versioned": "https://zhibeigg.github.io/Orryx/kether/versions/2.44.115.md",
+    "schema": "https://zhibeigg.github.io/Orryx/kether/actions-schema.json",
+    "stableChannel": "https://zhibeigg.github.io/Orryx/kether/channels/stable.json",
+    "snapshotChannel": "https://zhibeigg.github.io/Orryx/kether/channels/snapshot.json",
+    "counts": {
+        "actions": 436,
+        "selectors": 36,
+        "triggers": 122,
+        "properties": 31
+    },
+    "files": {
+        "markdown": "./latest.md",
+        "versionedMarkdown": "./versions/2.44.115.md",
+        "actionsSchema": "./actions-schema.json"
+    }
+}

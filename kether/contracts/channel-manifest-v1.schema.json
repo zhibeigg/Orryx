@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zhibeigg.github.io/Orryx/kether/contracts/channel-manifest-v1.schema.json",
+  "title": "Orryx Kether channel manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["formatVersion", "channel", "releaseId", "pluginVersion", "commit", "publishedAt", "releaseManifest"],
+  "properties": {
+    "$schema": { "type": "string", "format": "uri" },
+    "formatVersion": { "const": 1 },
+    "channel": { "enum": ["stable", "snapshot"] },
+    "releaseId": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "pluginVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?$" },
+    "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "publishedAt": { "type": "string", "format": "date-time" },
+    "releaseManifest": { "type": "string", "pattern": "^/Orryx/kether/(releases|snapshots)/" }
+  }
+}

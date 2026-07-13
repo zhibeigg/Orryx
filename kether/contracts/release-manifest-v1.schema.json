@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zhibeigg.github.io/Orryx/kether/contracts/release-manifest-v1.schema.json",
+  "title": "Orryx Kether release manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["formatVersion", "releaseId", "channel", "plugin", "schemaVersion", "generatedAt", "assets", "counts", "compatibility"],
+  "properties": {
+    "$schema": { "type": "string", "format": "uri" },
+    "formatVersion": { "const": 1 },
+    "releaseId": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "channel": { "enum": ["stable", "snapshot"] },
+    "plugin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "commit"],
+      "properties": {
+        "id": { "const": "Orryx" },
+        "version": { "type": "string" },
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+      }
+    },
+    "schemaVersion": { "const": 3 },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "previousReleaseId": { "type": ["string", "null"] },
+    "assets": {
+      "type": "object",
+      "required": ["schema", "schemaContract", "markdown", "changes", "checksums"],
+      "additionalProperties": { "$ref": "#/$defs/asset" }
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actions", "selectors", "triggers", "properties"],
+      "properties": {
+        "actions": { "type": "integer", "minimum": 0 },
+        "selectors": { "type": "integer", "minimum": 0 },
+        "triggers": { "type": "integer", "minimum": 0 },
+        "properties": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minimumEditorManifestFormat", "minimumEditorSchemaVersion"],
+      "properties": {
+        "minimumEditorManifestFormat": { "type": "integer", "minimum": 1 },
+        "minimumEditorSchemaVersion": { "type": "integer", "minimum": 1 }
+      }
+    }
+  },
+  "$defs": {
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "mediaType", "bytes", "sha256"],
+      "properties": {
+        "path": { "type": "string", "pattern": "^[A-Za-z0-9._-]+$" },
+        "mediaType": { "type": "string", "minLength": 1 },
+        "bytes": { "type": "integer", "minimum": 1 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    }
+  }
+}
