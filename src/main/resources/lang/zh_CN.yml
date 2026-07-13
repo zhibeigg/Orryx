@@ -106,3 +106,6 @@ editor-open:
     args:
       - url: '{0}'
         hover: '点击打开 Orryx 编辑器'
+
+kether-docs-published: "[Orryx] &e┣&7Kether 文档包已生成 &a√ &7发布标识: &f{0} &7路径: &f{1}"
+kether-docs-publish-failed: "[Orryx] &c┣&7Kether 文档包生成失败: &c{0}"

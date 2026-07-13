@@ -6,7 +6,7 @@
 
 **跨时代技能插件，支持实现复杂逻辑，为稳定高效而生**
 
-[![Version](https://img.shields.io/badge/version-2.42.113-blue?style=for-the-badge)](https://github.com/zhibeigg/Orryx/releases)
+[![Version](https://img.shields.io/badge/version-2.43.113-blue?style=for-the-badge)](https://github.com/zhibeigg/Orryx/releases)
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.12--1.21-green?style=for-the-badge&logo=minecraft)](https://www.minecraft.net/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.1.20-purple?style=for-the-badge&logo=kotlin)](https://kotlinlang.org/)
 [![TabooLib](https://img.shields.io/badge/TabooLib-6.2.4-orange?style=for-the-badge)](https://github.com/TabooLib/taboolib)
@@ -80,6 +80,19 @@
 - 选择器：几何体范围选择、目标筛选
 - 射线：光线追踪、碰撞检测
 - 兼容：Nodens 属性、AstraXHero、AttributePlus、GDDTitle、MythicMobs 等
+
+#### 自生成 Kether 文档
+
+Orryx 会从运行时完整注册表生成版本化 Kether 文档包：
+
+- `channels/stable.json` 只随正式 Tag 更新，供生产编辑器自动同步。
+- `channels/snapshot.json` 随 `master` 更新，供开发验证。
+- 每个不可变发布目录包含 Schema v3、Markdown、结构化差异和 SHA-256。
+- 现有 `manifest.json`、`actions-schema.json` 与 `latest.md` 继续作为兼容入口。
+
+在线文档：`https://zhibeigg.github.io/Orryx/`
+
+发布协议与本地验证命令见 [`docs/Kether-Docs-Publishing.md`](docs/Kether-Docs-Publishing.md)。
 
 ### 触发器系统 (104+)
 
@@ -457,7 +470,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("org.gitee.orryx:orryx:2.42.113:api")
+    compileOnly("org.gitee.orryx:orryx:2.43.113:api")
 }
 ```
 
@@ -469,7 +482,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'org.gitee.orryx:orryx:2.42.113:api'
+    compileOnly 'org.gitee.orryx:orryx:2.43.113:api'
 }
 ```
 

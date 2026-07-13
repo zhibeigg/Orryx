@@ -1,53 +1,183 @@
 name: Publish Kether Docs
 
 on:
+  pull_request:
+    branches: ["master"]
+    paths:
+      - "src/main/kotlin/org/gitee/orryx/module/wiki/**"
+      - "src/main/kotlin/org/gitee/orryx/core/kether/**"
+      - "src/main/resources/lang/**"
+      - "scripts/*kether-docs*.mjs"
+      - "build.gradle.kts"
+      - "gradle.properties"
+      - ".github/workflows/kether-docs.yml"
   push:
-    branches: [ "master" ]
+    branches: ["master"]
+    tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      channel:
+        description: "snapshot 可从分支发布；stable 必须从 vA.B.C tag 运行"
+        required: true
+        default: snapshot
+        type: choice
+        options:
+          - snapshot
+          - stable
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: "pages"
-  cancel-in-progress: true
+  group: orryx-kether-pages
+  cancel-in-progress: false
 
 jobs:
-  deploy:
+  validate:
     runs-on: ubuntu-latest
+    outputs:
+      channel: ${{ steps.metadata.outputs.channel }}
+      version: ${{ steps.metadata.outputs.version }}
+      commit: ${{ steps.metadata.outputs.commit }}
+      release-id: ${{ steps.metadata.outputs.release-id }}
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 8 toolchain
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          java-version: "8"
+          distribution: zulu
+
+      - name: Set up JDK 21 for Gradle
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          java-version: "21"
+          distribution: temurin
+          cache: gradle
+
+      - name: Resolve publication metadata
+        id: metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION=$(node -e "const fs=require('fs'); const text=fs.readFileSync('gradle.properties','utf8'); const match=text.match(/^version\s*=\s*(\S+)\s*$/m); if(!match) process.exit(1); process.stdout.write(match[1])")
+          CHANNEL=snapshot
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            CHANNEL=stable
+            TAG_VERSION="${GITHUB_REF_NAME#v}"
+            if [[ "$TAG_VERSION" != "$VERSION" ]]; then
+              echo "Tag version $TAG_VERSION does not match gradle.properties $VERSION" >&2
+              exit 1
+            fi
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.channel }}" == "stable" ]]; then
+            echo "Stable Kether docs may only be published from a vA.B.C tag" >&2
+            exit 1
+          fi
+          RELEASE_ID="Orryx@${VERSION}+${GITHUB_SHA}"
+          echo "channel=$CHANNEL" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "commit=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+          echo "release-id=$RELEASE_ID" >> "$GITHUB_OUTPUT"
+          echo "KETHER_DOCS_CHANNEL=$CHANNEL" >> "$GITHUB_ENV"
+          COMMIT_TIME=$(git show -s --format=%cI "$GITHUB_SHA")
+          GENERATED_AT=$(date -u -d "$COMMIT_TIME" +'%Y-%m-%dT%H:%M:%SZ')
+          echo "KETHER_DOCS_GENERATED_AT=$GENERATED_AT" >> "$GITHUB_ENV"
+
+      - name: Load previous stable schema when available
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin kether-docs:refs/remotes/origin/kether-docs || true
+          node scripts/extract-previous-kether-docs.mjs origin/kether-docs build/kether-docs-previous "${{ steps.metadata.outputs.release-id }}"
+          if [[ -s build/kether-docs-previous/actions-schema.json ]]; then
+            echo "KETHER_DOCS_PREVIOUS_SCHEMA=$PWD/build/kether-docs-previous/actions-schema.json" >> "$GITHUB_ENV"
+          fi
+          if [[ -s build/kether-docs-previous/release-id.txt ]]; then
+            echo "KETHER_DOCS_PREVIOUS_RELEASE_ID=$(tr -d '\r\n' < build/kether-docs-previous/release-id.txt)" >> "$GITHUB_ENV"
+          fi
+
+      - name: Generate immutable Kether documentation bundle
+        run: ./gradlew --no-daemon generateKetherDocs
+
+      - name: Validate contracts, IDs, budgets and checksums
+        run: node scripts/validate-kether-docs.mjs build/generated-docs
+
+      - name: Upload validated Pages candidate
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: kether-docs-${{ github.run_id }}
+          path: build/generated-docs
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 3
+
+  publish:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
+      - name: Checkout publication scripts
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
-          java-version: "21"
-          distribution: "temurin"
-          cache: "gradle"
+          fetch-depth: 0
 
-      - name: Grant execute permission to gradlew
-        run: chmod +x gradlew
+      - name: Download validated Pages candidate
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: kether-docs-${{ github.run_id }}
+          path: build/generated-docs
 
-      - name: Generate Kether documentation
-        run: ./gradlew generateKetherDocs
+      - name: Prepare persistent history branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          HISTORY="$PWD/build/kether-docs-history"
+          AUTH_REMOTE="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          if git ls-remote --exit-code origin refs/heads/kether-docs >/dev/null 2>&1; then
+            git clone --quiet --branch kether-docs --single-branch "$AUTH_REMOTE" "$HISTORY"
+          else
+            mkdir -p "$HISTORY"
+            git -C "$HISTORY" init
+            git -C "$HISTORY" checkout --orphan kether-docs
+            git -C "$HISTORY" remote add origin "$AUTH_REMOTE"
+          fi
+          node scripts/merge-kether-docs-history.mjs build/generated-docs "$HISTORY"
+          git -C "$HISTORY" config user.name "github-actions[bot]"
+          git -C "$HISTORY" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C "$HISTORY" add --all
+          if ! git -C "$HISTORY" diff --cached --quiet; then
+            git -C "$HISTORY" commit -m "docs(kether): publish ${{ needs.validate.outputs.release-id }}"
+            git -C "$HISTORY" push origin HEAD:kether-docs
+          fi
+          mkdir -p build/kether-docs-site
+          git -C "$HISTORY" archive --format=tar HEAD | tar -xf - -C build/kether-docs-site
 
       - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
         with:
           enablement: true
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v4
+      - name: Upload complete Pages history
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         with:
-          path: build/generated-docs
+          path: build/kether-docs-site
 
-      - name: Deploy GitHub Pages
+      - name: Deploy GitHub Pages atomically
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
+
+      - name: Verify published supply chain
+        run: node scripts/verify-published-kether-docs.mjs "${{ needs.validate.outputs.channel }}" "${{ needs.validate.outputs.release-id }}"

@@ -22,10 +22,16 @@ val ketherDocsServerDirectory = layout.buildDirectory.dir("kether-docs-server")
 
 /**
  * 启动临时 Paper 服务端，复用插件完整生命周期注册的 Wiki 数据生成 Kether 文档。
+ *
+ * 环境变量：
+ * - KETHER_DOCS_CHANNEL=stable|snapshot
+ * - KETHER_DOCS_GENERATED_AT=<RFC3339 UTC>
+ * - KETHER_DOCS_PREVIOUS_SCHEMA=<上一版 actions-schema.json>
+ * - KETHER_DOCS_PREVIOUS_RELEASE_ID=<上一版 releaseId>
  */
 tasks.register<RunServer>("generateKetherDocs") {
     group = "documentation"
-    description = "Builds Orryx, starts a temporary Paper server, and generates Kether documentation."
+    description = "Builds Orryx and generates immutable Kether documentation bundles."
 
     dependsOn(tasks.named("jar"))
     minecraftVersion("1.21.1")
@@ -42,25 +48,71 @@ tasks.register<RunServer>("generateKetherDocs") {
     inputs.file("build.gradle.kts")
     inputs.file("gradle.properties")
     outputs.dir(ketherDocsSiteDirectory)
+    outputs.upToDateWhen { false }
 
     doFirst {
         val outputDirectory = ketherDocsSiteDirectory.get().asFile
         project.delete(outputDirectory)
+        val commit = providers.environmentVariable("GITHUB_SHA").orNull
+            ?.trim()
+            ?.takeIf { it.isNotEmpty() }
+            ?: providers.exec {
+                commandLine("git", "rev-parse", "HEAD")
+            }.standardOutput.asText.get().trim()
+        val githubRef = providers.environmentVariable("GITHUB_REF").orNull.orEmpty()
+        val channel = providers.environmentVariable("KETHER_DOCS_CHANNEL").orNull
+            ?.trim()
+            ?.lowercase()
+            ?.takeIf { it.isNotEmpty() }
+            ?: if (githubRef.startsWith("refs/tags/v")) "stable" else "snapshot"
+
         systemProperty("orryx.ketherDocs.output", outputDirectory.absolutePath)
-        providers.environmentVariable("GITHUB_SHA").orNull
+        systemProperty("orryx.ketherDocs.commit", commit)
+        systemProperty("orryx.ketherDocs.channel", channel)
+        providers.environmentVariable("KETHER_DOCS_GENERATED_AT").orNull
             ?.takeIf { it.isNotBlank() }
-            ?.let { systemProperty("orryx.ketherDocs.commit", it) }
+            ?.let { systemProperty("orryx.ketherDocs.generatedAt", it) }
+        providers.environmentVariable("KETHER_DOCS_PREVIOUS_SCHEMA").orNull
+            ?.takeIf { it.isNotBlank() && file(it).isFile }
+            ?.let { systemProperty("orryx.ketherDocs.previousSchema", file(it).absolutePath) }
+        providers.environmentVariable("KETHER_DOCS_PREVIOUS_RELEASE_ID").orNull
+            ?.takeIf { it.isNotBlank() }
+            ?.let { systemProperty("orryx.ketherDocs.previousReleaseId", it) }
     }
 
     doLast {
         val siteDirectory = ketherDocsSiteDirectory.get().asFile
         val outputDirectory = siteDirectory.resolve("kether")
-        val latest = outputDirectory.resolve("latest.md")
-        val schema = outputDirectory.resolve("actions-schema.json")
-        val manifest = outputDirectory.resolve("manifest.json")
-        val versioned = outputDirectory.resolve("versions/${project.version}.md")
+        val commit = providers.environmentVariable("GITHUB_SHA").orNull
+            ?.trim()
+            ?.takeIf { it.isNotEmpty() }
+            ?: providers.exec { commandLine("git", "rev-parse", "HEAD") }.standardOutput.asText.get().trim()
+        val githubRef = providers.environmentVariable("GITHUB_REF").orNull.orEmpty()
+        val channel = providers.environmentVariable("KETHER_DOCS_CHANNEL").orNull
+            ?.trim()
+            ?.lowercase()
+            ?.takeIf { it.isNotEmpty() }
+            ?: if (githubRef.startsWith("refs/tags/v")) "stable" else "snapshot"
+        val bundle = if (channel == "stable") {
+            outputDirectory.resolve("releases/${project.version}/$commit")
+        } else {
+            outputDirectory.resolve("snapshots/$commit")
+        }
 
-        listOf(latest, schema, manifest, versioned, siteDirectory.resolve("index.html")).forEach { file ->
+        val requiredFiles = listOf(
+            outputDirectory.resolve("latest.md"),
+            outputDirectory.resolve("actions-schema.json"),
+            outputDirectory.resolve("manifest.json"),
+            outputDirectory.resolve("channels/$channel.json"),
+            bundle.resolve("manifest.json"),
+            bundle.resolve("actions-schema.json"),
+            bundle.resolve("actions-schema.schema.json"),
+            bundle.resolve("docs.md"),
+            bundle.resolve("changes.json"),
+            bundle.resolve("checksums.json"),
+            siteDirectory.resolve("index.html")
+        )
+        requiredFiles.forEach { file ->
             check(file.isFile && file.length() > 0L) {
                 "Kether documentation output is missing or empty: ${file.absolutePath}"
             }
@@ -68,11 +120,18 @@ tasks.register<RunServer>("generateKetherDocs") {
         check(siteDirectory.resolve(".nojekyll").isFile) {
             "GitHub Pages marker is missing: ${siteDirectory.resolve(".nojekyll").absolutePath}"
         }
-        runCatching { JsonSlurper().parse(schema) }
-            .getOrElse { throw GradleException("Invalid actions-schema.json", it) }
-        runCatching { JsonSlurper().parse(manifest) }
-            .getOrElse { throw GradleException("Invalid manifest.json", it) }
+        requiredFiles.filter { it.extension == "json" }.forEach { file ->
+            runCatching { JsonSlurper().parse(file) }
+                .getOrElse { throw GradleException("Invalid Kether documentation JSON: ${file.absolutePath}", it) }
+        }
     }
+}
+
+tasks.register<Exec>("validateKetherDocs") {
+    group = "verification"
+    description = "Validates generated Kether documentation contracts, IDs, sizes and checksums."
+    dependsOn(tasks.named("generateKetherDocs"))
+    commandLine("node", "scripts/validate-kether-docs.mjs", ketherDocsSiteDirectory.get().asFile.absolutePath)
 }
 
 taboolib {

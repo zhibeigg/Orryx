@@ -1,13 +1,25 @@
 package org.gitee.orryx.module.wiki
 
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonObjectBuilder
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import org.gitee.orryx.core.kether.ScriptManager
+import taboolib.common.platform.function.pluginId
 import taboolib.common.platform.function.pluginVersion
 import java.io.File
+import java.time.Instant
+import java.util.Locale
 
 /**
- * 根据 ActionsSchemaV2 规范生成 JSON
- * 从 ScriptManager 收集所有 Kether 动作、触发器、选择器元数据
+ * 从运行时完整注册表生成供 Orryx Editor 消费的 Kether Schema。
+ *
+ * 顶层保留 `version = 2` 兼容旧消费者，并通过 `schemaVersion = 3`
+ * 声明稳定 ID、语法、属性和发布元数据扩展。
  */
 object ActionsSchemaGenerator {
 
@@ -16,37 +28,23 @@ object ActionsSchemaGenerator {
         encodeDefaults = true
     }
 
-    // ==================== 类型映射 ====================
-
-    /**
-     * 将 wiki Type 映射到 V2 type key
-     */
-    private fun mapTypeKey(type: Type): String {
-        return when (type) {
-            Type.DOUBLE -> "number"
-            Type.FLOAT -> "number"
-            Type.INT -> "int"
-            Type.LONG -> "long"
-            Type.SHORT, Type.BYTE -> "int"
-            Type.STRING -> "text"
-            Type.BOOLEAN -> "boolean"
-            Type.SYMBOL -> "keyword"
-            Type.CONTAINER, Type.TARGET, Type.PLAYER -> "selector"
-            Type.VECTOR -> "vector3"
-            Type.MATRIX -> "matrix"
-            Type.QUATERNION -> "vector3"
-            Type.ITEM_STACK -> "text"
-            Type.ITERABLE -> "list"
-            Type.ANY, Type.NULL -> "any"
-            else -> "any"
-        }
+    private fun mapTypeKey(type: Type): String = when (type) {
+        Type.DOUBLE, Type.FLOAT -> "number"
+        Type.INT, Type.SHORT, Type.BYTE -> "int"
+        Type.LONG -> "long"
+        Type.STRING -> "text"
+        Type.BOOLEAN -> "boolean"
+        Type.SYMBOL -> "keyword"
+        Type.CONTAINER, Type.TARGET, Type.PLAYER -> "selector"
+        Type.VECTOR, Type.QUATERNION -> "vector3"
+        Type.MATRIX -> "matrix"
+        Type.ITERABLE -> "list"
+        Type.ANY, Type.NULL -> "any"
+        else -> "any"
     }
 
-    /**
-     * 将 wiki group 映射到 V2 category key
-     */
     private fun mapActionCategory(group: String): String {
-        val lower = group.lowercase()
+        val lower = group.lowercase(Locale.ROOT)
         return when {
             "kether原生-控制流" in lower || "kether原生-延迟" in lower || "kether原生-脚本" in lower -> "logic"
             "kether原生-循环" in lower -> "loop"
@@ -56,314 +54,243 @@ object ActionsSchemaGenerator {
             "kether原生-时间" in lower -> "time"
             "kether原生-游戏" in lower -> "game"
             "kether原生-属性" in lower -> "variable"
-            "damage" in lower || "伤害" in lower -> "combat"
-            "mana" in lower || "法力" in lower -> "combat"
-            "spirit" in lower || "精力" in lower -> "combat"
-            "buff" in lower || "state" in lower || "状态" in lower -> "combat"
-            "cooldown" in lower || "冷却" in lower -> "combat"
-            "hitbox" in lower || "碰撞" in lower -> "combat"
-            "attribute" in lower || "属性系统" in lower -> "combat"
-            "astraxhero" in lower || "attributeplus" in lower || "nodens" in lower -> "combat"
-            "move" in lower || "移动" in lower || "dash" in lower || "冲刺" in lower || "传送" in lower -> "movement"
-            "projectile" in lower || "抛射" in lower -> "movement"
+            "damage" in lower || "伤害" in lower || "mana" in lower || "法力" in lower ||
+                "spirit" in lower || "精力" in lower || "buff" in lower || "state" in lower ||
+                "状态" in lower || "cooldown" in lower || "冷却" in lower || "hitbox" in lower ||
+                "碰撞" in lower || "attribute" in lower || "属性系统" in lower || "astraxhero" in lower ||
+                "attributeplus" in lower || "nodens" in lower || "skill" in lower || "技能" in lower ||
+                "pressskill" in lower -> "combat"
+            "move" in lower || "移动" in lower || "dash" in lower || "冲刺" in lower ||
+                "传送" in lower || "projectile" in lower || "抛射" in lower -> "movement"
             "particle" in lower || "粒子" in lower || "effect" in lower || "特效" in lower -> "particle"
             "sound" in lower || "音效" in lower -> "sound"
-            "entity" in lower || "实体" in lower -> "entity"
+            "entity" in lower || "实体" in lower || "ai" in lower || "智能" in lower -> "entity"
             "world" in lower || "世界" in lower -> "world"
-            "coroutine" in lower || "协程" in lower -> "logic"
-            "pipe" in lower || "管式" in lower -> "logic"
-            "station" in lower || "中转" in lower -> "logic"
-            "variable" in lower || "变量" in lower || "flag" in lower || "标签" in lower -> "variable"
-            "global" in lower || "全局" in lower -> "variable"
-            "上下文" in lower || "container" in lower || "容器" in lower -> "variable"
+            "coroutine" in lower || "协程" in lower || "pipe" in lower || "管式" in lower ||
+                "station" in lower || "中转" in lower -> "logic"
+            "variable" in lower || "变量" in lower || "flag" in lower || "标签" in lower ||
+                "global" in lower || "全局" in lower || "上下文" in lower || "container" in lower ||
+                "容器" in lower || "uuid" in lower -> "variable"
             "math" in lower || "数学" in lower || "calc" in lower -> "math"
-            "selector" in lower || "选择" in lower -> "selector"
-            "profile" in lower || "玩家信息" in lower || "orryx信息" in lower -> "player"
-            "keysetting" in lower || "按键" in lower -> "player"
-            "skill" in lower || "技能" in lower || "pressskill" in lower -> "combat"
-            "dragoncore" in lower || "germplugin" in lower || "arcartx" in lower || "cloudpick" in lower -> "compat"
-            "mythicmobs" in lower -> "compat"
-            "gddtitle" in lower -> "compat"
-            "mod" in lower -> "compat"
-            "ai" in lower || "智能" in lower -> "entity"
-            "money" in lower || "财富" in lower -> "player"
-            "uuid" in lower -> "variable"
-            "raytrace" in lower || "光线" in lower -> "selector"
+            "selector" in lower || "选择" in lower || "raytrace" in lower || "光线" in lower -> "selector"
+            "profile" in lower || "玩家信息" in lower || "orryx信息" in lower || "keysetting" in lower ||
+                "按键" in lower || "money" in lower || "财富" in lower -> "player"
+            "dragoncore" in lower || "germplugin" in lower || "arcartx" in lower || "cloudpick" in lower ||
+                "mythicmobs" in lower || "gddtitle" in lower || "mod" in lower -> "compat"
             "game" in lower || "原版游戏" in lower -> "game"
-            "普通语句" in lower || "util" in lower || "工具" in lower -> "misc"
             else -> "misc"
         }
     }
 
-    /**
-     * 推断 Action 的 flow 类型
-     */
-    private fun inferFlowType(action: Action): String {
-        val key = action.key.lowercase()
-        val group = action.group.lowercase()
-        return when {
-            key == "if" || key == "case" || key == "check" || key == "optional" -> "branch"
-            key == "for" || key == "while" || key == "repeat" || key == "map" -> "loop"
-            "循环" in group -> "loop"
-            key == "async" || key == "seq" -> "container"
-            else -> "normal"
-        }
+    private fun generateTypes(): JsonObject = buildJsonObject {
+        put("number", type("number", "#4FC3F7", 0.1))
+        put("int", type("number", "#4DB6AC", 1.0))
+        put("long", type("number", "#4DB6AC", 1.0))
+        put("text", type("text", "#FFB74D"))
+        put("boolean", type("toggle", "#E57373"))
+        put("keyword", type("text", "#9E9E9E"))
+        put("selector", type("selector", "#BA68C8"))
+        put("vector3", type("vector3", "#81C784"))
+        put("matrix", type("text", "#A1887F"))
+        put("list", type("list", "#7986CB"))
+        put("duration", type("duration", "#FFD54F"))
+        put("any", type("text", "#B0BEC5"))
+        put("enum", type("select", "#F06292"))
+        put("location", type("location", "#AED581"))
+        put("port", type("port", "#90A4AE"))
     }
 
-    /**
-     * 推断 Action 的 namespace
-     */
-    private fun inferNamespace(action: Action): String {
-        val group = action.group.lowercase()
-        return when {
-            "kether原生" in group -> "kether"
-            else -> "orryx"
-        }
+    private fun type(widget: String, color: String, step: Double? = null): JsonObject = buildJsonObject {
+        put("widget", widget)
+        put("color", color)
+        if (step != null) put("step", if (step % 1.0 == 0.0) JsonPrimitive(step.toInt()) else JsonPrimitive(step))
     }
 
-    // ==================== 顶层 types ====================
-
-    private fun generateTypes(): JsonObject {
-        return buildJsonObject {
-            put("number", buildJsonObject {
-                put("widget", "number")
-                put("color", "#4FC3F7")
-                put("step", 0.1)
-            })
-            put("int", buildJsonObject {
-                put("widget", "number")
-                put("color", "#4DB6AC")
-                put("step", 1)
-            })
-            put("long", buildJsonObject {
-                put("widget", "number")
-                put("color", "#4DB6AC")
-                put("step", 1)
-            })
-            put("text", buildJsonObject {
-                put("widget", "text")
-                put("color", "#FFB74D")
-            })
-            put("boolean", buildJsonObject {
-                put("widget", "toggle")
-                put("color", "#E57373")
-            })
-            put("keyword", buildJsonObject {
-                put("widget", "text")
-                put("color", "#9E9E9E")
-            })
-            put("selector", buildJsonObject {
-                put("widget", "selector")
-                put("color", "#BA68C8")
-            })
-            put("vector3", buildJsonObject {
-                put("widget", "vector3")
-                put("color", "#81C784")
-            })
-            put("matrix", buildJsonObject {
-                put("widget", "text")
-                put("color", "#A1887F")
-            })
-            put("list", buildJsonObject {
-                put("widget", "list")
-                put("color", "#7986CB")
-            })
-            put("duration", buildJsonObject {
-                put("widget", "duration")
-                put("color", "#FFD54F")
-            })
-            put("any", buildJsonObject {
-                put("widget", "text")
-                put("color", "#B0BEC5")
-            })
-            put("enum", buildJsonObject {
-                put("widget", "select")
-                put("color", "#F06292")
-            })
-            put("location", buildJsonObject {
-                put("widget", "location")
-                put("color", "#AED581")
-            })
-            put("port", buildJsonObject {
-                put("widget", "port")
-                put("color", "#90A4AE")
-            })
-        }
+    private fun generateCategories(): JsonObject = buildJsonObject {
+        put("logic", category("#42A5F5", "mdi-code-braces"))
+        put("loop", category("#26C6DA", "mdi-sync"))
+        put("output", category("#66BB6A", "mdi-message-text"))
+        put("variable", category("#FFA726", "mdi-variable"))
+        put("math", category("#AB47BC", "mdi-calculator"))
+        put("time", category("#FFCA28", "mdi-clock-outline"))
+        put("game", category("#78909C", "mdi-gamepad-variant"))
+        put("combat", category("#EF5350", "mdi-sword-cross"))
+        put("movement", category("#29B6F6", "mdi-run-fast"))
+        put("particle", category("#EC407A", "mdi-sparkles"))
+        put("sound", category("#7E57C2", "mdi-volume-high"))
+        put("entity", category("#8D6E63", "mdi-account"))
+        put("world", category("#26A69A", "mdi-earth"))
+        put("selector", category("#5C6BC0", "mdi-target"))
+        put("player", category("#42A5F5", "mdi-account-circle"))
+        put("compat", category("#78909C", "mdi-puzzle"))
+        put("misc", category("#BDBDBD", "mdi-dots-horizontal"))
     }
 
-    // ==================== 顶层 categories ====================
-
-    private fun generateCategories(): JsonObject {
-        return buildJsonObject {
-            put("logic", buildJsonObject { put("color", "#42A5F5"); put("icon", "mdi-code-braces") })
-            put("loop", buildJsonObject { put("color", "#26C6DA"); put("icon", "mdi-sync") })
-            put("output", buildJsonObject { put("color", "#66BB6A"); put("icon", "mdi-message-text") })
-            put("variable", buildJsonObject { put("color", "#FFA726"); put("icon", "mdi-variable") })
-            put("math", buildJsonObject { put("color", "#AB47BC"); put("icon", "mdi-calculator") })
-            put("time", buildJsonObject { put("color", "#FFCA28"); put("icon", "mdi-clock-outline") })
-            put("game", buildJsonObject { put("color", "#78909C"); put("icon", "mdi-gamepad-variant") })
-            put("combat", buildJsonObject { put("color", "#EF5350"); put("icon", "mdi-sword-cross") })
-            put("movement", buildJsonObject { put("color", "#29B6F6"); put("icon", "mdi-run-fast") })
-            put("particle", buildJsonObject { put("color", "#EC407A"); put("icon", "mdi-sparkles") })
-            put("sound", buildJsonObject { put("color", "#7E57C2"); put("icon", "mdi-volume-high") })
-            put("entity", buildJsonObject { put("color", "#8D6E63"); put("icon", "mdi-account") })
-            put("world", buildJsonObject { put("color", "#26A69A"); put("icon", "mdi-earth") })
-            put("selector", buildJsonObject { put("color", "#5C6BC0"); put("icon", "mdi-target") })
-            put("player", buildJsonObject { put("color", "#42A5F5"); put("icon", "mdi-account-circle") })
-            put("compat", buildJsonObject { put("color", "#78909C"); put("icon", "mdi-puzzle") })
-            put("misc", buildJsonObject { put("color", "#BDBDBD"); put("icon", "mdi-dots-horizontal") })
-        }
+    private fun category(color: String, icon: String): JsonObject = buildJsonObject {
+        put("color", color)
+        put("icon", icon)
     }
-
-    // ==================== actions ====================
 
     private fun generateActions(): JsonArray {
-        val actions = ScriptManager.wikiActions
-            .sortedWith(compareBy<Action> { it.group }.thenBy { it.key }.thenBy { it.name })
+        val source = ScriptManager.wikiActions.toList()
+        val ids = KetherDocsContract.actionIds(source)
+        val actions = source.sortedBy(ids::get)
         return JsonArray(actions.map { action ->
+            val flow = KetherDocsContract.inferFlowType(action)
             buildJsonObject {
+                put("id", ids.getValue(action))
                 put("name", action.key)
+                put("aliases", JsonArray(emptyList()))
                 put("category", mapActionCategory(action.group))
-                put("namespace", inferNamespace(action))
+                put("namespace", KetherDocsContract.inferNamespace(action))
+                put("visibility", if (action.sharded) "public" else "private")
                 put("description", action.description.ifBlank { action.name })
+                put("syntax", KetherDocsContract.actionSyntax(action))
+                put("deprecated", JsonNull)
                 if (action.sharded) put("builtin", true)
-                put("flow", inferFlowType(action))
-
-                // inputs
-                val inputs = action.entries.map { entry ->
-                    buildJsonObject {
-                        put("name", entry.description.ifBlank { entry.head ?: entry.type.name.lowercase() })
-                        put("key", entry.head ?: entry.description.take(20).replace(" ", "_"))
-                        if (entry.type == Type.SYMBOL) {
-                            put("type", "keyword")
-                            put("required", true)
-                            put("default", JsonPrimitive(entry.head ?: ""))
-                            entry.head?.let { put("keyword", it) }
-                        } else {
-                            put("type", mapTypeKey(entry.type))
-                            put("required", !entry.optional)
-                            if (entry.default != null) {
-                                put("default", JsonPrimitive(entry.default))
-                            } else {
-                                put("default", JsonNull)
-                            }
-                            if (entry.description.isNotBlank()) {
-                                put("description", entry.description)
-                            }
-                        }
-                    }
-                }
-                put("inputs", JsonArray(inputs))
-
-                // output
-                if (action.result != Type.NULL) {
-                    put("output", buildJsonObject {
-                        put("type", mapTypeKey(action.result))
-                        action.resultDescription?.let { put("description", it) }
-                    })
-                } else {
-                    put("output", JsonNull)
-                }
-
-                // example
-                if (action.example.isNotEmpty()) {
-                    put("example", action.example.joinToString("\n"))
-                }
-
-                // slots for flow types
-                val flow = inferFlowType(action)
-                if (flow == "branch") {
-                    put("slots", JsonArray(listOf(
-                        buildJsonObject {
-                            put("name", "then"); put("label", "条件为真"); put("multiple", true)
-                        },
-                        buildJsonObject {
-                            put("name", "else"); put("label", "条件为假"); put("multiple", true); put("optional", true)
-                        }
-                    )))
-                } else if (flow == "loop") {
-                    put("slots", JsonArray(listOf(
-                        buildJsonObject {
-                            put("name", "body"); put("label", "循环体"); put("multiple", true)
-                        }
-                    )))
-                } else if (flow == "container") {
-                    put("slots", JsonArray(listOf(
-                        buildJsonObject {
-                            put("name", "children"); put("label", "子动作"); put("multiple", true)
-                        }
-                    )))
-                }
-
-                // provides for loop
-                if (flow == "loop" && action.key.lowercase() in listOf("for", "map")) {
-                    put("provides", JsonArray(listOf(
-                        buildJsonObject {
-                            put("name", "迭代变量"); put("key", "it"); put("type", "any")
-                            put("description", "当前迭代元素")
-                        }
-                    )))
-                }
+                put("flow", flow)
+                put("inputs", JsonArray(action.entries.mapIndexed { index, entry -> input(entry, index) }))
+                put("output", output(action))
+                put("examples", JsonArray(action.example.map(::JsonPrimitive)))
+                if (action.example.isNotEmpty()) put("example", action.example.joinToString("\n"))
+                put("execution", buildJsonObject {
+                    put("thread", "any")
+                    put("suspends", KetherDocsContract.actionSuspends(action))
+                })
+                put("requirements", JsonArray(KetherDocsContract.actionRequirements(action).map(::JsonPrimitive)))
+                put("source", buildJsonObject {
+                    put("symbol", action.key)
+                    put("group", action.group)
+                })
+                addFlowMetadata(this, action, flow)
             }
         })
     }
 
-    // ==================== selectors ====================
+    private fun input(entry: Action.Entry, index: Int): JsonObject = buildJsonObject {
+        put("name", entry.description.ifBlank { entry.head ?: entry.type.name.lowercase(Locale.ROOT) })
+        put("key", entry.head?.takeIf(String::isNotBlank) ?: "p$index")
+        if (entry.type == Type.SYMBOL) {
+            put("type", "keyword")
+            put("required", true)
+            put("default", JsonPrimitive(entry.head ?: ""))
+            entry.head?.let { put("keyword", it) }
+        } else {
+            put("type", mapTypeKey(entry.type))
+            put("required", !entry.optional)
+            if (entry.default == null) put("default", JsonNull) else put("default", JsonPrimitive(entry.default))
+            if (entry.description.isNotBlank()) put("description", entry.description)
+            entry.head?.takeIf(String::isNotBlank)?.let { put("keyword", it) }
+        }
+    }
+
+    private fun output(action: Action) = if (action.result == Type.NULL) {
+        JsonNull
+    } else {
+        buildJsonObject {
+            put("type", mapTypeKey(action.result))
+            action.resultDescription?.let { put("description", it) }
+        }
+    }
+
+    private fun addFlowMetadata(target: JsonObjectBuilder, action: Action, flow: String) {
+        when (flow) {
+            "branch" -> target.put("slots", JsonArray(listOf(
+                buildJsonObject { put("name", "then"); put("label", "条件为真"); put("multiple", true) },
+                buildJsonObject { put("name", "else"); put("label", "条件为假"); put("multiple", true); put("optional", true) }
+            )))
+            "loop" -> target.put("slots", JsonArray(listOf(
+                buildJsonObject { put("name", "body"); put("label", "循环体"); put("multiple", true) }
+            )))
+            "container" -> target.put("slots", JsonArray(listOf(
+                buildJsonObject { put("name", "children"); put("label", "子动作"); put("multiple", true) }
+            )))
+        }
+        if (flow == "loop" && action.key.lowercase(Locale.ROOT) in setOf("for", "map")) {
+            target.put("provides", JsonArray(listOf(buildJsonObject {
+                put("name", "迭代变量")
+                put("key", "it")
+                put("type", "any")
+                put("description", "当前迭代元素")
+            })))
+        }
+    }
 
     private fun generateSelectors(): JsonArray {
-        val selectors = ScriptManager.wikiSelectors
-            .sortedWith(compareBy<Selector> { it.type.ordinal }.thenBy { it.keys.firstOrNull() ?: "" })
-        return JsonArray(selectors.map { selector ->
+        val source = ScriptManager.wikiSelectors.toList()
+        val ids = KetherDocsContract.selectorIds(source)
+        return JsonArray(source.sortedBy(ids::get).map { selector ->
             buildJsonObject {
+                put("id", ids.getValue(selector))
                 put("name", selector.keys.first())
-                if (selector.keys.size > 1) {
-                    put("aliases", JsonArray(selector.keys.drop(1).map { JsonPrimitive(it) }))
-                }
+                put("aliases", JsonArray(selector.keys.drop(1).map(::JsonPrimitive)))
                 put("description", selector.description.ifBlank { selector.name })
-
+                put("syntax", KetherDocsContract.selectorSyntax(selector))
                 put("params", JsonArray(selector.entries.mapIndexed { index, entry ->
                     buildJsonObject {
                         put("name", entry.description.ifBlank { "参数${index + 1}" })
                         put("key", "p$index")
                         put("type", mapTypeKey(entry.type))
-                        entry.default?.let { put("default", JsonPrimitive(it)) }
+                        entry.default?.let { put("default", it) }
+                    }
+                }))
+                put("examples", JsonArray(selector.example.map(::JsonPrimitive)))
+            }
+        })
+    }
+
+    private fun generateTriggers(): JsonArray {
+        val source = ScriptManager.wikiTriggers.toList()
+        val ids = KetherDocsContract.triggerIds(source)
+        return JsonArray(source.sortedBy(ids::get).map { trigger ->
+            buildJsonObject {
+                put("id", ids.getValue(trigger))
+                put("name", trigger.key)
+                put("category", mapTriggerCategory(trigger.group, trigger.key))
+                put("description", trigger.description.ifBlank { trigger.key })
+                put("variables", JsonArray(trigger.entries.map { entry ->
+                    buildJsonObject {
+                        put("name", entry.key)
+                        put("type", mapTypeKey(entry.type))
+                        put("description", entry.description)
+                    }
+                }))
+                put("specialKeys", JsonArray(trigger.specialKeyEntries.map { entry ->
+                    buildJsonObject {
+                        put("name", entry.key)
+                        put("type", mapTypeKey(entry.type))
+                        put("description", entry.description)
                     }
                 }))
             }
         })
     }
 
-    // ==================== triggers ====================
-
-    private fun generateTriggers(): JsonArray {
-        val triggers = ScriptManager.wikiTriggers
-            .sortedWith(compareBy<Trigger> { it.group.ordinal }.thenBy { it.key })
-        return JsonArray(triggers.map { trigger ->
-            buildJsonObject {
-                put("name", trigger.key)
-                put("category", mapTriggerCategory(trigger.group, trigger.key))
-                put("description", trigger.description.ifBlank { trigger.key })
-
-                if (trigger.entries.isNotEmpty()) {
-                    put("variables", JsonArray(trigger.entries.map { entry ->
+    private fun generateProperties(): JsonArray = JsonArray(
+        ScriptManager.wikiProperties
+            .sortedBy(KetherDocsContract::propertyId)
+            .map { property ->
+                buildJsonObject {
+                    put("id", KetherDocsContract.propertyId(property))
+                    put("name", property.name)
+                    put("group", property.group)
+                    put("description", property.description)
+                    put("usage", "&变量名[key]")
+                    put("keys", JsonArray(property.entries.map { entry ->
                         buildJsonObject {
                             put("name", entry.key)
                             put("type", mapTypeKey(entry.type))
-                            if (entry.description.isNotBlank()) {
-                                put("description", entry.description)
-                            }
+                            put("readable", true)
+                            put("writable", entry.writable)
+                            put("description", entry.description)
                         }
                     }))
                 }
             }
-        })
-    }
+    )
 
-    /**
-     * 将 TriggerGroup + key 映射到 trigger category
-     */
     private fun mapTriggerCategory(group: TriggerGroup, key: String): String {
-        val lower = key.lowercase()
+        val lower = key.lowercase(Locale.ROOT)
         return when (group) {
             TriggerGroup.BUKKIT -> when {
                 "block" in lower -> "bukkit-block"
@@ -373,47 +300,55 @@ object ActionsSchemaGenerator {
             TriggerGroup.ORRYX -> when {
                 "skill" in lower || "cast" in lower || "check" in lower -> "orryx-skill"
                 "job" in lower -> "orryx-job"
-                "flag" in lower -> "orryx-flag"
-                "mana" in lower || "spirit" in lower || "level" in lower || "exp" in lower || "point" in lower -> "orryx-player"
-                "key" in lower -> "orryx-player"
                 else -> "orryx-player"
             }
-            TriggerGroup.DRAGONCORE -> "third-party"
-            TriggerGroup.GERM_PLUGIN -> "third-party"
-            TriggerGroup.ARCARTX -> "third-party"
-            TriggerGroup.MYTHIC_MOBS -> "third-party"
-            TriggerGroup.DUNGEON_PLUS -> "third-party"
+            else -> "third-party"
         }
     }
 
-    // ==================== 入口 ====================
+    private fun runtimeMetadata(): KetherDocsMetadata = KetherDocsContract.metadata(
+        pluginId = pluginId,
+        version = pluginVersion,
+        commit = System.getProperty(KetherDocsPublisher.COMMIT_PROPERTY)
+            ?.takeIf { Regex("^[0-9a-fA-F]{40}$").matches(it) }
+            ?.lowercase(Locale.ROOT)
+            ?: "0000000000000000000000000000000000000000",
+        channel = "snapshot",
+        generatedAt = Instant.EPOCH
+    )
 
-    /**
-     * 生成完整的 V2 schema JsonObject
-     */
-    fun generateSchema(): JsonObject {
-        return buildJsonObject {
-            put("version", 2)
-            put("types", generateTypes())
-            put("categories", generateCategories())
-            put("actions", generateActions())
-            put("selectors", generateSelectors())
-            put("triggers", generateTriggers())
-        }
+    fun generateSchema(): JsonObject = generateSchema(runtimeMetadata())
+
+    fun generateSchema(metadata: KetherDocsMetadata): JsonObject = buildJsonObject {
+        put("${'$'}schema", "$KETHER_DOCS_BASE_URL/contracts/actions-schema-v3.schema.json")
+        put("version", 2)
+        put("schemaVersion", KETHER_SCHEMA_VERSION)
+        put("pluginId", metadata.pluginId)
+        put("pluginVersion", metadata.version)
+        put("commit", metadata.commit)
+        put("plugin", buildJsonObject {
+            put("id", metadata.pluginId)
+            put("version", metadata.version)
+            put("commit", metadata.commit)
+        })
+        put("types", generateTypes())
+        put("categories", generateCategories())
+        put("actions", generateActions())
+        put("selectors", generateSelectors())
+        put("triggers", generateTriggers())
+        put("properties", generateProperties())
     }
 
-    /**
-     * 生成 JSON 字符串
-     */
-    fun generateJsonString(): String {
-        return json.encodeToString(JsonObject.serializer(), generateSchema())
-    }
+    fun generateJsonString(): String = generateJsonString(runtimeMetadata())
 
-    /**
-     * 生成 JSON 文件
-     */
-    fun generate(outputFile: File) {
-        outputFile.parentFile?.mkdirs()
-        outputFile.writeText(generateJsonString(), Charsets.UTF_8)
+    fun generateJsonString(metadata: KetherDocsMetadata): String =
+        json.encodeToString(JsonObject.serializer(), generateSchema(metadata))
+
+    fun generate(outputFile: File): JsonObject = generate(outputFile, runtimeMetadata())
+
+    fun generate(outputFile: File, metadata: KetherDocsMetadata): JsonObject {
+        val schema = generateSchema(metadata)
+        KetherDocsContract.writeUtf8(outputFile, json.encodeToString(JsonObject.serializer(), schema))
+        return schema
     }
 }

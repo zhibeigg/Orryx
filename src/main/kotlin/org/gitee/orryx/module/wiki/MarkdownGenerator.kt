@@ -184,19 +184,7 @@ object MarkdownGenerator {
         }
     }
 
-    private fun buildActionSyntax(action: Action): String {
-        return "${action.key} " + action.entries.joinToString(" ") { entry ->
-            val (start, end) = if (entry.optional) "[" to "]" else "<" to ">"
-            if (entry.type == Type.SYMBOL) {
-                entry.head?.takeIf { it.isNotBlank() } ?: "${start}SYMBOL${end}"
-            } else {
-                var s = "$start${entry.type.name}"
-                if (entry.head != null) s = "*${entry.head} $s"
-                if (entry.default != null) s += "(${entry.default})"
-                s + end
-            }
-        }
-    }
+    private fun buildActionSyntax(action: Action): String = KetherDocsContract.actionSyntax(action)
 
     private fun appendSelectorSection(sb: StringBuilder, groups: Map<SelectorType, List<Selector>>) {
         sb.appendLine("# Selector选择器列表")
