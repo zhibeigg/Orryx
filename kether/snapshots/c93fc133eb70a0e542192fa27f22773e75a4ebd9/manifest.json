@@ -1,0 +1,56 @@
+{
+    "$schema": "https://zhibeigg.github.io/Orryx/kether/contracts/release-manifest-v1.schema.json",
+    "formatVersion": 1,
+    "releaseId": "Orryx@2.44.116+c93fc133eb70a0e542192fa27f22773e75a4ebd9",
+    "channel": "snapshot",
+    "plugin": {
+        "id": "Orryx",
+        "version": "2.44.116",
+        "commit": "c93fc133eb70a0e542192fa27f22773e75a4ebd9"
+    },
+    "schemaVersion": 3,
+    "generatedAt": "2026-07-13T15:35:14Z",
+    "previousReleaseId": "Orryx@2.44.116+025679491d7bc7bd4f5d178bde1d66f78dcd6186",
+    "assets": {
+        "schema": {
+            "path": "actions-schema.json",
+            "mediaType": "application/json",
+            "bytes": 954636,
+            "sha256": "614e3e5dff87b219a01edbe97fa501581eedcfb7f8929d530f1a59637bc40fc1"
+        },
+        "schemaContract": {
+            "path": "actions-schema.schema.json",
+            "mediaType": "application/schema+json",
+            "bytes": 2714,
+            "sha256": "922d8eee672f33b212b68a80c3d52c22ff4eb256adb20c71b1823493e0a4f2b0"
+        },
+        "markdown": {
+            "path": "docs.md",
+            "mediaType": "text/markdown; charset=utf-8",
+            "bytes": 220285,
+            "sha256": "f57fb954042738ae519c90120ef0477143de0b78db1a83ea7af86c199cab48a7"
+        },
+        "changes": {
+            "path": "changes.json",
+            "mediaType": "application/json",
+            "bytes": 775,
+            "sha256": "77b9848ba73877638c06d5a353ed6223612f9a312e8a13c39a8eadbb77734b79"
+        },
+        "checksums": {
+            "path": "checksums.json",
+            "mediaType": "application/json",
+            "bytes": 460,
+            "sha256": "0d7a9259747a00becfdb274b83ac41acf8fcd7bce44e9813b88df285095c6d66"
+        }
+    },
+    "counts": {
+        "actions": 436,
+        "selectors": 36,
+        "triggers": 122,
+        "properties": 31
+    },
+    "compatibility": {
+        "minimumEditorManifestFormat": 1,
+        "minimumEditorSchemaVersion": 2
+    }
+}
