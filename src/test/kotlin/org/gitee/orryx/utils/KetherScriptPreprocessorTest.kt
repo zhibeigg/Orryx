@@ -41,9 +41,7 @@ class KetherScriptPreprocessorTest {
             |tell 'escaped \'# single' # trailing
         """.trimMargin()
 
-        val expected = """tell "escaped \"# double" 
-            |tell 'escaped \'# single' 
-        """.trimMargin()
+        val expected = "tell \"escaped \\\"# double\" \ntell 'escaped \\'# single' "
         assertEquals(expected, KetherScriptPreprocessor.stripComments(source))
     }
 
@@ -53,9 +51,7 @@ class KetherScriptPreprocessorTest {
             |tell \\# comment
         """.trimMargin()
 
-        val expected = """tell \#literal 
-            |tell \\
-        """.trimMargin()
+        val expected = "tell \\#literal \ntell \\\\"
         assertEquals(expected, KetherScriptPreprocessor.stripComments(source))
     }
 
