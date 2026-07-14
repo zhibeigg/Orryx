@@ -16,6 +16,7 @@ import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.common.task.SimpleTimeoutTask
 import org.gitee.orryx.core.editor.handler.FileHandler
 import org.gitee.orryx.core.editor.handler.ReloadHandler
+import org.gitee.orryx.core.editor.release.ReleaseHandler
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.utils.consoleMessage
 import org.gitee.orryx.utils.debug
@@ -523,6 +524,10 @@ object EditorClient {
                         sendError(attemptGeneration, id, "Editor 服务器尚未完成注册", "NOT_REGISTERED", type)
                         return
                     }
+                    if (registered.get() && !EditorProtocol.isSupportedForProtocol(type, negotiatedProtocol.get())) {
+                        sendError(attemptGeneration, id, "$type 仅支持 V2", "MESSAGE_NOT_SUPPORTED", type)
+                        return
+                    }
                     when (type) {
                         EditorProtocol.SERVER_REGISTER_RESULT -> {
                             if (id == "reg_init" && !registered.get() && !registrationRejected.get()) {
@@ -560,6 +565,7 @@ object EditorClient {
                         "file.delete" -> FileHandler.handleDelete(attemptGeneration, id, data)
                         "file.rename" -> FileHandler.handleRename(attemptGeneration, id, data)
                         "reload" -> ReloadHandler.handle(attemptGeneration, id, data)
+                        EditorProtocol.RELEASE_REQUEST -> ReleaseHandler.handle(attemptGeneration, id, data)
                         "log.subscribe" -> {
                             logSubscribed.set(true)
                             logKeywordFilter = ((data?.get("filters") as? JsonObject)
@@ -605,6 +611,7 @@ object EditorClient {
                     negotiatedProtocol.set(EditorProtocol.PROTOCOL_V1)
                     sessionEpoch = null
                     workspaceId = null
+                    relayCapabilities = emptySet()
                     logSubscribed.set(false)
                     logKeywordFilter = null
                     pendingTokenRegistrations.values.forEach { it.future.complete(false) }

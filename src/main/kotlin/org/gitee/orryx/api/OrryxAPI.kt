@@ -52,6 +52,12 @@ import kotlin.time.Duration.Companion.seconds
         test = "!org.gitee.orryx.java_websocket.client.WebSocketClient",
         relocate = ["!org.java_websocket.", "!org.gitee.orryx.java_websocket."],
         transitive = false
+    ),
+    RuntimeDependency(
+        "!org.bouncycastle:bcprov-jdk18on:1.80",
+        test = "!org.gitee.orryx.bouncycastle.crypto.signers.Ed25519Signer",
+        relocate = ["!org.bouncycastle.", "!org.gitee.orryx.bouncycastle."],
+        transitive = false
     )
 )
 class OrryxAPI: IOrryxAPI {

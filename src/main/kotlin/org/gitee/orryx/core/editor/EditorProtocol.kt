@@ -21,12 +21,20 @@ object EditorProtocol {
     const val SERVER_REGISTER_RESULT = "server.register.result"
     const val MANIFEST_GET = "manifest.get"
     const val MANIFEST_SNAPSHOT = "manifest.snapshot"
+    const val RELEASE_REQUEST = "release.request"
+    const val RELEASE_RESULT = "release.result"
     const val ERROR = "error"
+    const val RELAY_RELEASE_CAPABILITY = "release.control.v1"
 
     val V2_CAPABILITIES: List<String> = listOf(
         "protocol.allowlist",
         "revision.sha256",
         "mutation.preconditions",
+        "release.transaction.v1",
+        "release.signature.ed25519",
+        "release.readiness.async",
+        "release.recovery.v1",
+        "release.http-pull.v1",
     )
 
     private val SHA256_REVISION = Regex("^[0-9a-f]{64}$")
@@ -45,6 +53,7 @@ object EditorProtocol {
         "reload",
         "log.subscribe",
         "log.unsubscribe",
+        RELEASE_REQUEST,
     )
 
     private val serverToCenterTypes = setOf(
@@ -60,6 +69,7 @@ object EditorProtocol {
         "log.unsubscribe.result",
         "log.entry",
         "server.info",
+        RELEASE_RESULT,
         ERROR,
     )
 
@@ -123,7 +133,8 @@ object EditorProtocol {
                     result.sessionEpoch != null && result.sessionEpoch > 0L &&
                     isSha256Revision(result.workspaceId) &&
                     result.connectionNonce == request.connectionNonce &&
-                    "revision.sha256" in result.relayCapabilities
+                    "revision.sha256" in result.relayCapabilities &&
+                    RELAY_RELEASE_CAPABILITY in result.relayCapabilities
                 )
         return ServerRegisterValidation(
             protocolAccepted = protocolAccepted,
@@ -150,6 +161,10 @@ object EditorProtocol {
             type in serverToCenterTypes -> InboundDisposition.WRONG_DIRECTION
             else -> InboundDisposition.UNKNOWN
         }
+    }
+
+    fun isSupportedForProtocol(type: String, protocol: String): Boolean {
+        return type != RELEASE_REQUEST && type != RELEASE_RESULT || protocol == PROTOCOL_V2
     }
 
     fun isServerToCenter(type: String): Boolean = type in serverToCenterTypes

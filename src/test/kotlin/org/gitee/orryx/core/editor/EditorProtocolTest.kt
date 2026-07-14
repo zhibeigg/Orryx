@@ -44,7 +44,14 @@ class EditorProtocolTest {
         assertEquals(listOf("v2", "v1"), data.getValue("protocolVersions").jsonArray.map { it.jsonPrimitive.content })
         assertEquals("v2", data.getValue("preferredProtocol").jsonPrimitive.content)
         assertEquals("nonce-1", data.getValue("connectionNonce").jsonPrimitive.content)
-        assertTrue(data.getValue("capabilities").jsonArray.isNotEmpty())
+        val capabilities = data.getValue("capabilities").jsonArray.map { it.jsonPrimitive.content }.toSet()
+        assertTrue(capabilities.containsAll(setOf(
+            "release.transaction.v1",
+            "release.signature.ed25519",
+            "release.readiness.async",
+            "release.recovery.v1",
+            "release.http-pull.v1",
+        )))
     }
 
     @Test
@@ -73,6 +80,7 @@ class EditorProtocolTest {
             put("connectionNonce", "nonce-1")
             put("relayCapabilities", kotlinx.serialization.json.buildJsonArray {
                 add(kotlinx.serialization.json.JsonPrimitive("revision.sha256"))
+                add(kotlinx.serialization.json.JsonPrimitive("release.control.v1"))
             })
         })
 
@@ -82,7 +90,7 @@ class EditorProtocolTest {
         assertEquals(workspaceId, result.workspaceId)
         assertTrue(EditorProtocol.isSha256Revision(result.workspaceId))
         assertFalse(EditorProtocol.isSha256Revision(workspaceId.uppercase()))
-        assertEquals(listOf("revision.sha256"), result.relayCapabilities)
+        assertEquals(listOf("revision.sha256", "release.control.v1"), result.relayCapabilities)
         assertEquals("nonce-1", result.connectionNonce)
         assertFalse(EditorProtocol.validateNegotiatedProtocol(result, listOf("v1")))
     }
@@ -106,7 +114,7 @@ class EditorProtocolTest {
             serverId = request.serverId,
             sessionEpoch = 1L,
             workspaceId = "a".repeat(64),
-            relayCapabilities = listOf("revision.sha256"),
+            relayCapabilities = listOf("revision.sha256", "release.control.v1"),
             connectionNonce = request.connectionNonce,
         )
 
@@ -116,6 +124,9 @@ class EditorProtocolTest {
         assertFalse(EditorProtocol.validateRegisterResult(valid.copy(workspaceId = "invalid"), request).accepted)
         assertFalse(EditorProtocol.validateRegisterResult(valid.copy(sessionEpoch = 0L), request).accepted)
         assertFalse(EditorProtocol.validateRegisterResult(valid.copy(relayCapabilities = emptyList()), request).accepted)
+        assertFalse(
+            EditorProtocol.validateRegisterResult(valid.copy(relayCapabilities = listOf("revision.sha256")), request).accepted,
+        )
 
         val legacy = valid.copy(
             negotiatedProtocol = "v1",
@@ -148,6 +159,7 @@ class EditorProtocolTest {
     fun `direction allowlist matches relay routes and rejects reserved messages`() {
         assertEquals(InboundDisposition.ACCEPT, EditorProtocol.inboundDisposition("file.read"))
         assertEquals(InboundDisposition.ACCEPT, EditorProtocol.inboundDisposition("token.revoke.result"))
+        assertEquals(InboundDisposition.ACCEPT, EditorProtocol.inboundDisposition(EditorProtocol.RELEASE_REQUEST))
         assertEquals(InboundDisposition.WRONG_DIRECTION, EditorProtocol.inboundDisposition("file.content"))
         assertEquals(InboundDisposition.UNKNOWN, EditorProtocol.inboundDisposition(EditorProtocol.MANIFEST_GET))
         assertEquals(InboundDisposition.UNKNOWN, EditorProtocol.inboundDisposition("actions.schema"))
@@ -156,6 +168,9 @@ class EditorProtocolTest {
         assertTrue(EditorProtocol.isServerToCenter("token.revoke"))
         assertTrue(EditorProtocol.isServerToCenter("file.changed"))
         assertTrue(EditorProtocol.isServerToCenter("server.info"))
+        assertTrue(EditorProtocol.isServerToCenter(EditorProtocol.RELEASE_RESULT))
+        assertFalse(EditorProtocol.isSupportedForProtocol(EditorProtocol.RELEASE_REQUEST, EditorProtocol.PROTOCOL_V1))
+        assertTrue(EditorProtocol.isSupportedForProtocol(EditorProtocol.RELEASE_REQUEST, EditorProtocol.PROTOCOL_V2))
         assertFalse(EditorProtocol.isServerToCenter(EditorProtocol.MANIFEST_SNAPSHOT))
         assertFalse(EditorProtocol.isServerToCenter("file.read"))
     }

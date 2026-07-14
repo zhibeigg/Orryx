@@ -1,5 +1,5 @@
 {
-  "contractVersion": 1,
+  "contractVersion": 2,
   "protocolVersions": ["v1", "v2"],
   "directions": {
     "browserToRelay": [
@@ -29,7 +29,8 @@
       "file.rename",
       "reload",
       "log.subscribe",
-      "log.unsubscribe"
+      "log.unsubscribe",
+      "release.request"
     ],
     "pluginToRelay": [
       "server.register",
@@ -44,6 +45,7 @@
       "log.unsubscribe.result",
       "log.entry",
       "server.info",
+      "release.result",
       "error"
     ],
     "relayToBrowser": [
@@ -76,12 +78,30 @@
     ],
     "requiredPluginCapabilities": ["revision.sha256"],
     "requiredMutationCapabilities": ["mutation.preconditions"],
+    "requiredReleasePluginCapabilities": [
+      "release.transaction.v1",
+      "release.signature.ed25519",
+      "release.readiness.async",
+      "release.recovery.v1",
+      "release.http-pull.v1"
+    ],
     "relayRevisionCapability": "revision.sha256",
-    "relayWriteCapability": "file.write.v2"
+    "relayWriteCapability": "file.write.v2",
+    "relayReleaseCapability": "release.control.v1",
+    "releaseRequestActions": ["prepare", "commit", "status", "rollback"],
+    "releasePluginStates": [
+      "PREPARING",
+      "PREPARED",
+      "COMMITTING",
+      "READINESS_PENDING",
+      "READY",
+      "ROLLING_BACK",
+      "ROLLED_BACK",
+      "FAILED",
+      "RECOVERY_REQUIRED"
+    ]
   },
   "reservedUnroutedTypes": [
-    "manifest.snapshot",
-    "release.request",
-    "release.result"
+    "manifest.snapshot"
   ]
 }

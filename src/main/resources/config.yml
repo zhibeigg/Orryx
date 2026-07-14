@@ -83,3 +83,18 @@ Editor:
   # V2 默认关闭；开启后仍会向仅支持 V1 的 relay 安全回落
   ProtocolV2:
     Enable: false
+  # 签名发布事务仅在 V2 会话中可用；信任根只能由本机配置，relay 无法远程下发
+  Release:
+    Enable: false
+    RequireSignature: true
+    MaxStagedBytes: 67108864
+    HttpConnectTimeoutMillis: 10000
+    HttpReadTimeoutMillis: 30000
+    HttpCallTimeoutMillis: 60000
+    AcceptedClockSkewMillis: 30000
+    # 仅供本机集成测试；生产环境保持 false
+    AllowLocalhostHttp: false
+    # 显式允许解析到私网地址的 HTTPS 主机；通常应保持为空
+    AllowedHosts: []
+    # keyId 必须是 raw 公钥的 SHA-256；值为 raw 32 字节 Ed25519 公钥的标准 Base64
+    TrustedKeys: {}

@@ -25,8 +25,8 @@ object ReloadHandler {
                 return@enqueue
             }
             try {
-                mainThreadFuture { ReloadAPI.reload() }.await()
-                sendResult(requestGeneration, id, "all", true, "已重载")
+                val report = mainThreadFuture { ReloadAPI.reloadWithReport() }.await()
+                sendResult(requestGeneration, id, "all", report.success, report.summary())
             } catch (e: Exception) {
                 sendResult(
                     requestGeneration,

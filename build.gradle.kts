@@ -195,6 +195,7 @@ taboolib {
     relocate("com.eatthepath.uuid", "org.gitee.orryx.eatthepath.uuid")
     relocate("kotlinx.serialization", "org.gitee.orryx.serialization")
     relocate("org.java_websocket", "org.gitee.orryx.java_websocket")
+    relocate("org.bouncycastle", "org.gitee.orryx.bouncycastle")
     version {
         taboolib = "6.3.0-932e79c"
         coroutines = "1.10.1"
@@ -237,8 +238,10 @@ dependencies {
     compileOnly("com.larksuite.oapi:oapi-sdk:2.4.22")
     compileOnly("com.eatthepath:fast-uuid:0.2.0")
     compileOnly("org.java-websocket:Java-WebSocket:1.5.7")
+    compileOnly("org.bouncycastle:bcprov-jdk18on:1.80")
 
     testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
+    testImplementation("org.bouncycastle:bcprov-jdk18on:1.80")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1")
     testImplementation("com.github.ben-manes.caffeine:caffeine:2.9.3")
     testImplementation("com.eatthepath:fast-uuid:0.2.0")
