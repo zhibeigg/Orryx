@@ -74,8 +74,9 @@ OpenAI:
   AllowInsecureLocalHttp: false
 # 编辑器
 Editor:
-  # 购买时获得的 license；填写后自动连接固定中心 orryx.mcwar.cn
-  # 中心 WebSocket 与浏览器入口由代码固定，不再读取 Enable 或 PublicUrl
+  # Editor.License 是中心用于识别并校验 Orryx 服务器身份的凭据
+  # License 到期不影响实时编辑器；不存在、被禁用或绑定 IP 与当前服务器 IP 不匹配时仍会被中心拒绝
+  # 中心 WebSocket 与浏览器入口由代码固定，旧 Enable 与 PublicUrl 仍会被忽略，但匿名或空 License 不可用
   License: ""
   # 稳定 serverId 会自动生成在 plugins/Orryx/.editor/identity.json
   # 该文件仅包含本机身份标识，不包含 license、私钥或其他认证材料，请勿手动复制覆盖

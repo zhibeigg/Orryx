@@ -96,7 +96,7 @@ info-skill:
 in-unlimit-mode: "&a| &6[test] &f进入&a无限模式"
 out-unlimit-mode: "&a| &6[test] &f退出&4无限模式"
 
-editor-not-connected: "&c| &7[Editor] 尚未完成 orryx.mcwar.cn 中心注册，请确认 Editor.License 有效并查看控制台 [Editor] 日志"
+editor-not-connected: "&c| &7[Editor] 尚未完成中心注册；Editor.License 是服务器身份凭据，请确认已配置、未被禁用且绑定 IP 匹配。License 到期不影响实时编辑器，请查看控制台 [Editor] 日志"
 editor-identity-invalid: "&c| &7[Editor] 本机身份文件无效，请检查 plugins/Orryx/.editor/identity.json；该文件不应包含私钥"
 editor-protocol-rejected: "&c| &7[Editor] 中心消息不符合当前协商协议，操作已拒绝"
 editor-open:

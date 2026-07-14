@@ -6,7 +6,7 @@
 
 **跨时代技能插件，支持实现复杂逻辑，为稳定高效而生**
 
-[![Version](https://img.shields.io/badge/version-2.50.123-blue?style=for-the-badge)](https://github.com/zhibeigg/Orryx/releases)
+[![Version](https://img.shields.io/badge/version-2.50.124-blue?style=for-the-badge)](https://github.com/zhibeigg/Orryx/releases)
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.12--1.21-green?style=for-the-badge&logo=minecraft)](https://www.minecraft.net/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.1.20-purple?style=for-the-badge&logo=kotlin)](https://kotlinlang.org/)
 [![TabooLib](https://img.shields.io/badge/TabooLib-6.2.4-orange?style=for-the-badge)](https://github.com/TabooLib/taboolib)
@@ -250,7 +250,7 @@ Editor:
   License: ""
 ```
 
-填写 License 后插件会自动连接固定中心 `wss://orryx.mcwar.cn/ws/server`，玩家入口固定为 `https://orryx.mcwar.cn/connect#token=...`。旧配置中的 `Editor.Enable` 与 `Editor.PublicUrl` 会被忽略，不再因开关或地址误配阻止连接。`/orryx edit` 仅允许玩家执行。
+`Editor.License` 是中心用于识别并校验 Orryx 服务器身份的凭据。配置该身份凭据后，插件会自动连接固定中心 `wss://orryx.mcwar.cn/ws/server`，玩家入口固定为 `https://orryx.mcwar.cn/connect#token=...`。License 到期不影响实时编辑器，但 License 不存在、被禁用或绑定 IP 与当前服务器 IP 不匹配时，中心仍会拒绝连接。旧配置中的 `Editor.Enable` 与 `Editor.PublicUrl` 仍会被忽略，这不代表匿名或空 License 可以使用。`/orryx edit` 仅允许拥有 `Orryx.Command.Editor` 权限的玩家执行。
 
 更多安全与部署约束见 [`docs/Editor.md`](docs/Editor.md)。
 
