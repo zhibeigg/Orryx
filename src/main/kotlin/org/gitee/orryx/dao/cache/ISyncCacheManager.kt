@@ -1,8 +1,5 @@
 package org.gitee.orryx.dao.cache
 
-import com.gitee.redischannel.RedisChannelPlugin
-import com.gitee.redischannel.RedisChannelPlugin.Type.CLUSTER
-import com.gitee.redischannel.RedisChannelPlugin.Type.SINGLE
 import com.gitee.redischannel.api.events.ClientStartEvent
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.core.reload.Reload
@@ -44,11 +41,7 @@ interface ISyncCacheManager {
             when(lazy) {
                 "REDIS" -> {
                     consoleMessage(("&e┣&7已选择 Redis 缓存 &a√").colored())
-                    INSTANCE = when (RedisChannelPlugin.type) {
-                        CLUSTER -> ClusterRedisManager()
-                        SINGLE -> RedisManager()
-                        null -> error("Redis 暴死了")
-                    }
+                    INSTANCE = if (e.cluster) ClusterRedisManager() else RedisManager()
                 }
                 "BROKER" -> {}
                 "DISABLE" -> {}
