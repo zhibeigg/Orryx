@@ -96,18 +96,17 @@ info-skill:
 in-unlimit-mode: "&a| &6[test] &f进入&a无限模式"
 out-unlimit-mode: "&a| &6[test] &f退出&4无限模式"
 
-editor-not-connected: "&c| &7[Editor] 编辑器未连接中心服务器，请检查 config.yml 中的 Editor.Enable 与 Editor.License 配置"
+editor-not-connected: "&c| &7[Editor] 编辑器不可用，请检查 config.yml 中的 Editor.Enable、Editor.License 与 Editor.PublicUrl 配置"
 editor-identity-invalid: "&c| &7[Editor] 本机身份文件无效，请检查 plugins/Orryx/.editor/identity.json；该文件不应包含私钥"
 editor-protocol-rejected: "&c| &7[Editor] 中心消息不符合当前协商协议，操作已拒绝"
 editor-open:
   - ==: JSON
     text:
       - '&a| &c&lOrryx &e编辑器'
-      - '&a| &7[&b[&n点击打开编辑器]&7]'
-      - '&a| &7{0}'
+      - '&a| &7[&b[&n点击打开编辑器 · 5 分钟内有效]&7]'
     args:
       - url: '{0}'
-        hover: '点击打开 Orryx 编辑器'
+        hover: '点击打开 Orryx 编辑器；链接将在 5 分钟内失效且仅可使用一次'
 
 kether-docs-published: "[Orryx] &e┣&7Kether 文档包已生成 &a√ &7发布标识: &f{0} &7路径: &f{1}"
 kether-docs-publish-failed: "[Orryx] &c┣&7Kether 文档包生成失败: &c{0}"

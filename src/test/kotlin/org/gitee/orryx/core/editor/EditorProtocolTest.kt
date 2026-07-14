@@ -18,11 +18,29 @@ import org.junit.jupiter.api.Test
 class EditorProtocolTest {
 
     @Test
-    fun `editor token url keeps one time credential in fragment`() {
+    fun `editor token url uses connect route and keeps one time credential in fragment`() {
         assertEquals(
-            "https://editor.example.com/#token=secret-token",
+            "https://editor.example.com/connect#token=secret-token",
             EditorTokenManager.buildEditorUrl("https://editor.example.com/", "secret-token"),
         )
+        assertEquals(
+            "https://editor.example.com/base/connect#token=secret-token",
+            EditorTokenManager.buildEditorUrl("https://editor.example.com/base/", "secret-token"),
+        )
+    }
+
+    @Test
+    fun `editor public url accepts only absolute https without sensitive uri components`() {
+        assertEquals("https://editor.example.com", EditorTokenManager.normalizePublicUrl(" https://editor.example.com/ "))
+        assertEquals("https://editor.example.com", EditorTokenManager.normalizePublicUrl("HTTPS://editor.example.com"))
+        assertNull(EditorTokenManager.normalizePublicUrl("http://editor.example.com"))
+        assertNull(EditorTokenManager.normalizePublicUrl("//editor.example.com"))
+        assertNull(EditorTokenManager.normalizePublicUrl("/editor"))
+        assertNull(EditorTokenManager.normalizePublicUrl("https://user@editor.example.com"))
+        assertNull(EditorTokenManager.normalizePublicUrl("https://editor.example.com?token=legacy"))
+        assertNull(EditorTokenManager.normalizePublicUrl("https://editor.example.com/#legacy"))
+        assertNull(EditorTokenManager.normalizePublicUrl("https:///editor"))
+        assertNull(EditorTokenManager.buildEditorUrl("https://editor.example.com?token=legacy", "secret-token"))
     }
 
     @Test
@@ -31,7 +49,7 @@ class EditorProtocolTest {
             license = "secret-license",
             serverName = "Test Server",
             serverId = "123e4567-e89b-12d3-a456-426614174000",
-            pluginVersion = "2.45.122",
+            pluginVersion = "2.50.122",
             protocolVersions = EditorProtocol.supportedProtocols(v2Enabled = true),
             preferredProtocol = EditorProtocol.preferredProtocol(v2Enabled = true),
             capabilities = EditorProtocol.V2_CAPABILITIES,
@@ -101,7 +119,7 @@ class EditorProtocolTest {
             license = "secret-license",
             serverName = "Test Server",
             serverId = "123e4567-e89b-12d3-a456-426614174000",
-            pluginVersion = "2.45.122",
+            pluginVersion = "2.50.122",
             protocolVersions = listOf("v2", "v1"),
             preferredProtocol = "v2",
             capabilities = EditorProtocol.V2_CAPABILITIES,

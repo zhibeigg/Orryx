@@ -162,9 +162,8 @@ object OrryxCommand {
 
     @CommandBody(permission = "Orryx.Command.Editor")
     val edit = subCommand {
-        exec<ProxyCommandSender> {
-            val name = sender.name.ifEmpty { "Console" }
-            EditorTokenManager.generateEditorUrl(name).thenApplyMain { url ->
+        exec<Player> {
+            EditorTokenManager.generateEditorUrl(sender.name).thenApplyMain { url ->
                 if (url == null) {
                     sender.sendLang("editor-not-connected")
                 } else {

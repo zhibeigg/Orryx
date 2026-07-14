@@ -6,7 +6,7 @@
 
 **跨时代技能插件，支持实现复杂逻辑，为稳定高效而生**
 
-[![Version](https://img.shields.io/badge/version-2.45.121-blue?style=for-the-badge)](https://github.com/zhibeigg/Orryx/releases)
+[![Version](https://img.shields.io/badge/version-2.50.122-blue?style=for-the-badge)](https://github.com/zhibeigg/Orryx/releases)
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.12--1.21-green?style=for-the-badge&logo=minecraft)](https://www.minecraft.net/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.1.20-purple?style=for-the-badge&logo=kotlin)](https://kotlinlang.org/)
 [![TabooLib](https://img.shields.io/badge/TabooLib-6.2.4-orange?style=for-the-badge)](https://github.com/TabooLib/taboolib)
@@ -236,12 +236,25 @@ Self、Origin、Direct、Offset、Type、Teammate、Team、PVP、Amount、Server
 - **AI 集成**：OpenAI 会话按玩家 UUID 与 NPC 配置键隔离并串行执行；总超时覆盖排队与 HTTP，请求取消、重载、退服和停服都会清理在途调用与资源
 - **Wiki 生成**：自动生成飞书文档、Markdown 文档、Actions Schema JSON
 - **Agent SKILL 套件**：基于生产配置和源码生成、审查技能、职业、经验、中转站、状态机、选择器与多端 UI
-- **在线编辑器**：WebSocket 注册确认后签发一次性访问 Token；文件请求使用有界顺序队列与 revision 冲突控制，沙箱拒绝路径穿越、符号链接和 NTFS 重解析路径，并限制消息、文件及目录遍历配额
+- **在线编辑器**：玩家执行 `/orryx edit` 后获得 5 分钟有效、仅可使用一次的点击入口；Token 仅放在 `/connect#token=...` URL 片段中，不会以完整链接显示在游戏聊天中。WebSocket 注册确认后才签发访问 Token；文件请求使用有界顺序队列与 revision 冲突控制，沙箱拒绝路径穿越、符号链接和 NTFS 重解析路径，并限制消息、文件及目录遍历配额
 - **瞄准协议**：保持 1.12.2 legacy 字段顺序，通过一次性 wire token、确认状态、超时与最终施法状态复核阻止跨会话重放
 - **兼容降级**：第三方插件缺失或发生二进制不兼容时仅对对应桥接一次性降级，PacketEvents 与 ProtocolLib 监听器会在停用时卸载
 - **Buff 系统**：Buff 配置与管理
 - **NPC 系统**：基于 Adyeshach 的虚拟实体
 - **Bloom 泛光**：泛光特效配置
+
+#### 在线编辑器配置
+
+```yaml
+Editor:
+  Enable: false
+  PublicUrl: "https://orryx.mcwar.cn"
+  License: ""
+```
+
+`Editor.PublicUrl` 是玩家点击入口的公开基址。它必须是绝对 HTTPS URL，且不能包含 userInfo、查询参数或片段；不合法时插件会 fail-closed，不连接编辑器中心，也不会注册一次性 Token。允许配置路径前缀，例如 `https://editor.example.com/orryx` 会生成 `https://editor.example.com/orryx/connect#token=...`。`/orryx edit` 仅允许玩家执行。
+
+更多安全与部署约束见 [`docs/Editor.md`](docs/Editor.md)。
 
 ---
 

@@ -184,10 +184,13 @@ object EditorClient {
     private const val MAX_INCOMING_MESSAGE_CHARS = MAX_INCOMING_MESSAGE_BYTES
     private const val MAX_INCOMING_MESSAGE_FRAGMENTS = 2_048
     private const val SERVER_URL = "wss://orryx.mcwar.cn/ws/server"
-    private const val EDITOR_URL = "https://orryx.mcwar.cn"
     private const val TOKEN_EXPIRES_SECONDS = 300
 
-    internal fun getEditorUrl(): String = EDITOR_URL
+    internal fun getEditorUrl(): String? {
+        val configured = Orryx.config.getString("Editor.PublicUrl", EditorTokenManager.DEFAULT_PUBLIC_URL)
+        return EditorTokenManager.normalizePublicUrl(configured)
+    }
+
     internal fun getTokenExpires(): Int = TOKEN_EXPIRES_SECONDS
 
     private fun isEnabled(): Boolean = Orryx.config.getBoolean("Editor.Enable", false)
@@ -232,7 +235,16 @@ object EditorClient {
     }
 
     private fun refreshConnection() {
-        val license = getLicense().takeIf { isEnabled() }
+        if (!isEnabled()) {
+            disconnect()
+            return
+        }
+        if (getEditorUrl() == null) {
+            consoleMessage("&c[Editor] Editor.PublicUrl 配置无效，必须是无 userInfo、query、fragment 的绝对 HTTPS URL")
+            disconnect()
+            return
+        }
+        val license = getLicense()
         if (license == null) {
             disconnect()
             return
@@ -263,7 +275,7 @@ object EditorClient {
                 val identity = identityStore.loadOrCreate()
                 val serverName = getServerName()
                 if (preparationGeneration.get() != expectedPreparation || stopping.get()) return@launch
-                val configuredLicense = getLicense().takeIf { isEnabled() }
+                val configuredLicense = getLicense().takeIf { isEnabled() && getEditorUrl() != null }
                 if (configuredLicense != license || isProtocolV2Enabled() != protocolV2Enabled) return@launch
                 startConnection(
                     identity = identity,
