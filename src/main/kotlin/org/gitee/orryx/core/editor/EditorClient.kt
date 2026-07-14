@@ -814,7 +814,7 @@ object EditorClient {
         }
     }
 
-    private val URL_TOKEN_REGEX = Regex("(?i)([?&]token=)[^&\\s]+")
+    private val URL_TOKEN_REGEX = Regex("(?i)([?&#]token=)[^&\\s]+")
     private val JSON_SECRET_REGEX = Regex("(?i)([\\\"']?(?:token|license)[\\\"']?)(\\s*[:=]\\s*[\\\"']?)[^\\s,\\\"'}]+")
     private val BEARER_REGEX = Regex("(?i)Bearer\\s+[^\\s,]+")
 }

@@ -1,6 +1,6 @@
 # Orryx API
 
-> 2.50.124：`Editor.License` 是中心用于识别并校验 Orryx 服务器身份的凭据；License 到期不影响实时编辑器，但 License 不存在、被禁用或绑定 IP 与当前服务器 IP 不匹配时，中心仍会拒绝连接。旧 `Editor.Enable` 与 `Editor.PublicUrl` 仍会被忽略，这不代表匿名或空 License 可以使用。拥有 `Orryx.Command.Editor` 权限的玩家可通过 `/orryx edit` 获取 5 分钟单次 `/connect#token=...` 入口。开发文档
+> 2.51.124：`Editor.License` 是中心用于识别并校验 Orryx 服务器身份的凭据；License 到期不影响实时编辑器，但 License 不存在、被禁用或绑定 IP 与当前服务器 IP 不匹配时，中心仍会拒绝连接。旧 `Editor.Enable` 与 `Editor.PublicUrl` 仍会被忽略，这不代表匿名或空 License 可以使用。拥有 `Orryx.Command.Editor` 权限的玩家可通过 `/orryx edit` 获取 5 分钟单次点击入口，服务器控制台执行 `or edit` 时会直接显示完整的一次性网址。开发文档
 
 > 本文档面向 Kotlin/Java 开发者，帮助您使用 Orryx API 进行二次开发。
 
@@ -1279,5 +1279,5 @@ A: 对于可取消的事件，设置 `event.isCancelled = true`。
 
 ---
 
-*文档版本: 2.50.124*
+*文档版本: 2.51.124*
 *最后更新: 2026-07-14*

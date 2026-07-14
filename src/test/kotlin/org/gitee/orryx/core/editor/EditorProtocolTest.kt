@@ -14,6 +14,9 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Paths
 
 class EditorProtocolTest {
 
@@ -33,12 +36,36 @@ class EditorProtocolTest {
     }
 
     @Test
+    fun `editor command supports console url output while player chat stays click only`() {
+        val commandSource = String(
+            Files.readAllBytes(Paths.get("src/main/kotlin/org/gitee/orryx/command/OrryxCommand.kt")),
+            StandardCharsets.UTF_8,
+        )
+        val languageSource = String(
+            Files.readAllBytes(Paths.get("src/main/resources/lang/zh_CN.yml")),
+            StandardCharsets.UTF_8,
+        )
+
+        assertEquals("CONSOLE", EditorTokenManager.CONSOLE_ACTOR)
+        assertTrue("exec<ProxyCommandSender>" in commandSource)
+        assertTrue("sender.castSafely<Player>()" in commandSource)
+        assertTrue("sender.sendLang(\"editor-open-console\", url)" in commandSource)
+        assertTrue("player.sendLang(\"editor-open\", url)" in commandSource)
+        assertTrue("editor-open-console:" in languageSource)
+        assertTrue("一次性网址" in languageSource)
+        assertEquals(
+            "https://orryx.mcwar.cn/connect#token=***",
+            EditorClient.sanitizeLogMessage("https://orryx.mcwar.cn/connect#token=secret-token"),
+        )
+    }
+
+    @Test
     fun `registration includes stable identity negotiation and nonce fields`() {
         val request = ServerRegisterRequest(
             license = "secret-license",
             serverName = "Test Server",
             serverId = "123e4567-e89b-12d3-a456-426614174000",
-            pluginVersion = "2.50.124",
+            pluginVersion = "2.51.124",
             protocolVersions = EditorProtocol.supportedProtocols(v2Enabled = true),
             preferredProtocol = EditorProtocol.preferredProtocol(v2Enabled = true),
             capabilities = EditorProtocol.V2_CAPABILITIES,
@@ -108,7 +135,7 @@ class EditorProtocolTest {
             license = "secret-license",
             serverName = "Test Server",
             serverId = "123e4567-e89b-12d3-a456-426614174000",
-            pluginVersion = "2.50.124",
+            pluginVersion = "2.51.124",
             protocolVersions = listOf("v2", "v1"),
             preferredProtocol = "v2",
             capabilities = EditorProtocol.V2_CAPABILITIES,
