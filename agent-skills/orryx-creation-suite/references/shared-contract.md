@@ -5,7 +5,7 @@
 ## 1. 版本与 Runtime
 
 - `contractVersion`：`1.0`
-- `suiteVersion`：`1.0.0`
+- `suiteVersion`：`1.1.0`
 - 共享实现：`shared/orryx_toolkit`
 - 组件 wrapper 必须复用共享 Runtime，不应复制领域逻辑形成分叉。
 
@@ -39,7 +39,7 @@
 - `plan`：只规划；
 - `materialize`：显式写盘。
 
-Runtime 1.0 原生接受 `generate/validate/plan/materialize`。其中前三者只计算或校验；`materialize` 受显式 CLI/Orchestrator 安全门约束。
+Runtime 1.1.0 原生接受 `generate/validate/plan/materialize`。其中前三者只计算或校验；`materialize` 受显式 CLI/Orchestrator 安全门约束。
 
 ## 3. workspace 与 policy
 
@@ -143,3 +143,11 @@ validator → kether → ability → progression → job → station → combat 
 ## 9. Golden/Eval
 
 每个组件目前有 eval Markdown、通用 runner 和至少三个 golden input。`--validate` 只验证 spec；`--rollout` 才执行真实 pipeline；`llm-judge` 不自动评分。现有 pending-first-green case 不能被描述为已有稳定基线，runner 也不会自动比较 expected 与 produced。建立生产回归门禁时必须增加明确的路径、摘要、诊断和内容断言。
+
+## 10. `orryx-edit` 私有 Service Runner
+
+- 私有 Service Runner 只供 `orryx-edit` AI Job 调用，每个请求必须运行在独立子进程与一次性临时 overlay 中，请求结束后销毁。
+- 公开 service contract 只允许 `generate/validate/plan`，递归拒绝 `materialize`、`actionsSchemaPath`、任何 `actionsSchema`、`workspace`、允许覆盖的 `overwrite`、`policy.materialize` 与 `reloadServer`。
+- 临时 overlay 只能由可信宿主注入为 workspace；官方 Kether Action Schema 只能由可信服务端注入，不能由 AI Job 指定路径或内容。
+- `artifacts`、`diagnostics`、`checks`、`references`、`requirements` 只进入 `orryx-edit` 云草稿；Service Runner 不写 overlay、用户工作区或生产 Orryx 目录。
+- 该服务不新增网络客户端、shell、materialize 或可写生产目录能力；本地 CLI materialize 合同与服务边界严格分离。

@@ -69,6 +69,8 @@ class ServiceRunnerPositiveTest(unittest.TestCase):
         self.assertEqual("ok", result["status"])
         self.assertEqual("ability", result["component"])
         self.assertEqual("generate", result["operation"])
+        self.assertEqual("1.1.0", result["suiteVersion"])
+        self.assertEqual("1.1.0", result["provenance"]["suiteVersion"])
         self.assertEqual(
             {
                 "contractVersion", "suiteVersion", "component", "operation", "status", "summary",

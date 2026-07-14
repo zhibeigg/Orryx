@@ -984,7 +984,7 @@
   },
   "x-runtimeCompatibility": {
     "runtimeContractVersion": "1.0",
-    "runtimeSuiteVersion": "1.0.0",
+    "runtimeSuiteVersion": "1.1.0",
     "normalizeContractAcceptedOperations": [
       "generate",
       "validate",

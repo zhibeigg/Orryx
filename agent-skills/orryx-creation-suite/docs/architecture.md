@@ -2,7 +2,7 @@
 
 ## 1. 范围与事实来源
 
-本目录描述的是 `agent-skills/orryx-creation-suite/shared/orryx_toolkit` 当前可执行代码，而不是期望中的未来实现。合同版本为 `1.0`，共享 Runtime 版本常量为 `1.0.0`。
+本目录描述的是 `agent-skills/orryx-creation-suite/shared/orryx_toolkit` 当前可执行代码，而不是期望中的未来实现。合同版本为 `1.0`，共享 Runtime 版本常量为 `1.1.0`。
 
 事实来源按优先级为：
 
@@ -24,7 +24,7 @@
 | 工作区层 | `workspace.py` | 发现 Orryx YAML、解析根目录、限制相对路径不能逃逸 root |
 | YAML 层 | `yaml_io.py` | 使用 PyYAML safe API，并以稳定字段顺序输出 YAML |
 | 写盘层 | `materialize.py` | 显式校验并逐文件写入；默认拒绝覆盖 |
-| 私有服务边界 | `service_runner.py` | 校验公开 service envelope、递归拒绝写盘/重载/路径注入意图，并注入可信工作区与 Action Schema |
+| 私有服务边界 | `service_runner.py` | 供 `orryx-edit` AI Job 调用；校验公开 service envelope、递归拒绝写盘/重载/路径注入意图，并注入可信临时 overlay 与官方 Kether Action Schema |
 | CLI 层 | `cli.py` | 提供 `run`、`validate-workspace`、`materialize` 三个命令 |
 
 九个领域 runner 是 `validator`、`kether`、`ability`、`progression`、`job`、`station`、`combat`、`selector`、`ui`。第十个工作流组件 `orchestrator` 负责组合它们。`materialize` 是独立写入边界，也可以作为本地 orchestrator 的最后一步，但只有顶层 `operation=materialize` 且前序没有 error 时才会执行。新增的私有服务入口不改变这条本地能力；它在调用 `run_contract` 前建立更窄的公开合同，服务请求不能到达任何 materialize 分支。
@@ -58,7 +58,9 @@ finalize_result
 
 `policy.materialize=true` 与请求中的 `reloadServer=true` 不会自动触发写盘或重载。`run_contract` 仍拒绝直接分派顶层 `component=materialize`；受控写盘入口是 CLI `materialize`，以及顶层 `operation=materialize`、前序零 error 的本地 orchestrator materialize step。
 
-私有服务调用使用 `service_runner.run_service_request`（短别名 `run_service`）和 `assets/contracts/service-runner-envelope.schema.json`。公开 JSON 只包含 `envelopeVersion` 与不带 workspace 的 `contract`；服务宿主通过关键字参数注入 `workspace_root`、`workspace_mode` 和可选可信 `actions_schema`。入口递归扫描整个公开合同，拒绝：
+私有服务调用使用 `service_runner.run_service_request`（短别名 `run_service`）和 `assets/contracts/service-runner-envelope.schema.json`，专供 `orryx-edit` 的 AI Job 调用，不是面向最终用户的通用执行端点。`orryx-edit` 服务宿主必须让每个请求运行在独立子进程中，并为该请求创建一次性临时 overlay；子进程退出后销毁 overlay，禁止复用可写工作目录或把它提升为生产目录。公开 JSON 只包含 `envelopeVersion` 与不带 workspace 的 `contract`；宿主通过关键字参数把临时 overlay 作为可信 `workspace_root`/`workspace_mode` 注入，并注入来自可信服务端的官方 Kether `actions_schema`。公开请求不能选择 Schema 文件、Schema 内容或真实工作区。
+
+入口递归扫描整个公开合同，拒绝：
 
 - 顶层或任意 orchestrator step 中的 `component=materialize` / `operation=materialize`；
 - `generate/validate/plan` 之外的 operation；
@@ -66,7 +68,7 @@ finalize_result
 - 任意 policy 中的 `materialize`；
 - materialize 实现会视为允许覆盖的 `overwrite=true/allow/overwrite`。
 
-通过边界后，入口强制注入可信 workspace、强制 `overwrite=deny`，并以内联对象覆盖相关组件 request 中的 Action Schema，避免读取用户指定路径。响应固定为 `envelopeVersion/status/result/errors`：接受并执行后为 `status=completed`，合同边界或基础设施失败为 `status=rejected`，错误使用 Schema 中枚举的稳定 `SERVICE_*` 代码。
+通过边界后，入口强制注入临时 overlay、`strict=true`、`network=deny`、`overwrite=deny`，并以内联对象覆盖相关组件 request 中的 Action Schema，避免读取用户指定路径。响应固定为 `envelopeVersion/status/result/errors`：接受并执行后为 `status=completed`，合同边界或基础设施失败为 `status=rejected`，错误使用 Schema 中枚举的稳定 `SERVICE_*` 代码。`result` 中的 `artifacts`、`diagnostics`、`checks`、`references`、`requirements` 只能交给 `orryx-edit` 云草稿模型保存或展示，不得由 Service Runner 写回 overlay、用户工作区或生产 Orryx 目录。
 
 ## 4. materialize 的真实行为
 

@@ -51,6 +51,8 @@ class ToolkitTests(unittest.TestCase):
         second = run_contract(payload)
         self.assertEqual(first, second)
         self.assertEqual(first["status"], "ok")
+        self.assertEqual("1.1.0", first["suiteVersion"])
+        self.assertEqual("1.1.0", first["provenance"]["suiteVersion"])
         self.assertTrue({"suiteVersion", "inputDigest", "deterministic"}.issubset(first["provenance"]))
         self.assertNotIn("timestamp", json.dumps(first).lower())
 

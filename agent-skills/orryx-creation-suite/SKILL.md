@@ -6,13 +6,13 @@ license: MIT
 activation: /orryx-creation-suite
 metadata:
   author: Orryx contributors
-  version: 1.0.0
+  version: 1.1.0
   created: 2026-07-13
   last_reviewed: 2026-07-13
   review_interval_days: 90
 provenance:
   maintainer: Orryx contributors
-  version: 1.0.0
+  version: 1.1.0
   created: 2026-07-13
   source_references:
     - example/Orryx
@@ -101,6 +101,14 @@ python3 scripts/run_pipeline.py --input request.json --output result.json
 ```
 
 该命令只生成结果 JSON，不直接覆盖项目文件。落盘必须显式执行 `py -3 scripts/materialize.py --input materialize-request.json --output materialize-result.json`，并默认拒绝覆盖。
+
+## `orryx-edit` 私有 AI Job 边界
+
+私有 Service Runner 只供 `orryx-edit` AI Job 调用，与上面的本地 materialize 流程严格分离。服务宿主必须让每个请求运行在独立子进程和一次性临时 overlay 中，请求结束后立即销毁；不得给服务配置可写生产目录。
+
+服务公开合同只允许 `generate`、`validate`、`plan`。任意深度出现 `materialize`、`actionsSchemaPath`、任何 `actionsSchema`、`workspace`、允许覆盖的 `overwrite`、`policy.materialize` 或 `reloadServer` 都必须拒绝。临时 overlay 与官方 Kether Action Schema 只能由可信服务端注入，不能由 AI Job 请求指定。
+
+服务输出中的 `artifacts`、`diagnostics`、`checks`、`references`、`requirements` 只进入 `orryx-edit` 云草稿，不写回 overlay、用户工作区或生产 Orryx 目录。该边界不提供网络访问、shell、materialize 或服务器重载能力。
 
 ## 输出要求
 

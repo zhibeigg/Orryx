@@ -41,7 +41,7 @@
 ```json
 {
   "contractVersion": "1.0",
-  "suiteVersion": "1.0.0",
+  "suiteVersion": "1.1.0",
   "component": "ability",
   "operation": "generate",
   "status": "ok",
@@ -82,6 +82,14 @@
   "suggestion": "创建同名技能文件或修正技能 ID"
 }
 ```
+
+## `orryx-edit` 私有 Service Runner
+
+私有 Service Runner 只供 `orryx-edit` AI Job 调用。服务宿主必须为每个请求启动独立子进程，并创建只属于该请求的一次性临时 overlay；请求完成后销毁，禁止复用可写生产目录。
+
+公开服务合同只允许 `generate`、`validate`、`plan`，并在任意递归深度拒绝 `materialize`、`actionsSchemaPath`、任何 `actionsSchema`、`workspace`、允许覆盖的 `overwrite`、`policy.materialize` 和 `reloadServer`。临时 overlay 与官方 Kether Action Schema 只能由可信服务端注入。
+
+Service Runner 返回的 `artifacts`、`diagnostics`、`checks`、`references`、`requirements` 仅作为 `orryx-edit` 云草稿数据；不得写回 overlay、真实工作区或生产 Orryx 目录。服务边界不提供网络访问、shell、materialize 或服务器重载能力。
 
 ## 确定性
 

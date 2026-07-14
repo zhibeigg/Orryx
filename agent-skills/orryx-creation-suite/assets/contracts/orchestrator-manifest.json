@@ -2,7 +2,7 @@
   "$schema": "./orchestrator-manifest.schema.json",
   "manifestVersion": "1.0",
   "contractVersion": "1.0",
-  "suiteVersion": "1.0.0",
+  "suiteVersion": "1.1.0",
   "runtime": {
     "module": "shared/orryx_toolkit",
     "contractModule": "orryx_toolkit.contracts",

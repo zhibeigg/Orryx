@@ -11,7 +11,7 @@ activation:
     - chart mana spirit or upgrade points
 metadata:
   author: NarraFork
-  version: 1.0.0
+  version: 1.1.0
   created: 2025-07-13
   last_reviewed: 2025-07-13
   review_interval_days: 90

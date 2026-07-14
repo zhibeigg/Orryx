@@ -12,7 +12,7 @@ from pathlib import Path
 
 SUITE_NAME = "orryx-creation-suite"
 RUNTIME_NAME = "orryx-creation-suite-runtime"
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 COMPONENTS = (
     "orryx-config-validator-skill",
     "orryx-kether-authoring-skill",

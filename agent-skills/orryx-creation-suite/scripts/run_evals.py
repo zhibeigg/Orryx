@@ -87,7 +87,7 @@ def main() -> int:
     failed = [item for item in results if not item["ok"]]
     summary = {
         "status": "ok" if not failed else "invalid",
-        "suiteVersion": "1.0.0",
+        "suiteVersion": "1.1.0",
         "skills": len(selected),
         "runs": len(results),
         "passedRuns": len(results) - len(failed),

@@ -7,7 +7,7 @@ import json
 from typing import Any, Iterable, Mapping
 
 CONTRACT_VERSION = "1.0"
-SUITE_VERSION = "1.0.0"
+SUITE_VERSION = "1.1.0"
 COMPONENTS = {
     "validator", "kether", "ability", "progression", "job", "station",
     "combat", "selector", "ui", "orchestrator", "materialize",
