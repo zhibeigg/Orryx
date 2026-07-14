@@ -6,7 +6,7 @@
 
 **跨时代技能插件，支持实现复杂逻辑，为稳定高效而生**
 
-[![Version](https://img.shields.io/badge/version-2.50.122-blue?style=for-the-badge)](https://github.com/zhibeigg/Orryx/releases)
+[![Version](https://img.shields.io/badge/version-2.50.123-blue?style=for-the-badge)](https://github.com/zhibeigg/Orryx/releases)
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.12--1.21-green?style=for-the-badge&logo=minecraft)](https://www.minecraft.net/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.1.20-purple?style=for-the-badge&logo=kotlin)](https://kotlinlang.org/)
 [![TabooLib](https://img.shields.io/badge/TabooLib-6.2.4-orange?style=for-the-badge)](https://github.com/TabooLib/taboolib)
@@ -247,12 +247,10 @@ Self、Origin、Direct、Offset、Type、Teammate、Team、PVP、Amount、Server
 
 ```yaml
 Editor:
-  Enable: false
-  PublicUrl: "https://orryx.mcwar.cn"
   License: ""
 ```
 
-`Editor.PublicUrl` 是玩家点击入口的公开基址。它必须是绝对 HTTPS URL，且不能包含 userInfo、查询参数或片段；不合法时插件会 fail-closed，不连接编辑器中心，也不会注册一次性 Token。允许配置路径前缀，例如 `https://editor.example.com/orryx` 会生成 `https://editor.example.com/orryx/connect#token=...`。`/orryx edit` 仅允许玩家执行。
+填写 License 后插件会自动连接固定中心 `wss://orryx.mcwar.cn/ws/server`，玩家入口固定为 `https://orryx.mcwar.cn/connect#token=...`。旧配置中的 `Editor.Enable` 与 `Editor.PublicUrl` 会被忽略，不再因开关或地址误配阻止连接。`/orryx edit` 仅允许玩家执行。
 
 更多安全与部署约束见 [`docs/Editor.md`](docs/Editor.md)。
 

@@ -183,17 +183,9 @@ object EditorClient {
     private const val MAX_INCOMING_MESSAGE_BYTES = 8 * 1024 * 1024
     private const val MAX_INCOMING_MESSAGE_CHARS = MAX_INCOMING_MESSAGE_BYTES
     private const val MAX_INCOMING_MESSAGE_FRAGMENTS = 2_048
-    private const val SERVER_URL = "wss://orryx.mcwar.cn/ws/server"
     private const val TOKEN_EXPIRES_SECONDS = 300
 
-    internal fun getEditorUrl(): String? {
-        val configured = Orryx.config.getString("Editor.PublicUrl", EditorTokenManager.DEFAULT_PUBLIC_URL)
-        return EditorTokenManager.normalizePublicUrl(configured)
-    }
-
     internal fun getTokenExpires(): Int = TOKEN_EXPIRES_SECONDS
-
-    private fun isEnabled(): Boolean = Orryx.config.getBoolean("Editor.Enable", false)
 
     private fun isProtocolV2Enabled(): Boolean = Orryx.config.getBoolean("Editor.ProtocolV2.Enable", false)
 
@@ -235,17 +227,9 @@ object EditorClient {
     }
 
     private fun refreshConnection() {
-        if (!isEnabled()) {
-            disconnect()
-            return
-        }
-        if (getEditorUrl() == null) {
-            consoleMessage("&c[Editor] Editor.PublicUrl 配置无效，必须是无 userInfo、query、fragment 的绝对 HTTPS URL")
-            disconnect()
-            return
-        }
         val license = getLicense()
         if (license == null) {
+            consoleMessage("&e[Editor] 未配置 Editor.License，跳过固定中心连接")
             disconnect()
             return
         }
@@ -275,7 +259,7 @@ object EditorClient {
                 val identity = identityStore.loadOrCreate()
                 val serverName = getServerName()
                 if (preparationGeneration.get() != expectedPreparation || stopping.get()) return@launch
-                val configuredLicense = getLicense().takeIf { isEnabled() && getEditorUrl() != null }
+                val configuredLicense = getLicense()
                 if (configuredLicense != license || isProtocolV2Enabled() != protocolV2Enabled) return@launch
                 startConnection(
                     identity = identity,
@@ -345,10 +329,11 @@ object EditorClient {
             activeLicense = license
             activeProtocolV2Enabled = v2Enabled
             previousClient = client
-            nextClient = createClient(SERVER_URL, registrationContext, attemptGeneration, reconnect)
+            nextClient = createClient(EditorTokenManager.SERVER_URL, registrationContext, attemptGeneration, reconnect)
             client = nextClient
         }
         closeQuietly(previousClient)
+        consoleMessage("&e[Editor] 正在连接固定中心: &f${EditorTokenManager.CENTER_HOST}")
         try {
             nextClient.connect()
         } catch (e: Exception) {
@@ -406,7 +391,7 @@ object EditorClient {
             }
             if (stopping.get() || connected.get() || generation.get() != expectedGeneration) return@launch
 
-            val configuredLicense = getLicense().takeIf { isEnabled() }
+            val configuredLicense = getLicense()
             if (configuredLicense == null) {
                 if (generation.get() == expectedGeneration) disconnect()
                 return@launch

@@ -1,6 +1,6 @@
 # Orryx API
 
-> 2.50.122：`/orryx edit` 改为玩家专用命令，并通过可配置的绝对 HTTPS `Editor.PublicUrl` 生成 5 分钟单次 `/connect#token=...` 入口。开发文档
+> 2.50.123：编辑器固定连接 `orryx.mcwar.cn`，填写 `Editor.License` 后自动注册；旧 `Editor.Enable` 与 `Editor.PublicUrl` 不再影响连接。`/orryx edit` 继续生成 5 分钟单次 `/connect#token=...` 入口。开发文档
 
 > 本文档面向 Kotlin/Java 开发者，帮助您使用 Orryx API 进行二次开发。
 
@@ -1279,5 +1279,5 @@ A: 对于可取消的事件，设置 `event.isCancelled = true`。
 
 ---
 
-*文档版本: 2.50.122*
+*文档版本: 2.50.123*
 *最后更新: 2026-07-14*

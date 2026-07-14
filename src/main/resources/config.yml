@@ -74,11 +74,8 @@ OpenAI:
   AllowInsecureLocalHttp: false
 # 编辑器
 Editor:
-  # 是否启用编辑器功能
-  Enable: false
-  # 玩家点击 /orryx edit 后打开的公开地址；必须是无 userInfo、query、fragment 的绝对 HTTPS URL
-  PublicUrl: "https://orryx.mcwar.cn"
-  # 购买时获得的 license，填写后自动连接编辑器中心服务器
+  # 购买时获得的 license；填写后自动连接固定中心 orryx.mcwar.cn
+  # 中心 WebSocket 与浏览器入口由代码固定，不再读取 Enable 或 PublicUrl
   License: ""
   # 稳定 serverId 会自动生成在 plugins/Orryx/.editor/identity.json
   # 该文件仅包含本机身份标识，不包含 license、私钥或其他认证材料，请勿手动复制覆盖
