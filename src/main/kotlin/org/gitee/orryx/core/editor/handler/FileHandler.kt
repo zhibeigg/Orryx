@@ -6,7 +6,6 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import org.gitee.orryx.core.editor.EditorClient
 import taboolib.common.platform.function.getDataFolder
@@ -19,6 +18,7 @@ import taboolib.common.platform.function.getDataFolder
  */
 object FileHandler {
 
+    private val SHA256_REVISION = Regex("^[0-9a-f]{64}$")
     private val policy: EditorFilePolicy by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         EditorFilePolicy(getDataFolder().toPath())
     }
@@ -49,33 +49,50 @@ object FileHandler {
         val path = data.requireString(generation, id, "path") ?: return
         val content = data.requireString(generation, id, "content") ?: return
         val expectedRevision = data.string("expectedRevision")
+        val force = (data?.get("force") as? JsonPrimitive)?.booleanOrNull ?: false
+        if (EditorClient.isProtocolV2(generation) && !force && expectedRevision.isNullOrBlank()) {
+            EditorClient.sendError(generation, id, "V2 file.write 必须提供 expectedRevision，除非 force=true")
+            return
+        }
+        if (EditorClient.isProtocolV2(generation) && expectedRevision != null && !SHA256_REVISION.matches(expectedRevision)) {
+            EditorClient.sendError(generation, id, "expectedRevision 必须是 64 位小写 SHA-256")
+            return
+        }
         EditorRequestQueue.enqueue(generation, id, "写入文件失败") { requestGeneration ->
-            val revision = policy.writeTextAtomic(path, content, expectedRevision)
+            val revision = policy.writeTextAtomic(path, content, expectedRevision.takeUnless { force })
             sendWritten(requestGeneration, id, path, true, revision)
         }
     }
 
     fun handleCreate(generation: Long, id: String, data: JsonObject?) {
         val path = data.requireString(generation, id, "path") ?: return
-        val isDirectory = data?.get("isDirectory")?.jsonPrimitive?.booleanOrNull ?: false
+        val isDirectory = (data?.get("isDirectory") as? JsonPrimitive)?.booleanOrNull ?: false
+        val expectedState = data.expectedState("expectedState", "expectedAbsent")
+            ?: ExpectedPathState.ABSENT.takeIf { EditorClient.isProtocolV2(generation) }
         EditorRequestQueue.enqueue(generation, id, "创建文件失败") { requestGeneration ->
-            policy.create(path, isDirectory)
+            policy.create(path, isDirectory, expectedState)
             sendWritten(requestGeneration, id, path, true)
         }
     }
 
     fun handleDelete(generation: Long, id: String, data: JsonObject?) {
         val path = data.requireString(generation, id, "path") ?: return
+        val expectedState = data.expectedState("expectedState", "expectedPresent")
+            ?: ExpectedPathState.PRESENT.takeIf { EditorClient.isProtocolV2(generation) }
         EditorRequestQueue.enqueue(generation, id, "删除文件失败") { requestGeneration ->
-            sendWritten(requestGeneration, id, path, policy.delete(path))
+            sendWritten(requestGeneration, id, path, policy.delete(path, expectedState))
         }
     }
 
     fun handleRename(generation: Long, id: String, data: JsonObject?) {
         val oldPath = data.requireString(generation, id, "oldPath") ?: return
         val newPath = data.requireString(generation, id, "newPath") ?: return
+        val expectedSourceState = data.expectedState("expectedSourceState", "expectedSourcePresent")
+            ?: ExpectedPathState.PRESENT.takeIf { EditorClient.isProtocolV2(generation) }
+        val expectedTargetState = data.expectedState("expectedTargetState", "expectedTargetAbsent")
+            ?: ExpectedPathState.ABSENT.takeIf { EditorClient.isProtocolV2(generation) }
         EditorRequestQueue.enqueue(generation, id, "重命名失败") { requestGeneration ->
-            val renamed = policy.rename(oldPath, newPath)
+            val renamed = policy.rename(oldPath, newPath, expectedSourceState, expectedTargetState)
             EditorClient.sendMessage(requestGeneration, "file.written", id, buildJsonObject {
                 put("oldPath", oldPath)
                 put("path", newPath)
@@ -111,6 +128,21 @@ object FileHandler {
 
     private fun JsonObject?.string(key: String): String? {
         return (this?.get(key) as? JsonPrimitive)?.contentOrNull
+    }
+
+    private fun JsonObject?.expectedState(stateKey: String, booleanKey: String): ExpectedPathState? {
+        when (string(stateKey)?.lowercase()) {
+            "present" -> return ExpectedPathState.PRESENT
+            "absent" -> return ExpectedPathState.ABSENT
+        }
+        val booleanValue = (this?.get(booleanKey) as? JsonPrimitive)?.booleanOrNull ?: return null
+        val keyExpectsAbsent = booleanKey.endsWith("Absent")
+        return when {
+            booleanValue && keyExpectsAbsent -> ExpectedPathState.ABSENT
+            booleanValue -> ExpectedPathState.PRESENT
+            keyExpectsAbsent -> ExpectedPathState.PRESENT
+            else -> ExpectedPathState.ABSENT
+        }
     }
 
     private fun JsonObject?.requireString(generation: Long, id: String, key: String): String? {

@@ -4,6 +4,7 @@
 
 - 输入 Schema：`assets/contracts/component-input.schema.json`
 - 输出 Schema：`assets/contracts/component-output.schema.json`
+- 私有服务 Envelope Schema：`assets/contracts/service-runner-envelope.schema.json`
 - Orchestrator Manifest：`assets/contracts/orchestrator-manifest.json`
 - Manifest Schema：`assets/contracts/orchestrator-manifest.schema.json`
 - 十个最小输入模板：`assets/templates/*.input.json`
@@ -177,7 +178,15 @@ Artifact 的存在不表示文件已创建。只有 materialize 成功返回且 
 
 结果数组由合同层稳定排序。消费者不能依赖组件执行顺序来推断数组位置，应通过 `path`、`code`、`source/target` 等字段识别项目。
 
-## 5. materialize 合同
+## 5. 私有服务 Envelope
+
+私有服务公开请求是 `envelopeVersion=1.0` 与 `contract` 的二元结构。该 contract 不包含 workspace，只接受 `generate/validate/plan`；可信 `workspace_root`、`workspace_mode` 与 Action Schema 由宿主调用 `run_service_request` 时单独注入。运行时会递归拒绝 materialize、路径型 Action Schema、workspace、覆盖允许、`policy.materialize` 与 `reloadServer`，因此不能通过 orchestrator step 或深层 request 绕过。
+
+服务响应固定包含 `envelopeVersion/status/result/errors`。`completed` 表示边界接受且已得到统一组件结果，组件结果仍可因领域诊断而为 `invalid`；`rejected` 表示服务合同或基础设施边界失败，此时 `result=null`，`errors` 使用 `service-runner-envelope.schema.json` 枚举的稳定 `SERVICE_*` code。
+
+该入口是附加的窄边界，不改变下面的本地 materialize 合同。
+
+## 6. materialize 合同
 
 推荐请求：
 
@@ -207,7 +216,7 @@ Artifact 的存在不表示文件已创建。只有 materialize 成功返回且 
 
 写盘是逐文件原子替换，不是整批事务。调用方应优先写入独立 staging root，完成磁盘级 validator 和服务器预检后，再执行受控发布。Runtime 不负责备份、跨文件回滚或服务器重载。
 
-## 6. 兼容性 requirements
+## 7. 兼容性 requirements
 
 生产集成至少识别以下 requirement：
 

@@ -6,9 +6,17 @@
 2. `generate`：在内存中生成 artifact。
 3. `validate`：执行结构、Kether、引用、兼容与安全检查。
 4. `preview`：展示路径、内容摘要、资源要求和诊断。
-5. `materialize`：用户明确要求后通过 CLI，或通过顶层 `operation=materialize` 且前序零 error 的 Orchestrator 最后一步写入 staging/目标目录。
+5. `materialize`：本地用户明确要求后通过 CLI，或通过顶层 `operation=materialize` 且前序零 error 的本地 Orchestrator 最后一步写入 staging/目标目录。私有 service runner 不提供此阶段。
 6. `runtime preflight`：可选，在临时服务端验证加载。
 7. `reload`：不由本套件自动执行。
+
+## 私有服务合同边界
+
+私有服务必须调用 `shared/orryx_toolkit/service_runner.py`，公开请求/响应遵循 `assets/contracts/service-runner-envelope.schema.json`。公开 contract 只允许 `generate`、`validate`、`plan`，且不得携带 workspace；`workspace_root`、`workspace_mode` 与可信 Action Schema 由服务宿主作为独立关键字参数注入。
+
+入口会递归拒绝所有已知写盘和路径注入绕过：顶层或 step 的 materialize component/operation、未知 operation、任何 `workspace`、`actionsSchemaPath`、任何形式的 Action Schema、`policy.materialize`、允许覆盖的 overwrite 值、`network!=deny`、`strict!=true`，以及任何深度的 `reloadServer`。拒绝结果固定为 `status=rejected`、`result=null` 和稳定排序的 `SERVICE_*` errors；接受结果为 `status=completed`，其中领域合同自身仍可返回 `result.status=invalid`。
+
+这条服务边界不会删除或改变本地 CLI/materialize 能力。不得把本地 `run_contract` 或 `execute("materialize", ...)` 直接暴露给不可信服务请求。
 
 ## 路径规则
 

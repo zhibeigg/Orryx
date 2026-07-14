@@ -96,7 +96,9 @@ info-skill:
 in-unlimit-mode: "&a| &6[test] &f进入&a无限模式"
 out-unlimit-mode: "&a| &6[test] &f退出&4无限模式"
 
-editor-not-connected: "&c| &7[Editor] 编辑器未连接中心服务器，请检查 config.yml 中的 Editor.License 配置"
+editor-not-connected: "&c| &7[Editor] 编辑器未连接中心服务器，请检查 config.yml 中的 Editor.Enable 与 Editor.License 配置"
+editor-identity-invalid: "&c| &7[Editor] 本机身份文件无效，请检查 plugins/Orryx/.editor/identity.json；该文件不应包含私钥"
+editor-protocol-rejected: "&c| &7[Editor] 中心消息不符合当前协商协议，操作已拒绝"
 editor-open:
   - ==: JSON
     text:

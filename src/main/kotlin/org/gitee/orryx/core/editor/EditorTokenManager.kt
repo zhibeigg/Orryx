@@ -15,8 +15,11 @@ object EditorTokenManager {
             if (!registered || !EditorClient.isRegistered() || EditorClient.currentGeneration() != generation) {
                 return@thenApply null
             }
-            val baseUrl = EditorClient.getEditorUrl().trimEnd('/')
-            "$baseUrl/?token=$token"
+            buildEditorUrl(EditorClient.getEditorUrl(), token)
         }
+    }
+
+    internal fun buildEditorUrl(baseUrl: String, token: String): String {
+        return "${baseUrl.trimEnd('/')}/#token=$token"
     }
 }

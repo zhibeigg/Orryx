@@ -23,7 +23,7 @@
       "shared": true,
       "source": {
         "function": "pipe",
-        "line": 31,
+        "line": 34,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/PipeActions.kt"
       }
     },
@@ -180,7 +180,7 @@
       "shared": true,
       "source": {
         "function": "aiChat",
-        "line": 45,
+        "line": 51,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/AiActions.kt"
       }
     },
@@ -218,7 +218,7 @@
       "shared": true,
       "source": {
         "function": "apAttack",
-        "line": 14,
+        "line": 13,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/compat/AttributePlus3Actions.kt"
       }
     },
@@ -799,8 +799,10 @@
         "evidence": []
       },
       "execution": {
-        "evidence": [],
-        "thread": "any"
+        "evidence": [
+          "import org.bukkit."
+        ],
+        "thread": "main"
       },
       "name": "cooldown",
       "namespace": "ORRYX_NAMESPACE",
@@ -812,7 +814,7 @@
       "shared": false,
       "source": {
         "function": "actionCooldown",
-        "line": 37,
+        "line": 42,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/CooldownActions.kt"
       }
     },
@@ -950,8 +952,10 @@
         "evidence": []
       },
       "execution": {
-        "evidence": [],
-        "thread": "any"
+        "evidence": [
+          "import org.bukkit."
+        ],
+        "thread": "main"
       },
       "name": "directCast",
       "namespace": "ORRYX_NAMESPACE",
@@ -965,7 +969,7 @@
       "shared": false,
       "source": {
         "function": "cast",
-        "line": 170,
+        "line": 173,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/Actions.kt"
       }
     },
@@ -979,8 +983,10 @@
         "evidence": []
       },
       "execution": {
-        "evidence": [],
-        "thread": "any"
+        "evidence": [
+          "import org.bukkit."
+        ],
+        "thread": "main"
       },
       "name": "directRelease",
       "namespace": "ORRYX_NAMESPACE",
@@ -994,7 +1000,7 @@
       "shared": false,
       "source": {
         "function": "release",
-        "line": 202,
+        "line": 211,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/Actions.kt"
       }
     },
@@ -1243,8 +1249,10 @@
         ]
       },
       "execution": {
-        "evidence": [],
-        "thread": "any"
+        "evidence": [
+          "import org.bukkit."
+        ],
+        "thread": "main"
       },
       "name": "flag",
       "namespace": "ORRYX_NAMESPACE",
@@ -1256,7 +1264,7 @@
       "shared": true,
       "source": {
         "function": "actionFlag",
-        "line": 14,
+        "line": 17,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/FlagActions.kt"
       }
     },
@@ -1553,7 +1561,7 @@
       "shared": true,
       "source": {
         "function": "actionGlobal",
-        "line": 78,
+        "line": 108,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/GlobalActions.kt"
       }
     },
@@ -1742,20 +1750,22 @@
         "evidence": []
       },
       "execution": {
-        "evidence": [],
-        "thread": "any"
+        "evidence": [
+          "import org.bukkit."
+        ],
+        "thread": "main"
       },
       "name": "invincible",
       "namespace": "ORRYX_NAMESPACE",
-      "parserFactory": "scriptParser",
+      "parserFactory": "timedStatusParser",
       "selectorUsage": {
         "detected": false,
         "evidence": []
       },
       "shared": true,
       "source": {
-        "function": "superInvincible",
-        "line": 184,
+        "function": "invincible",
+        "line": 22,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/PlayerProfileActions.kt"
       }
     },
@@ -2115,7 +2125,7 @@
       "shared": true,
       "source": {
         "function": "actionMana",
-        "line": 12,
+        "line": 14,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/ManaActions.kt"
       }
     },
@@ -2895,8 +2905,10 @@
         "evidence": []
       },
       "execution": {
-        "evidence": [],
-        "thread": "any"
+        "evidence": [
+          "import org.bukkit."
+        ],
+        "thread": "main"
       },
       "name": "runExtend",
       "namespace": "ORRYX_NAMESPACE",
@@ -2910,7 +2922,7 @@
       "shared": false,
       "source": {
         "function": "callExtend",
-        "line": 142,
+        "line": 148,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/Actions.kt"
       }
     },
@@ -3040,20 +3052,22 @@
         "evidence": []
       },
       "execution": {
-        "evidence": [],
-        "thread": "any"
+        "evidence": [
+          "import org.bukkit."
+        ],
+        "thread": "main"
       },
       "name": "silence",
       "namespace": "ORRYX_NAMESPACE",
-      "parserFactory": "scriptParser",
+      "parserFactory": "timedStatusParser",
       "selectorUsage": {
         "detected": false,
         "evidence": []
       },
       "shared": true,
       "source": {
-        "function": "superSilence",
-        "line": 270,
+        "function": "silence",
+        "line": 25,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/PlayerProfileActions.kt"
       }
     },
@@ -3143,7 +3157,7 @@
       "shared": true,
       "source": {
         "function": "actionSpirit",
-        "line": 12,
+        "line": 14,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/SpiritActions.kt"
       }
     },
@@ -3308,12 +3322,14 @@
         "evidence": []
       },
       "execution": {
-        "evidence": [],
-        "thread": "any"
+        "evidence": [
+          "import org.bukkit."
+        ],
+        "thread": "main"
       },
       "name": "superBody",
       "namespace": "ORRYX_NAMESPACE",
-      "parserFactory": "scriptParser",
+      "parserFactory": "timedStatusParser",
       "selectorUsage": {
         "detected": false,
         "evidence": []
@@ -3321,7 +3337,7 @@
       "shared": true,
       "source": {
         "function": "superBody",
-        "line": 12,
+        "line": 16,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/PlayerProfileActions.kt"
       }
     },
@@ -3335,12 +3351,14 @@
         "evidence": []
       },
       "execution": {
-        "evidence": [],
-        "thread": "any"
+        "evidence": [
+          "import org.bukkit."
+        ],
+        "thread": "main"
       },
       "name": "superFoot",
       "namespace": "ORRYX_NAMESPACE",
-      "parserFactory": "scriptParser",
+      "parserFactory": "timedStatusParser",
       "selectorUsage": {
         "detected": false,
         "evidence": []
@@ -3348,7 +3366,7 @@
       "shared": true,
       "source": {
         "function": "superFoot",
-        "line": 98,
+        "line": 19,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/PlayerProfileActions.kt"
       }
     },
@@ -3362,8 +3380,10 @@
         "evidence": []
       },
       "execution": {
-        "evidence": [],
-        "thread": "any"
+        "evidence": [
+          "import org.bukkit."
+        ],
+        "thread": "main"
       },
       "name": "sync",
       "namespace": "ORRYX_NAMESPACE",
@@ -3377,7 +3397,7 @@
       "shared": false,
       "source": {
         "function": "actionSync",
-        "line": 126,
+        "line": 136,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/Actions.kt"
       }
     },
@@ -3510,8 +3530,10 @@
         "evidence": []
       },
       "execution": {
-        "evidence": [],
-        "thread": "any"
+        "evidence": [
+          "import org.bukkit."
+        ],
+        "thread": "main"
       },
       "name": "tryCast",
       "namespace": "ORRYX_NAMESPACE",
@@ -3525,7 +3547,7 @@
       "shared": false,
       "source": {
         "function": "tryCast",
-        "line": 225,
+        "line": 235,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/Actions.kt"
       }
     },
@@ -3719,8 +3741,10 @@
         "evidence": []
       },
       "execution": {
-        "evidence": [],
-        "thread": "any"
+        "evidence": [
+          "import org.bukkit."
+        ],
+        "thread": "main"
       },
       "name": "wait",
       "namespace": "ORRYX_NAMESPACE",
@@ -3734,19 +3758,13 @@
       "shared": false,
       "source": {
         "function": "actionWait",
-        "line": 109,
+        "line": 110,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/Actions.kt"
       }
     }
   ],
   "generator": "scripts/build_action_schema.py",
   "implicitVariables": [
-    {
-      "name": "@hitBlock",
-      "sources": [
-        "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/projectile/Projectile.kt"
-      ]
-    },
     {
       "name": "@hitEntity",
       "sources": [
@@ -3806,11 +3824,11 @@
   ],
   "schemaVersion": "1.0",
   "sourceRoot": "src/main/kotlin/org/gitee/orryx/core/kether",
-  "sourceSha256": "99f5ac9164a2dac5535ff72ad9e7ab8ced7e9429489c54ca4372810056fdd954",
+  "sourceSha256": "76423bac90ce6c9b5fe3e502db42ebeedd4af8fe142acd188bf6629008de0d8b",
   "summary": {
     "actionCount": 123,
     "aliasCount": 8,
-    "implicitVariableCount": 10,
-    "sourceFileCount": 80
+    "implicitVariableCount": 9,
+    "sourceFileCount": 83
   }
 }

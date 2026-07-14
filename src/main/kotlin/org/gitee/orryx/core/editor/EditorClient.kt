@@ -5,20 +5,18 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.common.task.SimpleTimeoutTask
-import org.gitee.orryx.core.editor.handler.EditorRequestQueue
 import org.gitee.orryx.core.editor.handler.FileHandler
 import org.gitee.orryx.core.editor.handler.ReloadHandler
 import org.gitee.orryx.core.reload.Reload
-import org.gitee.orryx.module.wiki.ActionsSchemaGenerator
 import org.gitee.orryx.utils.consoleMessage
 import org.gitee.orryx.utils.debug
 import org.java_websocket.WebSocketImpl
@@ -32,12 +30,16 @@ import org.java_websocket.framing.Framedata
 import org.java_websocket.handshake.ServerHandshake
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
+import taboolib.common.platform.function.getDataFolder
+import taboolib.common.platform.function.pluginVersion
 import java.io.File
 import java.net.URI
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
 
 private class BoundedEditorDraft(
     private val maxMessageBytes: Int,
@@ -122,8 +124,10 @@ object EditorClient {
     }
     private val stateLock = Any()
     private val generation = AtomicLong()
+    private val preparationGeneration = AtomicLong()
     private val connected = AtomicBoolean(false)
     private val registered = AtomicBoolean(false)
+    private val negotiatedProtocol = AtomicReference(EditorProtocol.PROTOCOL_V1)
     private val reconnectScheduled = AtomicBoolean(false)
     private val stopping = AtomicBoolean(false)
     private val registrationRejected = AtomicBoolean(false)
@@ -135,6 +139,14 @@ object EditorClient {
         val future: CompletableFuture<Boolean>,
     )
 
+    private data class RegistrationContext(
+        val request: ServerRegisterRequest,
+    )
+
+    private val identityStore by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+        EditorServerIdentityStore(getDataFolder().toPath())
+    }
+
     @Volatile
     private var client: WebSocketClient? = null
 
@@ -142,10 +154,25 @@ object EditorClient {
     private var activeLicense: String? = null
 
     @Volatile
+    private var activeProtocolV2Enabled: Boolean? = null
+
+    @Volatile
     private var reconnectJob: Job? = null
 
     @Volatile
+    private var preparationJob: Job? = null
+
+    @Volatile
     private var registrationTimeoutJob: Job? = null
+
+    @Volatile
+    private var sessionEpoch: Long? = null
+
+    @Volatile
+    private var workspaceId: String? = null
+
+    @Volatile
+    private var relayCapabilities: Set<String> = emptySet()
 
     @Volatile
     private var logKeywordFilter: String? = null
@@ -163,6 +190,8 @@ object EditorClient {
     internal fun getTokenExpires(): Int = TOKEN_EXPIRES_SECONDS
 
     private fun isEnabled(): Boolean = Orryx.config.getBoolean("Editor.Enable", false)
+
+    private fun isProtocolV2Enabled(): Boolean = Orryx.config.getBoolean("Editor.ProtocolV2.Enable", false)
 
     private fun getLicense(): String? {
         return Orryx.config.getString("Editor.License")?.trim()?.takeIf { it.isNotEmpty() }
@@ -207,16 +236,80 @@ object EditorClient {
             disconnect()
             return
         }
+        val protocolV2Enabled = isProtocolV2Enabled()
         val currentClient = client
-        if (activeLicense == license && currentClient != null && !registrationRejected.get()) return
-        startConnection(license, reconnect = activeLicense == license)
+        if (
+            activeLicense == license &&
+            activeProtocolV2Enabled == protocolV2Enabled &&
+            currentClient != null &&
+            !registrationRejected.get()
+        ) {
+            return
+        }
+        prepareConnection(
+            license = license,
+            reconnect = activeLicense == license,
+            protocolV2Enabled = protocolV2Enabled,
+        )
     }
 
-    private fun startConnection(license: String, reconnect: Boolean) {
+    private fun prepareConnection(license: String, reconnect: Boolean, protocolV2Enabled: Boolean) {
+        stopping.set(false)
+        val expectedPreparation = preparationGeneration.incrementAndGet()
+        preparationJob?.cancel()
+        preparationJob = OrryxAPI.ioScope.launch {
+            try {
+                val identity = identityStore.loadOrCreate()
+                val serverName = getServerName()
+                if (preparationGeneration.get() != expectedPreparation || stopping.get()) return@launch
+                val configuredLicense = getLicense().takeIf { isEnabled() }
+                if (configuredLicense != license || isProtocolV2Enabled() != protocolV2Enabled) return@launch
+                startConnection(
+                    identity = identity,
+                    serverName = serverName,
+                    license = license,
+                    reconnect = reconnect,
+                    expectedPreparation = expectedPreparation,
+                    v2Enabled = protocolV2Enabled,
+                )
+            } catch (e: Exception) {
+                if (preparationGeneration.get() == expectedPreparation) {
+                    consoleMessage("&c[Editor] 初始化服务器身份失败: ${sanitizeLogMessage(e.message)}")
+                }
+            } finally {
+                synchronized(stateLock) {
+                    if (preparationGeneration.get() == expectedPreparation) preparationJob = null
+                }
+            }
+        }
+    }
+
+    private fun startConnection(
+        identity: EditorServerIdentity,
+        serverName: String,
+        license: String,
+        reconnect: Boolean,
+        expectedPreparation: Long,
+        v2Enabled: Boolean,
+    ) {
         val attemptGeneration: Long
         val nextClient: WebSocketClient
         val previousClient: WebSocketClient?
+        val offeredProtocols = EditorProtocol.supportedProtocols(v2Enabled)
+        val registrationContext = RegistrationContext(
+            ServerRegisterRequest(
+                license = license,
+                serverName = serverName,
+                serverId = identity.serverId,
+                pluginVersion = pluginVersion,
+                protocolVersions = offeredProtocols,
+                preferredProtocol = EditorProtocol.preferredProtocol(v2Enabled),
+                capabilities = if (v2Enabled) EditorProtocol.V2_CAPABILITIES else emptyList(),
+                connectionNonce = UUID.randomUUID().toString(),
+            ),
+        )
         synchronized(stateLock) {
+            if (preparationGeneration.get() != expectedPreparation || stopping.get()) return
             stopping.set(false)
             registrationRejected.set(false)
             reconnectJob?.cancel()
@@ -226,6 +319,10 @@ object EditorClient {
             reconnectScheduled.set(false)
             connected.set(false)
             registered.set(false)
+            negotiatedProtocol.set(EditorProtocol.PROTOCOL_V1)
+            sessionEpoch = null
+            workspaceId = null
+            relayCapabilities = emptySet()
             logSubscribed.set(false)
             logKeywordFilter = null
             pendingTokenRegistrations.values.forEach { it.future.complete(false) }
@@ -233,8 +330,9 @@ object EditorClient {
 
             attemptGeneration = generation.incrementAndGet()
             activeLicense = license
+            activeProtocolV2Enabled = v2Enabled
             previousClient = client
-            nextClient = createClient(SERVER_URL, license, attemptGeneration, reconnect)
+            nextClient = createClient(SERVER_URL, registrationContext, attemptGeneration, reconnect)
             client = nextClient
         }
         closeQuietly(previousClient)
@@ -256,6 +354,9 @@ object EditorClient {
         synchronized(stateLock) {
             stopping.set(true)
             generation.incrementAndGet()
+            preparationGeneration.incrementAndGet()
+            preparationJob?.cancel()
+            preparationJob = null
             reconnectJob?.cancel()
             reconnectJob = null
             registrationTimeoutJob?.cancel()
@@ -263,9 +364,14 @@ object EditorClient {
             reconnectScheduled.set(false)
             connected.set(false)
             registered.set(false)
+            negotiatedProtocol.set(EditorProtocol.PROTOCOL_V1)
+            sessionEpoch = null
+            workspaceId = null
+            relayCapabilities = emptySet()
             logSubscribed.set(false)
             logKeywordFilter = null
             activeLicense = null
+            activeProtocolV2Enabled = null
             pendingTokenRegistrations.values.forEach { it.future.complete(false) }
             pendingTokenRegistrations.clear()
             previousClient = client
@@ -295,7 +401,11 @@ object EditorClient {
             if (generation.get() != expectedGeneration || activeLicense != license || configuredLicense != license) {
                 return@launch
             }
-            startConnection(configuredLicense, reconnect = true)
+            prepareConnection(
+                license = configuredLicense,
+                reconnect = true,
+                protocolV2Enabled = isProtocolV2Enabled(),
+            )
         }
         synchronized(stateLock) {
             if (reconnectScheduled.get() && activeLicense == license && generation.get() == expectedGeneration) {
@@ -335,7 +445,7 @@ object EditorClient {
 
     private fun createClient(
         url: String,
-        license: String,
+        registrationContext: RegistrationContext,
         attemptGeneration: Long,
         reconnect: Boolean,
     ): WebSocketClient {
@@ -355,10 +465,12 @@ object EditorClient {
                     consoleMessage("&e┣&7[Editor] 已连接中心服务器，正在注册服务器")
                 }
                 scheduleRegistrationTimeout(attemptGeneration, this)
-                val sent = sendMessageForGeneration(attemptGeneration, "server.register", "reg_init", buildJsonObject {
-                    put("license", license)
-                    put("serverName", getServerName())
-                })
+                val sent = sendMessageForGeneration(
+                    attemptGeneration,
+                    EditorProtocol.SERVER_REGISTER,
+                    "reg_init",
+                    EditorProtocol.registrationData(registrationContext.request),
+                )
                 if (!sent) {
                     cancelRegistrationTimeout(attemptGeneration)
                     connected.set(false)
@@ -376,23 +488,57 @@ object EditorClient {
                 }
                 try {
                     val msg = json.parseToJsonElement(message).jsonObject
-                    val type = msg["type"]?.jsonPrimitive?.contentOrNull ?: return
-                    val id = msg["id"]?.jsonPrimitive?.contentOrNull.orEmpty()
-                    val data = msg["data"] as? JsonObject
+                    val id = (msg["id"] as? JsonPrimitive)?.contentOrNull.orEmpty()
+                    val type = (msg["type"] as? JsonPrimitive)?.contentOrNull
+                    if (type.isNullOrBlank()) {
+                        sendError(attemptGeneration, id, "缺少消息 type", "INVALID_MESSAGE", null)
+                        return
+                    }
+                    val dataElement = msg["data"]
+                    if (dataElement != null && dataElement !is JsonObject) {
+                        sendError(attemptGeneration, id, "data 必须是对象", "INVALID_DATA", type)
+                        return
+                    }
+                    val data = dataElement as? JsonObject
 
                     debug { "&e┣&7[Editor] 收到消息: type=$type, id=$id" }
-                    if (type != "server.register.result" && !registered.get()) {
-                        sendError(attemptGeneration, id, "Editor 服务器尚未完成注册")
+                    when (EditorProtocol.inboundDisposition(type)) {
+                        InboundDisposition.ACCEPT -> Unit
+                        InboundDisposition.WRONG_DIRECTION -> {
+                            sendError(
+                                attemptGeneration,
+                                id,
+                                "消息方向不允许: $type",
+                                "MESSAGE_DIRECTION_NOT_ALLOWED",
+                                type,
+                            )
+                            return
+                        }
+                        InboundDisposition.UNKNOWN -> {
+                            sendError(attemptGeneration, id, "未知消息类型: $type", "UNKNOWN_MESSAGE_TYPE", type)
+                            return
+                        }
+                    }
+                    if (type != EditorProtocol.SERVER_REGISTER_RESULT && type != EditorProtocol.ERROR && !registered.get()) {
+                        sendError(attemptGeneration, id, "Editor 服务器尚未完成注册", "NOT_REGISTERED", type)
                         return
                     }
                     when (type) {
-                        "server.register.result" -> {
+                        EditorProtocol.SERVER_REGISTER_RESULT -> {
                             if (id == "reg_init" && !registered.get() && !registrationRejected.get()) {
-                                handleRegisterResult(data)
+                                handleRegisterResult(data, registrationContext.request)
                             }
                         }
+                        EditorProtocol.ERROR -> {
+                            val code = (data?.get("code") as? JsonPrimitive)?.contentOrNull.orEmpty()
+                            val errorMessage = (data?.get("message") as? JsonPrimitive)?.contentOrNull.orEmpty()
+                            consoleMessage(
+                                "&c[Editor] 中心返回错误${code.takeIf { it.isNotEmpty() }?.let { " [$it]" }.orEmpty()}: " +
+                                    sanitizeLogMessage(errorMessage),
+                            )
+                        }
                         "token.register.result" -> {
-                            val success = data?.get("success")?.jsonPrimitive?.booleanOrNull ?: false
+                            val success = (data?.get("success") as? JsonPrimitive)?.booleanOrNull ?: false
                             synchronized(stateLock) {
                                 val pending = pendingTokenRegistrations[id]
                                 if (
@@ -414,34 +560,34 @@ object EditorClient {
                         "file.delete" -> FileHandler.handleDelete(attemptGeneration, id, data)
                         "file.rename" -> FileHandler.handleRename(attemptGeneration, id, data)
                         "reload" -> ReloadHandler.handle(attemptGeneration, id, data)
-                        "actions.schema" -> EditorRequestQueue.enqueue(
-                            attemptGeneration,
-                            id,
-                            "生成动作结构失败",
-                        ) { requestGeneration ->
-                            sendMessage(
-                                requestGeneration,
-                                "actions.schema.result",
-                                id,
-                                ActionsSchemaGenerator.generateSchema(),
-                            )
-                        }
                         "log.subscribe" -> {
                             logSubscribed.set(true)
-                            logKeywordFilter = (data?.get("filters") as? JsonObject)
-                                ?.get("keyword")?.jsonPrimitive?.contentOrNull
+                            logKeywordFilter = ((data?.get("filters") as? JsonObject)
+                                ?.get("keyword") as? JsonPrimitive)?.contentOrNull
+                            sendMessage(attemptGeneration, "log.subscribe.result", id, buildJsonObject {
+                                put("success", true)
+                            })
                             debug { "&e┣&7[Editor] 日志订阅已开启" }
                         }
                         "log.unsubscribe" -> {
                             logSubscribed.set(false)
                             logKeywordFilter = null
+                            sendMessage(attemptGeneration, "log.unsubscribe.result", id, buildJsonObject {
+                                put("success", true)
+                            })
                             debug { "&e┣&7[Editor] 日志订阅已关闭" }
                         }
-                        "auth" -> {
-                            val token = data?.get("token")?.jsonPrimitive?.contentOrNull
-                            debug { "&e┣&7[Editor] 浏览器已认证, token=${redactToken(token)}" }
+                        "token.revoke.result" -> {
+                            val success = (data?.get("success") as? JsonPrimitive)?.booleanOrNull ?: false
+                            debug { "&e┣&7[Editor] Token 撤销结果: $success" }
                         }
-                        else -> debug { "&e┣&7[Editor] 未知消息类型: $type" }
+                        else -> sendError(
+                            attemptGeneration,
+                            id,
+                            "未处理的消息类型: $type",
+                            "UNHANDLED_MESSAGE_TYPE",
+                            type,
+                        )
                     }
                 } catch (e: Exception) {
                     consoleMessage("&c[Editor] 消息处理异常: ${sanitizeLogMessage(e.message)}")
@@ -456,6 +602,9 @@ object EditorClient {
                     registrationTimeoutJob = null
                     connected.set(false)
                     registered.set(false)
+                    negotiatedProtocol.set(EditorProtocol.PROTOCOL_V1)
+                    sessionEpoch = null
+                    workspaceId = null
                     logSubscribed.set(false)
                     logKeywordFilter = null
                     pendingTokenRegistrations.values.forEach { it.future.complete(false) }
@@ -474,17 +623,33 @@ object EditorClient {
                 consoleMessage("&c[Editor] WebSocket 错误: ${sanitizeLogMessage(ex.message)}")
             }
 
-            private fun handleRegisterResult(data: JsonObject?) {
+            private fun handleRegisterResult(data: JsonObject?, request: ServerRegisterRequest) {
                 cancelRegistrationTimeout(attemptGeneration)
-                val success = data?.get("success")?.jsonPrimitive?.booleanOrNull ?: false
-                val resultMessage = data?.get("message")?.jsonPrimitive?.contentOrNull.orEmpty()
+                val result = EditorProtocol.parseRegisterResult(data)
+                val validation = EditorProtocol.validateRegisterResult(result, request)
+                val success = result.success && validation.accepted
                 registered.set(success)
                 if (success) {
+                    negotiatedProtocol.set(result.negotiatedProtocol)
+                    sessionEpoch = result.sessionEpoch
+                    workspaceId = result.workspaceId?.takeIf { it.isNotBlank() }
+                    relayCapabilities = result.relayCapabilities.toSet()
                     registrationRejected.set(false)
-                    consoleMessage("&e┣&7[Editor] 服务器注册成功: &a${sanitizeLogMessage(resultMessage)}")
+                    val fallback = if (result.negotiatedProtocol == EditorProtocol.PROTOCOL_V1) " (V1 兼容模式)" else ""
+                    consoleMessage(
+                        "&e┣&7[Editor] 服务器注册成功$fallback: &a${sanitizeLogMessage(result.message)}",
+                    )
                 } else {
                     registrationRejected.set(true)
-                    consoleMessage("&c[Editor] 服务器注册失败，已停止自动重试: ${sanitizeLogMessage(resultMessage)}")
+                    val message = when {
+                        !validation.protocolAccepted -> "中心返回了未提供的协议版本: ${result.negotiatedProtocol}"
+                        !validation.serverIdAccepted -> "中心返回的 serverId 与本机稳定身份不匹配"
+                        !validation.nonceAccepted -> "中心返回的 connectionNonce 与当前连接不匹配"
+                        !validation.sessionMetadataAccepted -> "中心返回的 workspaceId 或 sessionEpoch 无效"
+                        !validation.v2ContractAccepted -> "中心返回的 V2 协商元数据或能力不完整"
+                        else -> result.message
+                    }
+                    consoleMessage("&c[Editor] 服务器注册失败，已停止自动重试: ${sanitizeLogMessage(message)}")
                     close()
                 }
             }
@@ -511,6 +676,10 @@ object EditorClient {
         id: String,
         data: JsonObject,
     ): Boolean {
+        if (!EditorProtocol.isServerToCenter(type)) {
+            consoleMessage("&c[Editor] 拒绝发送方向未允许的消息: $type")
+            return false
+        }
         val target = client ?: return false
         if (!connected.get() || generation.get() != expectedGeneration) return false
         val msg = buildJsonObject {
@@ -528,11 +697,24 @@ object EditorClient {
     }
 
     fun sendError(id: String, message: String) {
-        sendMessage("error", id, buildJsonObject { put("message", message) })
+        sendMessage(EditorProtocol.ERROR, id, buildJsonObject {
+            put("code", "REQUEST_FAILED")
+            put("message", message)
+        })
     }
 
-    internal fun sendError(expectedGeneration: Long, id: String, message: String) {
-        sendMessage(expectedGeneration, "error", id, buildJsonObject { put("message", message) })
+    internal fun sendError(
+        expectedGeneration: Long,
+        id: String,
+        message: String,
+        code: String = "REQUEST_FAILED",
+        requestType: String? = null,
+    ) {
+        sendMessage(expectedGeneration, EditorProtocol.ERROR, id, buildJsonObject {
+            put("code", code)
+            put("message", message)
+            requestType?.let { put("requestType", it) }
+        })
     }
 
     fun pushLog(level: String, message: String, source: String? = null) {
@@ -580,6 +762,20 @@ object EditorClient {
     fun isConnected(): Boolean = connected.get()
 
     fun isRegistered(): Boolean = registered.get()
+
+    internal fun isProtocolV2(expectedGeneration: Long): Boolean {
+        return generation.get() == expectedGeneration &&
+            registered.get() &&
+            negotiatedProtocol.get() == EditorProtocol.PROTOCOL_V2
+    }
+
+    internal fun currentNegotiatedProtocol(): String = negotiatedProtocol.get()
+
+    internal fun currentSessionEpoch(): Long? = sessionEpoch
+
+    internal fun currentWorkspaceId(): String? = workspaceId
+
+    internal fun currentRelayCapabilities(): Set<String> = relayCapabilities
 
     internal fun currentGeneration(): Long = generation.get()
 

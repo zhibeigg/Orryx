@@ -1,0 +1,314 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:orryx:creation-suite:schema:service-runner-envelope:1.0",
+  "title": "Orryx Creation Suite 私有服务 Runner Envelope",
+  "description": "私有服务边界的公开请求与响应 envelope。工作区根目录和可信 Action Schema 不属于公开 JSON，由服务宿主单独注入。",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/RequestEnvelope"
+    },
+    {
+      "$ref": "#/$defs/ResponseEnvelope"
+    }
+  ],
+  "$defs": {
+    "RequestEnvelope": {
+      "type": "object",
+      "required": [
+        "envelopeVersion",
+        "contract"
+      ],
+      "properties": {
+        "envelopeVersion": {
+          "const": "1.0"
+        },
+        "contract": {
+          "$ref": "#/$defs/PublicContract"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PublicContract": {
+      "type": "object",
+      "required": [
+        "contractVersion",
+        "component",
+        "operation",
+        "request",
+        "policy"
+      ],
+      "properties": {
+        "$schema": {
+          "type": "string",
+          "format": "uri-reference"
+        },
+        "contractVersion": {
+          "const": "1.0"
+        },
+        "component": {
+          "$ref": "#/$defs/PublicComponent"
+        },
+        "operation": {
+          "$ref": "#/$defs/PublicOperation"
+        },
+        "request": {
+          "$ref": "#/$defs/PublicRequest"
+        },
+        "policy": {
+          "$ref": "#/$defs/PublicPolicy"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "component": {
+                "const": "orchestrator"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "request": {
+                "type": "object",
+                "required": [
+                  "steps"
+                ],
+                "properties": {
+                  "steps": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "$ref": "#/$defs/OrchestratorStep"
+                    }
+                  }
+                },
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "PublicComponent": {
+      "type": "string",
+      "enum": [
+        "ability",
+        "job",
+        "progression",
+        "kether",
+        "validator",
+        "station",
+        "combat",
+        "selector",
+        "ui",
+        "orchestrator"
+      ]
+    },
+    "PublicOperation": {
+      "type": "string",
+      "enum": [
+        "generate",
+        "validate",
+        "plan"
+      ]
+    },
+    "PublicRequest": {
+      "type": "object",
+      "allOf": [
+        {
+          "not": {
+            "required": [
+              "actionsSchemaPath"
+            ]
+          }
+        },
+        {
+          "not": {
+            "required": [
+              "actionsSchema"
+            ]
+          }
+        }
+      ]
+    },
+    "PublicPolicy": {
+      "type": "object",
+      "properties": {
+        "strict": {
+          "const": true
+        },
+        "network": {
+          "const": "deny"
+        },
+        "overwrite": {
+          "oneOf": [
+            {
+              "const": "deny"
+            },
+            {
+              "const": false
+            }
+          ]
+        },
+        "minecraftVersion": {
+          "type": "string"
+        },
+        "serverVersion": {
+          "type": "string"
+        },
+        "plugins": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "validateReferences": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "OrchestratorStep": {
+      "type": "object",
+      "required": [
+        "component",
+        "request"
+      ],
+      "properties": {
+        "component": {
+          "$ref": "#/$defs/PublicComponent"
+        },
+        "operation": {
+          "$ref": "#/$defs/PublicOperation"
+        },
+        "request": {
+          "$ref": "#/$defs/PublicRequest"
+        },
+        "policy": {
+          "$ref": "#/$defs/PublicPolicy"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ServiceError": {
+      "type": "object",
+      "required": [
+        "code",
+        "pointer",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "SERVICE_ACTIONS_SCHEMA_FORBIDDEN",
+            "SERVICE_ACTIONS_SCHEMA_PATH_FORBIDDEN",
+            "SERVICE_COMPONENT_MATERIALIZE_FORBIDDEN",
+            "SERVICE_CONTEXT_INVALID",
+            "SERVICE_CONTRACT_FIELD_UNKNOWN",
+            "SERVICE_CONTRACT_INVALID",
+            "SERVICE_CONTRACT_MISSING",
+            "SERVICE_CONTRACT_NOT_OBJECT",
+            "SERVICE_ENVELOPE_FIELD_UNKNOWN",
+            "SERVICE_ENVELOPE_NOT_OBJECT",
+            "SERVICE_ENVELOPE_VERSION_UNSUPPORTED",
+            "SERVICE_EXECUTION_FAILED",
+            "SERVICE_NETWORK_ALLOW_FORBIDDEN",
+            "SERVICE_OPERATION_FORBIDDEN",
+            "SERVICE_OPERATION_UNSUPPORTED",
+            "SERVICE_OVERWRITE_ALLOW_FORBIDDEN",
+            "SERVICE_POLICY_MATERIALIZE_FORBIDDEN",
+            "SERVICE_RELOAD_SERVER_FORBIDDEN",
+            "SERVICE_STRICT_REQUIRED",
+            "SERVICE_WORKSPACE_FORBIDDEN"
+          ]
+        },
+        "pointer": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ResponseEnvelope": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "envelopeVersion",
+            "status",
+            "result",
+            "errors"
+          ],
+          "properties": {
+            "envelopeVersion": {
+              "const": "1.0"
+            },
+            "status": {
+              "const": "completed"
+            },
+            "result": {
+              "$ref": "component-output.schema.json"
+            },
+            "errors": {
+              "type": "array",
+              "maxItems": 0
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "envelopeVersion",
+            "status",
+            "result",
+            "errors"
+          ],
+          "properties": {
+            "envelopeVersion": {
+              "const": "1.0"
+            },
+            "status": {
+              "const": "rejected"
+            },
+            "result": {
+              "type": "null"
+            },
+            "errors": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/ServiceError"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "$comment": "Runtime 会递归检查整个公开 contract；任何深度的 actionsSchemaPath、workspace、reloadServer、policy.materialize、允许覆盖值以及 materialize component/operation 都会被拒绝。"
+    }
+  ],
+  "x-serviceBoundary": {
+    "trustedContextParameters": [
+      "workspace_root",
+      "workspace_mode",
+      "actions_schema"
+    ],
+    "publicOperations": [
+      "generate",
+      "validate",
+      "plan"
+    ],
+    "materializeAvailableThroughLocalCliOnly": true,
+    "recursiveRuntimeEnforcement": true
+  }
+}

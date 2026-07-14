@@ -1,0 +1,87 @@
+{
+  "contractVersion": 1,
+  "protocolVersions": ["v1", "v2"],
+  "directions": {
+    "browserToRelay": [
+      "auth",
+      "session.resume",
+      "file.list",
+      "file.read",
+      "file.write",
+      "file.create",
+      "file.delete",
+      "file.rename",
+      "reload",
+      "log.subscribe",
+      "log.unsubscribe",
+      "presence.update"
+    ],
+    "relayToPlugin": [
+      "server.register.result",
+      "token.register.result",
+      "token.revoke.result",
+      "error",
+      "file.list",
+      "file.read",
+      "file.write",
+      "file.create",
+      "file.delete",
+      "file.rename",
+      "reload",
+      "log.subscribe",
+      "log.unsubscribe"
+    ],
+    "pluginToRelay": [
+      "server.register",
+      "token.register",
+      "token.revoke",
+      "file.tree",
+      "file.content",
+      "file.written",
+      "file.changed",
+      "reload.result",
+      "log.subscribe.result",
+      "log.unsubscribe.result",
+      "log.entry",
+      "server.info",
+      "error"
+    ],
+    "relayToBrowser": [
+      "auth.result",
+      "session.resume.result",
+      "file.tree",
+      "file.content",
+      "file.written",
+      "file.changed",
+      "presence.update.result",
+      "presence.updated",
+      "reload.result",
+      "log.subscribe.result",
+      "log.unsubscribe.result",
+      "log.entry",
+      "server.info",
+      "error"
+    ]
+  },
+  "v2": {
+    "revisionPattern": "^[0-9a-f]{64}$",
+    "browserWriteRevisionField": "baseRevision",
+    "pluginWriteRevisionField": "expectedRevision",
+    "mutations": [
+      "file.write",
+      "file.create",
+      "file.delete",
+      "file.rename",
+      "reload"
+    ],
+    "requiredPluginCapabilities": ["revision.sha256"],
+    "requiredMutationCapabilities": ["mutation.preconditions"],
+    "relayRevisionCapability": "revision.sha256",
+    "relayWriteCapability": "file.write.v2"
+  },
+  "reservedUnroutedTypes": [
+    "manifest.snapshot",
+    "release.request",
+    "release.result"
+  ]
+}

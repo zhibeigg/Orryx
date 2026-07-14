@@ -145,6 +145,52 @@ class EditorFilePolicyTest {
         assertThrows(EditorFilePolicy.RevisionConflictException::class.java) {
             policy.writeTextAtomic("skills/missing.yml", "new", firstRevision)
         }
+        assertThrows(EditorFilePolicy.PolicyException::class.java) {
+            policy.writeTextAtomic("skills/fire.yml", "invalid", firstRevision.uppercase())
+        }
+        assertThrows(EditorFilePolicy.PolicyException::class.java) {
+            policy.writeTextAtomic("skills/fire.yml", "invalid", "abc")
+        }
         assertEquals("second", policy.readText("skills/fire.yml"))
+    }
+
+    @Test
+    fun `supports explicit present and absent mutation preconditions`() {
+        val policy = EditorFilePolicy(root.resolve("preconditions"))
+        policy.create("skills/a.yml", false, ExpectedPathState.ABSENT)
+        assertThrows(EditorFilePolicy.PreconditionFailedException::class.java) {
+            policy.create("skills/a.yml", false, ExpectedPathState.ABSENT)
+        }
+        assertThrows(EditorFilePolicy.PreconditionFailedException::class.java) {
+            policy.delete("skills/a.yml", ExpectedPathState.ABSENT)
+        }
+
+        policy.writeTextAtomic("jobs/b.yml", "b")
+        assertThrows(EditorFilePolicy.PreconditionFailedException::class.java) {
+            policy.rename(
+                "jobs/b.yml",
+                "jobs/c.yml",
+                ExpectedPathState.ABSENT,
+                ExpectedPathState.ABSENT,
+            )
+        }
+        assertTrue(
+            policy.rename(
+                "jobs/b.yml",
+                "jobs/c.yml",
+                ExpectedPathState.PRESENT,
+                ExpectedPathState.ABSENT,
+            ),
+        )
+        assertTrue(policy.delete("jobs/c.yml", ExpectedPathState.PRESENT))
+    }
+
+    @Test
+    fun `exposes allowlist descriptor without internal editor directory`() {
+        val policy = EditorFilePolicy(root.resolve("descriptor"))
+        assertTrue(policy.allowlist.allowsTopLevel("skills"))
+        assertTrue(policy.allowlist.allowsTopLevel("KEYS.YML"))
+        assertFalse(policy.allowlist.allowsTopLevel("config.yml"))
+        assertFalse(policy.allowlist.allowsTopLevel(".editor"))
     }
 }

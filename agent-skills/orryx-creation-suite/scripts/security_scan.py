@@ -63,13 +63,27 @@ def main() -> int:
 
     contracts = (SUITE_ROOT / "shared" / "orryx_toolkit" / "contracts.py").read_text(encoding="utf-8")
     materialize = (SUITE_ROOT / "shared" / "orryx_toolkit" / "materialize.py").read_text(encoding="utf-8")
+    service_runner = (SUITE_ROOT / "shared" / "orryx_toolkit" / "service_runner.py").read_text(encoding="utf-8")
     workspace = (SUITE_ROOT / "shared" / "orryx_toolkit" / "workspace.py").read_text(encoding="utf-8")
+    service_guard_codes = {
+        "SERVICE_ACTIONS_SCHEMA_PATH_FORBIDDEN",
+        "SERVICE_COMPONENT_MATERIALIZE_FORBIDDEN",
+        "SERVICE_OPERATION_FORBIDDEN",
+        "SERVICE_OVERWRITE_ALLOW_FORBIDDEN",
+        "SERVICE_POLICY_MATERIALIZE_FORBIDDEN",
+        "SERVICE_RELOAD_SERVER_FORBIDDEN",
+        "SERVICE_WORKSPACE_FORBIDDEN",
+    }
     invariants = {
         "NETWORK_DEFAULT_DENY": 'setdefault("network", "deny")' in contracts,
         "OVERWRITE_DEFAULT_DENY": 'get("overwrite", "deny")' in materialize,
         "HASH_VERIFIED_BEFORE_WRITE": "MATERIALIZE_HASH_MISMATCH" in materialize and "hashlib.sha256" in materialize,
         "PATH_CONTAINMENT_USED": "safe_join(root, relative)" in materialize and "os.path.commonpath" in workspace,
         "ATOMIC_REPLACE_USED": "os.replace(temp, target)" in materialize,
+        "SERVICE_PUBLIC_OPERATIONS_READ_ONLY": 'frozenset({"generate", "validate", "plan"})' in service_runner,
+        "SERVICE_TRUSTED_WORKSPACE_INJECTED": 'trusted_contract["workspace"]' in service_runner,
+        "SERVICE_RECURSIVE_GUARDS_PRESENT": all(code in service_runner for code in service_guard_codes),
+        "SERVICE_HAS_NO_MATERIALIZE_RUNNER": "from .materialize import" not in service_runner and "materialize.materialize" not in service_runner,
         "NO_AUTOMATIC_RELOAD": "reloadServer(" not in "\n".join(
             path.read_text(encoding="utf-8-sig")
             for path in files

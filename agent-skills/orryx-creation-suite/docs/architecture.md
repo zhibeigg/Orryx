@@ -24,9 +24,10 @@
 | 工作区层 | `workspace.py` | 发现 Orryx YAML、解析根目录、限制相对路径不能逃逸 root |
 | YAML 层 | `yaml_io.py` | 使用 PyYAML safe API，并以稳定字段顺序输出 YAML |
 | 写盘层 | `materialize.py` | 显式校验并逐文件写入；默认拒绝覆盖 |
+| 私有服务边界 | `service_runner.py` | 校验公开 service envelope、递归拒绝写盘/重载/路径注入意图，并注入可信工作区与 Action Schema |
 | CLI 层 | `cli.py` | 提供 `run`、`validate-workspace`、`materialize` 三个命令 |
 
-九个领域 runner 是 `validator`、`kether`、`ability`、`progression`、`job`、`station`、`combat`、`selector`、`ui`。第十个工作流组件 `orchestrator` 负责组合它们。`materialize` 是独立写入边界，也可以作为 orchestrator 的最后一步，但只有顶层 `operation=materialize` 且前序没有 error 时才会执行。
+九个领域 runner 是 `validator`、`kether`、`ability`、`progression`、`job`、`station`、`combat`、`selector`、`ui`。第十个工作流组件 `orchestrator` 负责组合它们。`materialize` 是独立写入边界，也可以作为本地 orchestrator 的最后一步，但只有顶层 `operation=materialize` 且前序没有 error 时才会执行。新增的私有服务入口不改变这条本地能力；它在调用 `run_contract` 前建立更窄的公开合同，服务请求不能到达任何 materialize 分支。
 
 ## 3. 数据流与写入边界
 
@@ -55,7 +56,17 @@ finalize_result
 
 `generate`、`validate` 和 `plan` 都不能因为结果中出现 `artifacts` 就写盘。`artifacts` 只是候选文件：`path` 表示相对目标，`content` 是候选内容，`sha256` 用于完整性校验。只有显式 CLI `materialize`，或满足安全门的 orchestrator `materialize` 最后一步，才会打开目标文件。
 
-`policy.materialize=true` 与请求中的 `reloadServer=true` 不会自动触发写盘或重载。`run_contract` 仍拒绝直接分派顶层 `component=materialize`；受控写盘入口是 CLI `materialize`，以及顶层 `operation=materialize`、前序零 error 的 orchestrator materialize step。
+`policy.materialize=true` 与请求中的 `reloadServer=true` 不会自动触发写盘或重载。`run_contract` 仍拒绝直接分派顶层 `component=materialize`；受控写盘入口是 CLI `materialize`，以及顶层 `operation=materialize`、前序零 error 的本地 orchestrator materialize step。
+
+私有服务调用使用 `service_runner.run_service_request`（短别名 `run_service`）和 `assets/contracts/service-runner-envelope.schema.json`。公开 JSON 只包含 `envelopeVersion` 与不带 workspace 的 `contract`；服务宿主通过关键字参数注入 `workspace_root`、`workspace_mode` 和可选可信 `actions_schema`。入口递归扫描整个公开合同，拒绝：
+
+- 顶层或任意 orchestrator step 中的 `component=materialize` / `operation=materialize`；
+- `generate/validate/plan` 之外的 operation；
+- 任意深度的 `workspace`、`actionsSchemaPath`、任何形式的 `actionsSchema` 与 `reloadServer`；
+- 任意 policy 中的 `materialize`；
+- materialize 实现会视为允许覆盖的 `overwrite=true/allow/overwrite`。
+
+通过边界后，入口强制注入可信 workspace、强制 `overwrite=deny`，并以内联对象覆盖相关组件 request 中的 Action Schema，避免读取用户指定路径。响应固定为 `envelopeVersion/status/result/errors`：接受并执行后为 `status=completed`，合同边界或基础设施失败为 `status=rejected`，错误使用 Schema 中枚举的稳定 `SERVICE_*` 代码。
 
 ## 4. materialize 的真实行为
 
@@ -111,6 +122,8 @@ validator → kether → ability → progression → job → station → combat 
 - 提供 artifact SHA-256，并在写盘时校验已提供的摘要。
 - validator 会扫描一组敏感键和带凭据 URL/私钥特征。
 - 不自动联网，不自动重载服务器。
+- 私有服务公开合同不接受 workspace root、文件型 Action Schema、materialize/覆盖/重载意图；可信路径与 Schema 只能由宿主进程注入。
+- 私有服务边界错误固定为稳定 `SERVICE_*` code，拒绝响应不会返回未结构化异常或主机路径。
 - Ability/Kether 会对非 `1.12.2` 的 Aim 请求给出 error。
 - Station/Kether 会提示异步上下文中的 Bukkit 主线程风险；validator 也会对磁盘上的 `Async: true` Station 扫描常见敏感动作。
 - 打包的 `actions-schema.json` 由 `scripts/build_action_schema.py` 直接扫描 Kotlin `@KetherParser` 注册点生成，并通过源码摘要做陈旧检测。
@@ -135,6 +148,6 @@ validator → kether → ability → progression → job → station → combat 
 
 ## 7. 确定性与可复现性
 
-合同层会稳定排序结果数组，YAML dumper 禁用 alias 并固定换行，progression 使用 `Decimal` 计算，`provenance.inputDigest` 来自规范化输入的排序 JSON。相同有效输入与相同可见工作区通常会得到相同候选内容和摘要。
+合同层会稳定排序结果数组，YAML dumper 禁用 alias 并固定换行，progression 使用 `Decimal` 计算，`provenance.inputDigest` 来自规范化输入的排序 JSON。service runner 也会按 JSON Pointer 与错误码稳定排序边界错误，不加入时间戳、请求 UUID 或原始异常文本。相同有效输入、相同可信服务上下文与相同可见工作区通常会得到相同 envelope、候选内容和摘要。
 
 但不能把当前实现描述为完全与主机无关：Kether 加载外部 `actions-schema.json` 时，检查消息可能包含解析后的本机路径；workspace 文件集合和内容也会影响结果。需要跨主机 golden snapshot 时，调用方应固定 fixture root、固定 actions schema，并在比较前对非语义路径做明确规范化。

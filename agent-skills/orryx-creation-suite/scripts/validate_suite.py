@@ -15,7 +15,7 @@ if str(SHARED_ROOT) not in sys.path:
 MODULES = (
     "contracts", "yaml_io", "workspace", "validation", "kether", "ability",
     "progression", "job", "station", "combat", "selector", "ui", "orchestrator",
-    "materialize", "cli", "__init__", "__main__",
+    "materialize", "service_runner", "cli", "__init__", "__main__",
 )
 REQUIRED = (
     SUITE_ROOT / "requirements.txt",
@@ -28,6 +28,7 @@ REQUIRED = (
     SUITE_ROOT / "tests" / "test_toolkit.py",
     SUITE_ROOT / "assets" / "contracts" / "component-input.schema.json",
     SUITE_ROOT / "assets" / "contracts" / "component-output.schema.json",
+    SUITE_ROOT / "assets" / "contracts" / "service-runner-envelope.schema.json",
     SUITE_ROOT / "assets" / "contracts" / "orchestrator-manifest.schema.json",
     SUITE_ROOT / "assets" / "contracts" / "orchestrator-manifest.json",
     SUITE_ROOT / "assets" / "contracts" / "actions-schema.json",
