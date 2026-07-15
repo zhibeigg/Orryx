@@ -2,9 +2,9 @@
     "$schema": "https://zhibeigg.github.io/Orryx/kether/contracts/channel-manifest-v1.schema.json",
     "formatVersion": 1,
     "channel": "stable",
-    "releaseId": "Orryx@2.44.116+025679491d7bc7bd4f5d178bde1d66f78dcd6186",
-    "pluginVersion": "2.44.116",
-    "commit": "025679491d7bc7bd4f5d178bde1d66f78dcd6186",
-    "publishedAt": "2026-07-13T14:40:01Z",
-    "releaseManifest": "/Orryx/kether/releases/2.44.116/025679491d7bc7bd4f5d178bde1d66f78dcd6186/manifest.json"
+    "releaseId": "Orryx@2.53.128+4c9d3bec313416f2fd60cc24e43b2cffe1a9120a",
+    "pluginVersion": "2.53.128",
+    "commit": "4c9d3bec313416f2fd60cc24e43b2cffe1a9120a",
+    "publishedAt": "2026-07-15T15:30:46Z",
+    "releaseManifest": "/Orryx/kether/releases/2.53.128/4c9d3bec313416f2fd60cc24e43b2cffe1a9120a/manifest.json"
 }
