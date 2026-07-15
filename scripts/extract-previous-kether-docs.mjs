@@ -5,6 +5,7 @@ import { posix, resolve } from "node:path"
 const ref = process.argv[2] ?? "origin/kether-docs"
 const output = resolve(process.argv[3] ?? "build/kether-docs-previous")
 const currentReleaseId = process.argv[4] ?? null
+const gitShowMaxBuffer = 8 * 1024 * 1024
 
 await mkdir(output, { recursive: true })
 await Promise.all([
@@ -13,7 +14,11 @@ await Promise.all([
 ])
 
 function gitShow(path) {
-  const result = spawnSync("git", ["show", `${ref}:${path}`], { encoding: "utf8" })
+  const result = spawnSync("git", ["show", `${ref}:${path}`], {
+    encoding: "utf8",
+    maxBuffer: gitShowMaxBuffer,
+  })
+  if (result.error) throw result.error
   if (result.status !== 0) return null
   return result.stdout
 }

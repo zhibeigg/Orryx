@@ -1,5 +1,7 @@
 # Orryx API
 
+> 2.54.129：修复 stable 文档发布读取超过 1 MiB 的上一版 Actions Schema 时触发 Node 子进程缓冲上限的问题，确保 Registry 历史差异可持续生成。
+>
 > 2.54.128：为全部 Kether Action 固化非空中文简介合同；Registry v4、Actions Schema v3 与发布校验会拒绝缺失简介，补齐 `isNull`、`notNull` 元数据。
 >
 > 2.53.128：保持 release manifest v1 合同字节级不可变，Registry v4 改由扩展资产与自身版本字段发布，修复 stable 文档供应链拒绝覆盖旧合同的问题。
@@ -1291,5 +1293,5 @@ A: 对于可取消的事件，设置 `event.isCancelled = true`。
 
 ---
 
-*文档版本: 2.54.128*
+*文档版本: 2.54.129*
 *最后更新: 2026-07-16*
