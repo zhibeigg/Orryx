@@ -207,9 +207,9 @@ object KetherDocsPublisher {
                 put("version", metadata.version)
                 put("commit", metadata.commit)
             })
-            // schemaVersion 始终描述 legacy actions-schema.json；Registry 使用独立版本，避免旧 Editor 误把 v3 当成 v4。
+            // release manifest v1 的 schemaVersion 仅描述 legacy actions-schema.json。
+            // Registry v4 通过 assets.registry 发布，并由 Registry 文档自身声明版本，保持 v1 Manifest 合同不可变。
             put("schemaVersion", KETHER_ACTIONS_SCHEMA_VERSION)
-            put("registryVersion", KETHER_REGISTRY_VERSION)
             put("generatedAt", metadata.generatedAt.toString())
             if (metadata.previousReleaseId == null) put("previousReleaseId", JsonNull)
             else put("previousReleaseId", metadata.previousReleaseId)
@@ -220,7 +220,6 @@ object KetherDocsPublisher {
             put("compatibility", buildJsonObject {
                 put("minimumEditorManifestFormat", 1)
                 put("minimumEditorSchemaVersion", KETHER_ACTIONS_SCHEMA_VERSION)
-                put("minimumEditorRegistryVersion", KETHER_REGISTRY_VERSION)
             })
         }
     )

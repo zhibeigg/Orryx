@@ -82,9 +82,9 @@ check(manifest.plugin?.id === "Orryx", "release plugin id must be Orryx")
 check(manifest.plugin?.version === channel.pluginVersion, "release version mismatch")
 check(manifest.plugin?.commit === channel.commit, "release commit mismatch")
 check(manifest.schemaVersion === 3, "release schemaVersion must describe legacy actions-schema v3")
-check(manifest.registryVersion === 4, "release registryVersion must be 4")
+check(!Object.hasOwn(manifest, "registryVersion"), "release manifest v1 must not redefine registryVersion")
 check(manifest.compatibility?.minimumEditorSchemaVersion === 3, "minimumEditorSchemaVersion must be 3")
-check(manifest.compatibility?.minimumEditorRegistryVersion === 4, "minimumEditorRegistryVersion must be 4")
+check(!Object.hasOwn(manifest.compatibility ?? {}, "minimumEditorRegistryVersion"), "release manifest v1 must not redefine minimumEditorRegistryVersion")
 
 const budgets = {
   registry: 8 * 1024 * 1024,

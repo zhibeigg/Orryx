@@ -32,7 +32,7 @@ internal object KetherDocsContracts {
           "title": "Orryx Kether release manifest v1",
           "type": "object",
           "additionalProperties": false,
-          "required": ["formatVersion", "releaseId", "channel", "plugin", "schemaVersion", "registryVersion", "generatedAt", "assets", "counts", "compatibility"],
+          "required": ["formatVersion", "releaseId", "channel", "plugin", "schemaVersion", "generatedAt", "assets", "counts", "compatibility"],
           "properties": {
             "${'$'}schema": { "type": "string", "format": "uri" },
             "formatVersion": { "const": 1 },
@@ -49,12 +49,11 @@ internal object KetherDocsContracts {
               }
             },
             "schemaVersion": { "const": 3 },
-            "registryVersion": { "const": 4 },
             "generatedAt": { "type": "string", "format": "date-time" },
             "previousReleaseId": { "type": ["string", "null"] },
             "assets": {
               "type": "object",
-              "required": ["registry", "registryContract", "schema", "schemaContract", "markdown", "changes", "checksums"],
+              "required": ["schema", "schemaContract", "markdown", "changes", "checksums"],
               "additionalProperties": { "${'$'}ref": "#/${'$'}defs/asset" }
             },
             "counts": {
@@ -71,11 +70,10 @@ internal object KetherDocsContracts {
             "compatibility": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["minimumEditorManifestFormat", "minimumEditorSchemaVersion", "minimumEditorRegistryVersion"],
+              "required": ["minimumEditorManifestFormat", "minimumEditorSchemaVersion"],
               "properties": {
                 "minimumEditorManifestFormat": { "type": "integer", "minimum": 1 },
-                "minimumEditorSchemaVersion": { "type": "integer", "minimum": 1 },
-                "minimumEditorRegistryVersion": { "type": "integer", "minimum": 1 }
+                "minimumEditorSchemaVersion": { "type": "integer", "minimum": 1 }
               }
             }
           },

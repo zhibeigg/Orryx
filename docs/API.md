@@ -1,5 +1,7 @@
 # Orryx API
 
+> 2.53.128：保持 release manifest v1 合同字节级不可变，Registry v4 改由扩展资产与自身版本字段发布，修复 stable 文档供应链拒绝覆盖旧合同的问题。
+>
 > 2.53.127：固化 Kether 类型图闭包、最小 acceptedTypes 联合槽、raw 回退与精确线程合同；发布校验现在拒绝冗余父类型、宽泛 ANY 混用及 unknown thread。
 
 > 2.53.126：新增 Kether Registry Schema v4，提供完整类型图、assignability、表达式可填充性、raw 类型提示、结构化别名、grammar/variants、执行上下文与 Trigger 事件字段；继续发布 v3 actions-schema 兼容层。
@@ -1287,5 +1289,5 @@ A: 对于可取消的事件，设置 `event.isCancelled = true`。
 
 ---
 
-*文档版本: 2.53.127*
+*文档版本: 2.53.128*
 *最后更新: 2026-07-15*

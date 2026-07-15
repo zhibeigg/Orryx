@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.security.MessageDigest
 import java.time.Instant
 
 class KetherDocsPublisherTest {
@@ -64,7 +65,7 @@ class KetherDocsPublisherTest {
         ).jsonObject
         assertEquals(metadata.releaseId, manifest.getValue("releaseId").jsonPrimitive.content)
         assertEquals(3, manifest.getValue("schemaVersion").jsonPrimitive.content.toInt())
-        assertEquals(4, manifest.getValue("registryVersion").jsonPrimitive.content.toInt())
+        assertFalse("registryVersion" in manifest)
         assertEquals(commit, manifest.getValue("plugin").jsonObject.getValue("commit").jsonPrimitive.content)
         assertEquals(64, manifest.getValue("assets").jsonObject.getValue("schema").jsonObject.getValue("sha256").jsonPrimitive.content.length)
     }
@@ -98,6 +99,10 @@ class KetherDocsPublisherTest {
         )) {
             assertTrue(Json.parseToJsonElement(contract).jsonObject.isNotEmpty())
         }
+        assertEquals(
+            "60b31dcb79ea5f280788de83d4b5ee6b70f49fd226fde93475f1775e743f8940",
+            sha256Contract(KetherDocsContracts.releaseManifest)
+        )
     }
 
     @Test
@@ -172,7 +177,7 @@ class KetherDocsPublisherTest {
     }
 
     @Test
-    fun `release manifest requires editor schema v3 while publishing registry v4`() {
+    fun `release manifest v1 keeps editor schema v3 while attaching registry v4 assets`() {
         val metadata = KetherDocsContract.metadata(
             pluginId = "Orryx",
             version = "2.53.126",
@@ -192,15 +197,21 @@ class KetherDocsPublisherTest {
             ))
         ).jsonObject
         assertEquals(3, manifest.getValue("schemaVersion").jsonPrimitive.content.toInt())
-        assertEquals(4, manifest.getValue("registryVersion").jsonPrimitive.content.toInt())
-        assertEquals(3, manifest.getValue("compatibility").jsonObject.getValue("minimumEditorSchemaVersion").jsonPrimitive.content.toInt())
-        assertEquals(4, manifest.getValue("compatibility").jsonObject.getValue("minimumEditorRegistryVersion").jsonPrimitive.content.toInt())
+        assertFalse("registryVersion" in manifest)
+        assertTrue("registry" in manifest.getValue("assets").jsonObject)
+        val compatibility = manifest.getValue("compatibility").jsonObject
+        assertEquals(3, compatibility.getValue("minimumEditorSchemaVersion").jsonPrimitive.content.toInt())
+        assertFalse("minimumEditorRegistryVersion" in compatibility)
     }
 
     @Test
     fun `version filenames are sanitized`() {
         assertEquals("2.43.114_build_1", KetherDocsPublisher.sanitizeVersion("2.43.114+build/1"))
     }
+
+    private fun sha256Contract(content: String): String = MessageDigest.getInstance("SHA-256")
+        .digest((content.trimEnd() + "\n").toByteArray(Charsets.UTF_8))
+        .joinToString("") { byte -> "%02x".format(byte.toInt() and 0xff) }
 
     private fun counts() = KetherDocsPublisher.RegistrationCounts(
         actions = 10,
