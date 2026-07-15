@@ -9,18 +9,27 @@ class WikiModelTest {
     @Nested
     inner class TypeEnumTest {
         @Test
-        fun `all types exist`() {
-            val expected = setOf(
+        fun `legacy and domain types exist`() {
+            val legacy = setOf(
                 "ITERABLE", "CONTAINER", "HITBOX", "TARGET", "STATE", "EFFECT", "EFFECT_SPAWNER",
                 "BYTE", "SHORT", "INT", "LONG", "DOUBLE", "FLOAT", "SYMBOL", "STRING", "BOOLEAN",
                 "VECTOR", "MATRIX", "QUATERNION", "ITEM_STACK", "NBT", "PLAYER", "ANY", "NULL"
             )
-            assertEquals(expected, Type.entries.map { it.name }.toSet())
+            val domain = setOf("PROFILE", "SKILL", "SKILL_PARAMETER", "JOB", "SKILL_GROUP", "KEY_BINDING", "EVENT")
+            val actual = Type.entries.map { it.name }.toSet()
+            assertTrue(actual.containsAll(legacy))
+            assertTrue(actual.containsAll(domain))
         }
 
         @Test
-        fun `count is 24`() {
-            assertEquals(24, Type.entries.size)
+        fun `type ids and metadata are complete`() {
+            assertEquals(Type.entries.size, Type.entries.map(Type::id).distinct().size)
+            Type.entries.forEach { type ->
+                assertTrue(type.id.isNotBlank())
+                assertTrue(type.rawType.isNotBlank())
+            }
+            assertTrue(Type.NUMBER.isAssignableFrom(Type.INT))
+            assertTrue(Type.TARGET.isAssignableFrom(Type.PLAYER))
         }
     }
 

@@ -28,20 +28,7 @@ object ActionsSchemaGenerator {
         encodeDefaults = true
     }
 
-    private fun mapTypeKey(type: Type): String = when (type) {
-        Type.DOUBLE, Type.FLOAT -> "number"
-        Type.INT, Type.SHORT, Type.BYTE -> "int"
-        Type.LONG -> "long"
-        Type.STRING -> "text"
-        Type.BOOLEAN -> "boolean"
-        Type.SYMBOL -> "keyword"
-        Type.CONTAINER, Type.TARGET, Type.PLAYER -> "selector"
-        Type.VECTOR, Type.QUATERNION -> "vector3"
-        Type.MATRIX -> "matrix"
-        Type.ITERABLE -> "list"
-        Type.ANY, Type.NULL -> "any"
-        else -> "any"
-    }
+    internal fun mapTypeKey(type: Type): String = type.id
 
     private fun mapActionCategory(group: String): String {
         val lower = group.lowercase(Locale.ROOT)
@@ -82,28 +69,23 @@ object ActionsSchemaGenerator {
         }
     }
 
-    private fun generateTypes(): JsonObject = buildJsonObject {
-        put("number", type("number", "#4FC3F7", 0.1))
-        put("int", type("number", "#4DB6AC", 1.0))
-        put("long", type("number", "#4DB6AC", 1.0))
-        put("text", type("text", "#FFB74D"))
-        put("boolean", type("toggle", "#E57373"))
-        put("keyword", type("text", "#9E9E9E"))
-        put("selector", type("selector", "#BA68C8"))
-        put("vector3", type("vector3", "#81C784"))
-        put("matrix", type("text", "#A1887F"))
-        put("list", type("list", "#7986CB"))
-        put("duration", type("duration", "#FFD54F"))
-        put("any", type("text", "#B0BEC5"))
-        put("enum", type("select", "#F06292"))
-        put("location", type("location", "#AED581"))
-        put("port", type("port", "#90A4AE"))
-    }
-
-    private fun type(widget: String, color: String, step: Double? = null): JsonObject = buildJsonObject {
-        put("widget", widget)
-        put("color", color)
-        if (step != null) put("step", if (step % 1.0 == 0.0) JsonPrimitive(step.toInt()) else JsonPrimitive(step))
+    internal fun generateTypes(): JsonObject = buildJsonObject {
+        Type.entries.sortedBy(Type::id).forEach { type ->
+            put(type.id, buildJsonObject {
+                put("name", type.name)
+                put("widget", type.widget)
+                put("color", type.color)
+                type.step?.let { step ->
+                    put("step", if (step % 1.0 == 0.0) JsonPrimitive(step.toInt()) else JsonPrimitive(step))
+                }
+                put("parents", JsonArray(type.parents.sortedBy(Type::id).map { JsonPrimitive(it.id) }))
+                put("children", JsonArray(type.children.sortedBy(Type::id).map { JsonPrimitive(it.id) }))
+                put("assignableFrom", JsonArray(Type.entries.filter(type::isAssignableFrom).sortedBy(Type::id).map { JsonPrimitive(it.id) }))
+                put("ketherFillable", type.ketherFillable)
+                put("rawType", type.rawType)
+                if (!type.ketherFillable) put("inputHint", "该类型不能由 Kether expression 直接产生，请使用 raw 原始值")
+            })
+        }
     }
 
     private fun generateCategories(): JsonObject = buildJsonObject {
@@ -139,11 +121,12 @@ object ActionsSchemaGenerator {
             val flow = KetherDocsContract.inferFlowType(action)
             buildJsonObject {
                 put("id", ids.getValue(action))
-                put("name", action.key)
-                put("aliases", JsonArray(emptyList()))
+                put("name", KetherDocsContract.actionName(action))
+                put("aliases", JsonArray(KetherDocsContract.actionAliases(action).map(::JsonPrimitive)))
                 put("category", mapActionCategory(action.group))
                 put("namespace", KetherDocsContract.inferNamespace(action))
-                put("visibility", if (action.sharded) "public" else "private")
+                put("shared", action.shared)
+                put("visibility", if (action.shared) "public" else "private")
                 put("description", action.description.ifBlank { action.name })
                 put("syntax", KetherDocsContract.actionSyntax(action))
                 put("deprecated", JsonNull)
@@ -151,36 +134,42 @@ object ActionsSchemaGenerator {
                 put("flow", flow)
                 put("inputs", JsonArray(action.entries.mapIndexed { index, entry -> input(entry, index) }))
                 put("output", output(action))
+                put("outputStatus", if (action.result == Type.NULL) "none" else "declared")
                 put("examples", JsonArray(action.example.map(::JsonPrimitive)))
                 if (action.example.isNotEmpty()) put("example", action.example.joinToString("\n"))
                 put("execution", buildJsonObject {
-                    put("thread", "any")
+                    put("thread", KetherDocsContract.actionThread(action).name.lowercase(Locale.ROOT))
                     put("suspends", KetherDocsContract.actionSuspends(action))
+                    put("contexts", JsonArray(action.contexts.sorted().map(::JsonPrimitive)))
                 })
                 put("requirements", JsonArray(KetherDocsContract.actionRequirements(action).map(::JsonPrimitive)))
                 put("source", buildJsonObject {
-                    put("symbol", action.key)
+                    put("symbol", KetherDocsContract.actionName(action))
                     put("group", action.group)
+                    put("registry", "ScriptManager.wikiActions")
                 })
                 addFlowMetadata(this, action, flow)
             }
         })
     }
 
-    private fun input(entry: Action.Entry, index: Int): JsonObject = buildJsonObject {
+    internal fun input(entry: Action.Entry, index: Int): JsonObject = buildJsonObject {
         put("name", entry.description.ifBlank { entry.head ?: entry.type.name.lowercase(Locale.ROOT) })
         put("key", KetherDocsContract.inputKey(entry, index))
-        if (entry.type == Type.SYMBOL) {
-            put("type", "keyword")
-            put("required", true)
-            put("default", JsonPrimitive(entry.head ?: ""))
-            entry.head?.let { put("keyword", it) }
-        } else {
-            put("type", mapTypeKey(entry.type))
-            put("required", !entry.optional)
-            if (entry.default == null) put("default", JsonNull) else put("default", JsonPrimitive(entry.default))
-            if (entry.description.isNotBlank()) put("description", entry.description)
-            entry.head?.takeIf(String::isNotBlank)?.let { put("keyword", it) }
+        put("type", mapTypeKey(entry.type))
+        put("acceptedTypes", JsonArray(entry.acceptedTypes.sortedBy(Type::id).map { JsonPrimitive(it.id) }))
+        put("required", !entry.optional)
+        if (entry.default == null) put("default", JsonNull) else put("default", JsonPrimitive(entry.default))
+        if (entry.description.isNotBlank()) put("description", entry.description)
+        val alternatives = KetherDocsContract.keywordAlternatives(entry.head)
+        if (alternatives.isNotEmpty()) {
+            put("keyword", alternatives.first())
+            put("keywordAlternatives", JsonArray(alternatives.map(::JsonPrimitive)))
+        }
+        put("ketherFillable", entry.type.ketherFillable)
+        put("rawType", entry.type.rawType)
+        if (!entry.type.ketherFillable && entry.type != Type.SYMBOL) {
+            put("inputHint", "该类型不能由 Kether expression 直接产生，请使用 raw 原始值")
         }
     }
 
@@ -246,24 +235,28 @@ object ActionsSchemaGenerator {
             buildJsonObject {
                 put("id", ids.getValue(trigger))
                 put("name", trigger.key)
+                put("aliases", JsonArray(emptyList()))
                 put("category", mapTriggerCategory(trigger.group, trigger.key))
                 put("description", trigger.description.ifBlank { trigger.key })
-                put("variables", JsonArray(trigger.entries.map { entry ->
-                    buildJsonObject {
-                        put("name", entry.key)
-                        put("type", mapTypeKey(entry.type))
-                        put("description", entry.description)
-                    }
-                }))
-                put("specialKeys", JsonArray(trigger.specialKeyEntries.map { entry ->
-                    buildJsonObject {
-                        put("name", entry.key)
-                        put("type", mapTypeKey(entry.type))
-                        put("description", entry.description)
-                    }
-                }))
+                if (trigger.eventClass == null) put("eventClass", JsonNull) else put("eventClass", trigger.eventClass.orEmpty())
+                put("cancellable", trigger.cancellable)
+                put("variables", JsonArray(trigger.entries.map(::triggerEntry)))
+                put("specialKeys", JsonArray(trigger.specialKeyEntries.map(::triggerEntry)))
             }
         })
+    }
+
+    private fun triggerEntry(entry: Trigger.Entry): JsonObject = buildJsonObject {
+        put("name", entry.key)
+        put("aliases", JsonArray(entry.aliases.map(::JsonPrimitive)))
+        put("type", mapTypeKey(entry.type))
+        put("description", entry.description)
+        put("readable", entry.readable)
+        put("writable", entry.writable)
+        put("nullable", entry.nullable)
+        put("rawType", entry.rawType)
+        put("ketherFillable", entry.ketherFillable)
+        if (!entry.ketherFillable) put("inputHint", "该类型不能由 Kether expression 直接产生，请使用 raw 原始值")
     }
 
     private fun generateProperties(): JsonArray = JsonArray(
@@ -322,7 +315,7 @@ object ActionsSchemaGenerator {
     fun generateSchema(metadata: KetherDocsMetadata): JsonObject = buildJsonObject {
         put("${'$'}schema", "$KETHER_DOCS_BASE_URL/contracts/actions-schema-v3.schema.json")
         put("version", 2)
-        put("schemaVersion", KETHER_SCHEMA_VERSION)
+        put("schemaVersion", KETHER_ACTIONS_SCHEMA_VERSION)
         put("pluginId", metadata.pluginId)
         put("pluginVersion", metadata.version)
         put("commit", metadata.commit)

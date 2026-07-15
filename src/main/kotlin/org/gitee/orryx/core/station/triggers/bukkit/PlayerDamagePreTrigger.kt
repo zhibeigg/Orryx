@@ -22,10 +22,14 @@ object PlayerDamagePreTrigger: AbstractPropertyEventTrigger<OrryxDamageEvents.Pr
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
-            .addParm(Type.DOUBLE, "damage", "伤害")
+            .addParm(Type.DOUBLE, "damage", "伤害", writable = true)
             .addParm(Type.TARGET, "attacker", "攻击者")
             .addParm(Type.TARGET, "defender", "防御者")
             .addParm(Type.STRING, "type", "攻击类型：PHYSICS/MAGIC/FIRE/REAL/SELF/CONSOLE/CUSTOM")
+            .addParm(Type.BOOLEAN, "crit", "是否暴击", writable = true)
+            .addParm(Type.BOOLEAN, "no", "是否为原版伤害事件")
+            .addParm(Type.BOOLEAN, "ap", "是否为 AttributePlus 伤害事件")
+            .addParm(Type.BOOLEAN, "axh", "是否为 AstraXHero 伤害事件")
             .description("当玩家攻击时发生，如果攻击来自于Or技能，那将会继承技能环境中的参数")
 
     override val clazz

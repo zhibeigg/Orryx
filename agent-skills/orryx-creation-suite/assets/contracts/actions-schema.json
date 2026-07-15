@@ -514,8 +514,10 @@
         "generic"
       ],
       "danger": {
-        "classification": "not-detected",
-        "evidence": []
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
       },
       "execution": {
         "evidence": [],
@@ -533,7 +535,7 @@
       "shared": true,
       "source": {
         "function": "actionCircleShockwave",
-        "line": 194,
+        "line": 195,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/OrryxModActions.kt"
       }
     },
@@ -615,8 +617,10 @@
         "generic"
       ],
       "danger": {
-        "classification": "not-detected",
-        "evidence": []
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
       },
       "execution": {
         "evidence": [],
@@ -634,7 +638,7 @@
       "shared": true,
       "source": {
         "function": "actionColliderRemove",
-        "line": 323,
+        "line": 339,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/OrryxModActions.kt"
       }
     },
@@ -644,8 +648,10 @@
         "generic"
       ],
       "danger": {
-        "classification": "not-detected",
-        "evidence": []
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
       },
       "execution": {
         "evidence": [],
@@ -663,7 +669,7 @@
       "shared": true,
       "source": {
         "function": "actionColliderShow",
-        "line": 270,
+        "line": 271,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/OrryxModActions.kt"
       }
     },
@@ -673,8 +679,10 @@
         "generic"
       ],
       "danger": {
-        "classification": "not-detected",
-        "evidence": []
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
       },
       "execution": {
         "evidence": [],
@@ -692,7 +700,7 @@
       "shared": true,
       "source": {
         "function": "actionColliderUpdate",
-        "line": 299,
+        "line": 315,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/OrryxModActions.kt"
       }
     },
@@ -1185,8 +1193,10 @@
         "generic"
       ],
       "danger": {
-        "classification": "not-detected",
-        "evidence": []
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
       },
       "execution": {
         "evidence": [],
@@ -1204,7 +1214,7 @@
       "shared": true,
       "source": {
         "function": "actionEntityShow",
-        "line": 91,
+        "line": 92,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/OrryxModActions.kt"
       }
     },
@@ -1310,8 +1320,10 @@
         "generic"
       ],
       "danger": {
-        "classification": "not-detected",
-        "evidence": []
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
       },
       "execution": {
         "evidence": [],
@@ -1329,7 +1341,7 @@
       "shared": true,
       "source": {
         "function": "actionFlicker",
-        "line": 43,
+        "line": 44,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/OrryxModActions.kt"
       }
     },
@@ -1513,8 +1525,10 @@
         "generic"
       ],
       "danger": {
-        "classification": "not-detected",
-        "evidence": []
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
       },
       "execution": {
         "evidence": [],
@@ -1532,7 +1546,7 @@
       "shared": true,
       "source": {
         "function": "actionGhost",
-        "line": 16,
+        "line": 17,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/OrryxModActions.kt"
       }
     },
@@ -2253,8 +2267,10 @@
         "generic"
       ],
       "danger": {
-        "classification": "not-detected",
-        "evidence": []
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
       },
       "execution": {
         "evidence": [],
@@ -2272,7 +2288,7 @@
       "shared": true,
       "source": {
         "function": "actionMouse",
-        "line": 72,
+        "line": 73,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/OrryxModActions.kt"
       }
     },
@@ -2349,8 +2365,10 @@
         "generic"
       ],
       "danger": {
-        "classification": "not-detected",
-        "evidence": []
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
       },
       "execution": {
         "evidence": [],
@@ -2368,7 +2386,7 @@
       "shared": true,
       "source": {
         "function": "actionNavigation",
-        "line": 155,
+        "line": 156,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/OrryxModActions.kt"
       }
     },
@@ -2814,8 +2832,10 @@
         "generic"
       ],
       "danger": {
-        "classification": "not-detected",
-        "evidence": []
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
       },
       "execution": {
         "evidence": [],
@@ -2833,7 +2853,7 @@
       "shared": true,
       "source": {
         "function": "actionRemoveShow",
-        "line": 131,
+        "line": 132,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/OrryxModActions.kt"
       }
     },
@@ -2959,8 +2979,10 @@
         "generic"
       ],
       "danger": {
-        "classification": "not-detected",
-        "evidence": []
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
       },
       "execution": {
         "evidence": [],
@@ -2978,7 +3000,7 @@
       "shared": true,
       "source": {
         "function": "actionSectorShockwave",
-        "line": 244,
+        "line": 245,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/OrryxModActions.kt"
       }
     },
@@ -3230,8 +3252,10 @@
         "generic"
       ],
       "danger": {
-        "classification": "not-detected",
-        "evidence": []
+        "classification": "state-mutating",
+        "evidence": [
+          "remove("
+        ]
       },
       "execution": {
         "evidence": [],
@@ -3249,7 +3273,7 @@
       "shared": true,
       "source": {
         "function": "actionSquareShockwave",
-        "line": 218,
+        "line": 219,
         "path": "src/main/kotlin/org/gitee/orryx/core/kether/actions/game/OrryxModActions.kt"
       }
     },
@@ -3824,7 +3848,7 @@
   ],
   "schemaVersion": "1.0",
   "sourceRoot": "src/main/kotlin/org/gitee/orryx/core/kether",
-  "sourceSha256": "76423bac90ce6c9b5fe3e502db42ebeedd4af8fe142acd188bf6629008de0d8b",
+  "sourceSha256": "bd727dc658e345c86a7f59f2a1dd2bd1c79d65fa81f3132bbff1a541dd13c159",
   "summary": {
     "actionCount": 123,
     "aliasCount": 8,

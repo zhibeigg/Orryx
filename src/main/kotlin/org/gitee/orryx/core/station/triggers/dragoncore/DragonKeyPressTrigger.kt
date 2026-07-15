@@ -17,13 +17,14 @@ object DragonKeyPressTrigger: AbstractPropertyPlayerEventTrigger<KeyPressEvent>(
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.DRAGONCORE, event)
             .addParm(Type.STRING, "key", "按下的按键")
-            .addSpecialKey(Type.STRING, "Keys", "按键，可写列表/单个")
+            .addParm(Type.LIST, "keys", "当前按下的全部按键", rawType = "java.util.List<java.lang.String>")
+            .addSpecialKey(Type.STRING, "Keys/keys", "按键，可写列表/单个")
             .description("玩家按下按键事件")
 
     override val clazz
         get() = KeyPressEvent::class.java
 
-    override val specialKeys = arrayOf("Keys")
+    override val specialKeys = arrayOf("Keys", "keys")
 
     override fun onRegister(station: IStation, map: Map<String, Any?>) {
         (map["Keys"] as? List<*>)?.forEach { Config.registeredKeys.add(it.toString()) } ?: Config.registeredKeys.add(map["keys"].toString())

@@ -1,6 +1,6 @@
 # Orryx API
 
-> 2.52.126：修复 Editor V1/V2 revision 隔离、Manifest 快照与结构化错误契约，并加固发布事务 mutation gate、回滚补偿重载和崩溃恢复；所有 Bukkit 重载继续非阻塞地切回主线程执行。
+> 2.53.126：新增 Kether Registry Schema v4，提供完整类型图、assignability、表达式可填充性、raw 类型提示、结构化别名、grammar/variants、执行上下文与 Trigger 事件字段；继续发布 v3 actions-schema 兼容层。
 
 > 2.52.125：修复控制台执行 `or edit` 时通用发送者被错误强转为 Bukkit `Player` 的问题；现在仅 `ProxyPlayer` 进入玩家分支，控制台会安全输出完整的一次性网址。
 
@@ -1285,5 +1285,5 @@ A: 对于可取消的事件，设置 `event.isCancelled = true`。
 
 ---
 
-*文档版本: 2.52.126*
+*文档版本: 2.53.126*
 *最后更新: 2026-07-15*

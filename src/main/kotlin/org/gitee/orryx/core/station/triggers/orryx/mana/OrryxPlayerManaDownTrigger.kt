@@ -15,7 +15,8 @@ object OrryxPlayerManaDownTrigger: AbstractPropertyEventTrigger<OrryxPlayerManaE
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.ORRYX, event)
-            .addParm(Type.DOUBLE, "mana", "变化蓝量")
+            .addParm(Type.DOUBLE, "mana", "变化蓝量", writable = true)
+            .addParm(Type.PROFILE, "profile", "玩家档案")
             .description("玩家蓝量下降事件")
 
     override val clazz

@@ -101,10 +101,13 @@ tasks.register<RunServer>("generateKetherDocs") {
 
         val requiredFiles = listOf(
             outputDirectory.resolve("latest.md"),
+            outputDirectory.resolve("kether-registry.json"),
             outputDirectory.resolve("actions-schema.json"),
             outputDirectory.resolve("manifest.json"),
             outputDirectory.resolve("channels/$channel.json"),
             bundle.resolve("manifest.json"),
+            bundle.resolve("kether-registry.json"),
+            bundle.resolve("kether-registry.schema.json"),
             bundle.resolve("actions-schema.json"),
             bundle.resolve("actions-schema.schema.json"),
             bundle.resolve("docs.md"),
@@ -132,6 +135,20 @@ tasks.register<Exec>("validateKetherDocs") {
     description = "Validates generated Kether documentation contracts, IDs, sizes and checksums."
     dependsOn(tasks.named("generateKetherDocs"))
     commandLine("node", "scripts/validate-kether-docs.mjs", ketherDocsSiteDirectory.get().asFile.absolutePath)
+}
+
+val checkCreationSuiteActionSchema = tasks.register<Exec>("checkCreationSuiteActionSchema") {
+    group = "verification"
+    description = "Fails when Creation Suite's bundled Kether registry snapshot is stale."
+    if (System.getProperty("os.name").startsWith("Windows", ignoreCase = true)) {
+        commandLine("py", "-3", "agent-skills/orryx-creation-suite/scripts/build_action_schema.py", "--check")
+    } else {
+        commandLine("python3", "agent-skills/orryx-creation-suite/scripts/build_action_schema.py", "--check")
+    }
+}
+
+tasks.named("check") {
+    dependsOn(checkCreationSuiteActionSchema)
 }
 
 taboolib {

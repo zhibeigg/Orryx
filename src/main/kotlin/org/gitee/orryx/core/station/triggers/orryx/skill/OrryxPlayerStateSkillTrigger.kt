@@ -15,9 +15,9 @@ object OrryxPlayerStateSkillTrigger: AbstractPropertyEventTrigger<OrryxPlayerSta
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.ORRYX, event)
-            .addParm(Type.ANY, "skillParameter", "技能参数上下文")
-            .addParm(Type.LONG, "silence", "沉默时长")
-            .addParm(Type.ANY, "state", "技能状态")
+            .addParm(Type.SKILL_PARAMETER, "skillParameter", "技能参数上下文")
+            .addParm(Type.LONG, "silence", "沉默时长", writable = true)
+            .addParm(Type.STATE, "state", "技能状态")
             .description("玩家状态技能触发事件")
 
     override val clazz

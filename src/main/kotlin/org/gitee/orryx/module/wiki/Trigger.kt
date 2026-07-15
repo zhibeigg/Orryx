@@ -10,7 +10,29 @@ class Trigger(val group: TriggerGroup, val key: String, var description: String 
     internal val entries by unsafeLazy { mutableListOf<Entry>() }
     internal val specialKeyEntries by unsafeLazy { mutableListOf<Entry>() }
 
-    class Entry(val type: Type, val key: String, val description: String)
+    var eventClass: String? = null
+        private set
+
+    var cancellable: Boolean = false
+        private set
+
+    class Entry(
+        val type: Type,
+        rawKey: String,
+        val description: String,
+        val readable: Boolean = true,
+        val writable: Boolean = false,
+        val nullable: Boolean = false,
+        val rawType: String = type.rawType,
+        val ketherFillable: Boolean = type.ketherFillable
+    ) {
+        val key: String = rawKey.substringBefore('/').trim()
+        val aliases: List<String> = rawKey.split('/')
+            .map(String::trim)
+            .filter(String::isNotBlank)
+            .filterNot { it == key }
+            .distinct()
+    }
 
     companion object {
 
@@ -20,13 +42,37 @@ class Trigger(val group: TriggerGroup, val key: String, var description: String 
 
     }
 
-    fun addParm(type: Type, key: String, description: String): Trigger {
-        entries += Entry(type, key, description)
+    fun addParm(
+        type: Type,
+        key: String,
+        description: String,
+        readable: Boolean = true,
+        writable: Boolean = false,
+        nullable: Boolean = false,
+        rawType: String = type.rawType,
+        ketherFillable: Boolean = type.ketherFillable
+    ): Trigger {
+        entries += Entry(type, key, description, readable, writable, nullable, rawType, ketherFillable)
         return this
     }
 
-    fun addSpecialKey(type: Type, key: String, description: String): Trigger {
-        specialKeyEntries += Entry(type, key, description)
+    fun addSpecialKey(
+        type: Type,
+        key: String,
+        description: String,
+        nullable: Boolean = true,
+        rawType: String = type.rawType,
+        ketherFillable: Boolean = type.ketherFillable
+    ): Trigger {
+        specialKeyEntries += Entry(type, key, description, writable = true, nullable = nullable, rawType = rawType, ketherFillable = ketherFillable)
+        return this
+    }
+
+    fun event(eventClass: Class<*>, cancellable: Boolean): Trigger = event(eventClass.name, cancellable)
+
+    fun event(eventClass: String, cancellable: Boolean): Trigger {
+        this.eventClass = eventClass
+        this.cancellable = cancellable
         return this
     }
 

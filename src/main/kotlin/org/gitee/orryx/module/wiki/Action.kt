@@ -3,9 +3,42 @@ package org.gitee.orryx.module.wiki
 import com.lark.oapi.service.docx.v1.enums.*
 import com.lark.oapi.service.docx.v1.model.*
 
-class Action(val group: String, val name: String, val key: String, val sharded: Boolean, val entries: MutableList<Entry> = mutableListOf(), var description: String = "", var example: MutableList<String> = mutableListOf()): WikiBlock {
+enum class ExecutionThread {
+    MAIN, ASYNC, ANY, UNKNOWN
+}
 
-    class Entry(val description: String, val type: Type, val optional: Boolean, val default: String? = null, val head: String? = null)
+class Action(
+    val group: String,
+    val name: String,
+    val key: String,
+    val sharded: Boolean,
+    val entries: MutableList<Entry> = mutableListOf(),
+    var description: String = "",
+    var example: MutableList<String> = mutableListOf()
+): WikiBlock {
+
+    class Entry(
+        val description: String,
+        val type: Type,
+        val optional: Boolean,
+        val default: String? = null,
+        val head: String? = null,
+        val acceptedTypes: Set<Type> = setOf(type)
+    )
+
+    val aliases: MutableSet<String> = linkedSetOf()
+
+    val contexts: MutableSet<String> = linkedSetOf("generic")
+
+    val explicitRequirements: MutableSet<String> = linkedSetOf()
+
+    var namespace: String? = null
+
+    var shared: Boolean = sharded
+
+    var executionThread: ExecutionThread = ExecutionThread.UNKNOWN
+
+    var suspends: Boolean? = null
 
     var result: Type = Type.NULL
 
@@ -19,8 +52,16 @@ class Action(val group: String, val name: String, val key: String, val sharded: 
 
     }
 
-    fun addEntry(description: String, type: Type, optional: Boolean = false, default: String? = null, head: String? = null): Action {
-        entries += Entry(description, type, optional, default, head)
+    fun addEntry(
+        description: String,
+        type: Type,
+        optional: Boolean = false,
+        default: String? = null,
+        head: String? = null,
+        acceptedTypes: Set<Type> = setOf(type)
+    ): Action {
+        require(acceptedTypes.isNotEmpty()) { "Action 输入至少需要一个可接受类型" }
+        entries += Entry(description, type, optional, default, head, acceptedTypes)
         return this
     }
 
@@ -41,6 +82,37 @@ class Action(val group: String, val name: String, val key: String, val sharded: 
 
     fun description(description: String): Action {
         this.description = description
+        return this
+    }
+
+    fun aliases(vararg aliases: String): Action {
+        this.aliases += aliases.filter(String::isNotBlank)
+        return this
+    }
+
+    fun namespace(namespace: String): Action {
+        this.namespace = namespace
+        return this
+    }
+
+    fun shared(shared: Boolean = true): Action {
+        this.shared = shared
+        return this
+    }
+
+    fun context(vararg contexts: String): Action {
+        this.contexts += contexts.filter(String::isNotBlank)
+        return this
+    }
+
+    fun requires(vararg requirements: String): Action {
+        explicitRequirements += requirements.filter(String::isNotBlank)
+        return this
+    }
+
+    fun execution(thread: ExecutionThread, suspends: Boolean? = null): Action {
+        executionThread = thread
+        this.suspends = suspends
         return this
     }
 
@@ -93,7 +165,7 @@ class Action(val group: String, val name: String, val key: String, val sharded: 
                 "<" to ">"
             }
             var string = if (entry.type == Type.SYMBOL) {
-                entry.head!!
+                entry.head?.takeIf(String::isNotBlank) ?: "<SYMBOL>"
             } else {
                 "${start}${entry.type.name}"
             }

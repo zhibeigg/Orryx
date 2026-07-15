@@ -8,7 +8,7 @@ import org.gitee.orryx.core.station.triggers.AbstractPropertyEventTrigger
 import org.gitee.orryx.module.wiki.Trigger
 import org.gitee.orryx.module.wiki.TriggerGroup
 import org.gitee.orryx.module.wiki.Type
-import org.serverct.ersha.dungeon.common.api.event.dungeon.DungeonEndEvent
+import org.serverct.ersha.dungeon.common.api.event.dungeon.DungeonLeaveEvent
 import taboolib.common.OpenResult
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.adaptPlayer
@@ -28,7 +28,7 @@ object DungeonLeaveTrigger: AbstractPropertyEventTrigger<PlayerDungeonEvent>("Du
 
     override fun onCheck(pipeTask: IPipeTask, event: PlayerDungeonEvent, map: Map<String, Any?>): Boolean {
         val e = event.event.event
-        return e is DungeonEndEvent.After && (pipeTask.scriptContext?.sender?.origin == event.player)
+        return e is DungeonLeaveEvent && (pipeTask.scriptContext?.sender?.origin == event.player)
     }
 
     override fun onJoin(event: PlayerDungeonEvent, map: Map<String, Any?>): ProxyCommandSender {

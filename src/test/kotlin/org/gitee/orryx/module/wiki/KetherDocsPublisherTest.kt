@@ -28,6 +28,7 @@ class KetherDocsPublisherTest {
         assertEquals("Orryx", manifest.getValue("pluginId").jsonPrimitive.content)
         assertEquals("2.43.114", manifest.getValue("version").jsonPrimitive.content)
         assertEquals(3, manifest.getValue("schemaVersion").jsonPrimitive.content.toInt())
+        assertEquals(4, manifest.getValue("registryVersion").jsonPrimitive.content.toInt())
         assertEquals("$KETHER_DOCS_BASE_URL/actions-schema.json", manifest.getValue("schema").jsonPrimitive.content)
         assertEquals("$KETHER_DOCS_BASE_URL/channels/stable.json", manifest.getValue("stableChannel").jsonPrimitive.content)
         assertEquals(10, manifest.getValue("counts").jsonObject.getValue("actions").jsonPrimitive.content.toInt())
@@ -60,6 +61,7 @@ class KetherDocsPublisherTest {
         ).jsonObject
         assertEquals(metadata.releaseId, manifest.getValue("releaseId").jsonPrimitive.content)
         assertEquals(3, manifest.getValue("schemaVersion").jsonPrimitive.content.toInt())
+        assertEquals(4, manifest.getValue("registryVersion").jsonPrimitive.content.toInt())
         assertEquals(commit, manifest.getValue("plugin").jsonObject.getValue("commit").jsonPrimitive.content)
         assertEquals(64, manifest.getValue("assets").jsonObject.getValue("schema").jsonObject.getValue("sha256").jsonPrimitive.content.length)
     }
@@ -88,10 +90,64 @@ class KetherDocsPublisherTest {
         for (contract in listOf(
             KetherDocsContracts.channelManifest,
             KetherDocsContracts.releaseManifest,
-            KetherDocsContracts.actionsSchema
+            KetherDocsContracts.actionsSchema,
+            KetherRegistryContracts.registryV4
         )) {
             assertTrue(Json.parseToJsonElement(contract).jsonObject.isNotEmpty())
         }
+    }
+
+    @Test
+    fun `type graph and raw input metadata are complete`() {
+        assertTrue(Type.NUMBER.isAssignableFrom(Type.INT))
+        assertTrue(Type.TARGET.isAssignableFrom(Type.PLAYER))
+        assertTrue(Type.ANY.isAssignableFrom(Type.SKILL_PARAMETER))
+        assertTrue(Type.PROFILE.parents.isNotEmpty())
+        assertEquals(false, Type.PROFILE.ketherFillable)
+        assertTrue(Type.PROFILE.rawType.isNotBlank())
+    }
+
+    @Test
+    fun `aliases keywords and trigger entry metadata are structured`() {
+        val wait = Action.new("Kether原生-延迟", "延迟", "wait")
+        assertEquals(listOf("delay", "sleep"), KetherDocsContract.actionAliases(wait))
+
+        val parameter = Action.new("上下文", "参数", "parameter/parm")
+        assertEquals("parameter", KetherDocsContract.actionName(parameter))
+        assertEquals(listOf("parm"), KetherDocsContract.actionAliases(parameter))
+
+        val entry = Trigger.Entry(Type.STRING, "from/old", "旧值", writable = true, nullable = true)
+        assertEquals("from", entry.key)
+        assertEquals(listOf("old"), entry.aliases)
+        assertTrue(entry.readable)
+        assertTrue(entry.writable)
+        assertTrue(entry.nullable)
+    }
+
+    @Test
+    fun `release manifest requires editor schema v3 while publishing registry v4`() {
+        val metadata = KetherDocsContract.metadata(
+            pluginId = "Orryx",
+            version = "2.53.126",
+            commit = commit,
+            channel = "snapshot",
+            generatedAt = Instant.parse("2026-07-15T00:00:00Z")
+        )
+        val manifest = Json.parseToJsonElement(
+            KetherDocsPublisher.buildReleaseManifest(metadata, counts(), mapOf(
+                "registry" to asset("kether-registry.json"),
+                "registryContract" to asset("kether-registry.schema.json"),
+                "schema" to asset("actions-schema.json"),
+                "schemaContract" to asset("actions-schema.schema.json"),
+                "markdown" to asset("docs.md", "text/markdown; charset=utf-8"),
+                "changes" to asset("changes.json"),
+                "checksums" to asset("checksums.json")
+            ))
+        ).jsonObject
+        assertEquals(3, manifest.getValue("schemaVersion").jsonPrimitive.content.toInt())
+        assertEquals(4, manifest.getValue("registryVersion").jsonPrimitive.content.toInt())
+        assertEquals(3, manifest.getValue("compatibility").jsonObject.getValue("minimumEditorSchemaVersion").jsonPrimitive.content.toInt())
+        assertEquals(4, manifest.getValue("compatibility").jsonObject.getValue("minimumEditorRegistryVersion").jsonPrimitive.content.toInt())
     }
 
     @Test

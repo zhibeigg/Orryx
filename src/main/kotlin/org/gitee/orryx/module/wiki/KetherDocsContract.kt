@@ -6,7 +6,8 @@ import java.time.Instant
 import java.util.Locale
 
 internal const val KETHER_DOCS_FORMAT_VERSION = 1
-internal const val KETHER_SCHEMA_VERSION = 3
+internal const val KETHER_REGISTRY_VERSION = 4
+internal const val KETHER_ACTIONS_SCHEMA_VERSION = 3
 internal const val KETHER_DOCS_BASE_URL = "https://zhibeigg.github.io/Orryx/kether"
 
 data class KetherDocsMetadata(
@@ -60,6 +61,40 @@ internal object KetherDocsContract {
         return KetherDocsMetadata(pluginId, version, normalizedCommit, channel, generatedAt, previousReleaseId)
     }
 
+    private val knownAliases = mapOf(
+        "wait" to setOf("delay", "sleep"),
+        "parameter" to setOf("parm"),
+        "arcartx" to setOf("ax"),
+        "cloudpick" to setOf("cp"),
+        "dragoncore" to setOf("dragon"),
+        "germplugin" to setOf("germ"),
+        "mythicmobs" to setOf("mm")
+    )
+
+    fun actionName(action: Action): String = action.key.substringBefore('/').trim()
+
+    fun actionAliases(action: Action): List<String> {
+        val name = actionName(action)
+        val declared = action.key.split('/').drop(1) + action.aliases + knownAliases[name].orEmpty()
+        val documented = Regex("别名\\s*([^，。；\\n]+)").findAll(action.description)
+            .flatMap { match -> match.groupValues[1].split('/', '、', ',', ' ').asSequence() }
+            .map(String::trim)
+            .filter { it.matches(Regex("[A-Za-z0-9_\\$-]+")) }
+            .toList()
+        return (declared + documented)
+            .filter(String::isNotBlank)
+            .filterNot { it.equals(name, ignoreCase = true) }
+            .distinctBy { it.lowercase(Locale.ROOT) }
+            .sortedBy { it.lowercase(Locale.ROOT) }
+    }
+
+    fun keywordAlternatives(value: String?): List<String> = value
+        ?.split('/')
+        ?.map(String::trim)
+        ?.filter(String::isNotBlank)
+        ?.distinct()
+        .orEmpty()
+
     fun actionSyntax(action: Action): String {
         val tail = action.entries.joinToString(" ") { entry ->
             val (start, end) = if (entry.optional) "[" to "]" else "<" to ">"
@@ -74,7 +109,8 @@ internal object KetherDocsContract {
                 }
             }
         }
-        return if (tail.isBlank()) action.key else "${action.key} $tail"
+        val name = actionName(action)
+        return if (tail.isBlank()) name else "$name $tail"
     }
 
     fun inputKey(entry: Action.Entry, index: Int): String = entry.head
@@ -94,12 +130,20 @@ internal object KetherDocsContract {
         return if (tail.isBlank()) head else "$head $tail"
     }
 
-    fun inferNamespace(action: Action): String = if ("kether原生" in action.group.lowercase(Locale.ROOT)) "kether" else "orryx"
+    fun inferNamespace(action: Action): String {
+        action.namespace?.trim()?.takeIf(String::isNotEmpty)?.let { return it.lowercase(Locale.ROOT) }
+        val group = action.group.lowercase(Locale.ROOT)
+        return when {
+            "kether原生" in group -> "kether"
+            "nodens" in group -> "nodens"
+            else -> "orryx"
+        }
+    }
 
     fun actionIds(actions: List<Action>): Map<Action, String> {
         val result = linkedMapOf<Action, String>()
         for (action in actions) {
-            val base = "${inferNamespace(action)}.action.${slug(action.key)}"
+            val base = "${inferNamespace(action)}.action.${slug(actionName(action))}"
             val qualifier = action.entries
                 .filter { it.type == Type.SYMBOL && !it.head.isNullOrBlank() }
                 .joinToString(".") { slug(it.head.orEmpty().substringBefore('/')) }
@@ -151,7 +195,7 @@ internal object KetherDocsContract {
 
     fun actionRequirements(action: Action): List<String> {
         val group = action.group.lowercase(Locale.ROOT)
-        return linkedMapOf(
+        val inferred = linkedMapOf(
             "DragonCore" to listOf("dragoncore", "龙核"),
             "CloudPick" to listOf("cloudpick", "云拾"),
             "ArcartX" to listOf("arcartx"),
@@ -161,13 +205,35 @@ internal object KetherDocsContract {
             "AstraXHero" to listOf("astraxhero"),
             "Nodens" to listOf("nodens"),
             "GDDTitle" to listOf("gddtitle")
-        ).filterValues { markers -> markers.any { it in group } }.keys.toList()
+        ).filterValues { markers -> markers.any { it in group } }.keys
+        return (inferred + action.explicitRequirements).distinct().sorted()
     }
 
     fun actionSuspends(action: Action): Boolean {
-        val key = action.key.lowercase(Locale.ROOT)
+        action.suspends?.let { return it }
+        val key = actionName(action).lowercase(Locale.ROOT)
         return key in setOf("wait", "delay", "sleep", "await", "await_all", "await_any", "aichat") ||
             "等待" in action.description
+    }
+
+    fun actionThread(action: Action): ExecutionThread {
+        if (action.executionThread != ExecutionThread.UNKNOWN) return action.executionThread
+        val key = actionName(action).lowercase(Locale.ROOT)
+        val group = action.group.lowercase(Locale.ROOT)
+        if (key == "async") return ExecutionThread.ASYNC
+        if (actionSuspends(action) || key in setOf("calc", "math", "random", "round", "scale", "type", "check")) {
+            return ExecutionThread.ANY
+        }
+        if (listOf("数学", "变量", "数组", "类型转换", "vector", "matrix", "quaternion").any { it in group }) {
+            return ExecutionThread.ANY
+        }
+        if (listOf(
+                "游戏", "实体", "世界", "移动", "传送", "伤害", "技能", "状态", "碰撞", "粒子", "音效",
+                "dragoncore", "cloudpick", "arcartx", "germplugin", "mythicmobs", "nodens", "attribute"
+            ).any { it in group }) {
+            return ExecutionThread.MAIN
+        }
+        return ExecutionThread.UNKNOWN
     }
 
     fun asset(file: File, mediaType: String): KetherDocsAsset {
@@ -199,16 +265,16 @@ internal object KetherDocsContract {
 
     private fun actionIdentitySignature(action: Action): String = listOf(
         inferNamespace(action),
-        action.key,
+        actionName(action),
         action.entries.joinToString("|") { entry ->
-            "${entry.head.orEmpty()}:${entry.type.name}:${entry.optional}:${entry.default.orEmpty()}"
+            "${entry.head.orEmpty()}:${entry.acceptedTypes.joinToString(",") { it.id }}:${entry.optional}:${entry.default.orEmpty()}"
         },
         action.result.name,
         inferFlowType(action)
     ).joinToString("|")
 
     fun inferFlowType(action: Action): String {
-        val key = action.key.lowercase(Locale.ROOT)
+        val key = actionName(action).lowercase(Locale.ROOT)
         val group = action.group.lowercase(Locale.ROOT)
         return when {
             key == "if" || key == "case" || key == "check" || key == "optional" -> "branch"

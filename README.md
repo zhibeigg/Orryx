@@ -6,7 +6,7 @@
 
 **跨时代技能插件，支持实现复杂逻辑，为稳定高效而生**
 
-[![Version](https://img.shields.io/badge/version-2.52.126-blue?style=for-the-badge)](https://github.com/zhibeigg/Orryx/releases)
+[![Version](https://img.shields.io/badge/version-2.53.126-blue?style=for-the-badge)](https://github.com/zhibeigg/Orryx/releases)
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.12--1.21-green?style=for-the-badge&logo=minecraft)](https://www.minecraft.net/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.1.20-purple?style=for-the-badge&logo=kotlin)](https://kotlinlang.org/)
 [![TabooLib](https://img.shields.io/badge/TabooLib-6.2.4-orange?style=for-the-badge)](https://github.com/TabooLib/taboolib)
@@ -102,7 +102,8 @@ Orryx 会从运行时完整注册表生成版本化 Kether 文档包：
 
 - `channels/stable.json` 只随正式 Tag 更新，供生产编辑器自动同步。
 - `channels/snapshot.json` 随 `master` 更新，供开发验证。
-- 每个不可变发布目录包含 Schema v3、Markdown、结构化差异和 SHA-256。
+- 每个不可变发布目录包含 Schema v4 Kether Registry、v3 `actions-schema.json` 兼容层、Markdown、结构化差异和 SHA-256。
+- v4 提供完整类型图、assignability、raw/Kether 可填充提示、结构化 aliases、grammar/variants、线程/上下文与 Trigger 事件字段。
 - 现有 `manifest.json`、`actions-schema.json` 与 `latest.md` 继续作为兼容入口。
 
 在线文档：`https://zhibeigg.github.io/Orryx/`
@@ -588,7 +589,8 @@ Windows PowerShell：
 
 - [飞书 Wiki](https://o0vvjwgpeju.feishu.cn/wiki/Syzzw7aQwixJ4YkXoOAcyYkfnOg) — 完整使用文档
 - [Kether 最新文档](https://zhibeigg.github.io/Orryx/kether/latest.md) — 由插件运行时注册数据自动生成
-- [Kether 编辑器 Schema](https://zhibeigg.github.io/Orryx/kether/actions-schema.json) — 供 `orryx-edit` 获取动作、选择器和触发器定义
+- [Kether Registry v4](https://zhibeigg.github.io/Orryx/kether/kether-registry.json) — 完整类型、动作、选择器、触发器与属性注册表
+- [Kether 编辑器 Schema v3](https://zhibeigg.github.io/Orryx/kether/actions-schema.json) — 旧消费者兼容入口
 - [Kether 文档 Manifest](https://zhibeigg.github.io/Orryx/kether/manifest.json) — 当前版本、版本化文档与下载地址
 - [DeepWiki AI](https://deepwiki.com/zhibeigg/Orryx) — AI 问答助手
 - [ZRead AI](https://zread.ai/zhibeigg/Orryx) — AI 问答助手

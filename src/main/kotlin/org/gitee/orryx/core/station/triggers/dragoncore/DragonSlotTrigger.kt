@@ -16,7 +16,7 @@ object DragonSlotTrigger: AbstractPropertyPlayerEventTrigger<PlayerSlotUpdateEve
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.DRAGONCORE, event)
             .addParm(Type.STRING, "identifier", "槽位名")
-            .addParm(Type.ITERABLE, "item", "物品")
+            .addParm(Type.ITEM_STACK, "item", "物品", nullable = true)
             .addSpecialKey(Type.STRING, "Identifier", "槽位名")
             .description("玩家龙核槽位更新")
 

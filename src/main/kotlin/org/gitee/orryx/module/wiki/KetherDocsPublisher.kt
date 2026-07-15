@@ -96,6 +96,8 @@ object KetherDocsPublisher {
         }
 
         val markdownFile = File(bundleDirectory, "docs.md")
+        val registryFile = File(bundleDirectory, "kether-registry.json")
+        val registryContractFile = File(bundleDirectory, "kether-registry.schema.json")
         val schemaFile = File(bundleDirectory, "actions-schema.json")
         val schemaContractFile = File(bundleDirectory, "actions-schema.schema.json")
         val changesFile = File(bundleDirectory, "changes.json")
@@ -104,7 +106,9 @@ object KetherDocsPublisher {
 
         MarkdownGenerator.generate(markdownFile)
         val schema = ActionsSchemaGenerator.generate(schemaFile, metadata)
+        KetherRegistryGenerator.generate(registryFile, metadata)
         KetherDocsContract.writeUtf8(schemaContractFile, KetherDocsContracts.actionsSchema)
+        KetherDocsContract.writeUtf8(registryContractFile, KetherRegistryContracts.registryV4)
 
         val previousSchema = System.getProperty(PREVIOUS_SCHEMA_PROPERTY)
             ?.trim()
@@ -118,6 +122,8 @@ object KetherDocsPublisher {
         KetherDocsContract.writeUtf8(changesFile, KetherDocsDiff.encode(changes))
 
         val checksumInputs = linkedMapOf(
+            registryFile.name to KetherDocsContract.sha256(registryFile),
+            registryContractFile.name to KetherDocsContract.sha256(registryContractFile),
             schemaFile.name to KetherDocsContract.sha256(schemaFile),
             schemaContractFile.name to KetherDocsContract.sha256(schemaContractFile),
             markdownFile.name to KetherDocsContract.sha256(markdownFile),
@@ -126,6 +132,8 @@ object KetherDocsPublisher {
         KetherDocsContract.writeUtf8(checksumsFile, buildChecksums(checksumInputs))
 
         val assets = linkedMapOf(
+            "registry" to KetherDocsContract.asset(registryFile, "application/json"),
+            "registryContract" to KetherDocsContract.asset(registryContractFile, "application/schema+json"),
             "schema" to KetherDocsContract.asset(schemaFile, "application/json"),
             "schemaContract" to KetherDocsContract.asset(schemaContractFile, "application/schema+json"),
             "markdown" to KetherDocsContract.asset(markdownFile, "text/markdown; charset=utf-8"),
@@ -149,7 +157,7 @@ object KetherDocsPublisher {
             buildChannelManifest(metadata)
         )
 
-        writeLegacyCompatibility(ketherDirectory, schemaFile, markdownFile, metadata, counts)
+        writeLegacyCompatibility(ketherDirectory, registryFile, schemaFile, markdownFile, metadata, counts)
         KetherDocsContract.writeUtf8(File(siteDirectory, "index.html"), generateIndex(metadata))
         File(siteDirectory, ".nojekyll").apply {
             parentFile?.mkdirs()
@@ -199,7 +207,9 @@ object KetherDocsPublisher {
                 put("version", metadata.version)
                 put("commit", metadata.commit)
             })
-            put("schemaVersion", KETHER_SCHEMA_VERSION)
+            // schemaVersion 始终描述 legacy actions-schema.json；Registry 使用独立版本，避免旧 Editor 误把 v3 当成 v4。
+            put("schemaVersion", KETHER_ACTIONS_SCHEMA_VERSION)
+            put("registryVersion", KETHER_REGISTRY_VERSION)
             put("generatedAt", metadata.generatedAt.toString())
             if (metadata.previousReleaseId == null) put("previousReleaseId", JsonNull)
             else put("previousReleaseId", metadata.previousReleaseId)
@@ -209,7 +219,8 @@ object KetherDocsPublisher {
             put("counts", counts.toJson())
             put("compatibility", buildJsonObject {
                 put("minimumEditorManifestFormat", 1)
-                put("minimumEditorSchemaVersion", 2)
+                put("minimumEditorSchemaVersion", KETHER_ACTIONS_SCHEMA_VERSION)
+                put("minimumEditorRegistryVersion", KETHER_REGISTRY_VERSION)
             })
         }
     )
@@ -227,11 +238,13 @@ object KetherDocsPublisher {
             put("pluginId", pluginName)
             put("pluginVersion", version)
             put("version", version)
-            put("schemaVersion", KETHER_SCHEMA_VERSION)
+            put("schemaVersion", KETHER_ACTIONS_SCHEMA_VERSION)
+            put("registryVersion", KETHER_REGISTRY_VERSION)
             put("generatedAt", generatedAt.toString())
             commit?.let { put("commit", it) }
             put("latest", "$PAGES_BASE_URL/latest.md")
             put("versioned", "$PAGES_BASE_URL/versions/$safeVersion.md")
+            put("registry", "$PAGES_BASE_URL/kether-registry.json")
             put("schema", "$PAGES_BASE_URL/actions-schema.json")
             put("stableChannel", "$PAGES_BASE_URL/channels/stable.json")
             put("snapshotChannel", "$PAGES_BASE_URL/channels/snapshot.json")
@@ -239,6 +252,7 @@ object KetherDocsPublisher {
             put("files", buildJsonObject {
                 put("markdown", "./latest.md")
                 put("versionedMarkdown", "./versions/$safeVersion.md")
+                put("ketherRegistry", "./kether-registry.json")
                 put("actionsSchema", "./actions-schema.json")
             })
         }
@@ -246,12 +260,14 @@ object KetherDocsPublisher {
 
     private fun writeLegacyCompatibility(
         ketherDirectory: File,
+        registryFile: File,
         schemaFile: File,
         markdownFile: File,
         metadata: KetherDocsMetadata,
         counts: RegistrationCounts
     ) {
         val versionsDirectory = File(ketherDirectory, "versions").apply { mkdirs() }
+        registryFile.copyTo(File(ketherDirectory, "kether-registry.json"), overwrite = true)
         schemaFile.copyTo(File(ketherDirectory, "actions-schema.json"), overwrite = true)
         markdownFile.copyTo(File(ketherDirectory, "latest.md"), overwrite = true)
         markdownFile.copyTo(File(versionsDirectory, "${metadata.safeVersion}.md"), overwrite = true)
@@ -308,6 +324,8 @@ object KetherDocsPublisher {
             "release manifest 为空或超过 64 KiB"
         }
         val budgets = mapOf(
+            "registry" to 8L * 1024 * 1024,
+            "registryContract" to 1024L * 1024,
             "schema" to 4L * 1024 * 1024,
             "schemaContract" to 512L * 1024,
             "markdown" to 8L * 1024 * 1024,

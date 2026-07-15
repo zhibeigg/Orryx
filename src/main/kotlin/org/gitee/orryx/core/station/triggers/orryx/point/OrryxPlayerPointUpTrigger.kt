@@ -15,7 +15,8 @@ object OrryxPlayerPointUpTrigger: AbstractPropertyEventTrigger<OrryxPlayerPointE
 
     override val wiki: Trigger
         get() = Trigger.Companion.new(TriggerGroup.ORRYX, event)
-            .addParm(Type.DOUBLE, "point", "变化技能点")
+            .addParm(Type.DOUBLE, "point", "变化技能点", writable = true)
+            .addParm(Type.PROFILE, "profile", "玩家档案")
             .description("玩家技能点上升事件")
 
     override val clazz

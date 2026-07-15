@@ -19,6 +19,7 @@ object GermClientLinkedTrigger: AbstractPropertyEventTrigger<GermClientLinkedEve
             .addParm(Type.STRING, "ip", "ip")
             .addParm(Type.STRING, "machineCode", "机器代码")
             .addParm(Type.STRING, "modVersion", "萌芽mod版本")
+            .addParm(Type.STRING, "qq", "客户端绑定 QQ", nullable = true)
             .description("玩家进服后萌芽加载完毕")
 
     override val clazz

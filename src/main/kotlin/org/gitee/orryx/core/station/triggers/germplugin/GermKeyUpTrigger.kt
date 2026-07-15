@@ -19,14 +19,15 @@ object GermKeyUpTrigger: AbstractPropertyEventTrigger<GermKeyUpEvent>("Germ Key 
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.GERM_PLUGIN, event)
-            .addParm(Type.STRING, "key", "按下的按键")
-            .addSpecialKey(Type.STRING, "Keys", "按键，可写列表/单个")
+            .addParm(Type.STRING, "key", "释放的按键")
+            .addParm(Type.KEY_BINDING, "keyBinding", "萌芽按键绑定对象")
+            .addSpecialKey(Type.STRING, "Keys/keys", "按键，可写列表/单个")
             .description("玩家释放按键事件")
 
     override val clazz
         get() = GermKeyUpEvent::class.java
 
-    override val specialKeys = arrayOf("Keys")
+    override val specialKeys = arrayOf("Keys", "keys")
 
     override fun onRegister(station: IStation, map: Map<String, Any?>) {
         (map["Keys"] as? List<*>)?.forEach { GermKeyAPI.registerKey(KeyType.valueOf("KEY_${it}")) } ?: GermKeyAPI.registerKey(KeyType.valueOf("KEY_${map["keys"]}"))

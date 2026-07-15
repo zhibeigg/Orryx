@@ -18,7 +18,8 @@ object ArcartXCustomPacketTrigger: AbstractPropertyEventTrigger<ClientCustomPack
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.ARCARTX, event)
             .addParm(Type.STRING, "id", "包ID")
-            .addParm(Type.STRING, "data", "包数据")
+            .addParm(Type.STRING, "data", "逗号拼接后的包数据")
+            .addParm(Type.LIST, "args", "原始包参数", rawType = "java.util.List<java.lang.String>")
             .addSpecialKey(Type.STRING, "Ids", "包ID，用于过滤")
             .description("玩家ArcartX自定义发包")
 

@@ -1,6 +1,7 @@
 package org.gitee.orryx.core.station
 
 import org.bukkit.Bukkit
+import org.bukkit.event.Cancellable
 import org.gitee.orryx.api.events.register.OrryxTriggerRegisterEvent
 import org.gitee.orryx.core.kether.ScriptManager
 import org.gitee.orryx.core.station.pipe.IPipeTrigger
@@ -36,7 +37,14 @@ object TriggerManager: ClassVisitor(3) {
         val c = clazz.toClass()
         if (WikiTrigger::class.java.isAssignableFrom(c)) {
             try {
-                (clazz.getInstance() as? WikiTrigger)?.also { ScriptManager.wikiTriggers.add(it.wiki) }
+                val instance = clazz.getInstance() as? WikiTrigger
+                if (instance != null) {
+                    val wiki = instance.wiki
+                    if (instance is ITrigger<*>) {
+                        wiki.event(instance.clazz, Cancellable::class.java.isAssignableFrom(instance.clazz))
+                    }
+                    ScriptManager.wikiTriggers.add(wiki)
+                }
             } catch (_: Throwable){
                 return
             }

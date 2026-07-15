@@ -32,7 +32,7 @@ internal object KetherDocsContracts {
           "title": "Orryx Kether release manifest v1",
           "type": "object",
           "additionalProperties": false,
-          "required": ["formatVersion", "releaseId", "channel", "plugin", "schemaVersion", "generatedAt", "assets", "counts", "compatibility"],
+          "required": ["formatVersion", "releaseId", "channel", "plugin", "schemaVersion", "registryVersion", "generatedAt", "assets", "counts", "compatibility"],
           "properties": {
             "${'$'}schema": { "type": "string", "format": "uri" },
             "formatVersion": { "const": 1 },
@@ -49,11 +49,12 @@ internal object KetherDocsContracts {
               }
             },
             "schemaVersion": { "const": 3 },
+            "registryVersion": { "const": 4 },
             "generatedAt": { "type": "string", "format": "date-time" },
             "previousReleaseId": { "type": ["string", "null"] },
             "assets": {
               "type": "object",
-              "required": ["schema", "schemaContract", "markdown", "changes", "checksums"],
+              "required": ["registry", "registryContract", "schema", "schemaContract", "markdown", "changes", "checksums"],
               "additionalProperties": { "${'$'}ref": "#/${'$'}defs/asset" }
             },
             "counts": {
@@ -70,10 +71,11 @@ internal object KetherDocsContracts {
             "compatibility": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["minimumEditorManifestFormat", "minimumEditorSchemaVersion"],
+              "required": ["minimumEditorManifestFormat", "minimumEditorSchemaVersion", "minimumEditorRegistryVersion"],
               "properties": {
                 "minimumEditorManifestFormat": { "type": "integer", "minimum": 1 },
-                "minimumEditorSchemaVersion": { "type": "integer", "minimum": 1 }
+                "minimumEditorSchemaVersion": { "type": "integer", "minimum": 1 },
+                "minimumEditorRegistryVersion": { "type": "integer", "minimum": 1 }
               }
             }
           },
@@ -156,5 +158,6 @@ internal object KetherDocsContracts {
         KetherDocsContract.writeUtf8(File(directory, "channel-manifest-v1.schema.json"), channelManifest)
         KetherDocsContract.writeUtf8(File(directory, "release-manifest-v1.schema.json"), releaseManifest)
         KetherDocsContract.writeUtf8(File(directory, "actions-schema-v3.schema.json"), actionsSchema)
+        KetherDocsContract.writeUtf8(File(directory, "kether-registry-v4.schema.json"), KetherRegistryContracts.registryV4)
     }
 }

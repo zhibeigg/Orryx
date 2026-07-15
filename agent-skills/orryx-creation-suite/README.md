@@ -94,6 +94,8 @@ py -3 scripts/materialize.py --input materialize-request.json --output materiali
 ```bash
 py -3 scripts/build_action_schema.py --check
 py -3 scripts/validate_suite.py
+# 仓库根目录的 Gradle check 也会执行同一陈旧检查
+./gradlew checkCreationSuiteActionSchema
 py -3 scripts/validate_skills.py
 py -3 scripts/security_scan.py
 ```

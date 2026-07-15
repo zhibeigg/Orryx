@@ -14,8 +14,8 @@ object OrryxPlayerSkillCheckTrigger: AbstractPropertyEventTrigger<OrryxPlayerSki
 
     override val wiki: Trigger
         get() = Trigger.new(TriggerGroup.ORRYX, event)
-            .addParm(Type.ANY, "skill", "玩家技能")
-            .addParm(Type.LONG, "skillParameter", "技能参数上下文")
+            .addParm(Type.SKILL, "skill", "玩家技能")
+            .addParm(Type.SKILL_PARAMETER, "skillParameter", "技能参数上下文")
             .description("玩家技能释放前检查事件")
 
     override val clazz

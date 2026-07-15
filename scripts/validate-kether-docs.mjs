@@ -81,9 +81,12 @@ check(manifest.channel === channel.channel, "channel and release manifest channe
 check(manifest.plugin?.id === "Orryx", "release plugin id must be Orryx")
 check(manifest.plugin?.version === channel.pluginVersion, "release version mismatch")
 check(manifest.plugin?.commit === channel.commit, "release commit mismatch")
-check(manifest.schemaVersion === 3, "release schemaVersion must be 3")
+check(manifest.schemaVersion === 4, "release schemaVersion must be 4")
+check(manifest.compatibility?.minimumEditorSchemaVersion === 3, "minimumEditorSchemaVersion must be 3")
 
 const budgets = {
+  registry: 8 * 1024 * 1024,
+  registryContract: 1024 * 1024,
   schema: 4 * 1024 * 1024,
   schemaContract: 512 * 1024,
   markdown: 8 * 1024 * 1024,
@@ -103,6 +106,14 @@ for (const name of requiredAssets) {
   check(await sha256(path) === asset.sha256, `${name} sha256 mismatch`)
 }
 
+const registryPath = resolveAsset(releaseManifestPath, manifest.assets.registry.path)
+const { value: registry } = await readJson(registryPath)
+check(registry.registryVersion === 4 && registry.schemaVersion === 4, "registry version must be 4")
+check(registry.plugin?.id === "Orryx", "registry plugin id must be Orryx")
+check(registry.plugin?.version === manifest.plugin.version, "registry plugin version mismatch")
+check(registry.plugin?.commit === manifest.plugin.commit, "registry commit mismatch")
+check(registry.compatibility?.actionsSchemaVersion === 3, "registry must advertise actions schema v3 compatibility")
+
 const schemaPath = resolveAsset(releaseManifestPath, manifest.assets.schema.path)
 const { value: schema } = await readJson(schemaPath)
 check(schema.version === 2, "compatibility version must remain 2")
@@ -112,6 +123,30 @@ check(schema.plugin?.version === manifest.plugin.version, "schema plugin version
 check(schema.plugin?.commit === manifest.plugin.commit, "schema commit mismatch")
 for (const field of ["types", "categories"]) check(schema[field] && typeof schema[field] === "object" && !Array.isArray(schema[field]), `schema ${field} must be an object`)
 for (const field of ["actions", "selectors", "triggers", "properties"]) check(Array.isArray(schema[field]), `schema ${field} must be an array`)
+for (const field of ["actions", "selectors", "triggers", "properties"]) check(Array.isArray(registry[field]), `registry ${field} must be an array`)
+check(registry.actions.length === schema.actions.length, "registry/actions-schema action count mismatch")
+for (const [typeId, type] of Object.entries(registry.types)) {
+  check(Array.isArray(type.parents) && Array.isArray(type.children) && Array.isArray(type.assignableFrom), `${typeId} type graph is incomplete`)
+  check(typeof type.ketherFillable === "boolean" && typeof type.rawType === "string", `${typeId} fillability metadata is incomplete`)
+  if (!type.ketherFillable) check(typeof type.inputHint === "string" && type.inputHint.includes("raw"), `${typeId} must provide raw value hint`)
+}
+for (const action of registry.actions) {
+  check(Array.isArray(action.aliases) && action.aliases.every((alias) => typeof alias?.name === "string"), `${action.id} aliases are not structured`)
+  check(typeof action.shared === "boolean", `${action.id} shared flag is missing`)
+  check(action.grammar && Array.isArray(action.grammar.inputs) && Array.isArray(action.grammar.variants), `${action.id} grammar is incomplete`)
+  check(["none", "declared", "unknown"].includes(action.output?.status), `${action.id} output status is invalid`)
+  check(["main", "async", "any", "unknown"].includes(action.execution?.thread), `${action.id} execution thread is invalid`)
+  for (const input of action.grammar.inputs) {
+    check(Array.isArray(input.acceptedTypes) && input.acceptedTypes.length > 0, `${action.id} input ${input.key} has no acceptedTypes`)
+    for (const type of input.acceptedTypes) check(registry.types[type], `${action.id} input ${input.key} references unknown accepted type ${type}`)
+  }
+}
+for (const trigger of registry.triggers) {
+  check(Object.hasOwn(trigger, "eventClass") && typeof trigger.cancellable === "boolean", `${trigger.id} event metadata is incomplete`)
+  for (const field of [...trigger.variables, ...trigger.specialKeys]) {
+    for (const key of ["aliases", "readable", "writable", "nullable", "rawType", "ketherFillable"]) check(Object.hasOwn(field, key), `${trigger.id}.${field.name} omits ${key}`)
+  }
+}
 
 uniqueIds(schema.actions, "actions")
 uniqueIds(schema.selectors, "selectors")
@@ -161,7 +196,7 @@ for (const field of ["actions", "selectors", "triggers", "properties"]) {
 const checksumsPath = resolveAsset(releaseManifestPath, manifest.assets.checksums.path)
 const { value: checksums } = await readJson(checksumsPath)
 check(checksums.formatVersion === 1 && checksums.algorithm === "SHA-256", "invalid checksums contract")
-for (const name of ["schema", "schemaContract", "markdown", "changes"]) {
+for (const name of ["registry", "registryContract", "schema", "schemaContract", "markdown", "changes"]) {
   const asset = manifest.assets[name]
   check(checksums.files?.[asset.path] === asset.sha256, `checksums.json mismatch for ${asset.path}`)
 }
@@ -171,10 +206,10 @@ const { value: changes } = await readJson(changesPath)
 check(changes.formatVersion === 1, "changes formatVersion must be 1")
 check(changes.toReleaseId === manifest.releaseId, "changes toReleaseId mismatch")
 
-for (const contract of ["channel-manifest-v1.schema.json", "release-manifest-v1.schema.json", "actions-schema-v3.schema.json"]) {
+for (const contract of ["channel-manifest-v1.schema.json", "release-manifest-v1.schema.json", "actions-schema-v3.schema.json", "kether-registry-v4.schema.json"]) {
   await readJson(join(site, "kether", "contracts", contract))
 }
-for (const legacy of ["manifest.json", "actions-schema.json", "latest.md"]) {
+for (const legacy of ["manifest.json", "kether-registry.json", "actions-schema.json", "latest.md"]) {
   const info = await stat(join(site, "kether", legacy))
   check(info.isFile() && info.size > 0, `missing legacy compatibility file ${legacy}`)
 }

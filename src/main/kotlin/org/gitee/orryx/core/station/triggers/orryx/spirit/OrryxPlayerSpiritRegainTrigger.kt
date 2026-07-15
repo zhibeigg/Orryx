@@ -15,7 +15,8 @@ object OrryxPlayerSpiritRegainTrigger: AbstractPropertyEventTrigger<OrryxPlayerS
 
     override val wiki: Trigger
         get() = Trigger.Companion.new(TriggerGroup.ORRYX, event)
-            .addParm(Type.DOUBLE, "spirit", "变化精力值")
+            .addParm(Type.DOUBLE, "spirit", "变化精力值", writable = true)
+            .addParm(Type.PROFILE, "profile", "玩家档案")
             .description("玩家精力值上升事件")
 
     override val clazz

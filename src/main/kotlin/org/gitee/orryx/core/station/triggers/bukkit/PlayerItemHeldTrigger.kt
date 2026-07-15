@@ -13,8 +13,8 @@ object PlayerItemHeldTrigger: AbstractPropertyPlayerEventTrigger<PlayerItemHeldE
         get() = Trigger.new(TriggerGroup.BUKKIT, event)
             .addParm(Type.INT, "newSlot", "新格子")
             .addParm(Type.INT, "previousSlot", "旧格子")
-            .addParm(Type.INT, "newItemStack", "新格子中物品")
-            .addParm(Type.INT, "previousItemStack", "旧格子中物品")
+            .addParm(Type.ITEM_STACK, "newItemStack", "新格子中物品", nullable = true)
+            .addParm(Type.ITEM_STACK, "previousItemStack", "旧格子中物品", nullable = true)
             .description("玩家改变手持某物品时触发")
 
     override val clazz

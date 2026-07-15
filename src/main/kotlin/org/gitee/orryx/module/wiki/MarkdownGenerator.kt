@@ -27,6 +27,7 @@ object MarkdownGenerator {
 
         // 说明
         appendIntro(sb)
+        appendTypeSystem(sb)
 
         // 技能YAML配置结构
         appendSkillYamlStructure(sb)
@@ -53,6 +54,19 @@ object MarkdownGenerator {
         sb.appendLine("更多原生Kether语句请查看 https://kether.tabooproject.org/list.html")
         sb.appendLine()
         sb.appendLine("符号说明: `[*]` 代表可选 `<*>` 代表必选 `()` 代表默认值 前缀`*`代表先导词")
+        sb.appendLine()
+    }
+
+    private fun appendTypeSystem(sb: StringBuilder) {
+        sb.appendLine("# Kether Registry 类型系统")
+        sb.appendLine()
+        sb.appendLine("| 类型 ID | 父类型 | 可由 Kether expression 产生 | Raw 类型/提示 |")
+        sb.appendLine("|---------|--------|----------------------------|---------------|")
+        Type.entries.sortedBy(Type::id).forEach { type ->
+            val parents = type.parents.joinToString(", ") { it.id }.ifBlank { "无" }
+            val rawHint = if (type.ketherFillable) type.rawType else "${type.rawType}（请使用 raw 原始值）"
+            sb.appendLine("| ${type.id} | $parents | ${if (type.ketherFillable) "是" else "否"} | $rawHint |")
+        }
         sb.appendLine()
     }
 
@@ -250,11 +264,13 @@ object MarkdownGenerator {
         sb.appendLine("### ${trigger.key}")
         sb.appendLine()
 
+        sb.appendLine("- 事件类：`${trigger.eventClass ?: "未知"}`；可取消：`${trigger.cancellable}`")
+        sb.appendLine()
         if (trigger.entries.isNotEmpty()) {
-            sb.appendLine("| 类型 | Key | Value |")
-            sb.appendLine("|------|-----|-------|")
+            sb.appendLine("| 类型 | Key | Aliases | 可读 | 可写 | 可空 | Raw 类型 | Kether 可填充 | Value |")
+            sb.appendLine("|------|-----|---------|------|------|------|----------|---------------|-------|")
             trigger.entries.forEach { entry ->
-                sb.appendLine("| ${entry.type.name} | ${entry.key} | ${entry.description} |")
+                sb.appendLine("| ${entry.type.name} | ${entry.key} | ${entry.aliases.joinToString("/").ifBlank { "无" }} | ${entry.readable} | ${entry.writable} | ${entry.nullable} | ${entry.rawType} | ${entry.ketherFillable} | ${entry.description} |")
             }
             sb.appendLine()
         }
