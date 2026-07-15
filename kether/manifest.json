@@ -1,13 +1,13 @@
 {
     "pluginId": "Orryx",
-    "pluginVersion": "2.53.128",
-    "version": "2.53.128",
+    "pluginVersion": "2.54.130",
+    "version": "2.54.130",
     "schemaVersion": 3,
     "registryVersion": 4,
-    "generatedAt": "2026-07-15T15:30:46Z",
-    "commit": "4c9d3bec313416f2fd60cc24e43b2cffe1a9120a",
+    "generatedAt": "2026-07-15T20:30:32Z",
+    "commit": "31996f8244b16cd4629971c4bea417702184d49b",
     "latest": "https://zhibeigg.github.io/Orryx/kether/latest.md",
-    "versioned": "https://zhibeigg.github.io/Orryx/kether/versions/2.53.128.md",
+    "versioned": "https://zhibeigg.github.io/Orryx/kether/versions/2.54.130.md",
     "registry": "https://zhibeigg.github.io/Orryx/kether/kether-registry.json",
     "schema": "https://zhibeigg.github.io/Orryx/kether/actions-schema.json",
     "stableChannel": "https://zhibeigg.github.io/Orryx/kether/channels/stable.json",
@@ -20,7 +20,7 @@
     },
     "files": {
         "markdown": "./latest.md",
-        "versionedMarkdown": "./versions/2.53.128.md",
+        "versionedMarkdown": "./versions/2.54.130.md",
         "ketherRegistry": "./kether-registry.json",
         "actionsSchema": "./actions-schema.json"
     }

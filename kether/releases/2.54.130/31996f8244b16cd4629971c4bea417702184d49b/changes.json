@@ -1,0 +1,37 @@
+{
+    "formatVersion": 1,
+    "fromReleaseId": "Orryx@2.53.128+4c9d3bec313416f2fd60cc24e43b2cffe1a9120a",
+    "toReleaseId": "Orryx@2.54.130+31996f8244b16cd4629971c4bea417702184d49b",
+    "breaking": false,
+    "summary": {
+        "actionsAdded": 0,
+        "actionsRemoved": 0,
+        "actionsChanged": 2,
+        "selectorsChanged": 0,
+        "triggersChanged": 0,
+        "propertiesChanged": 0
+    },
+    "actions": {
+        "added": [],
+        "removed": [],
+        "changed": [
+            "orryx.action.isnull.8aa0bfdca472",
+            "orryx.action.notnull.7533c28f09b0"
+        ]
+    },
+    "selectors": {
+        "added": [],
+        "removed": [],
+        "changed": []
+    },
+    "triggers": {
+        "added": [],
+        "removed": [],
+        "changed": []
+    },
+    "properties": {
+        "added": [],
+        "removed": [],
+        "changed": []
+    }
+}
