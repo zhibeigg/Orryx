@@ -14,7 +14,8 @@
       "reload",
       "log.subscribe",
       "log.unsubscribe",
-      "presence.update"
+      "presence.update",
+      "manifest.get"
     ],
     "relayToPlugin": [
       "server.register.result",
@@ -30,6 +31,7 @@
       "reload",
       "log.subscribe",
       "log.unsubscribe",
+      "manifest.get",
       "release.request"
     ],
     "pluginToRelay": [
@@ -45,6 +47,7 @@
       "log.unsubscribe.result",
       "log.entry",
       "server.info",
+      "manifest.snapshot",
       "release.result",
       "error"
     ],
@@ -62,6 +65,7 @@
       "log.unsubscribe.result",
       "log.entry",
       "server.info",
+      "manifest.snapshot",
       "error"
     ]
   },
@@ -76,7 +80,59 @@
       "file.rename",
       "reload"
     ],
-    "requiredPluginCapabilities": ["revision.sha256"],
+    "manifest": {
+      "requestType": "manifest.get",
+      "responseType": "manifest.snapshot",
+      "maxFiles": 4096,
+      "pathNormalization": "relative-forward-slash",
+      "duplicatePathComparison": "case-insensitive-normalized",
+      "fileRevisionField": "revision",
+      "manifestRevisionField": "revision",
+      "sizeMinimum": 0
+    },
+    "pluginError": {
+      "forwardedFields": ["code", "path", "currentRevision", "requestType"],
+      "fallbackCode": "PLUGIN_ERROR",
+      "safeCodes": [
+        "REQUEST_FAILED",
+        "INVALID_MESSAGE",
+        "INVALID_DATA",
+        "MESSAGE_DIRECTION_NOT_ALLOWED",
+        "UNKNOWN_MESSAGE_TYPE",
+        "NOT_REGISTERED",
+        "MESSAGE_NOT_SUPPORTED",
+        "UNHANDLED_MESSAGE_TYPE",
+        "RELAY_CAPABILITY_MISSING",
+        "FILE_POLICY_VIOLATION",
+        "REVISION_CONFLICT",
+        "PRECONDITION_FAILED",
+        "CASE_CONFLICT",
+        "MUTATION_GATE_ACTIVE",
+        "REQUEST_QUEUE_FULL",
+        "REVISION_FIELDS_MISMATCH",
+        "REVISION_REQUIRED",
+        "FILE_NOT_FOUND",
+        "FILE_ALREADY_EXISTS",
+        "PATH_TYPE_MISMATCH",
+        "PERMISSION_DENIED",
+        "READ_ONLY",
+        "UNSUPPORTED_OPERATION",
+        "FILE_TOO_LARGE",
+        "INVALID_PATH",
+        "INVALID_REVISION",
+        "RELOAD_FAILED",
+        "MANIFEST_UNAVAILABLE",
+        "READINESS_FAILED",
+        "ROLLBACK_FAILED",
+        "ROLLBACK_RELOAD_FAILED",
+        "ROLLBACK_MANIFEST_MISMATCH",
+        "RECOVERY_AMBIGUOUS",
+        "INVALID_JOURNAL",
+        "RECOVERY_SCAN_FAILED",
+        "RELEASE_REQUEST_FAILED"
+      ]
+    },
+    "requiredPluginCapabilities": ["revision.sha256", "file.write.v2"],
     "requiredMutationCapabilities": ["mutation.preconditions"],
     "requiredReleasePluginCapabilities": [
       "release.transaction.v1",
@@ -88,6 +144,7 @@
     "relayRevisionCapability": "revision.sha256",
     "relayWriteCapability": "file.write.v2",
     "relayReleaseCapability": "release.control.v1",
+    "releaseOperationsSemantics": "complete-target-snapshot",
     "releaseRequestActions": ["prepare", "commit", "status", "rollback"],
     "releasePluginStates": [
       "PREPARING",
@@ -101,7 +158,5 @@
       "RECOVERY_REQUIRED"
     ]
   },
-  "reservedUnroutedTypes": [
-    "manifest.snapshot"
-  ]
+  "reservedUnroutedTypes": []
 }

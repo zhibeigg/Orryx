@@ -19,7 +19,12 @@ object ReloadHandler {
 
     fun handle(generation: Long, id: String, data: JsonObject?) {
         val module = ((data?.get("module") as? JsonPrimitive)?.contentOrNull ?: "all").trim().ifEmpty { "all" }
-        EditorRequestQueue.enqueue(generation, id, "重载失败") { requestGeneration ->
+        EditorRequestQueue.enqueue(
+            generation,
+            id,
+            "重载失败",
+            EditorMutationOperation.RELOAD,
+        ) { requestGeneration ->
             if (!module.equals("all", ignoreCase = true)) {
                 sendResult(requestGeneration, id, module, false, "不支持局部重载，仅支持 module=all")
                 return@enqueue

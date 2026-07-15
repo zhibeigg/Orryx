@@ -8,6 +8,8 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.put
 import org.gitee.orryx.core.editor.EditorClient
+import org.gitee.orryx.core.editor.EditorProtocol
+import org.gitee.orryx.core.editor.EditorSafeError
 import taboolib.common.platform.function.getDataFolder
 
 /**
@@ -48,38 +50,61 @@ object FileHandler {
     fun handleWrite(generation: Long, id: String, data: JsonObject?) {
         val path = data.requireString(generation, id, "path") ?: return
         val content = data.requireString(generation, id, "content") ?: return
-        val expectedRevision = data.string("expectedRevision")
+        val protocolV2 = EditorClient.isProtocolV2(generation)
+        if (protocolV2 && !requireV2WriteCapability(generation, id)) return
         val force = (data?.get("force") as? JsonPrimitive)?.booleanOrNull ?: false
-        if (EditorClient.isProtocolV2(generation) && !force && expectedRevision.isNullOrBlank()) {
-            EditorClient.sendError(generation, id, "V2 file.write 必须提供 expectedRevision，除非 force=true")
+        val expectedRevision = try {
+            resolveWriteRevision(
+                expectedRevision = data.string("expectedRevision"),
+                baseRevision = data.string("baseRevision"),
+                protocolV2 = protocolV2,
+                force = force,
+            )
+        } catch (failure: WriteRevisionException) {
+            EditorClient.sendError(generation, id, EditorSafeError(failure.code, failure.message ?: "写入前置版本无效"))
             return
         }
-        if (EditorClient.isProtocolV2(generation) && expectedRevision != null && !SHA256_REVISION.matches(expectedRevision)) {
-            EditorClient.sendError(generation, id, "expectedRevision 必须是 64 位小写 SHA-256")
-            return
-        }
-        EditorRequestQueue.enqueue(generation, id, "写入文件失败") { requestGeneration ->
-            val revision = policy.writeTextAtomic(path, content, expectedRevision.takeUnless { force })
-            sendWritten(requestGeneration, id, path, true, revision)
+        EditorRequestQueue.enqueue(
+            generation,
+            id,
+            "写入文件失败",
+            EditorMutationOperation.FILE_WRITE,
+        ) { requestGeneration ->
+            val revision = policy.writeTextAtomic(path, content, expectedRevision)
+            sendWritten(requestGeneration, id, path, true, revision.takeIf { protocolV2 })
         }
     }
 
     fun handleCreate(generation: Long, id: String, data: JsonObject?) {
         val path = data.requireString(generation, id, "path") ?: return
+        val protocolV2 = EditorClient.isProtocolV2(generation)
+        if (protocolV2 && !requireV2WriteCapability(generation, id)) return
         val isDirectory = (data?.get("isDirectory") as? JsonPrimitive)?.booleanOrNull ?: false
         val expectedState = data.expectedState("expectedState", "expectedAbsent")
-            ?: ExpectedPathState.ABSENT.takeIf { EditorClient.isProtocolV2(generation) }
-        EditorRequestQueue.enqueue(generation, id, "创建文件失败") { requestGeneration ->
-            policy.create(path, isDirectory, expectedState)
-            sendWritten(requestGeneration, id, path, true)
+            ?: ExpectedPathState.ABSENT.takeIf { protocolV2 }
+        EditorRequestQueue.enqueue(
+            generation,
+            id,
+            "创建文件失败",
+            EditorMutationOperation.FILE_CREATE,
+        ) { requestGeneration ->
+            val revision = policy.create(path, isDirectory, expectedState)
+            sendWritten(requestGeneration, id, path, true, revision.takeIf { protocolV2 })
         }
     }
 
     fun handleDelete(generation: Long, id: String, data: JsonObject?) {
         val path = data.requireString(generation, id, "path") ?: return
+        val protocolV2 = EditorClient.isProtocolV2(generation)
+        if (protocolV2 && !requireV2WriteCapability(generation, id)) return
         val expectedState = data.expectedState("expectedState", "expectedPresent")
-            ?: ExpectedPathState.PRESENT.takeIf { EditorClient.isProtocolV2(generation) }
-        EditorRequestQueue.enqueue(generation, id, "删除文件失败") { requestGeneration ->
+            ?: ExpectedPathState.PRESENT.takeIf { protocolV2 }
+        EditorRequestQueue.enqueue(
+            generation,
+            id,
+            "删除文件失败",
+            EditorMutationOperation.FILE_DELETE,
+        ) { requestGeneration ->
             sendWritten(requestGeneration, id, path, policy.delete(path, expectedState))
         }
     }
@@ -87,11 +112,18 @@ object FileHandler {
     fun handleRename(generation: Long, id: String, data: JsonObject?) {
         val oldPath = data.requireString(generation, id, "oldPath") ?: return
         val newPath = data.requireString(generation, id, "newPath") ?: return
+        val protocolV2 = EditorClient.isProtocolV2(generation)
+        if (protocolV2 && !requireV2WriteCapability(generation, id)) return
         val expectedSourceState = data.expectedState("expectedSourceState", "expectedSourcePresent")
-            ?: ExpectedPathState.PRESENT.takeIf { EditorClient.isProtocolV2(generation) }
+            ?: ExpectedPathState.PRESENT.takeIf { protocolV2 }
         val expectedTargetState = data.expectedState("expectedTargetState", "expectedTargetAbsent")
-            ?: ExpectedPathState.ABSENT.takeIf { EditorClient.isProtocolV2(generation) }
-        EditorRequestQueue.enqueue(generation, id, "重命名失败") { requestGeneration ->
+            ?: ExpectedPathState.ABSENT.takeIf { protocolV2 }
+        EditorRequestQueue.enqueue(
+            generation,
+            id,
+            "重命名失败",
+            EditorMutationOperation.FILE_RENAME,
+        ) { requestGeneration ->
             val renamed = policy.rename(oldPath, newPath, expectedSourceState, expectedTargetState)
             EditorClient.sendMessage(requestGeneration, "file.written", id, buildJsonObject {
                 put("oldPath", oldPath)
@@ -99,6 +131,51 @@ object FileHandler {
                 put("success", renamed)
             })
         }
+    }
+
+    internal class WriteRevisionException(
+        val code: String,
+        override val message: String,
+    ) : IllegalArgumentException(message)
+
+    internal fun resolveWriteRevision(
+        expectedRevision: String?,
+        baseRevision: String?,
+        protocolV2: Boolean,
+        force: Boolean,
+    ): String? {
+        if (!protocolV2) return null
+        if (expectedRevision != null && baseRevision != null && expectedRevision != baseRevision) {
+            throw WriteRevisionException(
+                "REVISION_FIELDS_MISMATCH",
+                "expectedRevision 与 baseRevision 不一致",
+            )
+        }
+        val revision = expectedRevision ?: baseRevision
+        if (protocolV2 && !force && revision.isNullOrBlank()) {
+            throw WriteRevisionException(
+                "REVISION_REQUIRED",
+                "V2 file.write 必须提供 expectedRevision 或 baseRevision，除非 force=true",
+            )
+        }
+        if (protocolV2 && revision != null && !SHA256_REVISION.matches(revision)) {
+            throw WriteRevisionException(
+                "INVALID_REVISION",
+                "revision 必须是 64 位小写 SHA-256",
+            )
+        }
+        return revision.takeUnless { force }
+    }
+
+    private fun requireV2WriteCapability(generation: Long, id: String): Boolean {
+        if (EditorProtocol.RELAY_WRITE_CAPABILITY in EditorClient.currentRelayCapabilities()) return true
+        EditorClient.sendError(
+            generation,
+            id,
+            "relay 未声明 ${EditorProtocol.RELAY_WRITE_CAPABILITY}",
+            "RELAY_CAPABILITY_MISSING",
+        )
+        return false
     }
 
     private fun sendWritten(

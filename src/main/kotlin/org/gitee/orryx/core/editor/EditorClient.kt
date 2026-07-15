@@ -15,6 +15,7 @@ import org.gitee.orryx.api.Orryx
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.common.task.SimpleTimeoutTask
 import org.gitee.orryx.core.editor.handler.FileHandler
+import org.gitee.orryx.core.editor.handler.ManifestHandler
 import org.gitee.orryx.core.editor.handler.ReloadHandler
 import org.gitee.orryx.core.editor.release.ReleaseHandler
 import org.gitee.orryx.core.reload.Reload
@@ -132,6 +133,7 @@ object EditorClient {
     private val reconnectScheduled = AtomicBoolean(false)
     private val stopping = AtomicBoolean(false)
     private val registrationRejected = AtomicBoolean(false)
+    private val v1FallbackAttempted = AtomicBoolean(false)
     private val logSubscribed = AtomicBoolean(false)
     private val pendingTokenRegistrations = ConcurrentHashMap<String, PendingTokenRegistration>()
 
@@ -142,6 +144,8 @@ object EditorClient {
 
     private data class RegistrationContext(
         val request: ServerRegisterRequest,
+        val license: String,
+        val configuredV2Enabled: Boolean,
     )
 
     private val identityStore by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
@@ -243,14 +247,23 @@ object EditorClient {
         ) {
             return
         }
+        if (activeLicense != license || activeProtocolV2Enabled != protocolV2Enabled) {
+            v1FallbackAttempted.set(false)
+        }
         prepareConnection(
             license = license,
             reconnect = activeLicense == license,
-            protocolV2Enabled = protocolV2Enabled,
+            configuredV2Enabled = protocolV2Enabled,
+            offerV2 = protocolV2Enabled,
         )
     }
 
-    private fun prepareConnection(license: String, reconnect: Boolean, protocolV2Enabled: Boolean) {
+    private fun prepareConnection(
+        license: String,
+        reconnect: Boolean,
+        configuredV2Enabled: Boolean,
+        offerV2: Boolean,
+    ) {
         stopping.set(false)
         val expectedPreparation = preparationGeneration.incrementAndGet()
         preparationJob?.cancel()
@@ -260,14 +273,15 @@ object EditorClient {
                 val serverName = getServerName()
                 if (preparationGeneration.get() != expectedPreparation || stopping.get()) return@launch
                 val configuredLicense = getLicense()
-                if (configuredLicense != license || isProtocolV2Enabled() != protocolV2Enabled) return@launch
+                if (configuredLicense != license || isProtocolV2Enabled() != configuredV2Enabled) return@launch
                 startConnection(
                     identity = identity,
                     serverName = serverName,
                     license = license,
                     reconnect = reconnect,
                     expectedPreparation = expectedPreparation,
-                    v2Enabled = protocolV2Enabled,
+                    configuredV2Enabled = configuredV2Enabled,
+                    offerV2 = offerV2,
                 )
             } catch (e: Exception) {
                 if (preparationGeneration.get() == expectedPreparation) {
@@ -287,23 +301,26 @@ object EditorClient {
         license: String,
         reconnect: Boolean,
         expectedPreparation: Long,
-        v2Enabled: Boolean,
+        configuredV2Enabled: Boolean,
+        offerV2: Boolean,
     ) {
         val attemptGeneration: Long
         val nextClient: WebSocketClient
         val previousClient: WebSocketClient?
-        val offeredProtocols = EditorProtocol.supportedProtocols(v2Enabled)
+        val offeredProtocols = EditorProtocol.supportedProtocols(offerV2)
         val registrationContext = RegistrationContext(
-            ServerRegisterRequest(
+            request = ServerRegisterRequest(
                 license = license,
                 serverName = serverName,
                 serverId = identity.serverId,
                 pluginVersion = pluginVersion,
                 protocolVersions = offeredProtocols,
-                preferredProtocol = EditorProtocol.preferredProtocol(v2Enabled),
-                capabilities = if (v2Enabled) EditorProtocol.V2_CAPABILITIES else emptyList(),
+                preferredProtocol = EditorProtocol.preferredProtocol(offerV2),
+                capabilities = if (offerV2) EditorProtocol.V2_CAPABILITIES else emptyList(),
                 connectionNonce = UUID.randomUUID().toString(),
             ),
+            license = license,
+            configuredV2Enabled = configuredV2Enabled,
         )
         synchronized(stateLock) {
             if (preparationGeneration.get() != expectedPreparation || stopping.get()) return
@@ -327,7 +344,7 @@ object EditorClient {
 
             attemptGeneration = generation.incrementAndGet()
             activeLicense = license
-            activeProtocolV2Enabled = v2Enabled
+            activeProtocolV2Enabled = configuredV2Enabled
             previousClient = client
             nextClient = createClient(EditorTokenManager.SERVER_URL, registrationContext, attemptGeneration, reconnect)
             client = nextClient
@@ -370,6 +387,7 @@ object EditorClient {
             logKeywordFilter = null
             activeLicense = null
             activeProtocolV2Enabled = null
+            v1FallbackAttempted.set(false)
             pendingTokenRegistrations.values.forEach { it.future.complete(false) }
             pendingTokenRegistrations.clear()
             previousClient = client
@@ -399,10 +417,12 @@ object EditorClient {
             if (generation.get() != expectedGeneration || activeLicense != license || configuredLicense != license) {
                 return@launch
             }
+            val configuredV2Enabled = isProtocolV2Enabled()
             prepareConnection(
                 license = configuredLicense,
                 reconnect = true,
-                protocolV2Enabled = isProtocolV2Enabled(),
+                configuredV2Enabled = configuredV2Enabled,
+                offerV2 = configuredV2Enabled && !v1FallbackAttempted.get(),
             )
         }
         synchronized(stateLock) {
@@ -562,6 +582,7 @@ object EditorClient {
                         "file.delete" -> FileHandler.handleDelete(attemptGeneration, id, data)
                         "file.rename" -> FileHandler.handleRename(attemptGeneration, id, data)
                         "reload" -> ReloadHandler.handle(attemptGeneration, id, data)
+                        EditorProtocol.MANIFEST_GET -> ManifestHandler.handle(attemptGeneration, id)
                         EditorProtocol.RELEASE_REQUEST -> ReleaseHandler.handle(attemptGeneration, id, data)
                         "log.subscribe" -> {
                             logSubscribed.set(true)
@@ -631,30 +652,53 @@ object EditorClient {
                 cancelRegistrationTimeout(attemptGeneration)
                 val result = EditorProtocol.parseRegisterResult(data)
                 val validation = EditorProtocol.validateRegisterResult(result, request)
-                val success = result.success && validation.accepted
-                registered.set(success)
-                if (success) {
-                    negotiatedProtocol.set(result.negotiatedProtocol)
-                    sessionEpoch = result.sessionEpoch
-                    workspaceId = result.workspaceId?.takeIf { it.isNotBlank() }
-                    relayCapabilities = result.relayCapabilities.toSet()
-                    registrationRejected.set(false)
-                    val fallback = if (result.negotiatedProtocol == EditorProtocol.PROTOCOL_V1) " (V1 兼容模式)" else ""
-                    consoleMessage(
-                        "&e┣&7[Editor] 服务器注册成功$fallback: &a${sanitizeLogMessage(result.message)}",
+                when (
+                    EditorProtocol.registrationDecision(
+                        result,
+                        validation,
+                        request.protocolVersions,
+                        v1FallbackAttempted.get(),
                     )
-                } else {
-                    registrationRejected.set(true)
-                    val message = when {
-                        !validation.protocolAccepted -> "中心返回了未提供的协议版本: ${result.negotiatedProtocol}"
-                        !validation.serverIdAccepted -> "中心返回的 serverId 与本机稳定身份不匹配"
-                        !validation.nonceAccepted -> "中心返回的 connectionNonce 与当前连接不匹配"
-                        !validation.sessionMetadataAccepted -> "中心返回的 workspaceId 或 sessionEpoch 无效"
-                        !validation.v2ContractAccepted -> "中心返回的 V2 协商元数据或能力不完整"
-                        else -> result.message
+                ) {
+                    RegistrationDecision.ACCEPT -> {
+                        registered.set(true)
+                        negotiatedProtocol.set(result.negotiatedProtocol)
+                        sessionEpoch = result.sessionEpoch
+                        workspaceId = result.workspaceId?.takeIf { it.isNotBlank() }
+                        relayCapabilities = result.relayCapabilities.toSet()
+                        registrationRejected.set(false)
+                        val fallback = if (result.negotiatedProtocol == EditorProtocol.PROTOCOL_V1) " (V1 兼容模式)" else ""
+                        consoleMessage(
+                            "&e┣&7[Editor] 服务器注册成功$fallback: &a${sanitizeLogMessage(result.message)}",
+                        )
                     }
-                    consoleMessage("&c[Editor] 服务器注册失败，已停止自动重试: ${sanitizeLogMessage(message)}")
-                    close()
+                    RegistrationDecision.FALLBACK_V1 -> {
+                        registered.set(false)
+                        registrationRejected.set(true)
+                        v1FallbackAttempted.set(true)
+                        consoleMessage("&e[Editor] V2 编辑协商元数据或写能力不完整，将进行一次受控 V1 重连")
+                        close()
+                        prepareConnection(
+                            license = registrationContext.license,
+                            reconnect = true,
+                            configuredV2Enabled = registrationContext.configuredV2Enabled,
+                            offerV2 = false,
+                        )
+                    }
+                    RegistrationDecision.REJECT -> {
+                        registered.set(false)
+                        registrationRejected.set(true)
+                        val message = when {
+                            !validation.protocolAccepted -> "中心返回了未提供的协议版本: ${result.negotiatedProtocol}"
+                            !validation.serverIdAccepted -> "中心返回的 serverId 与本机稳定身份不匹配"
+                            !validation.nonceAccepted -> "中心返回的 connectionNonce 与当前连接不匹配"
+                            !validation.sessionMetadataAccepted -> "中心返回的 workspaceId 或 sessionEpoch 无效"
+                            !validation.v2ContractAccepted -> "中心返回的 V2 协商元数据或能力不完整"
+                            else -> result.message
+                        }
+                        consoleMessage("&c[Editor] 服务器注册失败，已停止自动重试: ${sanitizeLogMessage(message)}")
+                        close()
+                    }
                 }
             }
         }
@@ -714,10 +758,21 @@ object EditorClient {
         code: String = "REQUEST_FAILED",
         requestType: String? = null,
     ) {
+        sendError(expectedGeneration, id, EditorSafeError(code, message), requestType)
+    }
+
+    internal fun sendError(
+        expectedGeneration: Long,
+        id: String,
+        error: EditorSafeError,
+        requestType: String? = null,
+    ) {
         sendMessage(expectedGeneration, EditorProtocol.ERROR, id, buildJsonObject {
-            put("code", code)
-            put("message", message)
+            put("code", error.code)
+            put("message", error.message)
             requestType?.let { put("requestType", it) }
+            error.path?.let { put("path", it) }
+            error.currentRevision?.let { put("currentRevision", it) }
         })
     }
 

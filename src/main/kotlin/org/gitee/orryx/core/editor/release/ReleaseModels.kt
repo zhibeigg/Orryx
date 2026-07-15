@@ -7,6 +7,7 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.longOrNull
 import org.gitee.orryx.core.editor.EditorProtocol
+import org.gitee.orryx.core.editor.handler.EditorFilePolicy
 import java.net.URI
 import java.util.UUID
 
@@ -155,7 +156,7 @@ internal data class ReleaseRequest(
                 if (signature == null || !SIGNATURE_PATTERN.matches(signature)) {
                     throw ReleaseException("INVALID_SIGNATURE", "signature 必须是无填充 Base64URL Ed25519 签名")
                 }
-                if (fileCount == null || fileCount < 0 || fileCount > 10_000) {
+                if (fileCount == null || fileCount < 0 || fileCount > EditorFilePolicy.DEFAULT_MAX_MANIFEST_FILES) {
                     throw ReleaseException("INVALID_FILE_COUNT", "fileCount 超出允许范围")
                 }
                 if (totalBytes == null || totalBytes < 0L) {

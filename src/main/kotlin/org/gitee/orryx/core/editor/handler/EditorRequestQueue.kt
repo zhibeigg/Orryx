@@ -5,6 +5,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.editor.EditorClient
+import org.gitee.orryx.core.editor.EditorSafeError
 
 /**
  * Editor 请求的有界顺序队列。
@@ -21,6 +22,7 @@ object EditorRequestQueue {
         val generation: Long,
         val id: String,
         val failureMessage: String,
+        val mutation: EditorMutationOperation?,
         val block: suspend (Long) -> Unit,
     )
 
@@ -30,11 +32,27 @@ object EditorRequestQueue {
             for (request in requests) {
                 if (!EditorClient.isGenerationCurrent(request.generation)) continue
                 try {
+                    request.mutation?.let(EditorMutationGate.shared::checkAllowed)
                     request.block(request.generation)
                 } catch (e: CancellationException) {
                     throw e
+                } catch (e: EditorMutationGate.MutationBlockedException) {
+                    EditorClient.sendError(
+                        request.generation,
+                        request.id,
+                        EditorSafeError("MUTATION_GATE_ACTIVE", e.message ?: request.failureMessage),
+                    )
                 } catch (e: EditorFilePolicy.PolicyException) {
-                    EditorClient.sendError(request.generation, request.id, e.message ?: request.failureMessage)
+                    EditorClient.sendError(
+                        request.generation,
+                        request.id,
+                        EditorSafeError(
+                            code = e.errorCode,
+                            message = e.message ?: request.failureMessage,
+                            path = e.safePath,
+                            currentRevision = e.currentRevision,
+                        ),
+                    )
                 } catch (e: Exception) {
                     EditorClient.sendError(
                         request.generation,
@@ -50,13 +68,14 @@ object EditorRequestQueue {
         generation: Long,
         id: String,
         failureMessage: String,
+        mutation: EditorMutationOperation? = null,
         block: suspend (Long) -> Unit,
     ): Boolean {
         if (!EditorClient.isGenerationCurrent(generation)) return false
         worker
-        val result = requests.trySend(Request(generation, id, failureMessage, block))
+        val result = requests.trySend(Request(generation, id, failureMessage, mutation, block))
         if (result.isSuccess) return true
-        EditorClient.sendError(generation, id, QUEUE_FULL_MESSAGE)
+        EditorClient.sendError(generation, id, QUEUE_FULL_MESSAGE, "REQUEST_QUEUE_FULL")
         return false
     }
 }

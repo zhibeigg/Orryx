@@ -2,6 +2,7 @@ package org.gitee.orryx.core.editor.handler
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions.assumeTrue
@@ -129,6 +130,27 @@ class EditorFilePolicyTest {
     }
 
     @Test
+    fun `manifest file limit rejects snapshots and mutations beyond relay contract`() {
+        val policyRoot = root.resolve("manifest-limit")
+        val policy = EditorFilePolicy(policyRoot, maxManifestFiles = 2)
+        policy.writeTextAtomic("skills/a.yml", "a")
+        policy.writeTextAtomic("skills/b.yml", "b")
+        assertEquals(2, policy.snapshotManifest().files.size)
+        assertThrows(EditorFilePolicy.PolicyException::class.java) {
+            policy.create("skills/c.yml", false)
+        }
+
+        val externalRoot = root.resolve("manifest-external")
+        Files.createDirectories(externalRoot.resolve("skills"))
+        Files.write(externalRoot.resolve("skills/a.yml"), "a".toByteArray())
+        Files.write(externalRoot.resolve("skills/b.yml"), "b".toByteArray())
+        Files.write(externalRoot.resolve("skills/c.yml"), "c".toByteArray())
+        assertThrows(EditorFilePolicy.PolicyException::class.java) {
+            EditorFilePolicy(externalRoot, maxManifestFiles = 2).snapshotManifest()
+        }
+    }
+
+    @Test
     fun `supports revisions and rejects stale writes`() {
         val policy = EditorFilePolicy(root.resolve("revision"))
         val firstRevision = policy.writeTextAtomic("skills/fire.yml", "first")
@@ -139,12 +161,17 @@ class EditorFilePolicyTest {
 
         val secondRevision = policy.writeTextAtomic("skills/fire.yml", "second", firstRevision)
         assertEquals(secondRevision, policy.readTextWithRevision("skills/fire.yml").revision)
-        assertThrows(EditorFilePolicy.RevisionConflictException::class.java) {
+        val stale = assertThrows(EditorFilePolicy.RevisionConflictException::class.java) {
             policy.writeTextAtomic("skills/fire.yml", "stale", firstRevision)
         }
-        assertThrows(EditorFilePolicy.RevisionConflictException::class.java) {
+        assertEquals("REVISION_CONFLICT", stale.errorCode)
+        assertEquals("skills/fire.yml", stale.safePath)
+        assertEquals(secondRevision, stale.currentRevision)
+        val missing = assertThrows(EditorFilePolicy.RevisionConflictException::class.java) {
             policy.writeTextAtomic("skills/missing.yml", "new", firstRevision)
         }
+        assertEquals("skills/missing.yml", missing.safePath)
+        assertNull(missing.currentRevision)
         assertThrows(EditorFilePolicy.PolicyException::class.java) {
             policy.writeTextAtomic("skills/fire.yml", "invalid", firstRevision.uppercase())
         }
@@ -157,10 +184,16 @@ class EditorFilePolicyTest {
     @Test
     fun `supports explicit present and absent mutation preconditions`() {
         val policy = EditorFilePolicy(root.resolve("preconditions"))
-        policy.create("skills/a.yml", false, ExpectedPathState.ABSENT)
-        assertThrows(EditorFilePolicy.PreconditionFailedException::class.java) {
+        assertEquals(
+            EditorFilePolicy.EMPTY_FILE_REVISION,
+            policy.create("skills/a.yml", false, ExpectedPathState.ABSENT),
+        )
+        val createConflict = assertThrows(EditorFilePolicy.PreconditionFailedException::class.java) {
             policy.create("skills/a.yml", false, ExpectedPathState.ABSENT)
         }
+        assertEquals("PRECONDITION_FAILED", createConflict.errorCode)
+        assertEquals("skills/a.yml", createConflict.safePath)
+        assertEquals(EditorFilePolicy.EMPTY_FILE_REVISION, createConflict.currentRevision)
         assertThrows(EditorFilePolicy.PreconditionFailedException::class.java) {
             policy.delete("skills/a.yml", ExpectedPathState.ABSENT)
         }

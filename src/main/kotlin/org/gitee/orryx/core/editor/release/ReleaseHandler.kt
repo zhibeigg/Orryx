@@ -8,6 +8,7 @@ import kotlinx.serialization.json.put
 import org.gitee.orryx.api.OrryxAPI
 import org.gitee.orryx.core.editor.EditorClient
 import org.gitee.orryx.core.editor.EditorProtocol
+import org.gitee.orryx.core.editor.handler.EditorMutationGate
 import org.gitee.orryx.core.editor.handler.EditorRequestQueue
 import org.gitee.orryx.core.reload.ReloadAPI
 import org.gitee.orryx.utils.consoleMessage
@@ -30,11 +31,19 @@ object ReleaseHandler {
 
     @Awake(LifeCycle.ENABLE)
     private fun recoverOnEnable() {
+        EditorMutationGate.shared.hold(STARTUP_RECOVERY_TRANSACTION, "RECOVERY_SCAN")
         OrryxAPI.ioScope.launch {
-            runCatching {
-                manager.recover { transactionId -> startReadiness(EditorClient.currentGeneration(), transactionId) }
-            }.onFailure { failure ->
-                consoleMessage("&c[Editor Release] 启动恢复扫描失败: ${EditorClient.sanitizeLogMessage(failure.message)}")
+            try {
+                manager.recover(::reloadOnMainThread) { transactionId ->
+                    startReadiness(EditorClient.currentGeneration(), transactionId)
+                }
+                EditorMutationGate.shared.release(STARTUP_RECOVERY_TRANSACTION)
+            } catch (failure: Throwable) {
+                val code = (failure as? ReleaseException)?.code ?: "RECOVERY_SCAN_FAILED"
+                EditorMutationGate.shared.hold(STARTUP_RECOVERY_TRANSACTION, "RECOVERY_REQUIRED:$code")
+                consoleMessage(
+                    "&c[Editor Release] 启动恢复扫描失败 [$code]: ${EditorClient.sanitizeLogMessage(failure.message)}",
+                )
             }
         }
     }
@@ -65,7 +74,7 @@ object ReleaseHandler {
                     ReleaseAction.PREPARE -> manager.prepare(request)
                     ReleaseAction.COMMIT -> manager.commit(request)
                     ReleaseAction.STATUS -> manager.status(request)
-                    ReleaseAction.ROLLBACK -> manager.rollback(request)
+                    ReleaseAction.ROLLBACK -> manager.rollback(request, ::reloadOnMainThread)
                 }
             } catch (failure: Throwable) {
                 manager.failure(request, failure)
@@ -80,13 +89,23 @@ object ReleaseHandler {
     private fun startReadiness(generation: Long, transactionId: String) {
         OrryxAPI.ioScope.launch {
             val result = runCatching {
-                manager.completeReadiness(transactionId) {
-                    val report = mainThreadFuture { ReloadAPI.reloadWithReport() }.await()
-                    ReadinessReport(report.success, report.summary())
-                }
+                manager.completeReadiness(
+                    transactionId,
+                    compensatingReload = ::reloadOnMainThread,
+                    readiness = ::reloadOnMainThread,
+                )
+            }.onFailure { failure ->
+                consoleMessage(
+                    "&c[Editor Release] readiness 处理失败: ${EditorClient.sanitizeLogMessage(failure.message)}",
+                )
             }.getOrNull() ?: return@launch
             sendResult(generation, "", result)
         }
+    }
+
+    private suspend fun reloadOnMainThread(): ReadinessReport {
+        val report = mainThreadFuture { ReloadAPI.reloadWithReport() }.await()
+        return ReadinessReport(report.success, report.summary())
     }
 
     private fun validateSession(generation: Long) {
@@ -120,4 +139,6 @@ object ReleaseHandler {
             result.message?.let { put("message", it.take(1000)) }
         })
     }
+
+    private const val STARTUP_RECOVERY_TRANSACTION = "__editor_release_recovery_scan__"
 }

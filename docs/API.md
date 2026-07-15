@@ -1,5 +1,7 @@
 # Orryx API
 
+> 2.52.126：修复 Editor V1/V2 revision 隔离、Manifest 快照与结构化错误契约，并加固发布事务 mutation gate、回滚补偿重载和崩溃恢复；所有 Bukkit 重载继续非阻塞地切回主线程执行。
+
 > 2.52.125：修复控制台执行 `or edit` 时通用发送者被错误强转为 Bukkit `Player` 的问题；现在仅 `ProxyPlayer` 进入玩家分支，控制台会安全输出完整的一次性网址。
 
 > 2.52.124：OrryxMod 自定义 Hitbox 协议已与客户端实现统一，并新增按变化发送的实时同步管理器；Kether `colliderShow` 支持 `realtime` 与 `interval`，完整字节布局见 `docs/Plugin-Integration.md`。
@@ -1283,5 +1285,5 @@ A: 对于可取消的事件，设置 `event.isCancelled = true`。
 
 ---
 
-*文档版本: 2.52.125*
-*最后更新: 2026-07-14*
+*文档版本: 2.52.126*
+*最后更新: 2026-07-15*

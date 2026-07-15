@@ -5,6 +5,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
 import org.gitee.orryx.core.editor.handler.EditorFileAllowlistDescriptor
 import org.gitee.orryx.core.editor.handler.EditorFilePolicy
+import org.gitee.orryx.core.editor.handler.EditorMutationGate
 import org.gitee.orryx.core.editor.handler.ManifestEntryV1
 import java.nio.file.AtomicMoveNotSupportedException
 import java.nio.file.Files
@@ -43,6 +44,7 @@ internal class ReleaseTransactionManager(
     private val downloader: ReleaseDownloader = OkHttpReleaseDownloader,
     private val allowlist: EditorFileAllowlistDescriptor = EditorFileAllowlistDescriptor.ORRYX_CONFIG,
     private val checkpoint: (String, String) -> Unit = { _, _ -> },
+    private val mutationGate: EditorMutationGate = EditorMutationGate.shared,
 ) {
     private val store = ReleaseJournalStore(transactionsRoot)
     private val json = Json { ignoreUnknownKeys = false }
@@ -176,6 +178,11 @@ internal class ReleaseTransactionManager(
     suspend fun commit(request: ReleaseRequest): ReleaseResult = lock(request.transactionId) {
         var journal = requireJournal(request)
         if (journal.state in setOf(ReleaseState.READINESS_PENDING, ReleaseState.READY)) {
+            if (journal.state == ReleaseState.READINESS_PENDING) {
+                mutationGate.hold(journal.transactionId, journal.state.name)
+            } else {
+                mutationGate.release(journal.transactionId)
+            }
             return@lock emit(journal, ReleaseAction.COMMIT, successFor(journal.state), message = "commit 已处理")
         }
         if (journal.state != ReleaseState.PREPARED) {
@@ -190,15 +197,27 @@ internal class ReleaseTransactionManager(
         if (System.currentTimeMillis() > readinessDeadline) {
             throw ReleaseException("READINESS_DEADLINE_EXPIRED", "readinessDeadline 已过期")
         }
+        mutationGate.begin(journal.transactionId, ReleaseState.COMMITTING.name)?.let { blocker ->
+            throw ReleaseException(
+                "MUTATION_GATE_ACTIVE",
+                "另一发布事务 ${blocker.transactionId} 处于 ${blocker.state}",
+            )
+        }
         journal = journal.copy(
             commandId = request.commandId,
             state = ReleaseState.COMMITTING,
             readinessDeadline = readinessDeadline,
         )
-        store.save(journal)
+        try {
+            store.save(journal)
+        } catch (failure: Throwable) {
+            mutationGate.release(journal.transactionId)
+            throw failure
+        }
         journal = completeSwap(journal)
         journal = journal.copy(state = ReleaseState.READINESS_PENDING)
         store.save(journal)
+        mutationGate.hold(journal.transactionId, journal.state.name)
         emit(
             journal,
             ReleaseAction.COMMIT,
@@ -222,9 +241,42 @@ internal class ReleaseTransactionManager(
         )
     }
 
-    suspend fun rollback(request: ReleaseRequest): ReleaseResult = lock(request.transactionId) {
+    suspend fun rollback(
+        request: ReleaseRequest,
+        compensatingReload: suspend () -> ReadinessReport,
+    ): ReleaseResult = lock(request.transactionId) {
         var journal = requireJournal(request).copy(commandId = request.commandId)
-        journal = rollbackInternal(journal, request.reason ?: "relay requested rollback")
+        if (journal.state == ReleaseState.ROLLED_BACK) {
+            mutationGate.release(journal.transactionId)
+            return@lock emit(
+                journal,
+                ReleaseAction.ROLLBACK,
+                success = true,
+                resultManifestRevision = runCatching { livePolicy(configProvider()).snapshotManifest().revision }.getOrNull(),
+                message = journal.lastMessage ?: "rollback 已处理",
+            )
+        }
+        mutationGate.begin(journal.transactionId, ReleaseState.ROLLING_BACK.name)?.let { blocker ->
+            throw ReleaseException(
+                "MUTATION_GATE_ACTIVE",
+                "另一发布事务 ${blocker.transactionId} 处于 ${blocker.state}",
+            )
+        }
+        journal = try {
+            rollbackInternal(journal, request.reason ?: "relay requested rollback")
+        } catch (failure: Throwable) {
+            markRecoveryRequired(journal, "ROLLBACK_FAILED", failure.message ?: failure.javaClass.simpleName)
+        }
+        if (journal.state == ReleaseState.ROLLED_BACK) {
+            journal = completeRollbackCompensation(
+                journal,
+                journal.lastMessage ?: "relay requested rollback",
+                compensatingReload,
+                clearErrorOnSuccess = true,
+            )
+        } else if (journal.state == ReleaseState.RECOVERY_REQUIRED) {
+            mutationGate.hold(journal.transactionId, journal.state.name)
+        }
         emit(
             journal,
             ReleaseAction.ROLLBACK,
@@ -235,10 +287,15 @@ internal class ReleaseTransactionManager(
         )
     }
 
-    suspend fun completeReadiness(transactionId: String, readiness: suspend () -> ReadinessReport): ReleaseResult = lock(transactionId) {
+    suspend fun completeReadiness(
+        transactionId: String,
+        compensatingReload: (suspend () -> ReadinessReport)? = null,
+        readiness: suspend () -> ReadinessReport,
+    ): ReleaseResult = lock(transactionId) {
         var journal = store.load(transactionId)
             ?: throw ReleaseException("TRANSACTION_NOT_FOUND", "发布事务不存在")
         if (journal.state == ReleaseState.READY) {
+            mutationGate.release(journal.transactionId)
             return@lock emit(journal, ReleaseAction.STATUS, true, resultManifestRevision = journal.targetManifestRevision)
         }
         if (journal.state !in setOf(ReleaseState.READINESS_PENDING, ReleaseState.ACTIVATING)) {
@@ -246,6 +303,7 @@ internal class ReleaseTransactionManager(
         }
         journal = journal.copy(state = ReleaseState.ACTIVATING)
         store.save(journal)
+        mutationGate.hold(journal.transactionId, journal.state.name)
         val deadline = journal.readinessDeadline ?: 0L
         val report = if (deadline > 0L && System.currentTimeMillis() > deadline) {
             ReadinessReport(false, "readinessDeadline 已过期")
@@ -258,6 +316,7 @@ internal class ReleaseTransactionManager(
         if (report.success && liveRevision == journal.targetManifestRevision) {
             journal = journal.copy(state = ReleaseState.READY, lastErrorCode = null, lastMessage = report.message)
             store.save(journal)
+            mutationGate.release(journal.transactionId)
             return@lock emit(
                 journal,
                 ReleaseAction.STATUS,
@@ -269,7 +328,19 @@ internal class ReleaseTransactionManager(
         val failureMessage = if (report.success) "readiness 后 manifest 不匹配" else report.message
         journal = journal.copy(lastErrorCode = "READINESS_FAILED", lastMessage = failureMessage)
         store.save(journal)
-        journal = rollbackInternal(journal, failureMessage)
+        journal = try {
+            rollbackInternal(journal, failureMessage)
+        } catch (failure: Throwable) {
+            markRecoveryRequired(journal, "ROLLBACK_FAILED", failure.message ?: failure.javaClass.simpleName)
+        }
+        if (journal.state == ReleaseState.ROLLED_BACK) {
+            journal = completeRollbackCompensation(
+                journal,
+                failureMessage,
+                compensatingReload ?: readiness,
+                clearErrorOnSuccess = false,
+            )
+        }
         emit(
             journal,
             ReleaseAction.STATUS,
@@ -280,33 +351,52 @@ internal class ReleaseTransactionManager(
         )
     }
 
-    suspend fun recover(onReadinessPending: suspend (String) -> Unit) {
+    suspend fun recover(
+        compensatingReload: suspend () -> ReadinessReport,
+        onReadinessPending: suspend (String) -> Unit,
+    ) {
         store.list().forEach { initial ->
             lock(initial.transactionId) {
                 var journal = store.load(initial.transactionId) ?: return@lock
+                if (journal.state in GATED_STATES) {
+                    mutationGate.hold(journal.transactionId, journal.state.name)
+                }
                 try {
                     when (journal.state) {
                         ReleaseState.COMMITTING -> {
                             journal = completeSwap(journal)
                             journal = journal.copy(state = ReleaseState.READINESS_PENDING)
                             store.save(journal)
+                            mutationGate.hold(journal.transactionId, journal.state.name)
                         }
                         ReleaseState.ACTIVATING -> {
                             journal = journal.copy(state = ReleaseState.READINESS_PENDING)
                             store.save(journal)
+                            mutationGate.hold(journal.transactionId, journal.state.name)
                         }
-                        ReleaseState.ROLLING_BACK -> rollbackInternal(journal, journal.lastMessage ?: "恢复未完成 rollback")
+                        ReleaseState.ROLLING_BACK -> {
+                            val recoveryReason = journal.lastMessage ?: "恢复未完成 rollback"
+                            journal = rollbackInternal(journal, recoveryReason)
+                            if (journal.state == ReleaseState.ROLLED_BACK) {
+                                journal = completeRollbackCompensation(
+                                    journal,
+                                    recoveryReason,
+                                    compensatingReload,
+                                    clearErrorOnSuccess = false,
+                                )
+                            }
+                        }
                         else -> Unit
                     }
                 } catch (failure: Throwable) {
                     val latest = store.load(initial.transactionId) ?: journal
-                    store.save(
-                        latest.copy(
-                            state = ReleaseState.RECOVERY_REQUIRED,
-                            lastErrorCode = "RECOVERY_AMBIGUOUS",
-                            lastMessage = failure.message ?: failure.javaClass.simpleName,
-                        ),
+                    val recoveryRequired = latest.copy(
+                        state = ReleaseState.RECOVERY_REQUIRED,
+                        lastErrorCode = "RECOVERY_AMBIGUOUS",
+                        lastMessage = failure.message ?: failure.javaClass.simpleName,
                     )
+                    store.save(recoveryRequired)
+                    mutationGate.hold(recoveryRequired.transactionId, recoveryRequired.state.name)
                 }
             }
             val current = store.load(initial.transactionId)
@@ -496,6 +586,7 @@ internal class ReleaseTransactionManager(
         }
         var journal = initial.copy(state = ReleaseState.ROLLING_BACK, lastMessage = reason)
         store.save(journal)
+        mutationGate.hold(journal.transactionId, journal.state.name)
         val backupRoot = store.backupDir(journal.transactionId)
         topLevels().asReversed().forEach { top ->
             val live = liveRoot.resolve(top)
@@ -530,7 +621,51 @@ internal class ReleaseTransactionManager(
             )
         }
         store.save(journal)
+        if (journal.state == ReleaseState.RECOVERY_REQUIRED) {
+            mutationGate.hold(journal.transactionId, journal.state.name)
+        }
         return journal
+    }
+
+    private suspend fun completeRollbackCompensation(
+        journal: ReleaseJournal,
+        reason: String,
+        compensatingReload: suspend () -> ReadinessReport,
+        clearErrorOnSuccess: Boolean,
+    ): ReleaseJournal {
+        val compensation = runCatching { compensatingReload() }.getOrElse {
+            ReadinessReport(false, "rollback 补偿重载异常: ${it.message ?: it.javaClass.simpleName}")
+        }
+        val updated = if (compensation.success) {
+            journal.copy(
+                lastErrorCode = journal.lastErrorCode.takeUnless { clearErrorOnSuccess },
+                lastMessage = "$reason；rollback 补偿重载成功: ${compensation.message}",
+            )
+        } else {
+            journal.copy(
+                state = ReleaseState.RECOVERY_REQUIRED,
+                lastErrorCode = "ROLLBACK_RELOAD_FAILED",
+                lastMessage = "rollback 补偿重载失败: ${compensation.message}",
+            )
+        }
+        store.save(updated)
+        if (updated.state == ReleaseState.RECOVERY_REQUIRED) {
+            mutationGate.hold(updated.transactionId, updated.state.name)
+        } else {
+            mutationGate.release(updated.transactionId)
+        }
+        return updated
+    }
+
+    private fun markRecoveryRequired(journal: ReleaseJournal, code: String, message: String): ReleaseJournal {
+        val recoveryRequired = journal.copy(
+            state = ReleaseState.RECOVERY_REQUIRED,
+            lastErrorCode = code,
+            lastMessage = message,
+        )
+        store.save(recoveryRequired)
+        mutationGate.hold(recoveryRequired.transactionId, recoveryRequired.state.name)
+        return recoveryRequired
     }
 
     private fun requireJournal(request: ReleaseRequest): ReleaseJournal {
@@ -621,4 +756,11 @@ internal class ReleaseTransactionManager(
     }
 
     private val SHA256 = Regex("^[0-9a-f]{64}$")
+    private val GATED_STATES = setOf(
+        ReleaseState.COMMITTING,
+        ReleaseState.ACTIVATING,
+        ReleaseState.READINESS_PENDING,
+        ReleaseState.ROLLING_BACK,
+        ReleaseState.RECOVERY_REQUIRED,
+    )
 }

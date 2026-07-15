@@ -26,6 +26,7 @@ class EditorFilePolicy(
     root: Path,
     private val maxFileBytes: Long = DEFAULT_MAX_FILE_BYTES,
     private val maxTreeEntries: Int = DEFAULT_MAX_TREE_ENTRIES,
+    private val maxManifestFiles: Int = DEFAULT_MAX_MANIFEST_FILES,
     private val maxTreeDepth: Int = DEFAULT_MAX_TREE_DEPTH,
     val allowlist: EditorFileAllowlistDescriptor = EditorFileAllowlistDescriptor.ORRYX_CONFIG,
 ) {
@@ -36,6 +37,7 @@ class EditorFilePolicy(
     init {
         require(maxFileBytes > 0) { "maxFileBytes 必须大于 0" }
         require(maxTreeEntries > 0) { "maxTreeEntries 必须大于 0" }
+        require(maxManifestFiles > 0) { "maxManifestFiles 必须大于 0" }
         require(maxTreeDepth > 0) { "maxTreeDepth 必须大于 0" }
         Files.createDirectories(this.root)
         if (Files.isSymbolicLink(this.root)) {
@@ -56,13 +58,26 @@ class EditorFilePolicy(
         val revision: String,
     )
 
-    open class PolicyException(message: String) : IOException(message)
+    open class PolicyException(
+        message: String,
+        val errorCode: String = "FILE_POLICY_VIOLATION",
+        val safePath: String? = null,
+        val currentRevision: String? = null,
+    ) : IOException(message)
 
-    class RevisionConflictException(message: String) : PolicyException(message)
+    class RevisionConflictException(
+        message: String,
+        safePath: String,
+        currentRevision: String?,
+    ) : PolicyException(message, "REVISION_CONFLICT", safePath, currentRevision)
 
-    class PreconditionFailedException(message: String) : PolicyException(message)
+    class PreconditionFailedException(
+        message: String,
+        safePath: String,
+        currentRevision: String?,
+    ) : PolicyException(message, "PRECONDITION_FAILED", safePath, currentRevision)
 
-    class CaseConflictException(message: String) : PolicyException(message)
+    class CaseConflictException(message: String) : PolicyException(message, "CASE_CONFLICT")
 
     fun listTree(path: String?): List<TreeEntry> {
         val relativePath = path.orEmpty()
@@ -89,9 +104,10 @@ class EditorFilePolicy(
     }
 
     fun snapshotManifest(): ManifestSnapshotV1 {
-        val budget = TreeBudget()
+        val treeBudget = TreeBudget()
+        val fileBudget = ManifestFileBudget()
         val entries = mutableListOf<ManifestEntryV1>()
-        appendManifestEntries(root, "", 0, budget, entries)
+        appendManifestEntries(root, "", 0, treeBudget, fileBudget, entries)
         val sortedEntries = entries.sortedBy { it.path }
         return ManifestSnapshotV1(
             manifestId = DEFAULT_MANIFEST_ID,
@@ -119,18 +135,20 @@ class EditorFilePolicy(
             if (!SHA256_REVISION.matches(expectedRevision)) {
                 throw PolicyException("expectedRevision 必须是 64 位小写 SHA-256")
             }
+            val safePath = displayPath(file)
             if (!fileExists) {
-                throw RevisionConflictException("文件版本冲突: $path 已不存在")
+                throw RevisionConflictException("文件版本冲突: $safePath 已不存在", safePath, null)
             }
             val currentRevision = EditorSha256.read(file, maxFileBytes, includeBytes = false).sha256
             if (currentRevision != expectedRevision) {
-                throw RevisionConflictException("文件版本冲突: $path 已被修改")
+                throw RevisionConflictException("文件版本冲突: $safePath 已被修改", safePath, currentRevision)
             }
         }
 
         val parent = file.parent ?: throw PolicyException("目标路径缺少父目录")
         if (!fileExists) {
             ensureCapacityFor(countMissingDirectories(parent) + 1)
+            ensureManifestCapacityFor(1)
         }
         createDirectories(parent)
         ensureNoSymbolicLinks(file)
@@ -154,27 +172,32 @@ class EditorFilePolicy(
         return EditorSha256.digest(bytes)
     }
 
-    fun create(path: String, directory: Boolean, expectedState: ExpectedPathState? = null) {
+    fun create(path: String, directory: Boolean, expectedState: ExpectedPathState? = null): String? {
         val target = resolveMutationPath(path)
         ensureNoCaseAlias(target)
-        expectedState?.let { validateExpectedState(target, path, it) }
+        val safePath = displayPath(target)
+        expectedState?.let { validateExpectedState(target, safePath, it) }
         if (Files.exists(target, LinkOption.NOFOLLOW_LINKS)) {
             throw PolicyException("文件已存在: $path")
         }
         val parent = target.parent ?: throw PolicyException("目标路径缺少父目录")
         ensureCapacityFor(countMissingDirectories(parent) + 1)
+        if (!directory) ensureManifestCapacityFor(1)
         createDirectories(parent)
         ensureNoSymbolicLinks(target)
-        if (directory) {
+        return if (directory) {
             Files.createDirectory(target)
+            null
         } else {
             Files.createFile(target)
+            EMPTY_FILE_REVISION
         }
     }
 
     fun delete(path: String, expectedState: ExpectedPathState? = null): Boolean {
         val target = resolve(path)
-        expectedState?.let { validateExpectedState(target, path, it) }
+        val safePath = displayPath(target)
+        expectedState?.let { validateExpectedState(target, safePath, it) }
         if (!Files.exists(target, LinkOption.NOFOLLOW_LINKS)) {
             throw PolicyException("文件不存在: $path")
         }
@@ -194,8 +217,8 @@ class EditorFilePolicy(
         val source = resolve(oldPath)
         val target = resolveMutationPath(newPath)
         ensureNoCaseAlias(target, ignoredPath = source)
-        expectedSourceState?.let { validateExpectedState(source, oldPath, it) }
-        expectedTargetState?.let { validateExpectedState(target, newPath, it) }
+        expectedSourceState?.let { validateExpectedState(source, displayPath(source), it) }
+        expectedTargetState?.let { validateExpectedState(target, displayPath(target), it) }
         if (!Files.exists(source, LinkOption.NOFOLLOW_LINKS)) {
             throw PolicyException("文件不存在: $oldPath")
         }
@@ -412,7 +435,8 @@ class EditorFilePolicy(
         directory: Path,
         relativePath: String,
         directoryDepth: Int,
-        budget: TreeBudget,
+        treeBudget: TreeBudget,
+        fileBudget: ManifestFileBudget,
         entries: MutableList<ManifestEntryV1>,
     ) {
         val children = listChildrenChecked(directory, filterAllowlist = relativePath.isEmpty())
@@ -423,14 +447,15 @@ class EditorFilePolicy(
             }
             ensureRealPathInsideRoot(child)
             ensureDepth(directoryDepth + 1)
-            budget.consume()
+            treeBudget.consume()
             val name = child.fileName.toString()
             val childRelativePath = if (relativePath.isEmpty()) name else "$relativePath/$name"
             when {
                 Files.isDirectory(child, LinkOption.NOFOLLOW_LINKS) -> {
-                    appendManifestEntries(child, childRelativePath, directoryDepth + 1, budget, entries)
+                    appendManifestEntries(child, childRelativePath, directoryDepth + 1, treeBudget, fileBudget, entries)
                 }
                 Files.isRegularFile(child, LinkOption.NOFOLLOW_LINKS) -> {
+                    fileBudget.consume()
                     val streamed = EditorSha256.read(child, maxFileBytes, includeBytes = false)
                     entries += ManifestEntryV1(
                         path = childRelativePath,
@@ -481,7 +506,7 @@ class EditorFilePolicy(
         }
     }
 
-    private fun validateExpectedState(target: Path, displayPath: String, expectedState: ExpectedPathState) {
+    private fun validateExpectedState(target: Path, safePath: String, expectedState: ExpectedPathState) {
         val exists = Files.exists(target, LinkOption.NOFOLLOW_LINKS)
         val matches = when (expectedState) {
             ExpectedPathState.PRESENT -> exists
@@ -489,7 +514,16 @@ class EditorFilePolicy(
         }
         if (!matches) {
             val expected = if (expectedState == ExpectedPathState.PRESENT) "存在" else "不存在"
-            throw PreconditionFailedException("路径前置条件不满足: $displayPath 预期$expected")
+            val currentRevision = if (Files.isRegularFile(target, LinkOption.NOFOLLOW_LINKS)) {
+                EditorSha256.read(target, maxFileBytes, includeBytes = false).sha256
+            } else {
+                null
+            }
+            throw PreconditionFailedException(
+                "路径前置条件不满足: $safePath 预期$expected",
+                safePath,
+                currentRevision,
+            )
         }
     }
 
@@ -517,6 +551,33 @@ class EditorFilePolicy(
         }
     }
 
+    private fun ensureManifestCapacityFor(additionalFiles: Int) {
+        if (additionalFiles <= 0) return
+        var files = 0
+        fun count(directory: Path, topLevel: Boolean) {
+            listChildrenChecked(directory, filterAllowlist = topLevel).forEach { child ->
+                if (Files.isSymbolicLink(child)) {
+                    throw PolicyException("禁止访问符号链接: ${displayPath(child)}")
+                }
+                ensureRealPathInsideRoot(child)
+                when {
+                    Files.isDirectory(child, LinkOption.NOFOLLOW_LINKS) -> count(child, topLevel = false)
+                    Files.isRegularFile(child, LinkOption.NOFOLLOW_LINKS) -> {
+                        files++
+                        if (files + additionalFiles > maxManifestFiles) {
+                            throw PolicyException("manifest 文件数量将超过限制: $maxManifestFiles")
+                        }
+                    }
+                    else -> throw PolicyException("只允许普通文件和目录: ${displayPath(child)}")
+                }
+            }
+        }
+        count(root, topLevel = true)
+        if (files + additionalFiles > maxManifestFiles) {
+            throw PolicyException("manifest 文件数量将超过限制: $maxManifestFiles")
+        }
+    }
+
     private fun displayPath(path: Path): String = root.relativize(path).joinToString("/")
 
     private inner class TreeBudget {
@@ -531,11 +592,24 @@ class EditorFilePolicy(
         }
     }
 
+    private inner class ManifestFileBudget {
+        private var files: Int = 0
+
+        fun consume() {
+            files++
+            if (files > maxManifestFiles) {
+                throw PolicyException("manifest 文件数量超过限制: $maxManifestFiles")
+            }
+        }
+    }
+
     companion object {
         internal const val DEFAULT_MAX_FILE_BYTES = 2L * 1024L * 1024L
         internal const val DEFAULT_MAX_TREE_ENTRIES = 10_000
+        internal const val DEFAULT_MAX_MANIFEST_FILES = 4_096
         internal const val DEFAULT_MAX_TREE_DEPTH = 32
         private const val DEFAULT_MANIFEST_ID = "working-tree"
+        const val EMPTY_FILE_REVISION = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         private const val MAX_PATH_LENGTH = 1024
         private const val MAX_COMPONENT_LENGTH = 255
         private val SHA256_REVISION = Regex("^[0-9a-f]{64}$")

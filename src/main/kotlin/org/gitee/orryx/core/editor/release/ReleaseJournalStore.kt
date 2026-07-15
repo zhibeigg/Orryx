@@ -1,10 +1,12 @@
 package org.gitee.orryx.core.editor.release
 
 import kotlinx.serialization.json.Json
+import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.charset.StandardCharsets
 import java.nio.file.AtomicMoveNotSupportedException
+import java.nio.file.DirectoryIteratorException
 import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.Path
@@ -55,12 +57,30 @@ internal class ReleaseJournalStore(private val transactionsRoot: Path) {
     }
 
     fun list(): List<ReleaseJournal> {
-        if (!Files.isDirectory(transactionsRoot, LinkOption.NOFOLLOW_LINKS)) return emptyList()
-        return Files.newDirectoryStream(transactionsRoot).use { stream ->
-            stream.asSequence()
-                .filter { Files.isDirectory(it, LinkOption.NOFOLLOW_LINKS) && !Files.isSymbolicLink(it) }
-                .mapNotNull { directory -> runCatching { load(directory.fileName.toString()) }.getOrNull() }
-                .toList()
+        validateTransactionsRoot()
+        return try {
+            Files.newDirectoryStream(transactionsRoot).use { stream ->
+                stream.asSequence()
+                    .map { directory ->
+                        validateTransactionEntry(directory)
+                        val transactionId = directory.fileName.toString()
+                        load(transactionId)
+                            ?: throw ReleaseException("INVALID_JOURNAL", "发布事务 $transactionId 缺少 journal.json")
+                    }
+                    .toList()
+            }
+        } catch (failure: ReleaseException) {
+            throw failure
+        } catch (failure: DirectoryIteratorException) {
+            throw ReleaseException(
+                "RECOVERY_SCAN_FAILED",
+                "发布事务目录扫描失败",
+                failure.cause ?: failure,
+            )
+        } catch (failure: IOException) {
+            throw ReleaseException("RECOVERY_SCAN_FAILED", "发布事务目录扫描失败", failure)
+        } catch (failure: SecurityException) {
+            throw ReleaseException("RECOVERY_SCAN_FAILED", "发布事务目录扫描失败", failure)
         }
     }
 
@@ -112,6 +132,28 @@ internal class ReleaseJournalStore(private val transactionsRoot: Path) {
                     throw ReleaseException("SYMLINK_REJECTED", "发布事务目录中禁止符号链接")
                 }
             }
+        }
+    }
+
+    private fun validateTransactionsRoot() {
+        if (Files.isSymbolicLink(transactionsRoot) ||
+            !Files.isDirectory(transactionsRoot, LinkOption.NOFOLLOW_LINKS) ||
+            !Files.isReadable(transactionsRoot)
+        ) {
+            throw ReleaseException("INVALID_TRANSACTION_ROOT", "发布事务根目录不可安全扫描")
+        }
+    }
+
+    private fun validateTransactionEntry(entry: Path) {
+        val name = entry.fileName?.toString().orEmpty()
+        if (!TRANSACTION_ID.matches(name)) {
+            throw ReleaseException("INVALID_TRANSACTION_ENTRY", "发布事务根包含无效条目")
+        }
+        if (Files.isSymbolicLink(entry) ||
+            !Files.isDirectory(entry, LinkOption.NOFOLLOW_LINKS) ||
+            !Files.isReadable(entry)
+        ) {
+            throw ReleaseException("INVALID_TRANSACTION_ENTRY", "发布事务条目 $name 不是可读的普通目录")
         }
     }
 

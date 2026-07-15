@@ -24,17 +24,59 @@ object EditorProtocol {
     const val RELEASE_REQUEST = "release.request"
     const val RELEASE_RESULT = "release.result"
     const val ERROR = "error"
+    const val RELAY_WRITE_CAPABILITY = "file.write.v2"
     const val RELAY_RELEASE_CAPABILITY = "release.control.v1"
 
     val V2_CAPABILITIES: List<String> = listOf(
         "protocol.allowlist",
         "revision.sha256",
+        RELAY_WRITE_CAPABILITY,
         "mutation.preconditions",
         "release.transaction.v1",
         "release.signature.ed25519",
         "release.readiness.async",
         "release.recovery.v1",
         "release.http-pull.v1",
+    )
+
+    internal val SAFE_ERROR_FIELDS = setOf("code", "path", "currentRevision", "requestType")
+    internal val SAFE_ERROR_CODES = setOf(
+        "REQUEST_FAILED",
+        "INVALID_MESSAGE",
+        "INVALID_DATA",
+        "MESSAGE_DIRECTION_NOT_ALLOWED",
+        "UNKNOWN_MESSAGE_TYPE",
+        "NOT_REGISTERED",
+        "MESSAGE_NOT_SUPPORTED",
+        "UNHANDLED_MESSAGE_TYPE",
+        "RELAY_CAPABILITY_MISSING",
+        "FILE_POLICY_VIOLATION",
+        "REVISION_CONFLICT",
+        "PRECONDITION_FAILED",
+        "CASE_CONFLICT",
+        "MUTATION_GATE_ACTIVE",
+        "REQUEST_QUEUE_FULL",
+        "REVISION_FIELDS_MISMATCH",
+        "REVISION_REQUIRED",
+        "FILE_NOT_FOUND",
+        "FILE_ALREADY_EXISTS",
+        "PATH_TYPE_MISMATCH",
+        "PERMISSION_DENIED",
+        "READ_ONLY",
+        "UNSUPPORTED_OPERATION",
+        "FILE_TOO_LARGE",
+        "INVALID_PATH",
+        "INVALID_REVISION",
+        "RELOAD_FAILED",
+        "MANIFEST_UNAVAILABLE",
+        "READINESS_FAILED",
+        "ROLLBACK_FAILED",
+        "ROLLBACK_RELOAD_FAILED",
+        "ROLLBACK_MANIFEST_MISMATCH",
+        "RECOVERY_AMBIGUOUS",
+        "INVALID_JOURNAL",
+        "RECOVERY_SCAN_FAILED",
+        "RELEASE_REQUEST_FAILED",
     )
 
     private val SHA256_REVISION = Regex("^[0-9a-f]{64}$")
@@ -53,6 +95,7 @@ object EditorProtocol {
         "reload",
         "log.subscribe",
         "log.unsubscribe",
+        MANIFEST_GET,
         RELEASE_REQUEST,
     )
 
@@ -69,6 +112,7 @@ object EditorProtocol {
         "log.unsubscribe.result",
         "log.entry",
         "server.info",
+        MANIFEST_SNAPSHOT,
         RELEASE_RESULT,
         ERROR,
     )
@@ -134,7 +178,7 @@ object EditorProtocol {
                     isSha256Revision(result.workspaceId) &&
                     result.connectionNonce == request.connectionNonce &&
                     "revision.sha256" in result.relayCapabilities &&
-                    RELAY_RELEASE_CAPABILITY in result.relayCapabilities
+                    RELAY_WRITE_CAPABILITY in result.relayCapabilities
                 )
         return ServerRegisterValidation(
             protocolAccepted = protocolAccepted,
@@ -143,6 +187,24 @@ object EditorProtocol {
             sessionMetadataAccepted = sessionMetadataAccepted,
             v2ContractAccepted = v2ContractAccepted,
         )
+    }
+
+    fun registrationDecision(
+        result: ServerRegisterResult,
+        validation: ServerRegisterValidation,
+        offeredProtocols: Collection<String>,
+        v1FallbackAttempted: Boolean,
+    ): RegistrationDecision {
+        if (result.success && validation.accepted) return RegistrationDecision.ACCEPT
+        val canFallback = result.success &&
+            result.negotiatedProtocol == PROTOCOL_V2 &&
+            validation.protocolAccepted &&
+            validation.serverIdAccepted &&
+            validation.nonceAccepted &&
+            !validation.v2ContractAccepted &&
+            PROTOCOL_V1 in offeredProtocols &&
+            !v1FallbackAttempted
+        return if (canFallback) RegistrationDecision.FALLBACK_V1 else RegistrationDecision.REJECT
     }
 
     fun isSha256Revision(value: String?): Boolean = value != null && SHA256_REVISION.matches(value)
@@ -164,7 +226,8 @@ object EditorProtocol {
     }
 
     fun isSupportedForProtocol(type: String, protocol: String): Boolean {
-        return type != RELEASE_REQUEST && type != RELEASE_RESULT || protocol == PROTOCOL_V2
+        val v2Only = type in setOf(RELEASE_REQUEST, RELEASE_RESULT, MANIFEST_GET, MANIFEST_SNAPSHOT)
+        return !v2Only || protocol == PROTOCOL_V2
     }
 
     fun isServerToCenter(type: String): Boolean = type in serverToCenterTypes
@@ -208,6 +271,19 @@ data class ServerRegisterValidation(
     val accepted: Boolean
         get() = protocolAccepted && serverIdAccepted && nonceAccepted && sessionMetadataAccepted && v2ContractAccepted
 }
+
+enum class RegistrationDecision {
+    ACCEPT,
+    FALLBACK_V1,
+    REJECT,
+}
+
+data class EditorSafeError(
+    val code: String,
+    val message: String,
+    val path: String? = null,
+    val currentRevision: String? = null,
+)
 
 enum class InboundDisposition {
     ACCEPT,

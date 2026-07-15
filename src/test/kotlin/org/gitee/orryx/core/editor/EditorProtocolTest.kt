@@ -11,6 +11,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import org.gitee.orryx.command.resolveEditorPlayer
+import org.gitee.orryx.core.editor.handler.EditorFilePolicy
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -91,12 +92,17 @@ class EditorProtocolTest {
         assertEquals("nonce-1", data.getValue("connectionNonce").jsonPrimitive.content)
         val capabilities = data.getValue("capabilities").jsonArray.map { it.jsonPrimitive.content }.toSet()
         assertTrue(capabilities.containsAll(setOf(
+            "revision.sha256",
+            "file.write.v2",
+            "mutation.preconditions",
             "release.transaction.v1",
             "release.signature.ed25519",
             "release.readiness.async",
             "release.recovery.v1",
             "release.http-pull.v1",
         )))
+        assertEquals(listOf("v1"), EditorProtocol.supportedProtocols(v2Enabled = false))
+        assertEquals("v1", EditorProtocol.preferredProtocol(v2Enabled = false))
     }
 
     @Test
@@ -125,7 +131,7 @@ class EditorProtocolTest {
             put("connectionNonce", "nonce-1")
             put("relayCapabilities", kotlinx.serialization.json.buildJsonArray {
                 add(kotlinx.serialization.json.JsonPrimitive("revision.sha256"))
-                add(kotlinx.serialization.json.JsonPrimitive("release.control.v1"))
+                add(kotlinx.serialization.json.JsonPrimitive("file.write.v2"))
             })
         })
 
@@ -135,7 +141,7 @@ class EditorProtocolTest {
         assertEquals(workspaceId, result.workspaceId)
         assertTrue(EditorProtocol.isSha256Revision(result.workspaceId))
         assertFalse(EditorProtocol.isSha256Revision(workspaceId.uppercase()))
-        assertEquals(listOf("revision.sha256", "release.control.v1"), result.relayCapabilities)
+        assertEquals(listOf("revision.sha256", "file.write.v2"), result.relayCapabilities)
         assertEquals("nonce-1", result.connectionNonce)
         assertFalse(EditorProtocol.validateNegotiatedProtocol(result, listOf("v1")))
     }
@@ -159,7 +165,7 @@ class EditorProtocolTest {
             serverId = request.serverId,
             sessionEpoch = 1L,
             workspaceId = "a".repeat(64),
-            relayCapabilities = listOf("revision.sha256", "release.control.v1"),
+            relayCapabilities = listOf("revision.sha256", "file.write.v2"),
             connectionNonce = request.connectionNonce,
         )
 
@@ -172,6 +178,8 @@ class EditorProtocolTest {
         assertFalse(
             EditorProtocol.validateRegisterResult(valid.copy(relayCapabilities = listOf("revision.sha256")), request).accepted,
         )
+        assertTrue(EditorProtocol.RELAY_WRITE_CAPABILITY in valid.relayCapabilities)
+        assertFalse(EditorProtocol.RELAY_RELEASE_CAPABILITY in valid.relayCapabilities)
 
         val legacy = valid.copy(
             negotiatedProtocol = "v1",
@@ -185,6 +193,46 @@ class EditorProtocolTest {
     }
 
     @Test
+    fun `v2 without relay write capability permits exactly one controlled v1 fallback`() {
+        val request = ServerRegisterRequest(
+            license = "secret-license",
+            serverName = "Test Server",
+            serverId = "123e4567-e89b-12d3-a456-426614174000",
+            pluginVersion = "2.51.124",
+            protocolVersions = listOf("v2", "v1"),
+            preferredProtocol = "v2",
+            capabilities = EditorProtocol.V2_CAPABILITIES,
+            connectionNonce = "nonce-1",
+        )
+        val damaged = ServerRegisterResult(
+            success = true,
+            message = "ok",
+            negotiatedProtocol = "v2",
+            serverId = request.serverId,
+            sessionEpoch = 1L,
+            workspaceId = "a".repeat(64),
+            relayCapabilities = listOf("revision.sha256"),
+            connectionNonce = request.connectionNonce,
+        )
+        val validation = EditorProtocol.validateRegisterResult(damaged, request)
+
+        assertTrue(validation.sessionMetadataAccepted)
+        assertFalse(validation.v2ContractAccepted)
+        assertEquals(
+            RegistrationDecision.FALLBACK_V1,
+            EditorProtocol.registrationDecision(damaged, validation, request.protocolVersions, false),
+        )
+        assertEquals(
+            RegistrationDecision.REJECT,
+            EditorProtocol.registrationDecision(damaged, validation, request.protocolVersions, true),
+        )
+        assertEquals(
+            RegistrationDecision.REJECT,
+            EditorProtocol.registrationDecision(damaged, validation, listOf("v2"), false),
+        )
+    }
+
+    @Test
     fun `bundled relay contract matches plugin allowlists`() {
         val bytes = requireNotNull(javaClass.classLoader.getResourceAsStream("editor-relay-contract-v2.json")) {
             "缺少 editor-relay-contract-v2.json"
@@ -195,6 +243,19 @@ class EditorProtocolTest {
         assertEquals(directions.stringSet("relayToPlugin"), EditorProtocol.allowedInboundTypes())
         assertEquals(directions.stringSet("pluginToRelay"), EditorProtocol.allowedOutboundTypes())
         assertEquals(setOf("v1", "v2"), manifest.stringSet("protocolVersions"))
+        val v2 = manifest.getValue("v2").jsonObject
+        assertEquals(
+            EditorFilePolicy.DEFAULT_MAX_MANIFEST_FILES,
+            v2.getValue("manifest").jsonObject.getValue("maxFiles").jsonPrimitive.content.toInt(),
+        )
+        assertEquals(
+            setOf("revision.sha256", EditorProtocol.RELAY_WRITE_CAPABILITY),
+            v2.stringSet("requiredPluginCapabilities"),
+        )
+        assertTrue(EditorProtocol.V2_CAPABILITIES.containsAll(v2.stringSet("requiredPluginCapabilities")))
+        val pluginError = v2.getValue("pluginError").jsonObject
+        assertEquals(EditorProtocol.SAFE_ERROR_FIELDS, pluginError.stringSet("forwardedFields"))
+        assertEquals(EditorProtocol.SAFE_ERROR_CODES, pluginError.stringSet("safeCodes"))
         val reserved = manifest.stringSet("reservedUnroutedTypes")
         assertTrue(reserved.intersect(EditorProtocol.allowedInboundTypes()).isEmpty())
         assertTrue(reserved.intersect(EditorProtocol.allowedOutboundTypes()).isEmpty())
@@ -206,7 +267,7 @@ class EditorProtocolTest {
         assertEquals(InboundDisposition.ACCEPT, EditorProtocol.inboundDisposition("token.revoke.result"))
         assertEquals(InboundDisposition.ACCEPT, EditorProtocol.inboundDisposition(EditorProtocol.RELEASE_REQUEST))
         assertEquals(InboundDisposition.WRONG_DIRECTION, EditorProtocol.inboundDisposition("file.content"))
-        assertEquals(InboundDisposition.UNKNOWN, EditorProtocol.inboundDisposition(EditorProtocol.MANIFEST_GET))
+        assertEquals(InboundDisposition.ACCEPT, EditorProtocol.inboundDisposition(EditorProtocol.MANIFEST_GET))
         assertEquals(InboundDisposition.UNKNOWN, EditorProtocol.inboundDisposition("actions.schema"))
         assertEquals(InboundDisposition.UNKNOWN, EditorProtocol.inboundDisposition("center.future.command"))
         assertTrue(EditorProtocol.isServerToCenter("error"))
@@ -216,7 +277,9 @@ class EditorProtocolTest {
         assertTrue(EditorProtocol.isServerToCenter(EditorProtocol.RELEASE_RESULT))
         assertFalse(EditorProtocol.isSupportedForProtocol(EditorProtocol.RELEASE_REQUEST, EditorProtocol.PROTOCOL_V1))
         assertTrue(EditorProtocol.isSupportedForProtocol(EditorProtocol.RELEASE_REQUEST, EditorProtocol.PROTOCOL_V2))
-        assertFalse(EditorProtocol.isServerToCenter(EditorProtocol.MANIFEST_SNAPSHOT))
+        assertFalse(EditorProtocol.isSupportedForProtocol(EditorProtocol.MANIFEST_GET, EditorProtocol.PROTOCOL_V1))
+        assertTrue(EditorProtocol.isSupportedForProtocol(EditorProtocol.MANIFEST_GET, EditorProtocol.PROTOCOL_V2))
+        assertTrue(EditorProtocol.isServerToCenter(EditorProtocol.MANIFEST_SNAPSHOT))
         assertFalse(EditorProtocol.isServerToCenter("file.read"))
     }
 

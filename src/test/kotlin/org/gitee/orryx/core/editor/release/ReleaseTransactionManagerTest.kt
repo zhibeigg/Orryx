@@ -2,13 +2,18 @@ package org.gitee.orryx.core.editor.release
 
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters
 import org.bouncycastle.crypto.signers.Ed25519Signer
 import org.gitee.orryx.core.editor.handler.EditorFilePolicy
+import org.gitee.orryx.core.editor.handler.EditorMutationGate
+import org.gitee.orryx.core.editor.handler.EditorMutationOperation
 import org.gitee.orryx.core.editor.handler.ManifestCanonicalHash
 import org.gitee.orryx.core.editor.handler.ManifestEntryV1
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -23,6 +28,36 @@ class ReleaseTransactionManagerTest {
 
     @TempDir
     lateinit var root: Path
+
+    @Test
+    fun `release request file count matches manifest contract boundary`() {
+        fun request(fileCount: Int) = buildJsonObject {
+            put("action", "prepare")
+            put("transactionId", "11111111-1111-4111-8111-111111111111")
+            put("releaseId", "22222222-2222-4222-8222-222222222222")
+            put("commandId", "a".repeat(64))
+            put("canonicalVersion", ReleaseCanonical.VERSION)
+            put("canonicalPayloadSha256", "b".repeat(64))
+            put("signingKeyId", "c".repeat(64))
+            put("signature", "d".repeat(86))
+            put("expectedManifestRevision", "e".repeat(64))
+            put("targetManifestRevision", "f".repeat(64))
+            put("fileCount", fileCount)
+            put("totalBytes", 0L)
+            put("operationsUrl", "https://release.example.test/releases/tx/operations.json")
+            put("transferToken", "t".repeat(40))
+            put("transferExpiresAt", 1L)
+        }
+
+        assertEquals(
+            EditorFilePolicy.DEFAULT_MAX_MANIFEST_FILES,
+            ReleaseRequest.parse(request(EditorFilePolicy.DEFAULT_MAX_MANIFEST_FILES)).fileCount,
+        )
+        val failure = assertThrows(ReleaseException::class.java) {
+            ReleaseRequest.parse(request(EditorFilePolicy.DEFAULT_MAX_MANIFEST_FILES + 1))
+        }
+        assertEquals("INVALID_FILE_COUNT", failure.code)
+    }
 
     @Test
     fun `prepare verifies complete stage manifest signature and content hashes`() = runTest {
@@ -47,10 +82,21 @@ class ReleaseTransactionManagerTest {
 
         val pending = fixture.manager.commit(fixture.commitRequest)
         assertEquals(ReleaseState.READINESS_PENDING, pending.pluginState)
+        assertThrows(EditorMutationGate.MutationBlockedException::class.java) {
+            fixture.gate.checkAllowed(EditorMutationOperation.FILE_WRITE)
+        }
         assertEquals("new", String(Files.readAllBytes(fixture.live.resolve("skills/old.yml"))))
         assertTrue(Files.exists(fixture.live.resolve("keys.yml")))
 
-        val rolledBack = fixture.manager.completeReadiness(fixture.transactionId) {
+        val reloadCount = AtomicInteger()
+        val rolledBack = fixture.manager.completeReadiness(
+            fixture.transactionId,
+            compensatingReload = {
+                reloadCount.incrementAndGet()
+                ReadinessReport(true, "base reloaded")
+            },
+        ) {
+            reloadCount.incrementAndGet()
             ReadinessReport(false, "synthetic reload failure")
         }
         assertFalse(rolledBack.success)
@@ -58,6 +104,146 @@ class ReleaseTransactionManagerTest {
         assertEquals("base", String(Files.readAllBytes(fixture.live.resolve("skills/old.yml"))))
         assertFalse(Files.exists(fixture.live.resolve("keys.yml")))
         assertEquals(fixture.baseRevision, EditorFilePolicy(fixture.live).snapshotManifest().revision)
+        assertEquals(2, reloadCount.get())
+        fixture.gate.checkAllowed(EditorMutationOperation.RELOAD)
+    }
+
+    @Test
+    fun `failed rollback compensation requires recovery and keeps mutation gate`() = runTest {
+        val fixture = fixture(root.resolve("compensation-failure"))
+        assertEquals(ReleaseState.PREPARED, fixture.manager.prepare(fixture.prepareRequest).pluginState)
+        assertEquals(ReleaseState.READINESS_PENDING, fixture.manager.commit(fixture.commitRequest).pluginState)
+
+        val result = fixture.manager.completeReadiness(
+            fixture.transactionId,
+            compensatingReload = { ReadinessReport(false, "base reload failed") },
+        ) {
+            ReadinessReport(false, "target reload failed")
+        }
+
+        assertEquals(ReleaseState.RECOVERY_REQUIRED, result.pluginState)
+        assertEquals("ROLLBACK_RELOAD_FAILED", result.errorCode)
+        assertEquals(fixture.baseRevision, EditorFilePolicy(fixture.live).snapshotManifest().revision)
+        assertThrows(EditorMutationGate.MutationBlockedException::class.java) {
+            fixture.gate.checkAllowed(EditorMutationOperation.FILE_CREATE)
+        }
+    }
+
+    @Test
+    fun `explicit rollback reloads restored base before releasing mutation gate`() = runTest {
+        val fixture = fixture(root.resolve("explicit-rollback"))
+        assertEquals(ReleaseState.PREPARED, fixture.manager.prepare(fixture.prepareRequest).pluginState)
+        assertEquals(ReleaseState.READINESS_PENDING, fixture.manager.commit(fixture.commitRequest).pluginState)
+        val reloadCount = AtomicInteger()
+
+        val result = fixture.manager.rollback(
+            fixture.prepareRequest.copy(
+                action = ReleaseAction.ROLLBACK,
+                commandId = ReleaseCanonical.sha256("rollback:${fixture.transactionId}".toByteArray()),
+                reason = "operator requested rollback",
+            ),
+        ) {
+            reloadCount.incrementAndGet()
+            ReadinessReport(true, "base reloaded")
+        }
+
+        assertTrue(result.success)
+        assertEquals(ReleaseState.ROLLED_BACK, result.pluginState)
+        assertEquals(1, reloadCount.get())
+        assertEquals(fixture.baseRevision, EditorFilePolicy(fixture.live).snapshotManifest().revision)
+        fixture.gate.checkAllowed(EditorMutationOperation.FILE_WRITE)
+    }
+
+    @Test
+    fun `explicit rollback reload failure returns stable recovery code and keeps gate`() = runTest {
+        val fixture = fixture(root.resolve("explicit-rollback-reload-failure"))
+        assertEquals(ReleaseState.PREPARED, fixture.manager.prepare(fixture.prepareRequest).pluginState)
+        assertEquals(ReleaseState.READINESS_PENDING, fixture.manager.commit(fixture.commitRequest).pluginState)
+
+        val result = fixture.manager.rollback(
+            fixture.prepareRequest.copy(
+                action = ReleaseAction.ROLLBACK,
+                commandId = ReleaseCanonical.sha256("rollback-failed:${fixture.transactionId}".toByteArray()),
+            ),
+        ) {
+            ReadinessReport(false, "base reload failed")
+        }
+
+        assertFalse(result.success)
+        assertEquals(ReleaseState.RECOVERY_REQUIRED, result.pluginState)
+        assertEquals("ROLLBACK_RELOAD_FAILED", result.errorCode)
+        assertEquals(fixture.baseRevision, EditorFilePolicy(fixture.live).snapshotManifest().revision)
+        assertThrows(EditorMutationGate.MutationBlockedException::class.java) {
+            fixture.gate.checkAllowed(EditorMutationOperation.FILE_DELETE)
+        }
+    }
+
+    @Test
+    fun `startup rollback recovery compensates reload before releasing gate`() = runTest {
+        val fixture = fixture(root.resolve("startup-rollback"))
+        assertEquals(ReleaseState.PREPARED, fixture.manager.prepare(fixture.prepareRequest).pluginState)
+        assertEquals(ReleaseState.READINESS_PENDING, fixture.manager.commit(fixture.commitRequest).pluginState)
+        val store = ReleaseJournalStore(fixture.transactions)
+        val pendingRollback = requireNotNull(store.load(fixture.transactionId)).copy(
+            state = ReleaseState.ROLLING_BACK,
+            lastMessage = "resume rollback",
+        )
+        store.save(pendingRollback)
+        val reloadCount = AtomicInteger()
+        val recoveredManager = ReleaseTransactionManager(
+            liveRoot = fixture.live,
+            transactionsRoot = fixture.transactions,
+            configProvider = { fixture.config },
+            downloader = fixture.downloader,
+            mutationGate = fixture.gate,
+        )
+
+        recoveredManager.recover(
+            compensatingReload = {
+                reloadCount.incrementAndGet()
+                ReadinessReport(true, "base reloaded")
+            },
+            onReadinessPending = { error("rollback recovery 不应进入 readiness") },
+        )
+
+        assertEquals(1, reloadCount.get())
+        assertEquals(ReleaseState.ROLLED_BACK, store.load(fixture.transactionId)?.state)
+        assertEquals(fixture.baseRevision, EditorFilePolicy(fixture.live).snapshotManifest().revision)
+        fixture.gate.checkAllowed(EditorMutationOperation.RELOAD)
+    }
+
+    @Test
+    fun `startup rollback reload failure keeps recovery gate and stable code`() = runTest {
+        val fixture = fixture(root.resolve("startup-rollback-reload-failure"))
+        assertEquals(ReleaseState.PREPARED, fixture.manager.prepare(fixture.prepareRequest).pluginState)
+        assertEquals(ReleaseState.READINESS_PENDING, fixture.manager.commit(fixture.commitRequest).pluginState)
+        val store = ReleaseJournalStore(fixture.transactions)
+        store.save(
+            requireNotNull(store.load(fixture.transactionId)).copy(
+                state = ReleaseState.ROLLING_BACK,
+                lastMessage = "resume rollback",
+            ),
+        )
+        val recoveredManager = ReleaseTransactionManager(
+            liveRoot = fixture.live,
+            transactionsRoot = fixture.transactions,
+            configProvider = { fixture.config },
+            downloader = fixture.downloader,
+            mutationGate = fixture.gate,
+        )
+
+        recoveredManager.recover(
+            compensatingReload = { ReadinessReport(false, "base reload failed") },
+            onReadinessPending = { error("rollback recovery 不应进入 readiness") },
+        )
+
+        val recovered = requireNotNull(store.load(fixture.transactionId))
+        assertEquals(ReleaseState.RECOVERY_REQUIRED, recovered.state)
+        assertEquals("ROLLBACK_RELOAD_FAILED", recovered.lastErrorCode)
+        assertEquals(fixture.baseRevision, EditorFilePolicy(fixture.live).snapshotManifest().revision)
+        assertThrows(EditorMutationGate.MutationBlockedException::class.java) {
+            fixture.gate.checkAllowed(EditorMutationOperation.FILE_WRITE)
+        }
     }
 
     @Test
@@ -79,9 +265,13 @@ class ReleaseTransactionManagerTest {
                 transactionsRoot = fixture.transactions,
                 configProvider = { fixture.config },
                 downloader = fixture.downloader,
+                mutationGate = fixture.gate,
             )
             val pending = mutableListOf<String>()
-            recoveredManager.recover { pending += it }
+            recoveredManager.recover(
+                compensatingReload = { ReadinessReport(true, "base reloaded") },
+                onReadinessPending = { pending += it },
+            )
             assertEquals(listOf(fixture.transactionId), pending, "checkpoint=$crashAt")
             val ready = recoveredManager.completeReadiness(fixture.transactionId) {
                 ReadinessReport(true, "ready")
@@ -179,12 +369,14 @@ class ReleaseTransactionManagerTest {
             files = files,
         )
         val downloader = FakeDownloader(operations, contentsByUrl)
+        val gate = EditorMutationGate()
         val manager = ReleaseTransactionManager(
             liveRoot = live,
             transactionsRoot = transactions,
             configProvider = { config },
             downloader = downloader,
             checkpoint = checkpoint,
+            mutationGate = gate,
         )
         val prepare = ReleaseRequest(
             action = ReleaseAction.PREPARE,
@@ -215,6 +407,7 @@ class ReleaseTransactionManagerTest {
             transactions,
             manager,
             downloader,
+            gate,
             config,
             prepare,
             commit,
@@ -229,6 +422,7 @@ class ReleaseTransactionManagerTest {
         val transactions: Path,
         val manager: ReleaseTransactionManager,
         val downloader: ReleaseDownloader,
+        val gate: EditorMutationGate,
         val config: ReleaseConfig,
         val prepareRequest: ReleaseRequest,
         val commitRequest: ReleaseRequest,
