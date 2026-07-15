@@ -84,6 +84,7 @@ internal object KetherRegistryContracts {
                 "acceptedTypes": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
                 "required": { "type": "boolean" }, "default": {}, "description": { "type": "string" },
                 "keyword": { "type": "string" }, "keywordAlternatives": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+                "options": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
                 "ketherFillable": { "type": "boolean" }, "rawType": { "type": "string" }, "inputHint": { "type": "string" }
               }
             },

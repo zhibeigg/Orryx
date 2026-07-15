@@ -46,7 +46,7 @@ manifest.json
 v4 Registry 提供：
 
 - 完整类型枚举、父/子集合、`assignableFrom`、JVM `rawType` 与 Kether expression 可填充性。
-- Action 的结构化 aliases、namespace/shared、keyword alternatives、output 状态、execution contexts、requirements、source、grammar/variants。
+- Action 的结构化 aliases、namespace/shared、keyword alternatives、有限值输入 `options`、output 状态、execution contexts、requirements、source、grammar/variants。
 - Trigger 的 eventClass/cancellable，以及字段 aliases、readable/writable/nullable/rawType/ketherFillable。
 - Action、Selector、Trigger、Property 的稳定 ID、插件版本和完整构建 commit。
 

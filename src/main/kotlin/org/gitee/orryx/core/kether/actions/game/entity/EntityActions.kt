@@ -11,6 +11,7 @@ import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.core.targets.PlayerTarget
 import org.gitee.orryx.module.wiki.Action
+import org.gitee.orryx.module.wiki.InputValueCatalog
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
 import taboolib.library.kether.QuestReader
@@ -29,7 +30,7 @@ object EntityActions {
             .description("生成原版实体，脚本运行时间必须大于实体存在时间，若提前停止将会直接回收实体")
             .addEntry("生成标识符", Type.SYMBOL, head = "spawn")
             .addEntry("实体名", Type.STRING)
-            .addEntry("实体类型", Type.STRING)
+            .addEntry("实体类型", Type.STRING, valueCatalog = InputValueCatalog.ENTITY_TYPE)
             .addEntry("实体血量", Type.DOUBLE, optional = true, head = "health", default = "0.0")
             .addEntry("实体冲量", Type.VECTOR, optional = true, head = "vector", default = "0,0,0")
             .addEntry("实体是否具有重力", Type.BOOLEAN, optional = true, head = "gravity", default = "true")
@@ -40,7 +41,7 @@ object EntityActions {
             .description("生成Ady实体，脚本运行时间必须大于实体存在时间，若提前停止将会直接回收实体")
             .addEntry("ady标识符", Type.SYMBOL, head = "ady")
             .addEntry("实体名", Type.STRING)
-            .addEntry("实体类型", Type.STRING)
+            .addEntry("实体类型", Type.STRING, valueCatalog = InputValueCatalog.ENTITY_TYPE)
             .addEntry("实体冲量", Type.VECTOR, optional = true, head = "vector", default = "0,0,0")
             .addEntry("实体是否具有重力", Type.BOOLEAN, optional = true, head = "gravity", default = "true")
             .addEntry("实体存在时间(0为永久)", Type.LONG, optional = true, head = "timeout", default = "0")

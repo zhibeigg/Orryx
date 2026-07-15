@@ -6,6 +6,7 @@ import org.gitee.orryx.core.parser.StringParser
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.module.wiki.Action
+import org.gitee.orryx.module.wiki.InputValueCatalog
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
 import taboolib.common.platform.function.adaptLocation
@@ -122,7 +123,7 @@ object EffectActions {
         Action.new("Effect粒子效果", "设置ItemData", "draw", true)
             .description("设置ItemData")
             .addEntry("占位符", Type.SYMBOL, head = "itemData")
-            .addEntry("材质名", Type.STRING)
+            .addEntry("材质名", Type.STRING, valueCatalog = InputValueCatalog.MATERIAL)
             .addEntry("data", Type.INT)
             .addEntry("物品名字", Type.STRING)
             .addEntry("物品描述", Type.STRING)
@@ -131,7 +132,7 @@ object EffectActions {
         Action.new("Effect粒子效果", "设置BlockData", "draw", true)
             .description("设置BlockData")
             .addEntry("占位符", Type.SYMBOL, head = "blockData")
-            .addEntry("材质名", Type.STRING)
+            .addEntry("材质名", Type.STRING, valueCatalog = InputValueCatalog.MATERIAL)
             .addEntry("data", Type.INT)
             .result("无返回值", Type.NULL),
         Action.new("Effect粒子效果", "设置VibrationData", "draw", true)

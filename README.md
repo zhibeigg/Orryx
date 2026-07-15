@@ -103,7 +103,7 @@ Orryx 会从运行时完整注册表生成版本化 Kether 文档包：
 - `channels/stable.json` 只随正式 Tag 更新，供生产编辑器自动同步。
 - `channels/snapshot.json` 随 `master` 更新，供开发验证。
 - 每个不可变发布目录包含 Schema v4 Kether Registry、v3 `actions-schema.json` 兼容层、Markdown、结构化差异和 SHA-256。
-- v4 提供完整类型图、assignability、raw/Kether 可填充提示、结构化 aliases、grammar/variants、线程/上下文与 Trigger 事件字段。
+- v4 提供完整类型图、assignability、raw/Kether 可填充提示、结构化 aliases、grammar/variants、线程/上下文与 Trigger 事件字段；实体类型、药水效果、声音和材质等有限值输入会发布可搜索 `options` 目录。
 - 现有 `manifest.json`、`actions-schema.json` 与 `latest.md` 继续作为兼容入口。
 
 在线文档：`https://zhibeigg.github.io/Orryx/`

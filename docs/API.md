@@ -1,5 +1,7 @@
 # Orryx API
 
+> 2.55.130：Kether Registry 为实体类型、药水效果、声音与材质等有限值输入发布稳定 `options` 目录；Editor 可据此提供可搜索选择，同时继续允许自定义值与 Raw Kether 片段。
+>
 > 2.54.130：保持已发布 Actions Schema v3 与 Registry v4 JSON Schema 字节不可变；Action 简介非空继续由生成器、Publisher 与产物校验强制执行，修复 stable 历史合并拒绝覆盖旧合同的问题。
 >
 > 2.54.129：修复 stable 文档发布读取超过 1 MiB 的上一版 Actions Schema 时触发 Node 子进程缓冲上限的问题，确保 Registry 历史差异可持续生成。

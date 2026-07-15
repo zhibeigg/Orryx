@@ -170,6 +170,9 @@ object ActionsSchemaGenerator {
         val ketherFillable = entry.acceptedTypes.any(Type::ketherFillable)
         put("ketherFillable", ketherFillable)
         put("rawType", entry.type.rawType)
+        entry.valueCatalog?.values?.takeIf(List<String>::isNotEmpty)?.let { options ->
+            put("options", JsonArray(options.map(::JsonPrimitive)))
+        }
         if (!ketherFillable && entry.type != Type.SYMBOL) {
             put("inputHint", "该类型不能由 Kether expression 直接产生，请使用 raw 原始值")
         }

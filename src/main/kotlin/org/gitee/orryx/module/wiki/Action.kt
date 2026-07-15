@@ -23,7 +23,8 @@ class Action(
         val optional: Boolean,
         val default: String? = null,
         val head: String? = null,
-        acceptedTypes: Set<Type> = setOf(type)
+        acceptedTypes: Set<Type> = setOf(type),
+        val valueCatalog: InputValueCatalog? = null
     ) {
 
         val acceptedTypes: Set<Type> = Type.minimalAcceptedTypes(acceptedTypes)
@@ -61,10 +62,11 @@ class Action(
         optional: Boolean = false,
         default: String? = null,
         head: String? = null,
-        acceptedTypes: Set<Type> = setOf(type)
+        acceptedTypes: Set<Type> = setOf(type),
+        valueCatalog: InputValueCatalog? = null
     ): Action {
         require(acceptedTypes.isNotEmpty()) { "Action 输入至少需要一个可接受类型" }
-        entries += Entry(description, type, optional, default, head, acceptedTypes)
+        entries += Entry(description, type, optional, default, head, acceptedTypes, valueCatalog)
         return this
     }
 

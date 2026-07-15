@@ -9,6 +9,7 @@ import org.gitee.orryx.api.adapters.vector.AbstractVector
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.core.targets.PlayerTarget
 import org.gitee.orryx.module.wiki.Action
+import org.gitee.orryx.module.wiki.InputValueCatalog
 import org.gitee.orryx.module.wiki.Property
 import org.gitee.orryx.module.wiki.Type
 import org.gitee.orryx.utils.*
@@ -155,14 +156,14 @@ object GameActions {
         Action.new("Game原版游戏", "设置药水效果", "potion", true)
             .description("设置药水效果")
             .addEntry("设置标识符", Type.SYMBOL, false, head = "set")
-            .addEntry("效果", Type.STRING)
+            .addEntry("效果", Type.STRING, valueCatalog = InputValueCatalog.POTION_EFFECT)
             .addEntry("持续时间", Type.INT, false)
             .addEntry("等级", Type.INT, true, "1", "level")
             .addContainerEntry("玩家", optional = true, default = "@self"),
         Action.new("Game原版游戏", "删除药水效果", "potion", true)
             .description("删除药水效果")
             .addEntry("删除标识符", Type.SYMBOL, false, head = "remove/delete")
-            .addEntry("效果", Type.STRING)
+            .addEntry("效果", Type.STRING, valueCatalog = InputValueCatalog.POTION_EFFECT)
             .addContainerEntry("实体", optional = true, default = "@self"),
         Action.new("Game原版游戏", "清除所有药水效果", "potion", true)
             .description("清除所有药水效果")

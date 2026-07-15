@@ -171,6 +171,26 @@ class KetherDocsPublisherTest {
         assertEquals("false", rawInput.getValue("ketherFillable").jsonPrimitive.content)
         assertEquals(Type.PROFILE.rawType, rawInput.getValue("rawType").jsonPrimitive.content)
         assertTrue(rawInput.getValue("inputHint").jsonPrimitive.content.contains("raw"))
+
+        for (catalog in InputValueCatalog.entries) {
+            assertTrue(catalog.values.isNotEmpty(), "${catalog.name} options")
+            assertEquals(catalog.values.distinct(), catalog.values, "${catalog.name} must be unique")
+            assertEquals(catalog.values.sorted(), catalog.values, "${catalog.name} must be stable")
+        }
+        assertTrue("ZOMBIE" in InputValueCatalog.ENTITY_TYPE.values)
+        assertTrue("SPEED" in InputValueCatalog.POTION_EFFECT.values)
+        assertTrue("ENTITY_EXPERIENCE_ORB_PICKUP" in InputValueCatalog.SOUND.values)
+        assertTrue("DIAMOND_SWORD" in InputValueCatalog.MATERIAL.values)
+        assertTrue("DUST" in InputValueCatalog.PARTICLE.values)
+
+        val enumEntry = Action.new("test", "sound", "sound")
+            .addEntry("音效名称", Type.STRING, valueCatalog = InputValueCatalog.SOUND)
+            .entries.single()
+        val enumInput = ActionsSchemaGenerator.input(enumEntry, 0)
+        assertEquals(
+            InputValueCatalog.SOUND.values,
+            enumInput.getValue("options").jsonArray.map { it.jsonPrimitive.content }
+        )
     }
 
     @Test
