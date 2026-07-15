@@ -1,5 +1,6 @@
 package org.gitee.orryx.core.editor
 
+import io.mockk.mockk
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
@@ -9,11 +10,13 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
+import org.gitee.orryx.command.resolveEditorPlayer
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import taboolib.common.platform.ProxyCommandSender
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -48,7 +51,9 @@ class EditorProtocolTest {
 
         assertEquals("CONSOLE", EditorTokenManager.CONSOLE_ACTOR)
         assertTrue("exec<ProxyCommandSender>" in commandSource)
-        assertTrue("sender.castSafely<Player>()" in commandSource)
+        assertTrue("sender is ProxyPlayer" in commandSource)
+        assertTrue("resolveEditorPlayer(sender)" in commandSource)
+        assertFalse("sender.castSafely<Player>()" in commandSource)
         assertTrue("sender.sendLang(\"editor-open-console\", url)" in commandSource)
         assertTrue("player.sendLang(\"editor-open\", url)" in commandSource)
         assertTrue("editor-open-console:" in languageSource)
@@ -57,6 +62,12 @@ class EditorProtocolTest {
             "https://orryx.mcwar.cn/connect#token=***",
             EditorClient.sanitizeLogMessage("https://orryx.mcwar.cn/connect#token=secret-token"),
         )
+    }
+
+    @Test
+    fun `console command sender never enters Player cast path`() {
+        val consoleSender = mockk<ProxyCommandSender>()
+        assertNull(resolveEditorPlayer(consoleSender))
     }
 
     @Test

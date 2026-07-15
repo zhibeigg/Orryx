@@ -11,10 +11,15 @@ import org.gitee.orryx.core.editor.EditorTokenManager
 import org.gitee.orryx.module.mana.IManaManager
 import org.gitee.orryx.utils.*
 import taboolib.common.platform.ProxyCommandSender
+import taboolib.common.platform.ProxyPlayer
 import taboolib.common.platform.command.*
 import taboolib.expansion.createHelper
 import taboolib.module.lang.sendLang
 import taboolib.platform.util.sendLang
+
+internal fun resolveEditorPlayer(sender: ProxyCommandSender): Player? {
+    return if (sender is ProxyPlayer) sender.cast() else null
+}
 
 @CommandHeader("Orryx", ["or"], "Orryx技能插件主指令", permission = "Orryx.Command.Main", permissionMessage = "你没有权限使用此指令")
 object OrryxCommand {
@@ -163,7 +168,7 @@ object OrryxCommand {
     @CommandBody(permission = "Orryx.Command.Editor")
     val edit = subCommand {
         exec<ProxyCommandSender> {
-            val player = sender.castSafely<Player>()
+            val player = resolveEditorPlayer(sender)
             val actorName = player?.name ?: EditorTokenManager.CONSOLE_ACTOR
             EditorTokenManager.generateEditorUrl(actorName).thenApplyMain { url ->
                 if (url == null) {

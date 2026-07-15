@@ -1,5 +1,7 @@
 # Orryx API
 
+> 2.52.125：修复控制台执行 `or edit` 时通用发送者被错误强转为 Bukkit `Player` 的问题；现在仅 `ProxyPlayer` 进入玩家分支，控制台会安全输出完整的一次性网址。
+
 > 2.52.124：OrryxMod 自定义 Hitbox 协议已与客户端实现统一，并新增按变化发送的实时同步管理器；Kether `colliderShow` 支持 `realtime` 与 `interval`，完整字节布局见 `docs/Plugin-Integration.md`。
 
 > 2.51.124：`Editor.License` 是中心用于识别并校验 Orryx 服务器身份的凭据；License 到期不影响实时编辑器，但 License 不存在、被禁用或绑定 IP 与当前服务器 IP 不匹配时，中心仍会拒绝连接。旧 `Editor.Enable` 与 `Editor.PublicUrl` 仍会被忽略，这不代表匿名或空 License 可以使用。拥有 `Orryx.Command.Editor` 权限的玩家可通过 `/orryx edit` 获取 5 分钟单次点击入口，服务器控制台执行 `or edit` 时会直接显示完整的一次性网址。开发文档
@@ -1281,5 +1283,5 @@ A: 对于可取消的事件，设置 `event.isCancelled = true`。
 
 ---
 
-*文档版本: 2.52.124*
+*文档版本: 2.52.125*
 *最后更新: 2026-07-14*
