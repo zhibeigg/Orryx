@@ -115,6 +115,7 @@ object ActionsSchemaGenerator {
 
     private fun generateActions(): JsonArray {
         val source = ScriptManager.wikiActions.toList()
+        KetherDocsContract.requireActionDescriptions(source)
         val ids = KetherDocsContract.actionIds(source)
         val actions = source.sortedBy(ids::get)
         return JsonArray(actions.map { action ->
@@ -127,7 +128,7 @@ object ActionsSchemaGenerator {
                 put("namespace", KetherDocsContract.inferNamespace(action))
                 put("shared", action.shared)
                 put("visibility", if (action.shared) "public" else "private")
-                put("description", action.description.ifBlank { action.name })
+                put("description", action.description)
                 put("syntax", KetherDocsContract.actionSyntax(action))
                 put("deprecated", JsonNull)
                 if (action.sharded) put("builtin", true)

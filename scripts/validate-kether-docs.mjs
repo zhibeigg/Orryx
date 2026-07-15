@@ -168,6 +168,7 @@ for (const [typeId, type] of Object.entries(registry.types)) {
 }
 check(registry.actions.every((action) => action.execution?.thread !== "unknown"), "registry must not publish unknown action thread semantics")
 for (const action of registry.actions) {
+  check(typeof action.description === "string" && action.description.trim().length > 0, `${action.id} has no description`)
   check(Array.isArray(action.aliases) && action.aliases.every((alias) => typeof alias?.name === "string"), `${action.id} aliases are not structured`)
   check(typeof action.shared === "boolean", `${action.id} shared flag is missing`)
   check(action.grammar && Array.isArray(action.grammar.inputs) && Array.isArray(action.grammar.variants), `${action.id} grammar is incomplete`)
@@ -206,6 +207,7 @@ uniqueIds(schema.properties, "properties")
 
 for (const action of schema.actions) {
   check(typeof action.name === "string" && action.name.length > 0, `${action.id} has invalid name`)
+  check(typeof action.description === "string" && action.description.trim().length > 0, `${action.id} has no description`)
   check(typeof action.syntax === "string" && action.syntax.length > 0, `${action.id} has no syntax`)
   check(action.syntax.split(/\s+/)[0] === action.name, `${action.id} syntax does not start with action name`)
   check(schema.categories[action.category], `${action.id} references unknown category ${action.category}`)

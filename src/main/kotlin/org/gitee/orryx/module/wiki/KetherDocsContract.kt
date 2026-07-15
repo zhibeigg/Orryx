@@ -73,6 +73,25 @@ internal object KetherDocsContract {
 
     fun actionName(action: Action): String = action.key.substringBefore('/').trim()
 
+    fun requireActionDescriptions(actions: List<Action>) {
+        val missing = actions.filter { it.description.isBlank() }
+        require(missing.isEmpty()) {
+            buildString {
+                appendLine("以下 Kether Action 缺少简短中文简介：")
+                missing.forEach { action ->
+                    append("- ")
+                    append(inferNamespace(action))
+                    append(':')
+                    append(actionName(action))
+                    append(" | ")
+                    append(action.group)
+                    append(" | ")
+                    appendLine(actionSyntax(action))
+                }
+            }.trimEnd()
+        }
+    }
+
     fun actionAliases(action: Action): List<String> {
         val name = actionName(action)
         val declared = action.key.split('/').drop(1) + action.aliases + knownAliases[name].orEmpty()

@@ -85,6 +85,7 @@ object UtilActions {
     @KetherParser(["isNull"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun actionIsNull() = scriptParser(
         Action.new("Util工具类", "是否为空", "isNull", true)
+            .description("检测指定值是否为 null")
             .addEntry("要检测的对象", Type.ANY)
             .result("是否为空", Type.BOOLEAN)
     ) {
@@ -103,6 +104,7 @@ object UtilActions {
     @KetherParser(["notNull"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun actionNotNull() = scriptParser(
         Action.new("Util工具类", "是否非空", "notNull", true)
+            .description("检测指定值是否不为 null")
             .addEntry("要检测的对象", Type.ANY)
             .result("是否非空", Type.BOOLEAN)
     ) {

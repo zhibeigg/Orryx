@@ -130,7 +130,7 @@ internal object KetherDocsContracts {
                   "namespace": { "type": "string", "minLength": 1 },
                   "category": { "type": "string", "minLength": 1 },
                   "visibility": { "enum": ["public", "private"] },
-                  "description": { "type": "string" },
+                  "description": { "type": "string", "minLength": 1 },
                   "syntax": { "type": "string", "minLength": 1 },
                   "inputs": { "type": "array" },
                   "output": { "type": ["object", "null"] },

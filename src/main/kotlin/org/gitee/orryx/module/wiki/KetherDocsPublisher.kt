@@ -170,6 +170,7 @@ object KetherDocsPublisher {
 
     private fun validateRegistry() {
         require(ScriptManager.wikiActions.isNotEmpty()) { "未注册任何 Kether Action 文档" }
+        KetherDocsContract.requireActionDescriptions(ScriptManager.wikiActions.toList())
         require(ScriptManager.wikiSelectors.isNotEmpty()) { "未注册任何 Selector 文档" }
         require(ScriptManager.wikiTriggers.isNotEmpty()) { "未注册任何 Trigger 文档" }
         require(ScriptManager.wikiProperties.isNotEmpty()) { "未注册任何 Property 文档" }
