@@ -27,6 +27,17 @@ MemoryCache:
 # 所有粒子效果每 Tick 最多发送的数据包数，超过预算的本帧粒子不发送
 Effect:
   MaxPacketsPerTick: 20000
+# OrryxMod 自定义碰撞箱实时同步
+OrryxMod:
+  ColliderSync:
+    # 默认几 Tick 检查并同步一次变化；Kether colliderShow 可用 interval 单独覆盖
+    IntervalTicks: 1
+    # 单个查看者最多保留的顶层碰撞箱，与客户端上限一致
+    MaxTrackedPerViewer: 200
+    # 每 Tick 最多检查的实时碰撞箱数量，超出部分公平顺延
+    MaxChecksPerTick: 1000
+    # 每 Tick 最多实际发送的 ColliderUpdate 数据包数量
+    MaxPacketsPerTick: 256
 # 多少Tick自然恢复法力值一次
 ManaRegainTick: 20
 # 多少Tick自然恢复精力值一次

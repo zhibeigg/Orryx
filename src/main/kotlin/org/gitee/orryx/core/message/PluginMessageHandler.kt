@@ -6,7 +6,7 @@ import com.germ.germplugin.api.event.GermKeyDownEvent
 import com.google.common.io.ByteArrayDataInput
 import com.google.common.io.ByteArrayDataOutput
 import com.google.common.io.ByteStreams
-import org.gitee.orryx.api.collider.*
+import org.gitee.orryx.api.collider.ICollider
 import eos.moe.dragoncore.api.event.KeyPressEvent
 import org.bukkit.Bukkit
 import org.bukkit.Location
@@ -16,6 +16,9 @@ import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.plugin.messaging.PluginMessageListener
 import org.gitee.orryx.core.message.bloom.BloomConfig
+import org.gitee.orryx.core.message.collider.ColliderRenderColor
+import org.gitee.orryx.core.message.collider.ColliderWireCodec
+import org.gitee.orryx.core.message.collider.ColliderWireSnapshot
 import org.gitee.orryx.core.reload.Reload
 import org.gitee.orryx.utils.*
 import priv.seventeen.artist.arcartx.event.client.ClientKeyPressEvent
@@ -482,120 +485,49 @@ object PluginMessageHandler {
     }
 
     /**
-     * 发送碰撞箱创建/显示数据包
-     * @param viewer 可视玩家
-     * @param id 碰撞箱唯一标识
-     * @param collider 碰撞体
-     * @param r 红色通道 (0-255)
-     * @param g 绿色通道 (0-255)
-     * @param b 蓝色通道 (0-255)
-     * @param a 透明度通道 (0-255)
+     * 发送碰撞箱创建/显示数据包。
+     *
+     * 该低层入口只负责一次性发送；需要自动跟踪更新时使用 ColliderSyncManager。
      */
     fun sendColliderShow(viewer: Player, id: String, collider: ICollider<*>, r: Int, g: Int, b: Int, a: Int) {
-        sendDataPacket(viewer, PacketType.ColliderShow) {
-            writeUTF(id)
-            writeInt(colliderTypeToInt(collider))
-            writeInt(r)
-            writeInt(g)
-            writeInt(b)
-            writeInt(a)
-            writeColliderPayload(this, collider)
-        }
+        val color = ColliderRenderColor.clamped(r, g, b, a)
+        val snapshot = runCatching { ColliderWireCodec.snapshot(id, collider, color) }
+            .onFailure { warning("无法序列化碰撞箱 $id: ${it.message}") }
+            .getOrNull()
+            ?: return
+        sendColliderShow(viewer, snapshot)
     }
 
-    /**
-     * 发送碰撞箱更新数据包
-     * @param viewer 可视玩家
-     * @param id 碰撞箱唯一标识
-     * @param collider 碰撞体
-     */
+    /** 发送碰撞箱更新数据包；复合体子节点默认使用白色。 */
     fun sendColliderUpdate(viewer: Player, id: String, collider: ICollider<*>) {
-        sendDataPacket(viewer, PacketType.ColliderUpdate) {
-            writeUTF(id)
-            writeInt(colliderTypeToInt(collider))
-            writeColliderPayload(this, collider)
-        }
+        val snapshot = runCatching { ColliderWireCodec.snapshot(id, collider, ColliderRenderColor.WHITE) }
+            .onFailure { warning("无法序列化碰撞箱 $id: ${it.message}") }
+            .getOrNull()
+            ?: return
+        sendColliderUpdate(viewer, snapshot)
     }
 
-    /**
-     * 发送碰撞箱移除数据包
-     * @param viewer 可视玩家
-     * @param id 碰撞箱唯一标识
-     */
+    /** 发送碰撞箱移除数据包。 */
     fun sendColliderRemove(viewer: Player, id: String) {
-        sendDataPacket(viewer, PacketType.ColliderRemove) {
+        sendColliderRemovePacket(viewer, id)
+    }
+
+    internal fun sendColliderShow(viewer: Player, snapshot: ColliderWireSnapshot): Boolean {
+        return sendDataPacket(viewer, PacketType.ColliderShow) {
+            ColliderWireCodec.writeShowPayload(this, snapshot)
+        }
+    }
+
+    internal fun sendColliderUpdate(viewer: Player, snapshot: ColliderWireSnapshot): Boolean {
+        return sendDataPacket(viewer, PacketType.ColliderUpdate) {
+            ColliderWireCodec.writeUpdatePayload(this, snapshot)
+        }
+    }
+
+    internal fun sendColliderRemovePacket(viewer: Player, id: String): Boolean {
+        if (id.isBlank() || id.length > ColliderWireCodec.MAX_ID_LENGTH) return false
+        return sendDataPacket(viewer, PacketType.ColliderRemove) {
             writeUTF(id)
-        }
-    }
-
-    private fun colliderTypeToInt(collider: ICollider<*>): Int {
-        return when (collider.type) {
-            ColliderType.SPHERE -> 0
-            ColliderType.AABB -> 1
-            ColliderType.OBB -> 2
-            ColliderType.CAPSULE -> 3
-            ColliderType.RAY -> 4
-            ColliderType.COMPOSITE -> 5
-            else -> -1
-        }
-    }
-
-    private fun writeColliderPayload(output: ByteArrayDataOutput, collider: ICollider<*>) {
-        when (collider) {
-            is ISphere<*> -> {
-                output.writeDouble(collider.center.x)
-                output.writeDouble(collider.center.y)
-                output.writeDouble(collider.center.z)
-                output.writeDouble(collider.radius)
-            }
-            is IAABB<*> -> {
-                output.writeDouble(collider.center.x)
-                output.writeDouble(collider.center.y)
-                output.writeDouble(collider.center.z)
-                output.writeDouble(collider.halfExtents.x)
-                output.writeDouble(collider.halfExtents.y)
-                output.writeDouble(collider.halfExtents.z)
-            }
-            is IOBB<*> -> {
-                output.writeDouble(collider.center.x)
-                output.writeDouble(collider.center.y)
-                output.writeDouble(collider.center.z)
-                output.writeDouble(collider.halfExtents.x)
-                output.writeDouble(collider.halfExtents.y)
-                output.writeDouble(collider.halfExtents.z)
-                output.writeDouble(collider.rotation.x)
-                output.writeDouble(collider.rotation.y)
-                output.writeDouble(collider.rotation.z)
-                output.writeDouble(collider.rotation.w)
-            }
-            is ICapsule<*> -> {
-                output.writeDouble(collider.center.x)
-                output.writeDouble(collider.center.y)
-                output.writeDouble(collider.center.z)
-                output.writeDouble(collider.radius)
-                output.writeDouble(collider.height)
-                output.writeDouble(collider.rotation.x)
-                output.writeDouble(collider.rotation.y)
-                output.writeDouble(collider.rotation.z)
-                output.writeDouble(collider.rotation.w)
-            }
-            is IRay<*> -> {
-                output.writeDouble(collider.origin.x)
-                output.writeDouble(collider.origin.y)
-                output.writeDouble(collider.origin.z)
-                output.writeDouble(collider.direction.x)
-                output.writeDouble(collider.direction.y)
-                output.writeDouble(collider.direction.z)
-                output.writeDouble(collider.length)
-            }
-            is IComposite<*, *> -> {
-                output.writeInt(collider.collidersCount)
-                for (i in 0 until collider.collidersCount) {
-                    val child = collider.getCollider(i)
-                    output.writeInt(colliderTypeToInt(child))
-                    writeColliderPayload(output, child)
-                }
-            }
         }
     }
 
@@ -698,10 +630,15 @@ object PluginMessageHandler {
                 writeInt(type.header)
                 block()
             }
+            val payload = output.toByteArray()
+            if (payload.size > MAX_PLUGIN_MESSAGE_BYTES) {
+                warning("拒绝向玩家 ${player.name} 发送过大的 $type 数据包，长度=${payload.size}")
+                return false
+            }
             player.sendPluginMessage(
                 BukkitPlugin.getInstance(),
                 CHANNEL_NAME,
-                output.toByteArray()
+                payload
             )
             true
         } catch (ex: Exception) {

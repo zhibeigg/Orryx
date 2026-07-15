@@ -1,119 +1,72 @@
-# 碰撞箱客户端同步渲染方案
+# 碰撞箱客户端实时同步渲染方案
 
-## 需求
+## 目标
 
-将服务端碰撞箱（Hitbox）信息通过 `orryxmod:main` 通道发送到客户端，让客户端同步渲染显示碰撞箱线框。
+将 Orryx 的自定义 Hitbox 通过 `orryxmod:main` 同步给 OrryxMod，并在客户端平滑渲染。覆盖 Sphere、AABB、OBB、Capsule、Ray、Composite，同时保留一次性静态显示能力。
 
-## 现状分析
+## 协议
 
-- 碰撞体在 Kether 脚本中通过 `hitbox` 动作临时创建，没有全局注册表
-- 碰撞体绑定到 `ICoordinateConverter`，跟随目标位置/旋转自动更新
-- 现有 `selector show` 是服务端粒子渲染，性能差且无法渲染碰撞体
-- OrryxMod 通道已成熟，下一个可用 PacketType ID 为 18
-
-## 方案设计
-
-### 新增 3 个 PacketType
+继续使用现有包 ID：
 
 | ID | 名称 | 用途 |
 |---|---|---|
-| 18 | ColliderShow | 创建/更新碰撞箱渲染 |
-| 19 | ColliderUpdate | 更新已有碰撞箱的位置/旋转 |
-| 20 | ColliderRemove | 移除碰撞箱渲染 |
+| 18 | ColliderShow | 创建或覆盖一个渲染项，包含顶层颜色 |
+| 19 | ColliderUpdate | 更新已有渲染项的几何快照 |
+| 20 | ColliderRemove | 移除渲染项 |
 
-### ColliderShow (ID: 18) — 创建碰撞箱
+Shape 类型保持 0-5 兼容，并增加 6：
 
-```
-[18: Int] [id: String] [type: Int] [r: Int] [g: Int] [b: Int] [a: Int] [payload: ...]
-```
+| 类型 | 编号 | 关键格式 |
+|---|---:|---|
+| Sphere | 0 | 中心与半径均为 Double |
+| AABB | 1 | 中心与三轴半长均为 Double |
+| OBB | 2 | 中心/半长为 Double，四元数为 Float |
+| Capsule | 3 | 竖直胶囊，使用 radius + halfHeight |
+| Ray | 4 | 起点、单位方向与长度均为 Double |
+| Composite | 5 | 子 ID、类型、RGBA、递归 payload |
+| Oriented Capsule | 6 | 类型 3 的字段加 4 个 Float 四元数 |
 
-- `id` — 碰撞箱唯一标识（由 Kether 脚本指定）
-- `type` — 碰撞体类型枚举值（0=SPHERE, 1=AABB, 2=OBB, 3=CAPSULE, 4=RAY, 5=COMPOSITE）
-- `r,g,b,a` — 渲染颜色 RGBA (0-255)
+详细字节布局见 [`docs/Plugin-Integration.md`](../Plugin-Integration.md)。
 
-payload 按 type 不同：
+## 服务端实现
 
-**SPHERE (0):**
-```
-[cx: Double] [cy: Double] [cz: Double] [radius: Double]
-```
+- `ColliderWireCodec` 将可变 `ICollider` 转换为不可变、可比较的 wire snapshot。
+- Local Collider 在 Bukkit 主线程调用 `update()` 后取值。
+- Composite 子 ID 使用稳定索引路径，子节点继承顶层颜色。
+- 数值、ID、深度、节点数和包体大小与客户端限制保持一致。
+- `ColliderSyncManager` 以 `(viewer UUID, id)` 管理显示项：
+  - Show 立即发送 ID 18；
+  - 实时条目按配置间隔检查；
+  - 仅在快照变化时发送 ID 19；
+  - Remove、禁用、离线、换世界、重载和关闭会清理条目；
+  - 使用公平游标及每 Tick 检查/发包预算，避免主线程尖峰。
 
-**AABB (1):**
-```
-[cx: Double] [cy: Double] [cz: Double] [hx: Double] [hy: Double] [hz: Double]
-```
+默认配置位于 `config.yml` 的 `OrryxMod.ColliderSync`。
 
-**OBB (2):**
-```
-[cx: Double] [cy: Double] [cz: Double] [hx: Double] [hy: Double] [hz: Double] [qx: Double] [qy: Double] [qz: Double] [qw: Double]
-```
+## Kether 动作
 
-**CAPSULE (3):**
-```
-[cx: Double] [cy: Double] [cz: Double] [radius: Double] [height: Double] [qx: Double] [qy: Double] [qz: Double] [qw: Double]
-```
-
-**RAY (4):**
-```
-[ox: Double] [oy: Double] [oz: Double] [dx: Double] [dy: Double] [dz: Double] [length: Double]
-```
-
-**COMPOSITE (5):**
-```
-[count: Int] [子碰撞体...]
-```
-每个子碰撞体递归写入 `[type: Int] [payload: ...]`（不含 id 和颜色，继承父级）。
-
-### ColliderUpdate (ID: 19) — 更新位置/旋转
-
-```
-[19: Int] [id: String] [type: Int] [payload: ...]
-```
-
-payload 格式与 ColliderShow 相同（不含颜色），客户端根据 id 找到已有碰撞箱并更新几何数据。
-
-### ColliderRemove (ID: 20) — 移除
-
-```
-[20: Int] [id: String]
-```
-
-## 代码改动
-
-### 1. PluginMessageHandler.kt
-
-新增 3 个 PacketType：
-```kotlin
-data object ColliderShow : PacketType(18)
-data object ColliderUpdate : PacketType(19)
-data object ColliderRemove : PacketType(20)
-```
-
-新增 3 个发送方法：
-- `sendColliderShow(viewer, id, collider, r, g, b, a)` — 序列化碰撞体并发送
-- `sendColliderUpdate(viewer, id, collider)` — 更新碰撞体几何数据
-- `sendColliderRemove(viewer, id)` — 移除碰撞箱
-
-抽取私有方法 `writeColliderPayload(output, collider)` 递归序列化碰撞体。
-
-### 2. OrryxModActions.kt
-
-新增 3 个 Kether 动作：
-
-```
-colliderShow <id> <hitbox> [color <r> <g> <b> <a>] [viewers <container>]
+```text
+colliderShow <id> <hitbox> [color "r,g,b,a"] [realtime <boolean>] [interval <ticks>] [viewers <container>]
 colliderUpdate <id> <hitbox> [viewers <container>]
 colliderRemove <id> [viewers <container>]
 ```
 
-### 3. docs/Plugin-Integration.md
+- `realtime` 默认 `true`。
+- `realtime false` 只发送一次 Show，可继续手动 Update。
+- `colliderUpdate` 会替换已注册条目的 Hitbox 引用并强制同步。
+- `colliderRemove` 会停止跟踪并移除客户端线框。
 
-补充 ColliderShow/ColliderUpdate/ColliderRemove 的协议文档。
+## 客户端实现
 
-## 文件清单
+- Update 到达时保留当前显示形状和目标形状，按客户端 Tick 与 `partialTicks` 插值。
+- 位置/尺寸线性插值，Ray 方向归一化，OBB/定向 Capsule 使用最短路径四元数插值。
+- Composite 结构稳定时递归插值，结构变化时直接切换新快照。
+- 插值期间使用动态绘制；稳定后继续复用静态 VBO 缓存。
+- 世界切换、断线、资源重载和功能清理时同时释放状态与 GPU 缓存。
 
-| 文件 | 改动 |
-|---|---|
-| `core/message/PluginMessageHandler.kt` | 新增 3 个 PacketType + 3 个发送方法 + 序列化工具方法 |
-| `core/kether/actions/game/OrryxModActions.kt` | 新增 3 个 Kether 动作 |
-| `docs/Plugin-Integration.md` | 补充碰撞箱协议文档 |
+## 限制
+
+- 单查看者最多 200 个顶层 Collider。
+- Composite 每层最多 50 个子节点、最多 3 层、总节点最多 200。
+- Bukkit Plugin Message 最大 32766 字节。
+- 静止 Hitbox 不产生持续更新包；移动 Hitbox 的发送频率由 `IntervalTicks` 和 Tick 预算共同限制。

@@ -270,7 +270,7 @@ sendPluginMessage(player, "orryxmod:main", out.toByteArray());
 
 ### 概述
 
-碰撞箱渲染系统允许服务端将碰撞体（Hitbox）信息同步到客户端，客户端根据几何数据渲染线框。支持球体、AABB、OBB、胶囊体、射线和复合体六种碰撞体类型。
+服务端可通过 `ColliderShow/ColliderUpdate/ColliderRemove` 将 Orryx 自定义 Hitbox 同步给 OrryxMod。客户端会对连续更新进行插值，并在世界切换或断线时清理残留。协议支持球体、AABB、OBB、竖直/定向胶囊体、射线和可嵌套复合体。
 
 ### 碰撞体类型枚举
 
@@ -279,124 +279,111 @@ sendPluginMessage(player, "orryxmod:main", out.toByteArray());
 | 0 | SPHERE | 球体 |
 | 1 | AABB | 轴对齐包围盒 |
 | 2 | OBB | 有向包围盒 |
-| 3 | CAPSULE | 胶囊体 |
-| 4 | RAY | 射线 |
-| 5 | COMPOSITE | 复合体（包含多个子碰撞体） |
+| 3 | CAPSULE | 兼容格式的竖直胶囊体 |
+| 4 | RAY | 有限射线段 |
+| 5 | COMPOSITE | 复合体 |
+| 6 | ORIENTED_CAPSULE | 带四元数旋转的胶囊体 |
 
-### 数据包类型
+### 数据包
 
-#### ColliderShow (ID: 18) - 创建碰撞箱
+#### ColliderShow (ID: 18)
 
-创建并显示一个碰撞箱渲染。
-
-**格式：**
-```
-[18: Int] [id: String] [type: Int] [r: Int] [g: Int] [b: Int] [a: Int] [payload: ...]
+```text
+[18: Int] [id: UTF] [type: Int] [r: Int] [g: Int] [b: Int] [a: Int] [payload]
 ```
 
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| id | String | 碰撞箱唯一标识 |
-| type | Int | 碰撞体类型枚举值 |
-| r,g,b,a | Int | RGBA 颜色值 (0-255) |
-| payload | ... | 碰撞体几何数据，按 type 不同 |
+#### ColliderUpdate (ID: 19)
 
-**payload 按 type：**
+```text
+[19: Int] [id: UTF] [type: Int] [payload]
+```
+
+更新包不重复写顶层颜色；客户端按 `id` 保留 Show 时的颜色。Composite 的子节点颜色属于 shape payload，更新时仍会写入。
+
+#### ColliderRemove (ID: 20)
+
+```text
+[20: Int] [id: UTF]
+```
+
+### Shape payload
 
 SPHERE (0):
-```
+
+```text
 [cx: Double] [cy: Double] [cz: Double] [radius: Double]
 ```
 
 AABB (1):
+
+```text
+[cx: Double] [cy: Double] [cz: Double] [halfX: Double] [halfY: Double] [halfZ: Double]
 ```
-[cx: Double] [cy: Double] [cz: Double] [hx: Double] [hy: Double] [hz: Double]
-```
-其中 hx/hy/hz 为三轴半长。
 
 OBB (2):
+
+```text
+[cx: Double] [cy: Double] [cz: Double]
+[halfX: Double] [halfY: Double] [halfZ: Double]
+[qx: Float] [qy: Float] [qz: Float] [qw: Float]
 ```
-[cx: Double] [cy: Double] [cz: Double] [hx: Double] [hy: Double] [hz: Double] [qx: Double] [qy: Double] [qz: Double] [qw: Double]
-```
-其中 qx/qy/qz/qw 为旋转四元数。
 
 CAPSULE (3):
+
+```text
+[cx: Double] [cy: Double] [cz: Double] [radius: Double] [halfHeight: Double]
 ```
-[cx: Double] [cy: Double] [cz: Double] [radius: Double] [height: Double] [qx: Double] [qy: Double] [qz: Double] [qw: Double]
-```
+
+`halfHeight` 是中心到两端球心的距离，不包含半球半径。
 
 RAY (4):
+
+```text
+[originX: Double] [originY: Double] [originZ: Double]
+[directionX: Double] [directionY: Double] [directionZ: Double]
+[length: Double]
 ```
-[ox: Double] [oy: Double] [oz: Double] [dx: Double] [dy: Double] [dz: Double] [length: Double]
-```
-其中 ox/oy/oz 为起点，dx/dy/dz 为方向。
 
 COMPOSITE (5):
-```
-[count: Int] [子碰撞体...]
-```
-每个子碰撞体递归写入 `[type: Int] [payload: ...]`（不含 id 和颜色，继承父级）。
 
-**示例（Java/Kotlin）：**
-```java
-ByteArrayDataOutput out = ByteStreams.newDataOutput();
-out.writeInt(18);                  // packetId: ColliderShow
-out.writeUTF("my_hitbox_1");      // id
-out.writeInt(0);                   // type: SPHERE
-out.writeInt(255);                 // r
-out.writeInt(0);                   // g
-out.writeInt(0);                   // b
-out.writeInt(255);                 // a
-out.writeDouble(100.0);            // cx
-out.writeDouble(65.0);             // cy
-out.writeDouble(200.0);            // cz
-out.writeDouble(2.0);              // radius
-
-sendPluginMessage(player, "orryxmod:main", out.toByteArray());
+```text
+[count: Int]
+重复 count 次：
+[childId: UTF] [childType: Int]
+[r: Int] [g: Int] [b: Int] [a: Int]
+[childPayload]
 ```
 
-#### ColliderUpdate (ID: 19) - 更新碰撞箱
+子节点可继续为 Composite。Orryx 会使用索引路径生成稳定 `childId`，并让子节点继承顶层颜色。
 
-更新已有碰撞箱的几何数据（不含颜色）。
+ORIENTED_CAPSULE (6):
 
-**格式：**
-```
-[19: Int] [id: String] [type: Int] [payload: ...]
-```
-
-payload 格式与 ColliderShow 相同（不含颜色字段），客户端根据 id 找到已有碰撞箱并更新几何数据。
-
-**示例：**
-```java
-ByteArrayDataOutput out = ByteStreams.newDataOutput();
-out.writeInt(19);                  // packetId: ColliderUpdate
-out.writeUTF("my_hitbox_1");      // id
-out.writeInt(0);                   // type: SPHERE
-out.writeDouble(105.0);            // cx (新位置)
-out.writeDouble(65.0);             // cy
-out.writeDouble(200.0);            // cz
-out.writeDouble(2.0);              // radius
-
-sendPluginMessage(player, "orryxmod:main", out.toByteArray());
+```text
+[cx: Double] [cy: Double] [cz: Double] [radius: Double] [halfHeight: Double]
+[qx: Float] [qy: Float] [qz: Float] [qw: Float]
 ```
 
-#### ColliderRemove (ID: 20) - 移除碰撞箱
+### Orryx Kether 实时同步
 
-移除指定的碰撞箱渲染。
-
-**格式：**
+```text
+colliderShow <id> <hitbox> [color "r,g,b,a"] [realtime <boolean>] [interval <ticks>] [viewers <container>]
+colliderUpdate <id> <hitbox> [viewers <container>]
+colliderRemove <id> [viewers <container>]
 ```
-[20: Int] [id: String]
-```
 
-**示例：**
-```java
-ByteArrayDataOutput out = ByteStreams.newDataOutput();
-out.writeInt(20);                  // packetId: ColliderRemove
-out.writeUTF("my_hitbox_1");      // id
+- `realtime` 默认 `true`。服务端保存 Hitbox 引用，按 Tick 读取当前位置/旋转，只在快照变化时发送 ID 19。
+- `interval` 默认读取 `OrryxMod.ColliderSync.IntervalTicks`，最小为 1 Tick。
+- `realtime false` 保留一次性静态显示行为；仍可通过 `colliderUpdate` 手动刷新。
+- `colliderRemove` 会同时停止服务端跟踪并发送 ID 20。
 
-sendPluginMessage(player, "orryxmod:main", out.toByteArray());
-```
+### 安全与性能限制
+
+- 顶层 ID 和子 ID 最长 1024 字符，且不能为空。
+- 半径、半轴、halfHeight 与射线长度会规范到至少 `0.01`；坐标和旋转分量必须是有限值。
+- 单个查看者最多保留 200 个顶层 Collider。
+- Composite 每层最多 50 个子节点、最多 3 层嵌套、总节点数最多 200。
+- 单个 Bukkit Plugin Message 最大 32766 字节。
+- 服务端通过 `MaxChecksPerTick` 和 `MaxPacketsPerTick` 限制实时同步开销；超出预算的条目会公平顺延。
 
 ---
 

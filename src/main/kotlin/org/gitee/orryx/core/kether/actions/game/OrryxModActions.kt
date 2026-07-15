@@ -1,7 +1,8 @@
 package org.gitee.orryx.core.kether.actions.game
 
-import org.gitee.orryx.api.collider.ICollider
 import org.gitee.orryx.core.message.PluginMessageHandler
+import org.gitee.orryx.core.message.collider.ColliderRenderColor
+import org.gitee.orryx.core.message.collider.ColliderSyncManager
 import org.gitee.orryx.core.targets.ITargetEntity
 import org.gitee.orryx.core.targets.ITargetLocation
 import org.gitee.orryx.core.targets.PlayerTarget
@@ -270,24 +271,39 @@ object OrryxModActions {
     @KetherParser(["colliderShow"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun actionColliderShow() = scriptParser(
         Action.new("Orryx Mod额外功能", "发送碰撞箱显示到客户端", "colliderShow", true)
-            .description("将碰撞箱渲染信息发送到客户端显示")
+            .description("将碰撞箱渲染信息发送到客户端，并可自动同步后续位置与旋转变化")
             .addEntry("碰撞箱唯一标识", Type.STRING, false)
             .addEntry("碰撞箱", Type.HITBOX, false)
             .addEntry("颜色", Type.STRING, true, default = "255,255,255,255", head = "color")
+            .addEntry("是否实时同步", Type.BOOLEAN, true, default = "true", head = "realtime")
+            .addEntry("同步间隔 Tick", Type.INT, true, default = "1", head = "interval")
             .addContainerEntry(optional = true, default = "@self", head = "viewers", description = "可视玩家")
     ) {
         val id = it.nextParsedAction()
         val hitbox = it.nextParsedAction()
         val color = it.nextHeadAction("color", def = "255,255,255,255")
+        val realtime = it.nextHeadAction("realtime", def = true)
+        val interval = it.nextHeadAction("interval", def = 1)
         val viewers = it.nextHeadActionOrNull("viewers")
         actionNow {
             run(id).str { id ->
                 run(hitbox).collider { collider ->
                     run(color).str { color ->
-                        containerOrSelf(viewers) { viewerContainer ->
-                            val (r, g, b, a) = color.split(",").map { it.trim().toInt() }
-                            viewerContainer.forEachInstance<PlayerTarget> { viewer ->
-                                PluginMessageHandler.sendColliderShow(viewer.getSource(), id, collider, r, g, b, a)
+                        run(realtime).bool { realtime ->
+                            run(interval).int { interval ->
+                                containerOrSelf(viewers) { viewerContainer ->
+                                    val renderColor = parseColliderColor(color)
+                                    viewerContainer.forEachInstance<PlayerTarget> { viewer ->
+                                        ColliderSyncManager.show(
+                                            viewer = viewer.getSource(),
+                                            id = id,
+                                            collider = collider,
+                                            color = renderColor,
+                                            realtime = realtime,
+                                            intervalTicks = interval.toLong(),
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -312,7 +328,7 @@ object OrryxModActions {
                 run(hitbox).collider { collider ->
                     containerOrSelf(viewers) { viewerContainer ->
                         viewerContainer.forEachInstance<PlayerTarget> { viewer ->
-                            PluginMessageHandler.sendColliderUpdate(viewer.getSource(), id, collider)
+                            ColliderSyncManager.update(viewer.getSource(), id, collider)
                         }
                     }
                 }
@@ -323,7 +339,7 @@ object OrryxModActions {
     @KetherParser(["colliderRemove"], namespace = ORRYX_NAMESPACE, shared = true)
     private fun actionColliderRemove() = scriptParser(
         Action.new("Orryx Mod额外功能", "移除客户端碰撞箱渲染", "colliderRemove", true)
-            .description("移除客户端已有的碰撞箱渲染")
+            .description("移除客户端已有的碰撞箱渲染并停止实时同步")
             .addEntry("碰撞箱唯一标识", Type.STRING, false)
             .addContainerEntry(optional = true, default = "@self", head = "viewers", description = "可视玩家")
     ) {
@@ -333,10 +349,19 @@ object OrryxModActions {
             run(id).str { id ->
                 containerOrSelf(viewers) { viewerContainer ->
                     viewerContainer.forEachInstance<PlayerTarget> { viewer ->
-                        PluginMessageHandler.sendColliderRemove(viewer.getSource(), id)
+                        ColliderSyncManager.remove(viewer.getSource(), id)
                     }
                 }
             }
         }
+    }
+
+    private fun parseColliderColor(value: String): ColliderRenderColor {
+        val channels = value.split(',').map { it.trim() }
+        require(channels.size == 4) { "碰撞箱颜色必须是 r,g,b,a 四个整数" }
+        val parsed = channels.map { channel ->
+            channel.toIntOrNull() ?: throw IllegalArgumentException("碰撞箱颜色包含无效整数: $channel")
+        }
+        return ColliderRenderColor.clamped(parsed[0], parsed[1], parsed[2], parsed[3])
     }
 }

@@ -245,6 +245,7 @@ dependencies {
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1")
     testImplementation("com.github.ben-manes.caffeine:caffeine:2.9.3")
     testImplementation("com.eatthepath:fast-uuid:0.2.0")
+    testImplementation("com.google.guava:guava:31.1-jre")
     testImplementation(kotlin("reflect"))
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")

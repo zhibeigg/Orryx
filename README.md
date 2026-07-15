@@ -6,7 +6,7 @@
 
 **跨时代技能插件，支持实现复杂逻辑，为稳定高效而生**
 
-[![Version](https://img.shields.io/badge/version-2.51.124-blue?style=for-the-badge)](https://github.com/zhibeigg/Orryx/releases)
+[![Version](https://img.shields.io/badge/version-2.52.124-blue?style=for-the-badge)](https://github.com/zhibeigg/Orryx/releases)
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.12--1.21-green?style=for-the-badge&logo=minecraft)](https://www.minecraft.net/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.1.20-purple?style=for-the-badge&logo=kotlin)](https://kotlinlang.org/)
 [![TabooLib](https://img.shields.io/badge/TabooLib-6.2.4-orange?style=for-the-badge)](https://github.com/TabooLib/taboolib)
@@ -195,6 +195,8 @@ Self、Origin、Direct、Offset、Type、Teammate、Team、PVP、Amount、Server
 | Composite | 复合碰撞体 |
 
 所有碰撞体均支持本地坐标系变体（Local），附带坐标转换器。
+
+配合 OrryxMod 可通过 `colliderShow` 实时显示调试线框：服务端只同步发生变化的几何快照，客户端对移动与旋转进行插值；`realtime false` 可保留一次性静态显示。
 
 ### 状态管理
 
