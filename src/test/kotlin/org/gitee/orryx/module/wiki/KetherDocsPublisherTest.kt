@@ -113,19 +113,6 @@ class KetherDocsPublisherTest {
         )) {
             assertTrue(Json.parseToJsonElement(contract).jsonObject.isNotEmpty())
         }
-        val actionsDescription = Json.parseToJsonElement(KetherDocsContracts.actionsSchema).jsonObject
-            .getValue("properties").jsonObject
-            .getValue("actions").jsonObject
-            .getValue("items").jsonObject
-            .getValue("properties").jsonObject
-            .getValue("description").jsonObject
-        assertEquals(1, actionsDescription.getValue("minLength").jsonPrimitive.content.toInt())
-        val registryDescription = Json.parseToJsonElement(KetherRegistryContracts.registryV4).jsonObject
-            .getValue("${'$'}defs").jsonObject
-            .getValue("action").jsonObject
-            .getValue("properties").jsonObject
-            .getValue("description").jsonObject
-        assertEquals(1, registryDescription.getValue("minLength").jsonPrimitive.content.toInt())
         assertEquals(
             "60b31dcb79ea5f280788de83d4b5ee6b70f49fd226fde93475f1775e743f8940",
             sha256Contract(KetherDocsContracts.releaseManifest)

@@ -6,7 +6,7 @@
 
 **跨时代技能插件，支持实现复杂逻辑，为稳定高效而生**
 
-[![Version](https://img.shields.io/badge/version-2.54.129-blue?style=for-the-badge)](https://github.com/zhibeigg/Orryx/releases)
+[![Version](https://img.shields.io/badge/version-2.54.130-blue?style=for-the-badge)](https://github.com/zhibeigg/Orryx/releases)
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.12--1.21-green?style=for-the-badge&logo=minecraft)](https://www.minecraft.net/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.1.20-purple?style=for-the-badge&logo=kotlin)](https://kotlinlang.org/)
 [![TabooLib](https://img.shields.io/badge/TabooLib-6.2.4-orange?style=for-the-badge)](https://github.com/TabooLib/taboolib)

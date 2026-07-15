@@ -94,7 +94,7 @@ internal object KetherRegistryContracts {
                 "id": { "${'$'}ref": "#/${'$'}defs/id" }, "name": { "type": "string", "minLength": 1 },
                 "aliases": { "type": "array", "items": { "${'$'}ref": "#/${'$'}defs/alias" } }, "namespace": { "type": "string" },
                 "shared": { "type": "boolean" }, "category": { "type": "string" }, "visibility": { "enum": ["public", "private"] },
-                "description": { "type": "string", "minLength": 1 }, "deprecated": {}, "builtin": { "type": "boolean" },
+                "description": { "type": "string" }, "deprecated": {}, "builtin": { "type": "boolean" },
                 "flow": { "enum": ["normal", "branch", "loop", "container"] }, "examples": { "type": "array", "items": { "type": "string" } }, "example": { "type": "string" },
                 "execution": {
                   "type": "object", "required": ["thread", "suspends", "contexts"],

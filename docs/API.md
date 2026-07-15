@@ -1,5 +1,7 @@
 # Orryx API
 
+> 2.54.130：保持已发布 Actions Schema v3 与 Registry v4 JSON Schema 字节不可变；Action 简介非空继续由生成器、Publisher 与产物校验强制执行，修复 stable 历史合并拒绝覆盖旧合同的问题。
+>
 > 2.54.129：修复 stable 文档发布读取超过 1 MiB 的上一版 Actions Schema 时触发 Node 子进程缓冲上限的问题，确保 Registry 历史差异可持续生成。
 >
 > 2.54.128：为全部 Kether Action 固化非空中文简介合同；Registry v4、Actions Schema v3 与发布校验会拒绝缺失简介，补齐 `isNull`、`notNull` 元数据。
@@ -1293,5 +1295,5 @@ A: 对于可取消的事件，设置 `event.isCancelled = true`。
 
 ---
 
-*文档版本: 2.54.129*
+*文档版本: 2.54.130*
 *最后更新: 2026-07-16*
