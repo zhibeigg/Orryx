@@ -224,12 +224,18 @@ internal object KetherDocsContract {
         if (actionSuspends(action) || key in setOf("calc", "math", "random", "round", "scale", "type", "check")) {
             return ExecutionThread.ANY
         }
-        if (listOf("数学", "变量", "数组", "类型转换", "vector", "matrix", "quaternion").any { it in group }) {
+        if (listOf(
+                "数学", "变量", "数组", "类型转换", "vector", "matrix", "quaternion", "util", "控制流",
+                "时间", "循环", "脚本", "普通语句", "上下文", "flag", "global", "uuid", "coroutine",
+                "协程", "pipe", "管式"
+            ).any { it in group }) {
             return ExecutionThread.ANY
         }
         if (listOf(
                 "游戏", "实体", "世界", "移动", "传送", "伤害", "技能", "状态", "碰撞", "粒子", "音效",
-                "dragoncore", "cloudpick", "arcartx", "germplugin", "mythicmobs", "nodens", "attribute"
+                "dragoncore", "cloudpick", "arcartx", "germplugin", "mythicmobs", "nodens", "attribute", "astraxhero",
+                "orryx", "profile", "keysetting", "container", "cooldown", "mana", "spirit", "money",
+                "station", "projectile", "raytrace", "gddtitle", "属性系统", "selector", "mod", "输出"
             ).any { it in group }) {
             return ExecutionThread.MAIN
         }

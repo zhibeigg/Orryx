@@ -62,8 +62,8 @@ enum class Type(
 
     val parents: Set<Type>
         get() = when (this) {
-            ANY, NULL -> emptySet()
-            OBJECT, SCALAR -> setOf(ANY)
+            ANY -> emptySet()
+            NULL, OBJECT, SCALAR -> setOf(ANY)
             NUMBER -> setOf(SCALAR)
             BYTE, SHORT, INT, LONG, FLOAT, DOUBLE -> setOf(NUMBER)
             STRING, BOOLEAN, SYMBOL, UUID, DURATION -> setOf(SCALAR)
@@ -71,7 +71,7 @@ enum class Type(
             ITERABLE, MAP, CONTAINER -> setOf(COLLECTION)
             LIST -> setOf(ITERABLE)
             TARGET -> setOf(OBJECT)
-            PLAYER -> setOf(LIVING_ENTITY, TARGET)
+            PLAYER -> setOf(LIVING_ENTITY)
             ENTITY -> setOf(TARGET)
             LIVING_ENTITY -> setOf(ENTITY)
             LOCATION -> setOf(TARGET)
@@ -89,5 +89,20 @@ enum class Type(
     companion object {
 
         fun byId(id: String): Type? = entries.firstOrNull { it.id == id }
+
+        /**
+         * 将联合槽位压缩为最小可接受类型集。
+         *
+         * 若父类型已经覆盖某个子类型，则移除冗余子类型；ANY 只能单独使用，
+         * 避免在声明了精确类型后又用 ANY 掩盖约束。
+         */
+        fun minimalAcceptedTypes(types: Iterable<Type>): Set<Type> {
+            val source = types.toCollection(linkedSetOf())
+            require(source.isNotEmpty()) { "Action 输入至少需要一个可接受类型" }
+            require(ANY !in source || source.size == 1) { "ANY 不能与精确类型同时声明" }
+            return source.filterTo(linkedSetOf()) { candidate ->
+                source.none { other -> other != candidate && other.isAssignableFrom(candidate) }
+            }
+        }
     }
 }

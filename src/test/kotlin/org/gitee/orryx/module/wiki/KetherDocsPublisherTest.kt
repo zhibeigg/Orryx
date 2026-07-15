@@ -1,10 +1,13 @@
 package org.gitee.orryx.module.wiki
 
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.time.Instant
@@ -98,13 +101,57 @@ class KetherDocsPublisherTest {
     }
 
     @Test
-    fun `type graph and raw input metadata are complete`() {
+    fun `type graph accepted sets and raw input metadata are complete`() {
+        assertEquals(Type.entries.size, Type.entries.map(Type::id).distinct().size)
+        assertEquals(setOf(Type.ANY), Type.NULL.parents)
+        for (type in Type.entries) {
+            assertTrue(type.rawType.isNotBlank(), "${type.id} rawType")
+            assertTrue(type.isAssignableFrom(type), "${type.id} must accept itself")
+            type.parents.forEach { parent ->
+                assertTrue(type in parent.children, "${type.id} parent/child mismatch: ${parent.id}")
+                assertFalse(
+                    type.parents.any { other -> other != parent && parent.isAssignableFrom(other) },
+                    "${type.id} has redundant direct parent ${parent.id}"
+                )
+            }
+            type.children.forEach { child ->
+                assertTrue(type in child.parents, "${type.id} child/parent mismatch: ${child.id}")
+            }
+        }
+        for (expected in Type.entries) {
+            for (actual in Type.entries) {
+                val inherited = generateSequence(setOf(actual)) { level ->
+                    level.flatMapTo(linkedSetOf()) { it.parents }.takeIf(Set<Type>::isNotEmpty)
+                }.flatten().toSet()
+                assertEquals(expected in inherited, expected.isAssignableFrom(actual), "${expected.id} <- ${actual.id}")
+            }
+        }
         assertTrue(Type.NUMBER.isAssignableFrom(Type.INT))
         assertTrue(Type.TARGET.isAssignableFrom(Type.PLAYER))
         assertTrue(Type.ANY.isAssignableFrom(Type.SKILL_PARAMETER))
-        assertTrue(Type.PROFILE.parents.isNotEmpty())
+        assertEquals(
+            setOf(Type.NUMBER, Type.STRING),
+            Type.minimalAcceptedTypes(setOf(Type.INT, Type.NUMBER, Type.STRING))
+        )
+        assertThrows(IllegalArgumentException::class.java) {
+            Type.minimalAcceptedTypes(setOf(Type.ANY, Type.STRING))
+        }
+
+        val unionEntry = Action.new("test", "contains", "contains")
+            .addEntry("Iterable 或 String", Type.ANY, acceptedTypes = setOf(Type.ITERABLE, Type.STRING))
+            .entries.single()
+        val unionInput = ActionsSchemaGenerator.input(unionEntry, 0)
+        assertEquals(
+            setOf(Type.ITERABLE.id, Type.STRING.id),
+            unionInput.getValue("acceptedTypes").jsonArray.map { it.jsonPrimitive.content }.toSet()
+        )
+
         assertEquals(false, Type.PROFILE.ketherFillable)
-        assertTrue(Type.PROFILE.rawType.isNotBlank())
+        val rawEntry = Action.new("test", "profile", "profile").addEntry("档案", Type.PROFILE).entries.single()
+        val rawInput = ActionsSchemaGenerator.input(rawEntry, 0)
+        assertEquals("false", rawInput.getValue("ketherFillable").jsonPrimitive.content)
+        assertEquals(Type.PROFILE.rawType, rawInput.getValue("rawType").jsonPrimitive.content)
+        assertTrue(rawInput.getValue("inputHint").jsonPrimitive.content.contains("raw"))
     }
 
     @Test

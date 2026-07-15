@@ -53,7 +53,7 @@ object UtilActions {
     private fun actionContains() = scriptParser(
         Action.new("Util工具类", "是否包含", "contains", true)
             .description("Iterable 或 String 是否包含 value")
-            .addEntry("Iterable 或 String", Type.ANY)
+            .addEntry("Iterable 或 String", Type.ANY, acceptedTypes = setOf(Type.ITERABLE, Type.STRING))
             .addEntry("value", Type.ANY)
             .result("是否包含", Type.BOOLEAN)
     ) {

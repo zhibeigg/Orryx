@@ -1,5 +1,7 @@
 # Orryx API
 
+> 2.53.127：固化 Kether 类型图闭包、最小 acceptedTypes 联合槽、raw 回退与精确线程合同；发布校验现在拒绝冗余父类型、宽泛 ANY 混用及 unknown thread。
+
 > 2.53.126：新增 Kether Registry Schema v4，提供完整类型图、assignability、表达式可填充性、raw 类型提示、结构化别名、grammar/variants、执行上下文与 Trigger 事件字段；继续发布 v3 actions-schema 兼容层。
 
 > 2.52.125：修复控制台执行 `or edit` 时通用发送者被错误强转为 Bukkit `Player` 的问题；现在仅 `ProxyPlayer` 进入玩家分支，控制台会安全输出完整的一次性网址。
@@ -1285,5 +1287,5 @@ A: 对于可取消的事件，设置 `event.isCancelled = true`。
 
 ---
 
-*文档版本: 2.53.126*
+*文档版本: 2.53.127*
 *最后更新: 2026-07-15*

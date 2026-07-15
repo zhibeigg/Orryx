@@ -23,8 +23,11 @@ class Action(
         val optional: Boolean,
         val default: String? = null,
         val head: String? = null,
-        val acceptedTypes: Set<Type> = setOf(type)
-    )
+        acceptedTypes: Set<Type> = setOf(type)
+    ) {
+
+        val acceptedTypes: Set<Type> = Type.minimalAcceptedTypes(acceptedTypes)
+    }
 
     val aliases: MutableSet<String> = linkedSetOf()
 

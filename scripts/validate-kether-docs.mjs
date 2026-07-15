@@ -81,8 +81,10 @@ check(manifest.channel === channel.channel, "channel and release manifest channe
 check(manifest.plugin?.id === "Orryx", "release plugin id must be Orryx")
 check(manifest.plugin?.version === channel.pluginVersion, "release version mismatch")
 check(manifest.plugin?.commit === channel.commit, "release commit mismatch")
-check(manifest.schemaVersion === 4, "release schemaVersion must be 4")
+check(manifest.schemaVersion === 3, "release schemaVersion must describe legacy actions-schema v3")
+check(manifest.registryVersion === 4, "release registryVersion must be 4")
 check(manifest.compatibility?.minimumEditorSchemaVersion === 3, "minimumEditorSchemaVersion must be 3")
+check(manifest.compatibility?.minimumEditorRegistryVersion === 4, "minimumEditorRegistryVersion must be 4")
 
 const budgets = {
   registry: 8 * 1024 * 1024,
@@ -125,11 +127,46 @@ for (const field of ["types", "categories"]) check(schema[field] && typeof schem
 for (const field of ["actions", "selectors", "triggers", "properties"]) check(Array.isArray(schema[field]), `schema ${field} must be an array`)
 for (const field of ["actions", "selectors", "triggers", "properties"]) check(Array.isArray(registry[field]), `registry ${field} must be an array`)
 check(registry.actions.length === schema.actions.length, "registry/actions-schema action count mismatch")
+check(JSON.stringify(registry.types) === JSON.stringify(schema.types), "registry/actions-schema type catalogs differ")
+const typeIds = Object.keys(registry.types)
+const visitedTypes = new Set()
+function validateTypeAcyclic(typeId, trail = []) {
+  check(!trail.includes(typeId), `type graph cycle: ${[...trail, typeId].join(" -> ")}`)
+  if (visitedTypes.has(typeId)) return
+  const nextTrail = [...trail, typeId]
+  for (const parentId of registry.types[typeId].parents) validateTypeAcyclic(parentId, nextTrail)
+  visitedTypes.add(typeId)
+}
+function isTypeAssignable(expectedId, actualId, seen = new Set()) {
+  if (expectedId === actualId) return true
+  if (seen.has(actualId)) return false
+  seen.add(actualId)
+  return registry.types[actualId].parents.some((parentId) => isTypeAssignable(expectedId, parentId, seen))
+}
 for (const [typeId, type] of Object.entries(registry.types)) {
+  check(typeIds.includes(typeId) && typeof type.name === "string" && type.name.length > 0, `${typeId} type identity is incomplete`)
   check(Array.isArray(type.parents) && Array.isArray(type.children) && Array.isArray(type.assignableFrom), `${typeId} type graph is incomplete`)
-  check(typeof type.ketherFillable === "boolean" && typeof type.rawType === "string", `${typeId} fillability metadata is incomplete`)
+  check(new Set(type.parents).size === type.parents.length && new Set(type.children).size === type.children.length, `${typeId} type graph contains duplicates`)
+  for (const parentId of type.parents) check(registry.types[parentId], `${typeId} references unknown parent ${parentId}`)
+  for (const childId of type.children) check(registry.types[childId], `${typeId} references unknown child ${childId}`)
+  check(typeof type.ketherFillable === "boolean" && typeof type.rawType === "string" && type.rawType.length > 0, `${typeId} fillability metadata is incomplete`)
   if (!type.ketherFillable) check(typeof type.inputHint === "string" && type.inputHint.includes("raw"), `${typeId} must provide raw value hint`)
 }
+for (const typeId of typeIds) validateTypeAcyclic(typeId)
+check(typeIds.filter((typeId) => registry.types[typeId].parents.length === 0).join(",") === "any", "type graph must have any as its only root")
+for (const [typeId, type] of Object.entries(registry.types)) {
+  for (const parentId of type.parents) {
+    check(registry.types[parentId].children.includes(typeId), `${typeId}/${parentId} parent-child relation is not symmetric`)
+    for (const otherParentId of type.parents) {
+      if (otherParentId !== parentId) check(!isTypeAssignable(parentId, otherParentId), `${typeId} has redundant direct parent ${parentId}`)
+    }
+  }
+  for (const childId of type.children) check(registry.types[childId].parents.includes(typeId), `${typeId}/${childId} child-parent relation is not symmetric`)
+  const expectedAssignable = typeIds.filter((actualId) => isTypeAssignable(typeId, actualId)).sort()
+  const publishedAssignable = [...type.assignableFrom].sort()
+  check(JSON.stringify(publishedAssignable) === JSON.stringify(expectedAssignable), `${typeId} assignableFrom is not the exact graph closure`)
+}
+check(registry.actions.every((action) => action.execution?.thread !== "unknown"), "registry must not publish unknown action thread semantics")
 for (const action of registry.actions) {
   check(Array.isArray(action.aliases) && action.aliases.every((alias) => typeof alias?.name === "string"), `${action.id} aliases are not structured`)
   check(typeof action.shared === "boolean", `${action.id} shared flag is missing`)
@@ -137,8 +174,22 @@ for (const action of registry.actions) {
   check(["none", "declared", "unknown"].includes(action.output?.status), `${action.id} output status is invalid`)
   check(["main", "async", "any", "unknown"].includes(action.execution?.thread), `${action.id} execution thread is invalid`)
   for (const input of action.grammar.inputs) {
+    check(registry.types[input.type], `${action.id} input ${input.key} references unknown primary type ${input.type}`)
     check(Array.isArray(input.acceptedTypes) && input.acceptedTypes.length > 0, `${action.id} input ${input.key} has no acceptedTypes`)
+    check(new Set(input.acceptedTypes).size === input.acceptedTypes.length, `${action.id} input ${input.key} repeats acceptedTypes`)
+    check(!input.acceptedTypes.includes("any") || input.acceptedTypes.length === 1, `${action.id} input ${input.key} mixes any with precise acceptedTypes`)
     for (const type of input.acceptedTypes) check(registry.types[type], `${action.id} input ${input.key} references unknown accepted type ${type}`)
+    for (const acceptedType of input.acceptedTypes) {
+      for (const otherType of input.acceptedTypes) {
+        if (acceptedType !== otherType) check(!isTypeAssignable(acceptedType, otherType), `${action.id} input ${input.key} redundantly accepts ${otherType} through ${acceptedType}`)
+      }
+    }
+    const expectedFillable = input.acceptedTypes.some((type) => registry.types[type].ketherFillable)
+    check(input.ketherFillable === expectedFillable, `${action.id} input ${input.key} has inconsistent ketherFillable`)
+    check(typeof input.rawType === "string" && input.rawType.length > 0, `${action.id} input ${input.key} has no rawType fallback`)
+    if (!input.ketherFillable && input.type !== "keyword") {
+      check(typeof input.inputHint === "string" && input.inputHint.includes("raw"), `${action.id} input ${input.key} must advertise raw fallback`)
+    }
   }
 }
 for (const trigger of registry.triggers) {
