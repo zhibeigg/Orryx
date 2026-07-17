@@ -232,7 +232,7 @@ dependencies {
     compileOnly("ink.ptms:nms-all:1.0.0")
 
     compileOnly("org.gitee.nodens:nodens:1.26.43:api")
-    compileOnly("com.gitee.redischannel:RedisChannel:1.14.11:api")
+    compileOnly("com.gitee.redischannel:RedisChannel:2.15.14:api")
     compileOnly("ink.ptms.adyeshach:api:2.1.28")
     compileOnly("com.github.retrooper:packetevents-spigot:2.7.0")
     compileOnly("org.eldergod.ext:DragonCore:2.6.2.9")

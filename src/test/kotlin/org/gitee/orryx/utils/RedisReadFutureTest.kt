@@ -11,7 +11,10 @@ import java.util.concurrent.TimeUnit
 
 class RedisReadFutureTest {
 
-    private class Commands(val response: CompletableFuture<String?>)
+    private class Commands(
+        val response: CompletableFuture<String?>,
+        val expiry: CompletableFuture<Boolean> = CompletableFuture.completedFuture(true),
+    )
 
     @Test
     fun `decodes cache hits and refreshes expiry`() {
@@ -20,12 +23,12 @@ class RedisReadFutureTest {
         val commands = Commands(CompletableFuture.completedFuture("42"))
 
         val result = redisReadFuture(
-            useCommands = { consumer ->
-                consumer(commands)
-                CompletableFuture.completedFuture(Unit)
-            },
+            executeCommands = { operation -> operation(commands) },
             request = { it.response },
-            refreshExpiry = { refreshed = true },
+            refreshExpiry = {
+                refreshed = true
+                it.expiry
+            },
             decode = String::toInt,
             fallback = {
                 fallbackCalled = true
@@ -39,12 +42,29 @@ class RedisReadFutureTest {
     }
 
     @Test
+    fun `cache hit waits for expiry stage before releasing result`() {
+        val expiry = CompletableFuture<Boolean>()
+        val commands = Commands(CompletableFuture.completedFuture("42"), expiry)
+        val result = redisReadFuture(
+            executeCommands = { operation -> operation(commands) },
+            request = { it.response },
+            refreshExpiry = { it.expiry },
+            decode = String::toInt,
+            fallback = { CompletableFuture.completedFuture(0) },
+        )
+
+        assertFalse(result.isDone)
+        expiry.complete(true)
+        assertEquals(42, result.get(1, TimeUnit.SECONDS))
+    }
+
+    @Test
     fun `synchronous client failures fall back and warm the cache`() {
         var warmed = 0
         val result = redisReadFuture<Commands, Int>(
-            useCommands = { throw IllegalStateException("client unavailable") },
+            executeCommands = { throw IllegalStateException("client unavailable") },
             request = { it.response },
-            refreshExpiry = {},
+            refreshExpiry = { it.expiry },
             decode = String::toInt,
             fallback = { CompletableFuture.completedFuture(7) },
             warmCache = { warmed = it },
@@ -58,12 +78,9 @@ class RedisReadFutureTest {
     fun `decode failures use storage fallback`() {
         val commands = Commands(CompletableFuture.completedFuture("invalid"))
         val result = redisReadFuture(
-            useCommands = { consumer ->
-                consumer(commands)
-                CompletableFuture.completedFuture(Unit)
-            },
+            executeCommands = { operation -> operation(commands) },
             request = { it.response },
-            refreshExpiry = {},
+            refreshExpiry = { it.expiry },
             decode = String::toInt,
             fallback = { CompletableFuture.completedFuture(9) },
         )
@@ -74,9 +91,9 @@ class RedisReadFutureTest {
     @Test
     fun `synchronous storage failures become exceptional futures`() {
         val result = redisReadFuture<Commands, Int>(
-            useCommands = { throw IllegalStateException("redis failed") },
+            executeCommands = { throw IllegalStateException("redis failed") },
             request = { it.response },
-            refreshExpiry = {},
+            refreshExpiry = { it.expiry },
             decode = String::toInt,
             fallback = { throw IllegalArgumentException("storage failed") },
         )
@@ -92,9 +109,9 @@ class RedisReadFutureTest {
         val failure = IllegalStateException("shared failure")
         val storage = CompletableFuture<Int>().also { it.completeExceptionally(failure) }
         val result = redisReadFuture<Commands, Int>(
-            useCommands = { throw failure },
+            executeCommands = { throw failure },
             request = { it.response },
-            refreshExpiry = {},
+            refreshExpiry = { it.expiry },
             decode = String::toInt,
             fallback = { storage },
         )
@@ -108,9 +125,9 @@ class RedisReadFutureTest {
     @Test
     fun `skipped async command context falls back instead of hanging`() {
         val result = redisReadFuture<Commands, Int>(
-            useCommands = { CompletableFuture.completedFuture(Unit) },
+            executeCommands = { CompletableFuture.completedFuture(null) },
             request = { it.response },
-            refreshExpiry = {},
+            refreshExpiry = { it.expiry },
             decode = String::toInt,
             fallback = { CompletableFuture.completedFuture(13) },
         )
@@ -119,9 +136,9 @@ class RedisReadFutureTest {
     }
 
     @Test
-    fun `redis command observes skipped outer future`() {
+    fun `redis command observes skipped command context`() {
         val result = redisCommandFuture<Commands>(
-            useCommands = { CompletableFuture.completedFuture(Unit) },
+            executeCommands = { CompletableFuture.completedFuture(Unit) },
             command = { it.response },
         )
 
@@ -132,11 +149,11 @@ class RedisReadFutureTest {
     }
 
     @Test
-    fun `redis command observes outer connection failures`() {
+    fun `redis command observes connection failures`() {
         val failure = IllegalStateException("connection unavailable")
         val outer = CompletableFuture<Unit>().also { it.completeExceptionally(failure) }
         val result = redisCommandFuture<Commands>(
-            useCommands = { outer },
+            executeCommands = { outer },
             command = { it.response },
         )
 
@@ -144,5 +161,19 @@ class RedisReadFutureTest {
             result.get(1, TimeUnit.SECONDS)
         }
         assertEquals(failure, thrown.cause)
+    }
+
+    @Test
+    fun `redis command completes with the actual command stage`() {
+        val command = CompletableFuture<String?>()
+        val commands = Commands(command)
+        val result = redisCommandFuture<Commands>(
+            executeCommands = { operation -> operation(commands) },
+            command = { it.response },
+        )
+
+        assertFalse(result.isDone)
+        command.complete("OK")
+        assertEquals(Unit, result.get(1, TimeUnit.SECONDS))
     }
 }

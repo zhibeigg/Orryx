@@ -133,10 +133,14 @@ fun reversePlayerKeySettingTag(tag: String): UUID {
  * 命令 API、命令创建、解码及回源阶段的同步异常都会转换为异常 Future；
  * Redis 未命中或失败时回源 Storage，避免调用方永久等待。
  */
+private fun <T> failedStage(throwable: Throwable): CompletionStage<T> {
+    return CompletableFuture<T>().also { it.completeExceptionally(throwable) }
+}
+
 internal fun <C, T> redisReadFuture(
-    useCommands: (((C) -> Unit) -> CompletionStage<*>),
+    executeCommands: (((C) -> CompletionStage<String?>) -> CompletionStage<String?>),
     request: (C) -> CompletionStage<String?>,
-    refreshExpiry: (C) -> Unit,
+    refreshExpiry: (C) -> CompletionStage<*>,
     decode: (String) -> T,
     fallback: () -> CompletionStage<T>,
     warmCache: (T) -> Unit = {},
@@ -172,36 +176,44 @@ internal fun <C, T> redisReadFuture(
 
     val commandsInvoked = AtomicBoolean(false)
     try {
-        val outer = useCommands { commands ->
+        val outer = executeCommands { commands ->
             commandsInvoked.set(true)
             val command = try {
                 request(commands)
             } catch (throwable: Throwable) {
-                fallbackToStorage(throwable)
-                return@useCommands
+                failedStage<String?>(throwable)
             }
-            command.whenComplete { payload, commandFailure ->
-                when {
-                    commandFailure != null -> fallbackToStorage(commandFailure)
-                    payload == null -> fallbackToStorage(null)
-                    else -> {
-                        try {
-                            refreshExpiry(commands)
-                            val value = decode(payload)
-                            if (resolutionStarted.compareAndSet(false, true)) {
-                                result.complete(value)
-                            }
-                        } catch (throwable: Throwable) {
-                            fallbackToStorage(throwable)
-                        }
+            command.thenCompose { payload ->
+                if (payload == null) {
+                    CompletableFuture.completedFuture<String?>(null)
+                } else {
+                    val refresh = try {
+                        refreshExpiry(commands)
+                    } catch (throwable: Throwable) {
+                        failedStage<Unit>(throwable)
+                    }
+                    refresh.handle { _, refreshFailure ->
+                        refreshFailure?.printStackTrace()
+                        payload
                     }
                 }
             }
         }
-        outer.whenComplete { _, outerFailure ->
+        outer.whenComplete { payload, outerFailure ->
             when {
                 outerFailure != null -> fallbackToStorage(outerFailure)
                 !commandsInvoked.get() -> fallbackToStorage(IllegalStateException("Redis 异步命令上下文未执行"))
+                payload == null -> fallbackToStorage(null)
+                else -> {
+                    try {
+                        val value = decode(payload)
+                        if (resolutionStarted.compareAndSet(false, true)) {
+                            result.complete(value)
+                        }
+                    } catch (throwable: Throwable) {
+                        fallbackToStorage(throwable)
+                    }
+                }
             }
         }
     } catch (throwable: Throwable) {
@@ -210,25 +222,21 @@ internal fun <C, T> redisReadFuture(
     return result
 }
 
-/** 将 RedisChannel 外层连接 Future 与实际命令 Future 一并桥接。 */
+/** 将 RedisChannel API v2 的命令 Stage 转换为 Unit Future。 */
 internal fun <C> redisCommandFuture(
-    useCommands: (((C) -> CompletionStage<*>) -> CompletionStage<*>),
+    executeCommands: (((C) -> CompletionStage<*>) -> CompletionStage<*>),
     command: (C) -> CompletionStage<*>,
 ): CompletableFuture<Unit> {
     val result = CompletableFuture<Unit>()
     val commandsInvoked = AtomicBoolean(false)
     try {
-        val outer = useCommands { commands ->
+        val outer = executeCommands { commands ->
             commandsInvoked.set(true)
-            val stage = try {
+            try {
                 command(commands)
             } catch (throwable: Throwable) {
-                CompletableFuture<Unit>().also { it.completeExceptionally(throwable) }
+                failedStage<Unit>(throwable)
             }
-            stage.whenComplete { _, commandFailure ->
-                if (commandFailure == null) result.complete(Unit) else result.completeExceptionally(commandFailure)
-            }
-            stage
         }
         outer.whenComplete { _, outerFailure ->
             when {
@@ -236,6 +244,7 @@ internal fun <C> redisCommandFuture(
                 !commandsInvoked.get() -> result.completeExceptionally(
                     IllegalStateException("Redis 异步命令上下文未执行")
                 )
+                else -> result.complete(Unit)
             }
         }
     } catch (throwable: Throwable) {

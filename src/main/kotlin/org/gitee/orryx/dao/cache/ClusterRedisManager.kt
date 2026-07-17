@@ -141,7 +141,7 @@ class ClusterRedisManager : ISyncCacheManager {
         warmCache: (T) -> Unit,
     ): CompletableFuture<T> {
         return redisReadFuture(
-            useCommands = { consumer: (RedisClusterAsyncCommands<String, String>) -> Unit -> api.useAsyncCommands(consumer) },
+            executeCommands = { operation -> api.executeClusterAsync { commands -> operation(commands) } },
             request = { commands -> commands[tag] },
             refreshExpiry = { commands -> commands.expire(tag, ttl) },
             decode = decode,
@@ -154,7 +154,7 @@ class ClusterRedisManager : ISyncCacheManager {
         command: (RedisClusterAsyncCommands<String, String>) -> java.util.concurrent.CompletionStage<*>,
     ): CompletableFuture<Unit> {
         return redisCommandFuture(
-            useCommands = { operation -> api.useAsyncCommands(operation) },
+            executeCommands = { operation -> api.executeClusterAsync { commands -> operation(commands) } },
             command = command,
         )
     }

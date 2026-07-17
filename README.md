@@ -382,7 +382,7 @@ Editor:
 |-----|------|
 | **PlaceholderAPI** | 注册 `%orryx_xxx%` 占位符，从 `placeholders/` 目录加载 YAML 配置，每个键对应一段 Kether 脚本，请求时同步执行返回结果，支持热重载 |
 | **GDDTitle** | 在语言文件中注册 `gddtitle_action` 和 `gddtitle_title` 类型，让语言消息以龙核 HUD Title/Action 形式展示；Kether 动作 `gddtitle`/`gddaction` 发送 HUD 文本（支持淡入/停留/淡出时间） |
-| **RedisChannel** | 跨服数据同步缓存，支持单节点和集群模式；缓存玩家档案、职业、技能、按键设置数据，缓存未命中时回源 Storage，过期时间 6-12 小时 |
+| **RedisChannel** | 跨服数据同步缓存，要求 RedisChannel 2.15.14+ API v2；支持单节点和集群模式，缓存玩家档案、职业、技能、按键设置数据，缓存未命中时异步回源 Storage，过期时间 6-12 小时 |
 | **DragonArmourers** | DragonCore 时装子插件，状态切换时触发 `DragonAPI.updatePlayerSkin()` 刷新玩家皮肤 |
 
 ---
