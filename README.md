@@ -6,7 +6,7 @@
 
 **跨时代技能插件，支持实现复杂逻辑，为稳定高效而生**
 
-[![Version](https://img.shields.io/badge/version-2.54.130-blue?style=for-the-badge)](https://github.com/zhibeigg/Orryx/releases)
+[![Version](https://img.shields.io/badge/version-2.55.132-blue?style=for-the-badge)](https://github.com/zhibeigg/Orryx/releases)
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.12--1.21-green?style=for-the-badge&logo=minecraft)](https://www.minecraft.net/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.1.20-purple?style=for-the-badge&logo=kotlin)](https://kotlinlang.org/)
 [![TabooLib](https://img.shields.io/badge/TabooLib-6.2.4-orange?style=for-the-badge)](https://github.com/TabooLib/taboolib)
@@ -402,6 +402,8 @@ Editor:
 |-----|--------|
 | **必需** | TabooLib (已内置) |
 | **可选** | 见上方第三方插件列表 |
+
+Orryx 会显式加载并重定位与 Kotlin 2.1.20 匹配的 kotlinx-coroutines 1.10.1，启动不依赖其他插件预先提供协程类。
 
 ### 数据存储
 

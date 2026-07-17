@@ -31,6 +31,16 @@ class RedisChannelApiCompatibilityTest {
         assertTrue("RedisChannel:2.15.14:api" in buildScript)
     }
 
+    @Test
+    fun `Orryx API declares its relocated coroutine runtime before initialization`() {
+        val source = readSource("src/main/kotlin/org/gitee/orryx/api/OrryxAPI.kt")
+
+        assertTrue("!org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.10.1" in source)
+        assertTrue("!kotlin2120x.coroutines1101.CoroutineExceptionHandler" in source)
+        assertTrue("!kotlinx.coroutines." in source)
+        assertTrue("!kotlin2120x.coroutines1101." in source)
+    }
+
     private fun readSource(path: String): String {
         return String(Files.readAllBytes(Paths.get(path)), StandardCharsets.UTF_8)
     }

@@ -36,6 +36,12 @@ import kotlin.time.Duration.Companion.seconds
         transitive = false
     ),
     RuntimeDependency(
+        "!org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.10.1",
+        test = "!kotlin2120x.coroutines1101.CoroutineExceptionHandler",
+        relocate = ["!kotlin.", "!kotlin2120.", "!kotlinx.coroutines.", "!kotlin2120x.coroutines1101."],
+        transitive = false
+    ),
+    RuntimeDependency(
         "!org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.8.1",
         test = "!org.gitee.orryx.serialization.Serializer",
         relocate = ["!kotlin.", "!kotlin2120.", "!kotlinx.serialization.", "!org.gitee.orryx.serialization."],
