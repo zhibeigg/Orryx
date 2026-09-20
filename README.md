@@ -1,622 +1,252 @@
-<div align="center">
+<p align="center">
+  <img src="https://image.mcwar.cn/i/2026/04/22/69e7bc7a1dd16.png" width="360" alt="Orryx 像素风火焰 Logo" />
+</p>
 
-# Orryx
+<p align="center">
+  <strong>Minecraft 技能插件 · YAML 配置 · Kether 脚本 · Kotlin / Java API</strong>
+</p>
 
-![orryx.png](https://image.mcwar.cn/i/2026/04/22/69e7bc7a1dd16.png)
+<p align="center">
+  <a href="https://github.com/zhibeigg/Orryx/releases"><img src="https://img.shields.io/github/v/release/zhibeigg/Orryx?style=flat-square&amp;label=release&amp;color=527a24" alt="GitHub 最新发行版" /></a>
+  <a href="https://kotlinlang.org/"><img src="https://img.shields.io/badge/Kotlin-2.1.20-59636e?style=flat-square" alt="Kotlin 2.1.20" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-CC0_1.0-59636e?style=flat-square" alt="CC0 1.0 Universal" /></a>
+</p>
 
-**跨时代技能插件，支持实现复杂逻辑，为稳定高效而生**
+<p align="center">
+  <a href="#快速开始">快速开始</a> ·
+  <a href="https://o0vvjwgpeju.feishu.cn/wiki/Syzzw7aQwixJ4YkXoOAcyYkfnOg">使用指南</a> ·
+  <a href="https://zhibeigg.github.io/Orryx/">Kether 文档</a> ·
+  <a href="docs/API.md">开发者 API</a>
+</p>
 
-[![Version](https://img.shields.io/badge/version-2.55.132-blue?style=for-the-badge)](https://github.com/zhibeigg/Orryx/releases)
-[![Minecraft](https://img.shields.io/badge/Minecraft-1.12--1.21-green?style=for-the-badge&logo=minecraft)](https://www.minecraft.net/)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.1.20-purple?style=for-the-badge&logo=kotlin)](https://kotlinlang.org/)
-[![TabooLib](https://img.shields.io/badge/TabooLib-6.2.4-orange?style=for-the-badge)](https://github.com/TabooLib/taboolib)
+**Orryx** 面向 Minecraft RPG 服务器的服主、技能作者与插件开发者。用 YAML 定义技能和职业，用 Kether 编排触发条件、目标选择、伤害与特效，再连接服务器已有的属性、怪物和客户端 UI 系统。
 
-[![Wiki](https://img.shields.io/badge/Wiki-开始使用-darkred?style=for-the-badge&logo=gitbook)](https://o0vvjwgpeju.feishu.cn/wiki/Syzzw7aQwixJ4YkXoOAcyYkfnOg)
-[![Ask DeepWiki](https://img.shields.io/badge/DeepWiki-Ask_AI-00D4AA?style=for-the-badge)](https://deepwiki.com/zhibeigg/Orryx)
-[![Ask ZRead](https://img.shields.io/badge/ZRead-Ask_AI-00b0aa?style=for-the-badge)](https://zread.ai/zhibeigg/Orryx)
+## 从脚本到技能
 
-</div>
-
-## 特别鸣谢
-
-<table>
-  <tr>
-    <td width="220" align="center">
-      <a href="https://www.poke2api.com">
-        <img src="docs/assets/pokeapi-promo.png" alt="Poke API" width="200" />
-      </a>
-    </td>
-    <td>
-      <strong>Poke API - 高效可靠的 AI API 中继服务平台</strong><br />
-      感谢 <a href="https://www.poke2api.com">Poke API</a> 对本项目的支持。Poke API 开发者平台是一家稳定高效的 API 中继服务提供商，提供 Claude 0.3x、GPT 0.03x 超低倍率，并支持 Claude Code、Codex、Gemini 等主流 AI 模型与开发工具生态，帮助开发者和团队更轻松地集成 AI 能力、优化工作流并提升生产力。无论是日常开发辅助、代码生成、问题排查，还是团队级 AI 能力接入，Poke API 都能提供便捷可靠的服务支持。欢迎访问 <a href="https://www.poke2api.com">www.poke2api.com</a> 了解更多。
-    </td>
-  </tr>
-</table>
-
----
-
-## 特色功能
-
-### 技能系统
-
-| 技能类型 | 说明 |
-|---------|------|
-| **被动技能 (Passive)** | 自动触发，无需手动释放 |
-| **直接释放 (Direct)** | 按键即释放 |
-| **直接指向性 (Direct Aim)** | 带指示器的指向性技能 |
-| **蓄力释放 (Pressing)** | 长按蓄力后释放 |
-| **蓄力指向性 (Pressing Aim)** | 蓄力型指向性技能 |
-
-- 技能等级与经验管理
-- 技能点升级系统
-- 技能冷却管理（重置/增加/减少/设置/查询）
-- 技能升级前检测与成功执行钩子
-- 按键绑定系统（支持多键组合如 `G+F`）
-
-### 职业系统
-
-- 职业绑定技能组
-- 职业等级与经验
-- 职业升级获取技能点
-- 职业最大法力值/精力值配置
-- 职业属性系统集成
-
-### 资源管理
-
-| 资源类型 | 功能 |
-|---------|------|
-| **法力值 (Mana)** | 给予/消耗/设置、充足检查、自然恢复 |
-| **精力值 (Spirit)** | 给予/消耗/设置、充足检查、自然恢复 |
-| **经验系统** | 自定义经验算法、升级配置 |
-
-### 脚本引擎
-
-基于 Kether 脚本引擎，内置 **74 个动作文件**：
-
-- 基础：延迟、同步、条件判断、流程控制
-- 技能：冷却管理、法力/精力操作、伤害计算
-- 效果：粒子特效、动画、音效
-- 数学：矩阵变换、四元数、向量运算
-- 选择器：几何体范围选择、目标筛选
-- 射线：光线追踪、碰撞检测
-- 兼容：Nodens 属性、AstraXHero、AttributePlus、GDDTitle、MythicMobs 等
-
-#### Kether 注释
-
-Orryx 的技能、中转站、状态、占位符、临时脚本和表达式入口使用同一套注释预处理：
+一次冲刺可以由多段范围伤害组成。下面节选自仓库内的 [「裂焱冲击」完整配置](src/main/resources/skills/裂焱冲击-AI生成案例.yml)：每隔 2 tick 检测一次目标，连续执行 5 次，排除自身、盔甲架和队友。
 
 ```yaml
+Options:
+  Type: "DIRECT"
+  Name: "裂焱冲击"
+  Variables:
+    DAMAGE: |-
+      calc "20+3*(level-1)"
 Actions: |-
-  # 纯注释行会保留为空行，便于错误行号定位
-  tell "damage#fire" # 引号外的井号开始行尾注释
-  tell '#tag'        # 单双引号内的井号都会保留
+  for i in range 1 to 5 then {
+    sleep 2
+    damage lazy *DAMAGE false they "@range 2.5 !@self !@type ARMOR_STAND !@team" source "@self" type FIRE
+  }
 ```
 
-- 仅引号外且未转义的 `#` 开始注释；单双引号、转义引号和转义 `#` 均会保留。
-- 同时支持 LF 与 CRLF，不会删除纯注释行对应的换行。
-- 预处理会先移除注释，再根据首个非空内容是否为完整 `def` 词元决定是否自动包装 `def main`。
-
-#### 自生成 Kether 文档
-
-Orryx 会从运行时完整注册表生成版本化 Kether 文档包：
-
-- `channels/stable.json` 只随正式 Tag 更新，供生产编辑器自动同步。
-- `channels/snapshot.json` 随 `master` 更新，供开发验证。
-- 每个不可变发布目录包含 Schema v4 Kether Registry、v3 `actions-schema.json` 兼容层、Markdown、结构化差异和 SHA-256。
-- v4 提供完整类型图、assignability、raw/Kether 可填充提示、结构化 aliases、grammar/variants、线程/上下文与 Trigger 事件字段；实体类型、药水效果、声音和材质等有限值输入会发布可搜索 `options` 目录。
-- 现有 `manifest.json`、`actions-schema.json` 与 `latest.md` 继续作为兼容入口。
-
-在线文档：`https://zhibeigg.github.io/Orryx/`
-
-发布协议与本地验证命令见 [`docs/Kether-Docs-Publishing.md`](docs/Kether-Docs-Publishing.md)。
-
-### 触发器系统 (104+)
-
-<details>
-<summary><b>Bukkit 原生事件 (55)</b></summary>
-
-- 玩家加入/退出/踢出/死亡/重生
-- 玩家伤害（前/后）
-- 玩家移动/跳跃/切换飞行/切换疾跑/切换潜行
-- 物品操作（消耗、掉落、损坏、拾取、合并）
-- 交互事件（实体、方块）
-- 方块破坏/放置
-- 聊天/命令
-- 等级/经验变化
-- 弹射物命中
-- 更多...
-
-</details>
-
-<details>
-<summary><b>Orryx 内部事件 (36)</b></summary>
-
-- 技能：释放、检查、冷却增加/减少/设置（13 个）
-- 法力值：增加、减少、恢复、治疗（4 个）
-- 精力值：增加、减少、恢复、治疗（4 个）
-- 职业：更改（前/后）、清除、设置（4 个）
-- 等级：升级、降级（2 个）
-- 经验：增加、减少（2 个）
-- 技能点：增加、减少（2 个）
-- 标志：玩家标志变更、全局标志变更（4 个）
-- 按键：按下、抬起、持续（3 个）
-- 档案：保存（1 个）
-
-</details>
-
-<details>
-<summary><b>第三方插件事件</b></summary>
-
-- **DragonCore** (7)：按键按下/释放、缓存加载、实体加入/离开世界、数据包、槽位
-- **ArcartX** (10)：按键按下/释放、简单按键按下/释放、组合键、鼠标点击、实体加入/离开、客户端通道、自定义数据包
-- **GermPlugin** (3)：客户端连接、按键按下/抬起
-- **MythicMobs** (3)：怪物死亡、怪物掉落、怪物生成
-- **DungeonPlus** (4)：副本开始/结束/离开、事件代理
-
-</details>
-
-### 选择器系统
-
-**几何体选择器 (16 种)**
-
-| 几何体 | 说明 |
-|-------|------|
-| Range | 圆形范围 |
-| Sector | 扇形范围 |
-| Annular | 环形范围 |
-| Cone | 锥形范围 |
-| Cylinder | 圆柱范围 |
-| Ring | 圆环范围 |
-| Line | 线段范围 |
-| Floor | 地面范围 |
-| Frustum | 视锥体 |
-| OBB | 有向包围盒 |
-| RayHit | 射线击中 |
-| Scatter | 散射范围 |
-| Nearest | 最近目标 |
-| LookAt | 朝向目标 |
-| Location | 位置选择 |
-| VectorLocation | 向量位置 |
-
-**流式过滤器 (20 种)**
-
-Self、Origin、Direct、Offset、Type、Teammate、Team、PVP、Amount、Server、World、Current、Joiner、Alive、Distance、Health、Random、Sight、Sort、Unique
-
-**预设选择器**：支持自定义预设组合
-
-### 碰撞系统
-
-| 碰撞体 | 说明 |
-|-------|------|
-| Sphere | 球体碰撞 |
-| Capsule | 胶囊体碰撞 |
-| AABB | 轴对齐包围盒 |
-| OBB | 有向包围盒 |
-| Ray | 射线碰撞 |
-| Composite | 复合碰撞体 |
-
-所有碰撞体均支持本地坐标系变体（Local），附带坐标转换器。
-
-配合 OrryxMod 可通过 `colliderShow` 实时显示调试线框：服务端只同步发生变化的几何快照，客户端对移动与旋转进行插值；`realtime false` 可保留一次性静态显示。
-
-### 状态管理
-
-| 状态类型 | 说明 |
-|---------|------|
-| VertigoState | 眩晕状态 |
-| BlockState | 格挡状态 |
-| DodgeState | 闪避状态 |
-| SkillState | 技能状态 |
-| GeneralAttackState | 普通攻击状态 |
-| PressGeneralAttackState | 蓄力普通攻击状态 |
-
-- 状态前置条件检查
-- 状态入场/退出钩子
-
-### 伤害系统
-
-| 伤害类型 | 说明 |
-|---------|------|
-| PHYSICS | 物理伤害 |
-| MAGIC | 魔法伤害 |
-| FIRE | 火焰伤害 |
-| REAL | 真实伤害 |
-| SELF | 自身伤害 |
-| CONSOLE | 控制台伤害 |
-| CUSTOM | 自定义伤害 |
-
-### 多端 UI
-
-| 端 | 功能 |
-|---|------|
-| **Bukkit** | 原生 UI 界面 |
-| **GermPlugin** | HUD、动画、UI |
-| **DragonCore** | 自定义 UI、物品 |
-| **ArcartX** | UI、脚本、变量 |
-
-### 其他模块
-
-- **AI 集成**：OpenAI 会话按玩家 UUID 与 NPC 配置键隔离并串行执行；总超时覆盖排队与 HTTP，请求取消、重载、退服和停服都会清理在途调用与资源
-- **Wiki 生成**：自动生成飞书文档、Markdown 文档、Actions Schema JSON
-- **Agent SKILL 套件**：基于生产配置和源码生成、审查技能、职业、经验、中转站、状态机、选择器与多端 UI
-- **在线编辑器**：玩家执行 `/orryx edit` 后获得 5 分钟有效、仅可使用一次的点击入口；服务器控制台执行 `or edit` 时会输出可复制的完整一次性网址。Token 仅放在 `/connect#token=...` URL 片段中，不会以完整链接显示在游戏聊天中。WebSocket 注册确认后才签发访问 Token；文件请求使用有界顺序队列与 revision 冲突控制，沙箱拒绝路径穿越、符号链接和 NTFS 重解析路径，并限制消息、文件及目录遍历配额
-- **瞄准协议**：保持 1.12.2 legacy 字段顺序，通过一次性 wire token、确认状态、超时与最终施法状态复核阻止跨会话重放
-- **兼容降级**：第三方插件缺失或发生二进制不兼容时仅对对应桥接一次性降级，PacketEvents 与 ProtocolLib 监听器会在停用时卸载
-- **Buff 系统**：Buff 配置与管理
-- **NPC 系统**：基于 Adyeshach 的虚拟实体
-- **Bloom 泛光**：泛光特效配置
-
-#### 在线编辑器配置
-
-```yaml
-Editor:
-  License: ""
-```
-
-`Editor.License` 是中心用于识别并校验 Orryx 服务器身份的凭据。配置该身份凭据后，插件会自动连接固定中心 `wss://orryx.mcwar.cn/ws/server`，浏览器入口固定为 `https://orryx.mcwar.cn/connect#token=...`。License 到期不影响实时编辑器，但 License 不存在、被禁用或绑定 IP 与当前服务器 IP 不匹配时，中心仍会拒绝连接。旧配置中的 `Editor.Enable` 与 `Editor.PublicUrl` 仍会被忽略，这不代表匿名或空 License 可以使用。拥有 `Orryx.Command.Editor` 权限的玩家执行 `/orryx edit` 时收到可点击入口；服务器控制台执行 `or edit` 时直接显示完整的一次性网址。
-
-更多安全与部署约束见 [`docs/Editor.md`](docs/Editor.md)。
-
----
-
-## 第三方插件集成
-
-### 客户端引擎
-
-<details>
-<summary><b>DragonCore</b></summary>
-
-- 动画桥接：通过自定义数据包控制玩家/实体动画（播放、移除、清空）
-- 按键注册：合并 DragonCore 配置键与 Orryx 扩展键同步到客户端
-- UI 系统：推送 YAML GUI 配置到客户端，处理自定义数据包实现技能 UI 交互
-- Kether 动作 `dragoncore`：时装管理（DragonArmourers 皮肤刷新）、暴雪粒子特效、动画控制（玩家/实体/物品/方块）、音乐播放、GUI/HUD 打开、PlaceholderAPI 数据同步、headTag 管理、实体模型管理、视角切换、窗口标题、虚拟实体绑定、模型特效（通过 Adyeshach 创建临时实体）、隐藏手持武器、槽位物品读取
-- 触发器 (7)：按键按下/释放、缓存加载、实体加入/离开世界、数据包、槽位
-
-</details>
-
-<details>
-<summary><b>GermPlugin</b></summary>
-
-- 动画桥接：通过 GermPacketAPI 播放/清空动画（不支持移除单个动画）
-- 按键注册：逐个注册按键，自动映射 `MOUSE_LEFT`/`MOUSE_RIGHT` 为 `MLEFT`/`MRIGHT`
-- UI 系统：监听客户端连接自动打开 HUD，支持热重载配置
-- Kether 动作 `germplugin`：基岩时装管理、特效管理、动画控制（实体/物品/方块）、音乐播放、GUI/HUD 打开、视角切换、槽位物品读取
-- 触发器 (3)：客户端连接、按键按下/抬起
-
-</details>
-
-<details>
-<summary><b>ArcartX</b></summary>
-
-- 动画桥接：通过 ArcartX Handler 播放/移除/清空动画（优先级最高）
-- 按键注册：通过 NetworkMessageSender 同步按键注册
-- UI 系统：通过 ArcartX UI Registry 注册 UI，处理自定义数据包实现技能交互
-- Kether 动作 `arcartx`：动画控制（支持速度/过渡/持续时间）、音效播放、UI 打开/关闭/脚本运行、实体模型设置（支持缩放）、服务端变量管理、自定义数据包发送、屏幕震动、窗口标题
-- Glimmer 脚本集成：注册 `Orryx` 命名空间，提供 22 个静态函数（法力值/精力值/技能/状态/档案/职业操作）和 `OrryxPlayer` 对象类型（20 个实例方法）
-- 触发器 (10)：按键按下/释放、简单按键按下/释放、组合键、鼠标点击、实体加入/离开、客户端通道、自定义数据包
-
-</details>
-
-<details>
-<summary><b>CloudPick</b></summary>
-
-- Kether 动作 `cloudpick`：时装管理（FashionAPI）、暴雪粒子特效、动画控制（玩家/实体/物品/方块）、音乐播放、GUI/HUD 打开、PlaceholderAPI 数据同步、headTag 管理、实体模型管理、虚拟实体绑定、模型特效（通过 Adyeshach 创建临时实体）、隐藏手持武器、槽位物品读取
-
-</details>
-
-### 属性系统
-
-<details>
-<summary><b>AttributePlus</b></summary>
-
-- 属性桥接：添加/移除临时属性（支持超时自动移除）、强制刷新属性
-- 伤害计算：通过 `AttributeAPI.runAttributeAttackEntity()` 执行带属性的攻击
-- 高级攻防：完整走一遍 `AttributeHandle` 攻防计算流程（含反伤处理），支持重置属性数据和叠加额外属性源
-- Kether 动作 `attribute`（通用）、`apAttack`（AttributePlus 专用）
-
-</details>
-
-<details>
-<summary><b>Nodens</b></summary>
-
-- 属性桥接：添加/移除临时属性（原生支持超时）、强制刷新属性
-- 伤害计算：创建 `DamageProcessor`，映射 Orryx 伤害类型到 Nodens 伤害类型（Magic/Physics/Real），走完整伤害流程
-- Kether 动作 `damageProcessor`（伤害处理器）、`regainProcessor`（治疗处理器）
-
-</details>
-
-<details>
-<summary><b>AstraXHero</b></summary>
-
-- 属性桥接：添加/移除属性源（支持超时自动移除）、强制刷新属性
-- 伤害计算：创建 `FightData` 注入 Orryx 变量，调用 `FightAPI.runFight()` 执行战斗流程
-- Kether 动作 `axhDamage`（支持自定义战斗变量）
-
-</details>
-
-### 怪物与副本
-
-<details>
-<summary><b>MythicMobs</b></summary>
-
-- 条件 (12)：`O-FLAG`、`O-JOB`、`O-LEVEL`、`O-MANA`、`O-SPIRIT`、`O-POINT`、`O-EXPERIENCE`、`O-SKILLLEVEL`、`O-SUPERBODY`、`O-INVINCIBLE`、`O-SILENCE`、`O-SUPERFOOT`
-- 技能 (8)：`O-CAST`（释放 Orryx 技能）、`O-GIVEMANA`/`O-TAKEMANA`、`O-GIVESPIRIT`/`O-TAKESPIRIT`、`O-SUPERBODY`/`O-INVINCIBLE`/`O-SILENCE`（设置状态+持续时间）
-- 目标选择器 (7)：`O-SELECTORL`/`O-SELECTORE`（Orryx 选择器语法）、`O-RANGE`（球形）、`O-SECTOR`（扇形）、`O-OBB`（有向包围盒）、`O-ANNULAR`（环形）、`O-FRUSTUM`（视锥）
-- Kether 动作 `mm`：嘲讽、仇恨值管理、信号发送、释放 MM 技能
-- 触发器 (3)：怪物死亡、怪物掉落、怪物生成
-
-</details>
-
-<details>
-<summary><b>DungeonPlus</b></summary>
-
-- 地牢进入条件 (4)：`o-flag-condition`（Flag 值检查）、`o-job-condition`（职业检查）、`o-level-condition`（等级范围检查）、`o-mana-condition`（法力值检查）
-- 触发器 (4)：副本开始/结束/离开、事件代理
-
-</details>
-
-### 虚拟实体
-
-<details>
-<summary><b>Adyeshach</b></summary>
-
-- 实体适配：将 Adyeshach `EntityInstance` 适配为 Orryx 的 `IEntity`/`ITargetEntity`/`ITargetLocation` 接口
-- Kether 动作 `entity create ady`：通过 Adyeshach 创建临时虚拟实体（支持私有/公共管理器）
-- 模型特效载体：DragonCore/CloudPick 的 `modelEffect create` 通过 Adyeshach 创建临时虚拟实体
-- 容器系统：自动识别 `EntityInstance` 类型并转换
-- Flag 序列化：支持 Adyeshach 实体类型的编解码
-- 触发器联动：客户端引擎的实体进出视野事件中查找对应虚拟实体
-
-</details>
-
-### 数据包与协议
-
-| 插件 | 功能 |
-|-----|------|
-| **packetevents** | 拦截 `PLAYER_ABILITIES` 数据包，将 FOV modifier 强制设为 0，消除速度变化导致的 FOV 抖动（配置项 `OffSpeedFovChange` 控制，默认开启） |
-| **ProtocolLib** | 功能同上，仅在 packetevents 未启用时生效（互斥，packetevents 优先） |
-
-### 其他
-
-| 插件 | 功能 |
-|-----|------|
-| **PlaceholderAPI** | 注册 `%orryx_xxx%` 占位符，从 `placeholders/` 目录加载 YAML 配置，每个键对应一段 Kether 脚本，请求时同步执行返回结果，支持热重载 |
-| **GDDTitle** | 在语言文件中注册 `gddtitle_action` 和 `gddtitle_title` 类型，让语言消息以龙核 HUD Title/Action 形式展示；Kether 动作 `gddtitle`/`gddaction` 发送 HUD 文本（支持淡入/停留/淡出时间） |
-| **RedisChannel** | 跨服数据同步缓存，要求 RedisChannel 2.15.14+ API v2；支持单节点和集群模式，缓存玩家档案、职业、技能、按键设置数据，缓存未命中时异步回源 Storage，过期时间 6-12 小时 |
-| **DragonArmourers** | DragonCore 时装子插件，状态切换时触发 `DragonAPI.updatePlayerSkin()` 刷新玩家皮肤 |
-
----
+`!@team` 使用 DungeonPlus 队伍信息，需要启用对应插件；没有队伍系统时可移除此过滤器。
+
+**触发 → 选择目标 → 执行动作 → 呈现反馈**。技能、事件中转站与状态控制器共用 Kether，范围选择器和碰撞系统负责目标判定，粒子、动画和 UI 负责反馈。
+
+<p align="center">
+  <img src="assets/readme/workflow.svg" width="100%" alt="Orryx 空间判定示意：以施法原点选择范围内的目标，通过碰撞体判定命中，排除范围外目标。" />
+</p>
+
+| 你要构建的内容 | Orryx 提供的能力 |
+| --- | --- |
+| 技能与职业成长 | 被动、直接、指向、蓄力、蓄力指向；技能组、等级、技能点、法力与精力 |
+| 有空间感的战斗 | 扇形、环形、射线等选择器；球体、胶囊体、AABB、OBB 与复合碰撞体 |
+| 事件驱动的机制 | Bukkit、Orryx 和第三方事件触发；眩晕、格挡、闪避及技能状态管理 |
+| 与现有服务器联动 | 属性伤害、MythicMobs 技能、DungeonPlus 副本、占位符与虚拟实体 |
+| 多端交互 | Bukkit 原生界面，以及 DragonCore、GermPlugin、ArcartX UI 与动画桥接 |
+
+选择器、动作、触发器和各插件桥接能力见 [功能与集成参考](docs/Features.md)。
 
 ## 快速开始
 
-### 安装
+### 1. 安装插件
 
-1. 下载 [最新版本](https://github.com/zhibeigg/Orryx/releases)
-2. 放入服务器 `plugins` 目录
-3. 重启服务器
-4. 编辑 `plugins/Orryx/config.yml`
+1. 从 [Releases](https://github.com/zhibeigg/Orryx/releases) 下载发行包，放入服务器的 `plugins/` 目录。
+2. 重启服务器，等待生成 `plugins/Orryx/` 配置。
+3. 保持默认 **Bukkit UI + SQLite** 即可开始；按需要编辑 `config.yml`。
 
-### 依赖
+TabooLib 由插件集成，无需单独安装；客户端引擎、属性插件和 Redis 为按需集成项。运行 Java 版本应满足所选 Minecraft 服务端的要求，第三方插件与客户端 Mod 的版本需另行匹配。
 
-| 类型 | 依赖项 |
-|-----|--------|
-| **必需** | TabooLib (已内置) |
-| **可选** | 见上方第三方插件列表 |
+### 2. 运行第一个技能
 
-Orryx 会显式加载并重定位与 Kotlin 2.1.20 匹配的 kotlinx-coroutines 1.10.1，启动不依赖其他插件预先提供协程类。
+新建 `plugins/Orryx/skills/hello.yml`：
 
-### 数据存储
-
-| 类型 | 说明 |
-|-----|------|
-| **SQLite** | 默认，开箱即用 |
-| **MySQL** | 生产环境推荐 |
-| **H2** | 轻量级嵌入式 |
-| **Redis** | 可选缓存层；玩家写入按 UUID 串行、同键合并，并按数据库 → Redis → 本地缓存顺序发布 |
-
----
-
-## 项目结构
-
-```
-Orryx/
-├── api/                    # 公开 API (事件、接口、碰撞系统)
-│   ├── events/            # 事件系统 (伤害、全局、玩家)
-│   ├── interfaces/        # API 接口 (12 个)
-│   └── collider/          # 碰撞系统 (6 种碰撞体 + 本地坐标系变体)
-├── core/                   # 核心模块
-│   ├── skill/             # 技能系统 (5 种技能类型)
-│   ├── job/               # 职业系统
-│   ├── station/           # 触发器系统 (104+ 触发器)
-│   ├── kether/            # Kether 脚本引擎 (74 个动作文件)
-│   ├── selector/          # 选择器系统 (16 几何体 + 20 过滤器)
-│   ├── damage/            # 伤害系统
-│   └── common/timer/      # 冷却时间系统
-├── module/                 # 功能模块
-│   ├── ai/                # OpenAI 集成
-│   ├── experience/        # 经验系统
-│   ├── lang/              # 语言/国际化
-│   ├── mana/              # 法力值
-│   ├── spirit/            # 精力值
-│   ├── state/             # 状态管理 (6 种状态)
-│   ├── ui/                # UI 渲染 (Bukkit/Germ/Dragon/ArcartX)
-│   ├── wiki/              # Wiki 文档生成 (飞书/Markdown/Actions Schema)
-│   └── editor/            # 在线编辑器 (WebSocket 客户端)
-├── compat/                 # 第三方插件兼容 (14 个插件)
-├── dao/                    # 数据层 (缓存、存储、序列化)
-├── command/                # 命令系统
-└── utils/                  # 工具类
+```yaml
+Options:
+  Type: "DIRECT"
+  Name: "Hello Orryx"
+Actions: |-
+  tell "Hello Orryx"
 ```
 
-### 配置文件
+由具有管理权限的玩家在游戏内执行，将 `<玩家名>` 替换为在线玩家的名字：
 
+```text
+/or reload
+/or skill cast <玩家名> hello 1 false
 ```
+
+目标玩家应收到 `Hello Orryx`。这里的 `hello` 是配置文件名；`false` 表示直接释放，跳过冷却、法力等条件检查，适合验证脚本。
+
+### 3. 组合职业与界面
+
+参考 [职业模板](src/main/resources/jobs/example.yml)，在 `Options.Skills` 中填入技能文件名，将技能加入职业。仓库自带的 `example` 职业可用于体验默认界面：
+
+```text
+/or job change <玩家名> example
+/or ui openUI <玩家名> <玩家名>
+```
+
+两个 UI 参数分别是技能所属玩家与查看界面的玩家。更多配置与命令见 [使用指南](https://o0vvjwgpeju.feishu.cn/wiki/Syzzw7aQwixJ4YkXoOAcyYkfnOg)。
+
+<details>
+<summary><strong>配置目录与存储选项</strong></summary>
+
+```text
 plugins/Orryx/
-├── config.yml             # 主配置 (数据库、UI端、缓存等)
-├── keys.yml               # 按键配置
-├── bloom.yml              # Bloom 泛光配置
-├── buffs.yml              # Buff 配置
-├── npc.yml                # NPC 配置
-├── state.yml              # 状态机配置
-├── selectors.yml          # 选择器预设
-├── skills/                # 技能定义
-├── jobs/                  # 职业定义
-├── stations/              # 中转站定义
-├── controllers/           # 控制器定义
-├── experiences/           # 经验算法
-├── status/                # 状态定义
-├── ui/                    # UI 配置
-├── lang/                  # 语言文件
-└── placeholders/          # 占位符配置
+├── config.yml         # 主配置：数据库、UI、缓存、编辑器
+├── keys.yml           # 按键与组合键
+├── skills/            # 技能
+├── jobs/              # 职业与技能组
+├── stations/          # 事件中转站
+├── controllers/       # 控制器
+├── status/            # 状态
+├── experiences/       # 经验算法
+├── selectors.yml      # 选择器预设
+├── state.yml          # 战斗状态机
+├── ui/                # 各端界面
+├── placeholders/      # 自定义占位符
+└── lang/              # 语言文件
 ```
 
----
+存储支持 SQLite（默认）、MySQL 与 H2；RedisChannel 提供可选的跨服缓存。`bloom.yml`、`buffs.yml`、`npc.yml` 分别配置泛光、Buff 与 NPC。完整默认值见 [资源模板](src/main/resources)。
 
-## API 使用
+切换数据库类型、UI 端或跨服缓存后需要重启服务器。
 
-### 入口
+</details>
 
-```kotlin
-val api = Orryx.api()  // 获取 IOrryxAPI 实例
-api.skillAPI.castSkill(player, "fireball", 5)
+## 接入你的服务器
+
+| 集成方向 | 可连接的插件 |
+| --- | --- |
+| 客户端与表现 | DragonCore、GermPlugin、ArcartX、CloudPick |
+| 属性与战斗 | AttributePlus、Nodens、AstraXHero |
+| 怪物与副本 | MythicMobs、DungeonPlus |
+| 虚拟实体 | Adyeshach |
+| 占位符与 HUD | PlaceholderAPI、GDDTitle |
+| 协议与缓存 | PacketEvents、ProtocolLib、RedisChannel |
+
+各桥接支持的功能不同，详见 [集成参考](docs/Features.md) 与 [客户端引擎集成](docs/Client-Engine-Integration.md)。配合 OrryxMod，`colliderShow` 可实时显示碰撞线框，协议见 [客户端集成文档](docs/Plugin-Integration.md)。
+
+### 在线编辑器
+
+在 `config.yml` 中配置 `Editor.License` 后，具有 `Orryx.Command.Editor` 权限的玩家可执行 `/orryx edit`，获取有效期 5 分钟的一次性入口；控制台可执行 `or edit` 获取网址。
+
+License 用于中心身份校验，空值、被禁用或绑定 IP 不匹配时无法连接；License 到期不影响实时编辑器。连接方式与部署要求见 [编辑器文档](docs/Editor.md)。
+
+### Agent SKILL 套件
+
+[Orryx Creation Suite](agent-skills/orryx-creation-suite/README.md) 提供技能、Kether、职业、经验、中转站、状态机、选择器与 UI 的生成和校验流程，支持 Codex、Claude Code 与 Copilot。
+
+```text
+/orryx-ability-authoring-skill 创建一个蓄力技能
+/orryx-workflow-orchestrator-skill 创建完整职业套件
 ```
 
-### 主要接口
+安装方式与 Python 依赖见 [套件说明](agent-skills/orryx-creation-suite/README.md#安装)。
 
-| 接口 | 说明 |
-|-----|------|
-| `IOrryxAPI` | 总 API 入口 |
-| `ISkillAPI` | 技能操作 |
-| `IJobAPI` | 职业操作 |
-| `IProfileAPI` | 玩家档案 |
-| `IKeyAPI` | 按键管理 |
-| `ITaskAPI` | 任务管理 |
-| `ITimerAPI` | 计时器管理 |
-| `IReloadAPI` | 重载管理 |
-| `IConsumptionValueAPI` | 消耗值 (法力/精力) |
-| `IMiscAPI` | 杂项功能 |
+## 开发与构建
 
-### Gradle (Kotlin DSL)
+### 调用 API
 
 ```kotlin
 repositories {
     maven("https://maven.mcwar.cn/releases")
 }
 
-dependencies {
-    compileOnly("org.gitee.orryx:orryx:2.44.116:api")
-}
-```
-
-### Gradle (Groovy)
-
-```groovy
-repositories {
-    maven { url 'https://maven.mcwar.cn/releases' }
-}
+val orryxVersion: String by project
 
 dependencies {
-    compileOnly 'org.gitee.orryx:orryx:2.44.116:api'
+    compileOnly("org.gitee.orryx:orryx:$orryxVersion:api")
 }
 ```
 
----
+在使用方的 `gradle.properties` 中设置 `orryxVersion`，选择与服务器一致的 [已发布 Maven 版本](https://maven.mcwar.cn/releases/org/gitee/orryx/orryx/maven-metadata.xml)。源码版本可能尚未发布，必要时可按下文生成 API 包。
 
-## Orryx Agent SKILL 套件
+通过 `Orryx.api()` 获取技能、职业、档案、按键和重载等接口：
 
-仓库内置 `agent-skills/orryx-creation-suite/`，提供 10 个可组合的 Agent SKILL，用于创建和校验 Orryx 配置：
+```kotlin
+import org.gitee.orryx.api.Orryx
 
-- 技能、Kether、职业和经验曲线
-- Station 事件机制
-- Status 与 Controller
-- Selector 预设
-- Bukkit、DragonCore、GermPlugin、ArcartX UI
-- 完整职业套件编排与跨文件校验
+// 走完整条件检查，尝试释放玩家拥有的技能
+Orryx.api().skillAPI.tryCastSkill(player, "hello")
 
-安装到 Claude Code：
+// 直接执行指定等级的技能，跳过冷却、法力等检查
+Orryx.api().skillAPI.castSkill(player, "hello", 1)
+```
+
+公开接口与事件用法见 [API 文档](docs/API.md)。
+
+### 从源码构建
+
+与 CI 一致，使用 **JDK 21 运行 Gradle，并提供 JDK 8 编译工具链**。构建检查还需要 Python 3.10+，Windows 应可执行 `py -3`，其他系统应可执行 `python3`。项目依赖包含 `libs/` 下的本地 JAR。
 
 ```bash
-./agent-skills/orryx-creation-suite/install.sh --platform claude-code
-```
+# 构建发行包，输出到本仓库 build 目录
+./gradlew build -Pbuild=./build
 
-Windows PowerShell：
-
-```powershell
-./agent-skills/orryx-creation-suite/install.ps1 -Platform claude-code
-```
-
-安装后可调用：
-
-```text
-/orryx-ability-authoring-skill 创建一个蓄力技能
-/orryx-progression-curve-skill 设计 1-60 级经验曲线
-/orryx-workflow-orchestrator-skill 创建完整职业套件
-```
-
-详细说明见 `agent-skills/orryx-creation-suite/README.md`。
-
----
-
-## 构建
-
-```bash
-# 构建发行版本
-./gradlew build
-
-# 生成 API 包（开发用）
-./gradlew taboolibBuildApi -PDeleteCode
+# 生成 API 包
+./gradlew taboolibBuildApi -PDeleteCode -Pbuild=./build
 
 # 生成 API 文档
 ./gradlew dokkaHtml
 
-# 启动临时 Paper 并生成最新 Kether 文档、Schema 与 Manifest
+# 启动临时 Paper 并生成 Kether 文档
 ./gradlew generateKetherDocs
 ```
 
+Windows PowerShell 使用 `./gradlew.bat`。文档生成会启动 Paper 1.21.1，发布与校验方式见 [Kether 文档发布协议](docs/Kether-Docs-Publishing.md)。
+
+<details>
+<summary><strong>源码导航与版本规则</strong></summary>
+
+| 路径 | 内容 |
+| --- | --- |
+| [`src/main/kotlin/org/gitee/orryx/api`](src/main/kotlin/org/gitee/orryx/api) | 公开接口、事件与碰撞系统 |
+| [`src/main/kotlin/org/gitee/orryx/core`](src/main/kotlin/org/gitee/orryx/core) | 技能、职业、Kether、选择器与中转站 |
+| [`src/main/kotlin/org/gitee/orryx/module`](src/main/kotlin/org/gitee/orryx/module) | UI、状态、编辑器与文档生成 |
+| [`src/main/kotlin/org/gitee/orryx/compat`](src/main/kotlin/org/gitee/orryx/compat) | 第三方插件桥接 |
+| [`src/main/resources`](src/main/resources) | 默认配置与 UI 模板 |
+| [`docs`](docs) | API、协议与集成文档 |
+
+版本格式为 `A.B.C`：`A` 表示不兼容的 API 变动，`B` 表示功能更新，`C` 表示修复。
+
+</details>
+
+## 文档导航
+
+| 你想了解 | 从这里开始 |
+| --- | --- |
+| 安装、配置与技能编写 | [飞书 Wiki](https://o0vvjwgpeju.feishu.cn/wiki/Syzzw7aQwixJ4YkXoOAcyYkfnOg) · [功能参考](docs/Features.md) |
+| Kether 语法与动作 | [在线文档](https://zhibeigg.github.io/Orryx/) · [最新 Markdown](https://zhibeigg.github.io/Orryx/kether/latest.md) |
+| 编辑器与文档工具接入 | [Registry v4](https://zhibeigg.github.io/Orryx/kether/kether-registry.json) · [Schema v3](https://zhibeigg.github.io/Orryx/kether/actions-schema.json) · [Manifest](https://zhibeigg.github.io/Orryx/kether/manifest.json) |
+| 插件开发与实体操作 | [API](docs/API.md) · [实体字段](docs/EntityField.md) |
+| 客户端协议与 UI | [OrryxMod 协议](docs/Plugin-Integration.md) · [客户端引擎](docs/Client-Engine-Integration.md) |
+| AI 辅助阅读源码 | [DeepWiki](https://deepwiki.com/zhibeigg/Orryx) · [ZRead](https://zread.ai/zhibeigg/Orryx) |
+
+## 特别鸣谢
+
+<a href="https://www.poke2api.com"><img src="docs/assets/pokeapi-promo.png" width="200" alt="Poke API 开发者平台" /></a>
+
+感谢 [Poke API](https://www.poke2api.com) 对本项目的支持。Poke API 提供 AI API 中继服务，支持 Claude、GPT 及 Claude Code、Codex、Gemini 等模型与开发工具生态。
+
+<details>
+<summary>使用统计</summary>
+
+[![Orryx 在 bStats 上的使用统计](https://bstats.org/signatures/bukkit/Orryx.svg)](https://bstats.org/plugin/bukkit/Orryx/24289/)
+
+</details>
+
 ---
 
-## 版本号规则
-
-版本格式：`A.B.C`
-
-| 位 | 含义 | 递增时机 |
-|---|------|---------|
-| `A` | API 变动 | 公开接口发生不兼容变更 |
-| `B` | 功能更新 | 新增功能 |
-| `C` | 修复 | Bug 修复、兼容性修复 |
-
----
-
-## 文档资源
-
-- [飞书 Wiki](https://o0vvjwgpeju.feishu.cn/wiki/Syzzw7aQwixJ4YkXoOAcyYkfnOg) — 完整使用文档
-- [Kether 最新文档](https://zhibeigg.github.io/Orryx/kether/latest.md) — 由插件运行时注册数据自动生成
-- [Kether Registry v4](https://zhibeigg.github.io/Orryx/kether/kether-registry.json) — 完整类型、动作、选择器、触发器与属性注册表
-- [Kether 编辑器 Schema v3](https://zhibeigg.github.io/Orryx/kether/actions-schema.json) — 旧消费者兼容入口
-- [Kether 文档 Manifest](https://zhibeigg.github.io/Orryx/kether/manifest.json) — 当前版本、版本化文档与下载地址
-- [DeepWiki AI](https://deepwiki.com/zhibeigg/Orryx) — AI 问答助手
-- [ZRead AI](https://zread.ai/zhibeigg/Orryx) — AI 问答助手
-- [API 文档](docs/API.md) — 开发者 API 参考
-- [客户端协议文档](docs/Plugin-Integration.md) — OrryxMod 客户端协议
-- [客户端引擎集成](docs/Client-Engine-Integration.md) — DragonCore/GermPlugin/ArcartX 集成
-- [实体字段文档](docs/EntityField.md) — 实体字段参考
-
----
-
-## 统计
-
-<div align="center">
-
-[![bStats](https://bstats.org/signatures/bukkit/Orryx.svg)](https://bstats.org/plugin/bukkit/Orryx/24289/)
-
-*Powered by TabooLib*
-
-</div>
-
----
-
-<div align="center">
-
-**Orryx** © 2024-2026
-
-</div>
+基于 [TabooLib](https://github.com/TabooLib/taboolib) 构建 · [CC0 1.0 Universal](LICENSE) · Orryx © 2024–2026

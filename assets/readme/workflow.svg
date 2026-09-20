@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-labelledby="title desc">
+  <title id="title">Orryx - Skill and Collision Workflow</title>
+  <desc id="desc">YAML and Kether power Minecraft skills, jobs and combat. A conceptual sector selector picks targets inside its range, with a wireframe collider marking a hit. The selector expression is taken from the bundled flame dash skill.</desc>
+  <rect width="1200" height="360" rx="8" fill="#1c1b1c"/>
+
+  <g id="selector-field" transform="translate(0 -40)" fill="none" stroke-linejoin="round">
+    <path d="M714 319 L930 58 A339 339 0 0 1 1050 278 Z" fill="#8fdbd1" fill-opacity="0.06" stroke="#8fdbd1" stroke-width="2"/>
+    <path d="M786 232 A113 113 0 0 1 826 305 M858 145 A226 226 0 0 1 938 292" stroke="#49756d" stroke-width="1.5" stroke-dasharray="6 8"/>
+    <path d="M714 319 L1009 170" stroke="#87a6a0" stroke-width="1.5" stroke-dasharray="7 9"/>
+    <path d="M687 319 H741 M714 292 V346" stroke="#8fdbd1" stroke-width="2.5"/>
+    <circle cx="714" cy="319" r="7" fill="#8fdbd1" stroke="none"/>
+
+    <g id="selected-collider" stroke="#8fdbd1" stroke-width="2.5">
+      <path d="M912 151 L955 129 L998 151 L955 174 Z" fill="#8fdbd1" fill-opacity="0.14"/>
+      <path d="M912 151 V224 L955 248 L998 225 V151 M955 174 V248"/>
+      <path d="M912 224 L955 202 L998 225 M955 129 V202" stroke="#49756d" stroke-dasharray="5 6"/>
+    </g>
+    <g id="hit-collider" transform="translate(-40 0)" stroke="#ff8a77" stroke-width="2.5">
+      <path d="M1044 237 L1070 223 L1096 237 L1070 251 Z" fill="#ff8a77" fill-opacity="0.16"/>
+      <path d="M1044 237 V279 L1070 294 L1096 279 V237 M1070 251 V294"/>
+    </g>
+    <g id="excluded-target" stroke="#69766c" stroke-width="2">
+      <path d="M834 343 L859 330 L884 343 L859 357 Z M834 343 V379 L859 392 L884 379 V343 M859 357 V392"/>
+      <path d="M898 351 L910 363 M910 351 L898 363"/>
+    </g>
+  </g>
+
+  <g id="workflow-title" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif">
+    <text x="64" y="63" font-size="22" font-weight="600" fill="#ff8a77">ORRYX / COMBAT LOGIC</text>
+    <text x="64" y="148" font-size="56" font-weight="650" fill="#f4f7f2">脚本驱动，空间判定</text>
+    <text x="66" y="202" font-size="28" fill="#a6afa8">触发 / 选择 / 执行 / 反馈</text>
+  </g>
+
+  <g id="annotations" font-family="ui-monospace, 'Cascadia Code', Consolas, monospace" font-size="20" fill="#a6afa8">
+    <text x="930" y="325" fill="#ff8a77">SELECT. CAST. HIT.</text>
+    <path d="M64 251 H606" stroke="#424043" stroke-width="1"/>
+    <text x="66" y="299" font-size="24"><tspan fill="#8fdbd1">@range</tspan><tspan fill="#f4f7f2"> 2.5 </tspan><tspan>!@self !@team</tspan></text>
+  </g>
+</svg>
